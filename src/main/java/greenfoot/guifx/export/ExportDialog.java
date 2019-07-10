@@ -25,7 +25,7 @@ import bluej.Config;
 import bluej.debugger.gentype.ConstructorReflective;
 import bluej.debugger.gentype.Reflective;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;

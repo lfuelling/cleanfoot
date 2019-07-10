@@ -23,7 +23,7 @@ package bluej.pkgmgr;
 
 import bluej.Config;
 import bluej.extensions.SourceType;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import bluej.utility.FileUtility;

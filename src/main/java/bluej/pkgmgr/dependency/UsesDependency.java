@@ -24,7 +24,7 @@ package bluej.pkgmgr.dependency;
 import bluej.extensions.BDependency;
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.t4rget.DependentTarget;
 import bluej.utility.Utility;
 import javafx.geometry.Point2D;
 import threadchecker.OnThread;

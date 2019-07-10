@@ -21,7 +21,7 @@
  */
 package bluej.graph;
 
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.Target;
 import bluej.utility.javafx.FXPlatformConsumer;
 import threadchecker.OnThread;
 import threadchecker.Tag;

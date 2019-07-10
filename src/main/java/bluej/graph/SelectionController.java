@@ -24,7 +24,7 @@ package bluej.graph;
 import bluej.Config;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PackageEditor;
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.Target;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
 import javafx.scene.input.KeyEvent;

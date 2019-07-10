@@ -23,7 +23,7 @@ package bluej.editor.stride;
 
 import bluej.Config;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.target.EditableTarget;
+import bluej.pkgmgr.t4rget.EditableTarget;
 import bluej.testmgr.TestDisplayFrame;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;

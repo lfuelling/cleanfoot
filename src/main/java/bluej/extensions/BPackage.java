@@ -31,9 +31,9 @@ import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.target.ClassTarget;
-import bluej.pkgmgr.target.PackageTarget;
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.t4rget.PackageTarget;
+import bluej.pkgmgr.t4rget.Target;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

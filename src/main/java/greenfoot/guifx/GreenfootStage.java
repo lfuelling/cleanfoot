@@ -42,9 +42,9 @@ import bluej.editor.Editor;
 import bluej.extensions.SourceType;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.*;
-import bluej.pkgmgr.target.ClassTarget;
-import bluej.pkgmgr.target.ReadmeTarget;
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.t4rget.ReadmeTarget;
+import bluej.pkgmgr.t4rget.Target;
 import bluej.prefmgr.PrefMgr;
 import bluej.prefmgr.PrefMgrDialog;
 import bluej.testmgr.record.InvokerRecord;
@@ -124,7 +124,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import static bluej.pkgmgr.target.ClassTarget.MENU_STYLE_INBUILT;
+import static bluej.pkgmgr.t4rget.ClassTarget.MENU_STYLE_INBUILT;
 import static greenfoot.vmcomm.Command.*;
 
 /**

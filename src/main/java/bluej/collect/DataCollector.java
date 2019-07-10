@@ -37,7 +37,7 @@ import bluej.extmgr.ExtensionWrapper;
 import bluej.groupwork.Repository;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import bluej.stride.generic.Frame;
 import threadchecker.OnThread;
 import threadchecker.Tag;

@@ -24,7 +24,7 @@ package bluej.extmgr;
 import bluej.extensions.BClass;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

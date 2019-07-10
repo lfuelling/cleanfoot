@@ -26,8 +26,8 @@ import bluej.extensions.BDependency;
 import bluej.extensions.BPackage;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.target.ClassTarget;
-import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.t4rget.DependentTarget;
 
 import java.util.ArrayList;
 import java.util.List;

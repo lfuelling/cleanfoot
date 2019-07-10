@@ -27,7 +27,7 @@ import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import com.sun.jdi.ObjectReference;
 import javafx.application.Platform;
 

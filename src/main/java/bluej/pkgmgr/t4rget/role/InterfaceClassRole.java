@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2013,2016  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2016,2017  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -19,30 +19,43 @@
  This file is subject to the Classpath exception as provided in the  
  LICENSE.txt file that accompanied this code.
  */
-package bluej.graph;
+package bluej.pkgmgr.t4rget.role;
 
-import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.Target;
-import javafx.scene.input.KeyCode;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
- * A strategy to move graph selections with keyboard input.
- * 
- * @author fisker
+ * A role object to represent the behaviour of interfaces.
+ *
+ * @author  Andrew Patterson 
  */
-@OnThread(Tag.FXPlatform)
-public interface TraverseStrategy
+public class InterfaceClassRole extends ClassRole
 {
+    public final static String INTERFACE_ROLE_NAME = "InterfaceTarget";
+
     /**
-     * Given a currently selected vertex and a key press, decide which vertex 
-     * should be selected next.
-     * 
-     * @param graph  The graph we're looking at.
-     * @param currentVertex  The currently selected vertex.
-     * @param key  The key that was pressed.
-     * @return     A vertex that should be selected now.
+     * Create the interface class role.
      */
-    public Target findNextVertex(Package graph, Target currentVertex, KeyCode key);
+    public InterfaceClassRole()
+    {
+    }
+
+    @OnThread(Tag.Any)
+    public String getRoleName()
+    {
+        return INTERFACE_ROLE_NAME;
+    }
+
+    @OnThread(Tag.Any)
+    public String getStereotypeLabel()
+    {
+        return "interface";
+    }
+
+    @Override
+    @OnThread(Tag.Any)
+    public boolean canConvertToStride()
+    {
+        return true; // interfaces are supported
+    }
 }

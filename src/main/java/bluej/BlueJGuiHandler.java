@@ -23,8 +23,8 @@ package bluej;
 
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.target.ClassTarget;
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.t4rget.Target;
 import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;

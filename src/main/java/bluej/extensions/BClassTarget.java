@@ -25,8 +25,8 @@ import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PackageEditor;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.target.ClassTarget;
-import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.t4rget.DependentTarget;
 import bluej.utility.Utility;
 import javafx.application.Platform;
 

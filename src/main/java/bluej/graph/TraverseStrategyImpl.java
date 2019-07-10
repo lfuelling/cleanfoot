@@ -22,7 +22,7 @@
 package bluej.graph;
 
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.Target;
 import javafx.scene.input.KeyCode;
 import threadchecker.OnThread;
 import threadchecker.Tag;

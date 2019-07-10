@@ -21,7 +21,7 @@
  */
 package bluej.extensions.editor;
 
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 
 /**
  * This class acts as a bridge between the extensions.editor classes

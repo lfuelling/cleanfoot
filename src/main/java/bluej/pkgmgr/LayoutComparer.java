@@ -22,7 +22,7 @@
 package bluej.pkgmgr;
 
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.t4rget.DependentTarget;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

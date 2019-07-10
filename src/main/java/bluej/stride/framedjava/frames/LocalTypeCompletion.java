@@ -22,7 +22,7 @@
 package bluej.stride.framedjava.frames;
 
 import bluej.parser.AssistContent;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import bluej.stride.framedjava.ast.Parser;
 import threadchecker.OnThread;
 import threadchecker.Tag;

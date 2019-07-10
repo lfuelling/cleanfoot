@@ -23,8 +23,8 @@ package bluej.pkgmgr;
 
 import bluej.debugger.gentype.Reflective;
 import bluej.parser.entity.*;
-import bluej.pkgmgr.target.ClassTarget;
-import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.t4rget.Target;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

@@ -34,7 +34,7 @@ import bluej.extensions.SourceType;
 import bluej.pkgmgr.DocPathEntry;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.t4rget.ClassTarget;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import greenfoot.core.GreenfootMain.VersionCheckInfo;
