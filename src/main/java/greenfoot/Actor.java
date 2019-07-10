@@ -116,6 +116,7 @@ public abstract class Actor
         catch (Exception e) {
             // Should not happen unless the Greenfoot installation is seriously broken.
             e.printStackTrace();
+            System.err.println(GreenfootUtil.getGreenfootLogoPath());
             System.err.println("Greenfoot installation is broken - reinstalling Greenfoot might help.");
         }
     }
