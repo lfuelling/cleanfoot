@@ -21,96 +21,41 @@
  */
 package bluej.pkgmgr.t4rget;
 
-import bluej.collect.DiagnosticWithShown;
-import bluej.collect.StrideEditReason;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
-import bluej.editor.stride.FrameCatalogue;
 import bluej.pkgmgr.Package;
-import bluej.stride.generic.Frame;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * A target that is editable, but only as normal text (i.e. not as Java code), such as README and CSS files.
  */
-public abstract class NonCodeEditableTarget extends EditableTarget
-{
-    protected NonCodeEditableTarget(Package pkg, String name)
-    {
+public abstract class NonCodeEditableTarget extends EditableTarget {
+    protected NonCodeEditableTarget(Package pkg, String name) {
         super(pkg, name);
     }
 
     @Override
-    public void generateDoc()
-    {
+    public void generateDoc() {
         // meaningless
     }
 
     @Override
-    public String getProperty(String key)
-    {
+    public String getProperty(String key) {
         return null;
     }
 
     @Override
-    public void setProperty(String key, String value) { }
-
-    @Override
-    public void recordJavaEdit(String javaSource, boolean includeOneLineEdits) { }
-
-    @Override
-    public void recordStrideEdit(String javaSource, String strideSource, StrideEditReason reason) { }
-
-    @Override
-    public void recordClose() { }
-
-    @Override
-    public void recordOpen() { }
-
-    @Override
-    public void recordSelected() { }
-
-    @Override
-    public void recordShowErrorMessage(int identifier, List<String> quickFixes) { }
-
-    @Override
-    public void recordEarlyErrors(List<DiagnosticWithShown> diagnostics, int compilationIdentifier) { }
-
-    @Override
-    public void recordLateErrors(List<DiagnosticWithShown> diagnostics, int compilationIdentifier) { }
-
-    @Override
-    public void recordFix(int errorIdentifier, int fixIndex) { }
-
-    @Override
-    public void recordCodeCompletionStarted(Integer line, Integer column, String xpath, Integer index, String stem, int codeCompletionId) { }
-
-    @Override
-    public void recordCodeCompletionEnded(Integer lineNumber, Integer columnNumber, String xpath, Integer elementOffset, String stem, String replacement, int codeCompletionId) { }
-
-    @Override
-    public void recordUnknownCommandKey(String enclosingFrameXpath, int cursorIndex, char key) { }
-
-    @Override
-    public void recordShowHideFrameCatalogue(String enclosingFrameXpath, int cursorIndex, boolean show, FrameCatalogue.ShowReason reason) { }
-
-    @Override
-    public void recordViewModeChange(String enclosingFrameXpath, int cursorIndex, Frame.View oldView, Frame.View newView, Frame.ViewChangeReason reason) { }
-
-    @Override
-    public void recordShowErrorIndicators(Collection<Integer> identifiers) { }
+    public void setProperty(String key, String value) {
+    }
 
     @Override
     @OnThread(Tag.Any)
-    public void scheduleCompilation(boolean immediate, CompileReason reason, CompileType type) {}
+    public void scheduleCompilation(boolean immediate, CompileReason reason, CompileType type) {
+    }
 
     @Override
-    public void showingInterface(boolean showingInterface)
-    {
+    public void showingInterface(boolean showingInterface) {
         // Not applicable
     }
 }

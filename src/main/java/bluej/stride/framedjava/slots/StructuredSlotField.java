@@ -27,6 +27,7 @@ import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.View;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot.MenuItems;
+import bluej.stride.slots.TextSlot;
 import bluej.utility.javafx.*;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ObjectProperty;
@@ -533,13 +534,6 @@ class StructuredSlotField implements StructuredSlotComponent
     @Override
     public Stream<Node> makeDisplayClone(InteractionManager editor)
     {
-        TextField f = new TextField();
-        f.textProperty().bind(field.textProperty());
-        f.prefWidthProperty().bind(field.prefWidthProperty());
-        JavaFXUtil.bindList(f.getStyleClass(), field.getStyleClass());
-        JavaFXUtil.bindPseudoclasses(f, field.getPseudoClassStates());
-        JavaFXUtil.setPseudoclass("bj-pinned", true, f);
-        f.styleProperty().bind(field.styleProperty().concat(editor.getFontCSS()));
-        return Stream.of(f);
+        return TextSlot.makeDisplayClone(editor, field);
     }
 }

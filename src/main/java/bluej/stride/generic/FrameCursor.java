@@ -23,7 +23,6 @@ package bluej.stride.generic;
 
 
 import bluej.Config;
-import bluej.collect.StrideEditReason;
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.Loader;
 import bluej.stride.framedjava.elements.CodeElement;
@@ -73,10 +72,10 @@ import java.util.stream.Collectors;
  */
 public class FrameCursor implements RecallableFocus
 {    
-    public static final int FULL_HEIGHT = 5;
-    public static final int HIDE_HEIGHT = 0; // To leave a click target there
-    final int ERROR_COUNT_TRIGGER = 2;
-    int consecutiveErrors = 0;
+    static final int FULL_HEIGHT = 5;
+    static final int HIDE_HEIGHT = 0; // To leave a click target there
+    private final int ERROR_COUNT_TRIGGER = 2;
+    private int consecutiveErrors = 0;
     private ContextMenu menu;
     private final FrameCanvas parentCanvas;
     
@@ -95,7 +94,6 @@ public class FrameCursor implements RecallableFocus
         {
             boolean show = !editor.cheatSheetShowingProperty().get();
             editor.cheatSheetShowingProperty().set(show);
-            editor.recordShowHideFrameCatalogue(show, FrameCatalogue.ShowReason.MENU_OR_SHORTCUT);
             return true;
         }
 
@@ -106,13 +104,6 @@ public class FrameCursor implements RecallableFocus
                     .collect(Collectors.toList());
 
             final boolean selection = !editor.getSelection().getSelected().isEmpty();
-            // Is it a request to expand/collapse?
-            if (false && (key == '+' || key == '-')) {
-                //List<Frame> targets = selection ? editor.getSelection().getSelected() : Collections.singletonList(getFrameAfter());
-                //targets.stream().filter(Frame::isCollapsible)
-                //    .forEach(t -> t.setCollapsed(key == '-')); // otherwise it's plus
-                return true;
-            }
 
             if (selection && editor.getSelection().executeKey(this, key))
                 return true;
@@ -146,7 +137,6 @@ public class FrameCursor implements RecallableFocus
 
                 if (!selection || frameType.isValidOnSelection()) {
                     editor.beginRecordingState(FrameCursor.this);
-                    editor.recordEdits(StrideEditReason.FLUSH);
 
                     //Don't animate our removal when adding blocks,
                     //just disappear:
@@ -167,7 +157,6 @@ public class FrameCursor implements RecallableFocus
                         newFrame = frameType.getFactory().createBlock(editor);
                         insertBlockBefore(newFrame);
                     }
-                    editor.recordEdits(selection ? StrideEditReason.SELECTION_WRAP_KEY : StrideEditReason.SINGLE_FRAME_INSERTION_KEY);
                     editor.modifiedFrame(newFrame, false);
                     newFrame.markFresh();
 
@@ -195,17 +184,11 @@ public class FrameCursor implements RecallableFocus
                     BooleanProperty cheatSheetShowingProperty = editor.cheatSheetShowingProperty();
                     if ( ! cheatSheetShowingProperty.get() ) {
                         cheatSheetShowingProperty.set(true);
-                        editor.recordShowHideFrameCatalogue(true, FrameCatalogue.ShowReason.UNKNOWN_FRAME_COMMAND);
                     }
                 }
-                editor.recordUnknownCommandKey(getEnclosingFrame(), getCursorIndex(), key);
                 //Ignore one-off mis-typing, just to stop every slip-up triggering a dialog
                 return true;
             }
-        }
-        else
-        {
-            editor.recordUnknownCommandKey(getEnclosingFrame(), getCursorIndex(), key);
         }
         editor.getSelection().clear();
         return false;
@@ -464,20 +447,18 @@ public class FrameCursor implements RecallableFocus
                 // Check they are from our canvas:
                 if (toDelete.stream().allMatch(f -> f.getParentCanvas() == getParentCanvas()))
                 {
-                    editor.recordEdits(StrideEditReason.FLUSH);
                     int effort = toDelete.stream().mapToInt(Frame::calculateEffort).sum();
                     editor.showUndoDeleteBanner(effort);
                     // We might get deleted during this code, so cache value of getParentCanvas:
                     FrameCanvas c = getParentCanvas();
-                    toDelete.forEach(f -> c.removeBlock(f));
-                    editor.recordEdits(event.getCode() == KeyCode.BACK_SPACE ? StrideEditReason.DELETE_FRAMES_KEY_BKSP : StrideEditReason.DELETE_FRAMES_KEY_DELETE);
+                    toDelete.forEach(c::removeBlock);
                 }
                 else
                 {
                     Debug.message("Warning: trying to delete selection from remote cursor");
                 }
                 editor.getSelection().clear();
-                focusAfter.requestFocus();
+                Objects.requireNonNull(focusAfter).requestFocus();
                 editor.endRecordingState(focusAfter);
                 editor.updateCatalog(focusAfter);
                 event.consume();
@@ -492,10 +473,8 @@ public class FrameCursor implements RecallableFocus
                 {
                     editor.beginRecordingState(FrameCursor.this);
                     FrameCursor cursorBeforeTarget = parentCanvas.getCursorBefore(target);
-                    editor.recordEdits(StrideEditReason.FLUSH);
                     editor.showUndoDeleteBanner(target.calculateEffort());
                     parentCanvas.removeBlock(target);
-                    editor.recordEdits(StrideEditReason.DELETE_FRAMES_KEY_BKSP);
                     editor.modifiedFrame(target, false);
                     cursorBeforeTarget.requestFocus();
                     editor.endRecordingState(cursorBeforeTarget);
@@ -532,10 +511,8 @@ public class FrameCursor implements RecallableFocus
                 if (target != null)
                 {
                     editor.beginRecordingState(FrameCursor.this);
-                    editor.recordEdits(StrideEditReason.FLUSH);
                     editor.showUndoDeleteBanner(target.calculateEffort());
                     parentCanvas.removeBlock(target);
-                    editor.recordEdits(StrideEditReason.DELETE_FRAMES_KEY_DELETE);
                     editor.modifiedFrame(target, false);
                     editor.endRecordingState(FrameCursor.this);
                 }
@@ -548,7 +525,7 @@ public class FrameCursor implements RecallableFocus
             }
             else if (event.getCode() == KeyCode.SPACE && event.isControlDown())
             {
-                keyTyped(editor, parentCanvas, ' ', event.isControlDown());
+                keyTyped(editor, parentCanvas, ' ', true);
             }
         });
     }
@@ -863,10 +840,8 @@ public class FrameCursor implements RecallableFocus
         // Delete (with hover preview)
         item.setOnAction(e -> {
             editor.beginRecordingState(FrameCursor.this);
-            editor.recordEdits(StrideEditReason.FLUSH);
             Frame newFrame = entry.getFactory().createBlock(editor);
             cursor.insertBlockAfter(newFrame);
-            editor.recordEdits(StrideEditReason.SINGLE_FRAME_INSERTION_CONTEXT_MENU);
             newFrame.markFresh();
             newFrame.focusWhenJustAdded();
             editor.endRecordingState(null);

@@ -22,8 +22,6 @@
 package bluej.pkgmgr;
 
 import bluej.Config;
-import bluej.collect.DataCollectionCompileObserverWrapper;
-import bluej.collect.DataCollector;
 import bluej.compiler.*;
 import bluej.debugger.*;
 import bluej.debugmgr.CallHistory;
@@ -839,13 +837,6 @@ public final class Package
             addTarget(target);
         }
 
-        if (!recorded)
-        {
-            DataCollector.packageOpened(this);
-            recorded = true;
-        }
-
-
         List<Target> targetsCopy;
         synchronized (this)
         {
@@ -1247,8 +1238,6 @@ public final class Package
 
         getEditor().findSpaceForVertex(t);
         t.analyseSource();
-        
-        DataCollector.addClass(this, t);
 
         return NO_ERROR;
     }
@@ -1635,16 +1624,11 @@ public final class Package
      */
     private void doCompile(Collection<ClassTarget> targetList, FXCompileObserver edtObserver, CompileReason reason, CompileType type)
     {
-        CompileObserver observer = new EventqueueCompileObserverAdapter(new DataCollectionCompileObserverWrapper(project, edtObserver));
-        if (targetList.isEmpty()) {
-            return;
-        }
-
         List<CompileInputFile> srcFiles = Utility.mapList(targetList, ClassTarget::getCompileInputFile);
                
         if (srcFiles.size() > 0)
         {
-            JobQueue.getJobQueue().addJob(srcFiles.toArray(new CompileInputFile[0]), observer, project.getClassLoader(), project.getProjectDir(),
+            JobQueue.getJobQueue().addJob(srcFiles.toArray(new CompileInputFile[0]), project.getClassLoader(), project.getProjectDir(),
                 ! PrefMgr.getFlag(PrefMgr.SHOW_UNCHECKED), project.getProjectCharset(), reason, type);
         }
     }

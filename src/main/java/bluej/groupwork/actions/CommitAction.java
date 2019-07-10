@@ -22,7 +22,6 @@
 package bluej.groupwork.actions;
 
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.groupwork.*;
 import bluej.groupwork.ui.CommitAndPushInterface;
 import bluej.pkgmgr.PkgMgrFrame;
@@ -187,8 +186,6 @@ public class CommitAction extends TeamAction
             if (! aborted) {
                 commitCommentsFrame.stopProgress();
                 if (! result.isError() && ! result.wasAborted()) {
-                    DataCollector.teamCommitProject(project, statusHandle.getRepository(), files);
-
                     if (project.getTeamSettingsController().isDVCS()) {
                         //if DVCS, display message on commit/push window.
                         commitCommentsFrame.displayMessage(Config.getString("team.commit.statusDone"));

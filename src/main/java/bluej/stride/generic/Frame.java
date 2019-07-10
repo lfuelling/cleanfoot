@@ -23,7 +23,6 @@ package bluej.stride.generic;
 
 
 import bluej.Config;
-import bluej.collect.StrideEditReason;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.ErrorShower;
@@ -1297,14 +1296,14 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
     public void addError(CodeError err)
     {
         allFrameErrors.add(err);
-        err.bindFresh(fresh, editor);
+        err.bindFresh(fresh);
     }
 
     @Override
     public void focusAndPositionAtError(CodeError err)
     {
         // Whatever the error is, just focus the cursor before us:
-        getCursorBefore().requestFocus();
+        Objects.requireNonNull(getCursorBefore()).requestFocus();
     }
 
     @Override
@@ -1361,9 +1360,7 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
             // Delete ourselves
             FrameCanvas parentCanvas = getParentCanvas();
             FrameCursor cursorBefore = getCursorBefore();
-            editor.recordEdits(StrideEditReason.FLUSH);
             parentCanvas.removeBlock(this);
-            editor.recordEdits(StrideEditReason.ESCAPE_FRESH);
             cursorBefore.requestFocus();
         }
     }

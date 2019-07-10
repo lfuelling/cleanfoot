@@ -42,7 +42,7 @@ public class SyntaxCodeError extends DirectSlotError
     @OnThread(Tag.Any)
     public SyntaxCodeError(SlotFragment slot, String msg)
     {
-        super(slot, DiagnosticOrigin.STRIDE_EARLY);
+        super(slot);
         this.message = msg;
     }
     

@@ -22,7 +22,6 @@
 package bluej.groupwork.actions;
 
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.groupwork.*;
 import bluej.groupwork.ui.ConflictsDialog;
 import bluej.groupwork.ui.UpdateFilesFrame;
@@ -55,8 +54,7 @@ import java.util.*;
  * @author Kasper Fisker
  */
 @OnThread(Tag.FXPlatform)
-public class UpdateAction extends TeamAction
-{
+public class UpdateAction extends TeamAction {
     private boolean includeLayout = true;
     private UpdateFilesFrame updateFrame;
     private UpdateWorker worker;
@@ -65,11 +63,12 @@ public class UpdateAction extends TeamAction
     private Set<File> filesToForceUpdate;
     private StatusHandle statusHandle;
 
-    /** A list of packages whose bluej.pkg file has been removed */
+    /**
+     * A list of packages whose bluej.pkg file has been removed
+     */
     private List<String> removedPackages;
 
-    public UpdateAction(UpdateFilesFrame updateFrame)
-    {
+    public UpdateAction(UpdateFilesFrame updateFrame) {
         super(Config.getString("team.update"), false);
         setShortDescription(Config.getString("tooltip.update"));
         this.updateFrame = updateFrame;
@@ -77,33 +76,31 @@ public class UpdateAction extends TeamAction
 
     /**
      * Set the files to be updated (changes merged if necessary).
+     *
      * @files a Set of File
      */
-    public void setFilesToUpdate(Set<File> files)
-    {
+    public void setFilesToUpdate(Set<File> files) {
         filesToUpdate = files;
     }
 
     /**
      * Set the files to be updated with a clean copy of the repository
+     *
      * @files a Set of File
      */
-    public void setFilesToForceUpdate(Set<File> files)
-    {
+    public void setFilesToForceUpdate(Set<File> files) {
         filesToForceUpdate = files;
     }
 
     /**
      * Set the status handle (which comes from a preceeding status operation).
      */
-    public void setStatusHandle(StatusHandle statusHandle)
-    {
+    public void setStatusHandle(StatusHandle statusHandle) {
         this.statusHandle = statusHandle;
     }
 
     @Override
-    protected void actionPerformed(Project project)
-    {
+    protected void actionPerformed(Project project) {
         updateFrame.startProgress();
         PkgMgrFrame.displayMessage(project, Config.getString("team.update.statusMessage"));
 
@@ -115,31 +112,27 @@ public class UpdateAction extends TeamAction
     /**
      * Cancel the update, if it is presently running.
      */
-    public void cancel()
-    {
+    public void cancel() {
         if (worker != null) {
             worker.abort();
         }
         setEnabled(true);
     }
 
-    private class UpdateWorker extends FXWorker implements UpdateListener
-    {
+    private class UpdateWorker extends FXWorker implements UpdateListener {
         private Project project;
         private TeamworkCommand command;
         private TeamworkCommandResult result;
         private boolean aborted;
 
         public UpdateWorker(Project project, StatusHandle statusHandle,
-                            Set<File> filesToUpdate, Set<File> filesToForceUpdate)
-        {
+                            Set<File> filesToUpdate, Set<File> filesToForceUpdate) {
             this.project = project;
             command = statusHandle.updateTo(this, filesToUpdate, filesToForceUpdate);
         }
 
         @OnThread(Tag.Worker)
-        public Object construct()
-        {
+        public Object construct() {
             removedPackages = new ArrayList<>();
             result = command.getResult();
             return result;
@@ -150,12 +143,10 @@ public class UpdateAction extends TeamAction
          */
         @Override
         @OnThread(Tag.FXPlatform)
-        public void fileModified(final File f)
-        {
+        public void fileModified(final File f) {
             String fileName = f.getName();
             boolean isPkgFile = BlueJPackageFile.isPackageFileName(fileName);
-            if (! fileName.endsWith(".java") && ! fileName.endsWith(".class") && ! isPkgFile)
-            {
+            if (!fileName.endsWith(".java") && !fileName.endsWith(".class") && !isPkgFile) {
                 return;
             }
 
@@ -165,61 +156,48 @@ public class UpdateAction extends TeamAction
                 return;
             }
 
-            if (isPkgFile)
-            {
-                if (packageName.length() > 0)
-                {
+            if (isPkgFile) {
+                if (packageName.length() > 0) {
                     // If we now have a new package, we might need to add it
                     // as a target in an existing package
                     String parentPackageName = JavaNames.getPrefix(packageName);
                     Package parentPackage = project.getCachedPackage(parentPackageName);
-                    if (parentPackage != null)
-                    {
+                    if (parentPackage != null) {
                         Target t = parentPackage.addPackage(JavaNames.getBase(packageName));
                         parentPackage.positionNewTarget(t);
                     }
                 }
-                
+
                 Package filePackage = project.getCachedPackage(packageName);
-                if (filePackage != null && includeLayout)
-                {
+                if (filePackage != null && includeLayout) {
                     // There's a pre-existing package, so we assume this is a modification:
-                    try
-                    {
+                    try {
                         filePackage.reReadGraphLayout();
-                    }
-                    catch (IOException ioe)
-                    {
+                    } catch (IOException ioe) {
                         Debug.reportError("Error re-reading package file (team update)", ioe);
                     }
                 }
-            }
-            else {
+            } else {
                 int n = fileName.lastIndexOf(".");
                 String name = fileName.substring(0, n);
-                if (! JavaNames.isIdentifier(name))
-                {
+                if (!JavaNames.isIdentifier(name)) {
                     return;
                 }
 
                 Package pkg = project.getCachedPackage(packageName);
-                if (pkg == null)
-                {
+                if (pkg == null) {
                     return;
                 }
-                
+
                 Target t = pkg.getTarget(name);
-                if (t == null)
-                {
+                if (t == null) {
                     // Addition of a new class:
                     ClassTarget ct = pkg.addClass(name);
                     pkg.positionNewTarget(ct);
-                    DataCollector.addClass(pkg, ct);
                     return;
                 }
-                
-                if (t instanceof ClassTarget)
-                {
+
+                if (t instanceof ClassTarget) {
                     ((ClassTarget) t).reload();
                 }
             }
@@ -229,53 +207,42 @@ public class UpdateAction extends TeamAction
          * @see bluej.groupwork.UpdateListener#fileRemoved(java.io.File)
          */
         @OnThread(Tag.FXPlatform)
-        public void fileRemoved(final File f)
-        {
+        public void fileRemoved(final File f) {
             String fileName = f.getName();
             if (!fileName.endsWith(".java") &&
                     !fileName.endsWith(".class") &&
-                    !BlueJPackageFile.isPackageFileName(fileName))
-            {
+                    !BlueJPackageFile.isPackageFileName(fileName)) {
                 return;
             }
 
             // First find out the package name...
             String packageName = project.getPackageForFile(f);
-            if (packageName == null)
-            {
+            if (packageName == null) {
                 return;
             }
 
-            if (BlueJPackageFile.isPackageFileName(fileName))
-            {
+            if (BlueJPackageFile.isPackageFileName(fileName)) {
                 // Delay removing the package until
                 // after the update has finished, and only do it if there
                 // are no files left in the package.
                 removedPackages.add(packageName);
-            }
-            else
-            {
+            } else {
                 // Remove a class
                 int n = fileName.lastIndexOf(".");
                 String name = fileName.substring(0, n);
                 Package pkg = project.getCachedPackage(packageName);
-                if (pkg == null)
-                {
+                if (pkg == null) {
                     return;
                 }
                 Target t = pkg.getTarget(name);
-                if (!(t instanceof ClassTarget))
-                {
+                if (!(t instanceof ClassTarget)) {
                     return;
                 }
 
                 ClassTarget ct = (ClassTarget) t;
-                if (ct.hasSourceCode() && !fileName.endsWith(".java"))
-                {
+                if (ct.hasSourceCode() && !fileName.endsWith(".java")) {
                     ct.markModified();
-                }
-                else
-                {
+                } else {
                     ct.remove();
                 }
             }
@@ -285,8 +252,7 @@ public class UpdateAction extends TeamAction
          * @see bluej.groupwork.UpdateListener#dirRemoved(java.io.File)
          */
         @OnThread(Tag.FXPlatform)
-        public void dirRemoved(final File f)
-        {
+        public void dirRemoved(final File f) {
             String path = makeRelativePath(project.getProjectDir(), f);
             String pkgName = path.replace(File.separatorChar, '.');
             removedPackages.add(pkgName);
@@ -296,33 +262,23 @@ public class UpdateAction extends TeamAction
          * @see bluej.groupwork.UpdateListener#handleConflicts(bluej.groupwork.UpdateServerResponse)
          */
         @OnThread(Tag.FXPlatform)
-        public void handleConflicts(final UpdateResults updateServerResponse)
-        {
+        public void handleConflicts(final UpdateResults updateServerResponse) {
             if (updateServerResponse.getConflicts().isEmpty()
-                    && updateServerResponse.getBinaryConflicts().isEmpty())
-            {
+                    && updateServerResponse.getBinaryConflicts().isEmpty()) {
                 return;
             }
 
-            /** A list of files to replace with repository version */
             Set<File> filesToOverride = new HashSet<>();
 
             // Binary conflicts
-            for (Iterator<File> i = updateServerResponse.getBinaryConflicts().iterator();
-                 i.hasNext(); ) {
-                File f = i.next();
-
+            for (File f : updateServerResponse.getBinaryConflicts()) {
                 if (BlueJPackageFile.isPackageFileName(f.getName())) {
                     filesToOverride.add(f);
-                }
-                else {
+                } else {
                     // TODO make the displayed file path relative to project
                     int answer = DialogManager.askQuestionFX(null,
-                            "team-binary-conflict", new String[] {f.getName()});
-                    if (answer == 0) {
-                        // keep local version
-                    }
-                    else {
+                            "team-binary-conflict", new String[]{f.getName()});
+                    if (answer != 0) {
                         // use repository version
                         filesToOverride.add(f);
                     }
@@ -331,38 +287,29 @@ public class UpdateAction extends TeamAction
 
             updateServerResponse.overrideFiles(filesToOverride);
 
-            List<String> blueJconflicts = new LinkedList<String>();
-            List<String> nonBlueJConflicts = new LinkedList<String>();
-            List<Target> targets = new LinkedList<Target>();
+            List<String> blueJconflicts = new LinkedList<>();
+            List<String> nonBlueJConflicts = new LinkedList<>();
+            List<Target> targets = new LinkedList<>();
 
-            for (Iterator<File> i = updateServerResponse.getConflicts().iterator(); i.hasNext(); )
-            {
-                File file = i.next();
-
+            for (File file : updateServerResponse.getConflicts()) {
                 // Calculate the file base name
                 String baseName = file.getName();
 
                 // bluej package file may come up as a conflict, but it won't cause a problem,
                 // so it can be ignored.
-                if (!BlueJPackageFile.isPackageFileName(baseName))
-                {
+                if (!BlueJPackageFile.isPackageFileName(baseName)) {
                     Target target = null;
 
-                    if (baseName.endsWith(".java") || baseName.endsWith(".class"))
-                    {
+                    if (baseName.endsWith(".java") || baseName.endsWith(".class")) {
                         String pkg = project.getPackageForFile(file);
-                        if (pkg != null)
-                        {
+                        if (pkg != null) {
                             String targetId = filenameToTargetIdentifier(baseName);
                             targetId = JavaNames.combineNames(pkg, targetId);
                             target = project.getTarget(targetId);
                         }
-                    }
-                    else if (baseName.equals("README.TXT"))
-                    {
+                    } else if (baseName.equals("README.TXT")) {
                         String pkg = project.getPackageForFile(file);
-                        if (pkg != null)
-                        {
+                        if (pkg != null) {
                             String targetId = ReadmeTarget.README_ID;
                             targetId = JavaNames.combineNames(pkg, targetId);
                             target = project.getTarget(targetId);
@@ -371,28 +318,23 @@ public class UpdateAction extends TeamAction
 
                     String fileName = makeRelativePath(project.getProjectDir(), file);
 
-                    if (target == null)
-                    {
+                    if (target == null) {
                         nonBlueJConflicts.add(fileName);
-                    }
-                    else
-                    {
+                    } else {
                         blueJconflicts.add(fileName);
                         targets.add(target);
                         // Force the package frame open, if it isn't already:
-                        if (target.getPackage().getUI() == null)
-                        {
+                        if (target.getPackage().getUI() == null) {
                             PkgMgrFrame.createFrame(target.getPackage(), PkgMgrFrame.getMostRecent());
                         }
                     }
                 }
             }
 
-            if (!blueJconflicts.isEmpty() || !nonBlueJConflicts.isEmpty())
-            {
+            if (!blueJconflicts.isEmpty() || !nonBlueJConflicts.isEmpty()) {
                 project.clearAllSelections();
                 project.selectTargetsInGraphs(targets);
-                
+
                 // Show the conflicts dialog as a child of the first appropriate PkgMgr frame. We
                 // can't make it a child of the update frame because that will close.
                 Window stage = targets.isEmpty() ? null : targets.get(0).getPackage().getUI().getStage();
@@ -400,37 +342,28 @@ public class UpdateAction extends TeamAction
                 ConflictsDialog conflictsDialog = new ConflictsDialog(project, stage,
                         blueJconflicts, nonBlueJConflicts);
                 conflictsDialog.show();
-            }
-            else if (updateServerResponse.mergeCommitNeeded())
-            {
+            } else if (updateServerResponse.mergeCommitNeeded()) {
                 DialogManager.showMessageFX(null, "team-merge-commit-needed");
             }
         }
 
-        public void abort()
-        {
+        public void abort() {
             command.cancel();
             aborted = true;
         }
 
-        public void finished()
-        {
+        public void finished() {
             handleRemovedPkgs();
             updateFrame.stopProgress();
 
-            if (! result.isError() && ! aborted) {
-                Set<File> files = new HashSet<File>();
-                files.addAll(filesToUpdate);
-                files.addAll(filesToForceUpdate);
-                DataCollector.teamUpdateProject(project, statusHandle.getRepository(), files);
+            if (!result.isError() && !aborted) {
                 PkgMgrFrame.displayMessage(project, Config.getString("team.update.statusDone"));
-            }
-            else {
+            } else {
                 PkgMgrFrame.displayMessage(project, "");
                 TeamUtils.handleServerResponseFX(result, updateFrame.asWindow());
             }
 
-            if (! aborted) {
+            if (!aborted) {
                 updateFrame.setVisible(false);
                 updateFrame.close();
                 setEnabled(true);
@@ -442,15 +375,13 @@ public class UpdateAction extends TeamAction
          * parent package graph.
          */
         @OnThread(Tag.FXPlatform)
-        private void handleRemovedPkgs()
-        {
-            for (Iterator<String> i = removedPackages.iterator(); i.hasNext(); ) {
-                String packageName = i.next();
+        private void handleRemovedPkgs() {
+            for (String packageName : removedPackages) {
                 String parentPackage = JavaNames.getPrefix(packageName);
                 String baseName = JavaNames.getBase(packageName);
 
                 File packageDir = JavaNames.convertQualifiedNameToFile(packageName, project.getProjectDir());
-                if (! packageDir.exists()) {
+                if (!packageDir.exists()) {
                     // Close the package window, if open
                     Package pkg = project.getCachedPackage(packageName);
                     if (pkg != null) {
@@ -478,18 +409,16 @@ public class UpdateAction extends TeamAction
     /**
      * Strip the dot-suffix from a file name.
      */
-    private String filenameToTargetIdentifier(String filename)
-    {
+    private String filenameToTargetIdentifier(String filename) {
         int lastDot = filename.lastIndexOf('.');
         return filename.substring(0, lastDot);
     }
 
     /**
-     * Make a relative path between a file and containing directory. 
+     * Make a relative path between a file and containing directory.
      */
     @OnThread(Tag.Any)
-    private static String makeRelativePath(File parent, File file)
-    {
+    private static String makeRelativePath(File parent, File file) {
         String parentStr = parent.getAbsolutePath();
         String filePath = file.getAbsolutePath();
 

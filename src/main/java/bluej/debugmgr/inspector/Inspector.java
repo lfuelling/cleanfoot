@@ -394,7 +394,6 @@ public abstract class Inspector extends Stage
             
             ir.addAssertion(assertPanel.getAssertStatement());
 
-            assertPanel.recordAssertion(pkg, () -> Optional.ofNullable(PkgMgrFrame.findFrame(pkg)).map(PkgMgrFrame::getTestIdentifier), ir.getUniqueIdentifier());
         }
         return true;
     }

@@ -24,7 +24,6 @@ package greenfoot.extension;
 import bluej.Boot;
 import bluej.Config;
 import bluej.Main;
-import bluej.collect.DataSubmissionFailedDialog;
 import bluej.extensions.BlueJ;
 import bluej.extensions.Extension;
 import bluej.extensions.event.ApplicationEvent;
@@ -72,9 +71,7 @@ public class GreenfootExtension extends Extension implements ApplicationListener
             {
                 if (Boot.isTrialRecording())
                 {
-                    Platform.runLater(() -> {
-                        new DataSubmissionFailedDialog().show();
-                    });
+                    System.err.println("Data collection would have errored, but since it's removed... ¯\\_(ツ)_/¯");
                 }
             }
         });
@@ -144,7 +141,7 @@ public class GreenfootExtension extends Extension implements ApplicationListener
     public URL getURL()
     {
         try {
-            return new URL("http://www.greenfoot.org");
+            return new URL("https://github.com/lfuelling/clearfoot");
         }
         catch (MalformedURLException e) {
             return null;

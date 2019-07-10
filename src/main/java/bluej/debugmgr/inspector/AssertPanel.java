@@ -22,7 +22,6 @@
 package bluej.debugmgr.inspector;
 
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.debugger.gentype.JavaType;
 import bluej.pkgmgr.Package;
 import bluej.testmgr.record.InvokerRecord;
@@ -264,23 +263,6 @@ public class AssertPanel extends VBox
         else {
             return InvokerRecord.makeAssertionStatement(info.assertMethodName);
         }
-    }
-    
-    public void recordAssertion(Package pkg, FXPlatformSupplier<Optional<Integer>> testIdentifier, int invocationIdentifier)
-    {
-        AssertInfo info = assertCombo.getSelectionModel().getSelectedItem();
-
-        String param1 = info.needsFirstField() ? assertData.getText() : null;
-        String param2 = info.needsSecondField() ? deltaData.getText() : null;
-        Optional<Integer> optTestId = testIdentifier.get();
-        optTestId.ifPresent(testId ->
-            DataCollector.assertTestMethod(pkg,
-                testId,
-                invocationIdentifier,
-                info.assertMethodName,
-                param1,
-                param2)
-        );
     }
     
 }

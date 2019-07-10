@@ -27,7 +27,6 @@ package bluej.stride.slots;
 
 
 import bluej.Config;
-import bluej.collect.StrideEditReason;
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.TextSlotFragment;
 import bluej.stride.framedjava.ast.links.PossibleLink;
@@ -72,17 +71,16 @@ import java.util.stream.Stream;
 
 /**
  * A slot which handles single-field text input, for example variable name definition.
- *
+ * <p>
  * The class is abstract, with some abstract methods to do with specific context behaviour that
  * are implemented by slim subclasses, but the vast majority of the functionality lies in this class.
  */
-public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implements EditableSlot, ErrorFixListener, CopyableHeaderItem
-{
+public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implements EditableSlot, ErrorFixListener, CopyableHeaderItem {
     // Listeners which get informed of changes in the content of the slot
     private final List<SlotValueListener> listeners = new ArrayList<SlotValueListener>();
     // The editor in which this slot ultimately lies.
     protected final InteractionManager editor;
-    
+
     // These two variables always point to the same thing, but due to Java's type
     // system, we can't declare a type for a single variable to hold them both
     protected final Frame frameParent;
@@ -123,16 +121,15 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
     /**
      * Creates a text slot.  Will be called from subclasses only
      *
-     * @param editor The editor in which we lie
-     * @param frameParent The frame in which we lie
-     * @param codeFrameParent Ditto, but typed as CodeFrame
-     * @param row The row in which we lie
+     * @param editor               The editor in which we lie
+     * @param frameParent          The frame in which we lie
+     * @param codeFrameParent      Ditto, but typed as CodeFrame
+     * @param row                  The row in which we lie
      * @param completionCalculator The completion calculator to be used for auto-completion.  Null iff auto-completion should be disabled
-     * @param stylePrefix The prefix to use for CSS style classes
-     * @param hints Hints to show in the cheat sheet when this slot is focused.
+     * @param stylePrefix          The prefix to use for CSS style classes
+     * @param hints                Hints to show in the cheat sheet when this slot is focused.
      */
-    protected TextSlot(InteractionManager editor, Frame frameParent, CodeFrame<? extends CodeElement> codeFrameParent, FrameContentRow row, CompletionCalculator completionCalculator, String stylePrefix, List<FrameCatalogue.Hint> hints)
-    {
+    protected TextSlot(InteractionManager editor, Frame frameParent, CodeFrame<? extends CodeElement> codeFrameParent, FrameContentRow row, CompletionCalculator completionCalculator, String stylePrefix, List<FrameCatalogue.Hint> hints) {
         this.editor = editor;
         this.completionCalculator = completionCalculator;
         this.frameParent = frameParent;
@@ -142,7 +139,7 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
         this.row = row;
         field = new SlotTextField(stylePrefix, row.getOverlay());
         editor.setupFocusableSlotComponent(this, field.getFocusableNode(), completionCalculator != null, row::getExtensions, hints);
-        
+
         // Always disallow semi-colons:
         listeners.add((slot, oldValue, newValue, parent) -> {
             if (newValue.contains(";"))
@@ -156,22 +153,20 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
 
     /**
      * A property reflecting whether the field is "effectively focused"
-     *
+     * <p>
      * "Effectively focused" means that either the field has actual JavaFX GUI
      * focus, or code completion is showing for this slot, meaning it doesn't
      * have GUI focus, but for our purposes it is logically the focus owner
      * within the editor.
      */
-    public ObservableBooleanValue effectivelyFocusedProperty()
-    {
+    public ObservableBooleanValue effectivelyFocusedProperty() {
         return effectivelyFocusedProperty;
     }
 
     /**
      * The class dealing with the actual GUI component
      */
-    public class SlotTextField extends AnnotatableTextField
-    {
+    public class SlotTextField extends AnnotatableTextField {
         // The piece of text from the beginning of the slot up until the beginning of
         // the current word we are completing on.  So for example if we are completing
         // "hello|" (pipe indicates cursor), lastBeforePrefix will be "".  If we complete
@@ -183,11 +178,11 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
 
         /**
          * Constructor.
-         * @param stylePrefix  The prefix to use for CSS style classes
-         * @param overlay The overlay on which to draw errors, underlines, etc
+         *
+         * @param stylePrefix The prefix to use for CSS style classes
+         * @param overlay     The overlay on which to draw errors, underlines, etc
          */
-        private SlotTextField(String stylePrefix, ErrorUnderlineCanvas overlay)
-        {
+        private SlotTextField(String stylePrefix, ErrorUnderlineCanvas overlay) {
             super(overlay);
             addStyleClasses("text-slot", stylePrefix + "text-slot");
             prefWidthProperty().set(10);
@@ -195,83 +190,66 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
             SuggestionListListener suggestionListener = new SuggestionListListener() {
                 @Override
                 @OnThread(Tag.FXPlatform)
-                public void suggestionListChoiceClicked(SuggestionList suggestionList, int highlighted)
-                {
-                    executeSuggestion(suggestionList, highlighted);
+                public void suggestionListChoiceClicked(SuggestionList suggestionList, int highlighted) {
+                    executeSuggestion(highlighted);
                     row.focusRight(TextSlot.this);
                 }
 
                 @Override
                 @OnThread(Tag.FXPlatform)
-                public Response suggestionListKeyTyped(SuggestionList suggestionList, KeyEvent event, int highlighted)
-                {
+                public Response suggestionListKeyTyped(SuggestionList suggestionList, KeyEvent event, int highlighted) {
                     // Space completes single selections and moves to next slot:
-                    if (event.getCharacter().equals(" ") && completeIfPossible(suggestionList, highlighted))
-                    {
+                    if (event.getCharacter().equals(" ") && completeIfPossible(suggestionList, highlighted)) {
                         row.focusRight(TextSlot.this);
                         return Response.DISMISS;
-                    }
-                    else if (!event.getCharacter().equals("\b"))
+                    } else if (!event.getCharacter().equals("\b"))
                         injectEvent(event);
                     return Response.CONTINUE;
                 }
 
                 @OnThread(Tag.FXPlatform)
-                private boolean completeIfPossible(SuggestionList suggestionList, int highlighted)
-                {
+                private boolean completeIfPossible(SuggestionList suggestionList, int highlighted) {
                     // Pick a value if one was available to complete:
-                    if (highlighted != -1)
-                    {
-                        return executeSuggestion(suggestionList, highlighted);
-                    }
-                    else if (suggestionDisplayProperty.get().eligibleCount() == 1  && getText().length() > 0)
-                    {
-                        return executeSuggestion(suggestionList, suggestionDisplayProperty.get().getFirstEligible());
+                    if (highlighted != -1) {
+                        return executeSuggestion(highlighted);
+                    } else if (suggestionDisplayProperty.get().eligibleCount() == 1 && getText().length() > 0) {
+                        return executeSuggestion(suggestionDisplayProperty.get().getFirstEligible());
                     }
                     return false;
                 }
 
                 @Override
                 @OnThread(Tag.FXPlatform)
-                public Response suggestionListKeyPressed(SuggestionList suggestionList, KeyEvent event, int highlighted)
-                {
-                    switch (event.getCode())
-                    {
+                public Response suggestionListKeyPressed(SuggestionList suggestionList, KeyEvent event, int highlighted) {
+                    switch (event.getCode()) {
                         case BACK_SPACE:
                             backspace();
                             return Response.CONTINUE;
                         case LEFT:
-                            if (getCaretPosition() == 0)
-                            {
+                            if (getCaretPosition() == 0) {
                                 row.focusLeft(TextSlot.this);
                                 return Response.DISMISS;
-                            }
-                            else
-                            {
+                            } else {
                                 positionCaret(getCaretPosition() - 1);
                                 return Response.DISMISS;
                             }
                         case RIGHT:
                             // Pressing right inserts the string common to all current completions:
                             Optional<String> common = suggestionDisplayProperty.get().getLongestCommonPrefix();
-                            if (common.isPresent())
-                            {
+                            if (common.isPresent()) {
                                 boolean single = suggestionDisplayProperty.get().eligibleCount() == 1;
                                 field.replaceText(getStartOfCurWord(), field.getCaretPosition(), common.get());
                                 // If this was the only completion, we've inserted all of it, so dismiss:
                                 if (single)
                                     return Response.DISMISS;
-                            }
-                            else
-                            {
+                            } else {
                                 // They pressed right when no suggestions available; move to next slot.
                                 row.focusRight(TextSlot.this);
                                 return Response.DISMISS;
                             }
                             break;
                         case ENTER:
-                            if (executeSuggestion(suggestionList, highlighted))
-                            {
+                            if (executeSuggestion(highlighted)) {
                                 row.focusRight(TextSlot.this);
                                 return Response.DISMISS;
                             }
@@ -283,8 +261,7 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
                             // Make Tab/Shift-Tab still work when code completion is shown:
                             if (event.isShiftDown())
                                 row.focusLeft(TextSlot.this);
-                            else
-                            {
+                            else {
                                 row.focusRight(TextSlot.this);
                                 completeIfPossible(suggestionList, highlighted);
                             }
@@ -294,246 +271,208 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
                 }
 
                 @Override
-                public void hidden()
-                {
+                public void hidden() {
                     suggestionDisplayProperty.set(null);
                     setFakeCaretShowing(false);
                 }
             };
-            
+
             //React to up/down arrows, and ENTER in the same way as tabs (move focus on)
             this.onKeyPressedProperty().set(event -> {
-                    if (event.isShiftDown() && event.isControlDown() && event.getCharacter().length() > 0 && event.getCode() != KeyCode.CONTROL && event.getCode() != KeyCode.SHIFT)
-                    {
-                        row.notifyModifiedPress(event.getCode());
-                        event.consume();
-                        return;
-                    }
+                if (event.isShiftDown() && event.isControlDown() && event.getCharacter().length() > 0 && event.getCode() != KeyCode.CONTROL && event.getCode() != KeyCode.SHIFT) {
+                    row.notifyModifiedPress(event.getCode());
+                    event.consume();
+                    return;
+                }
 
-                    //Which key?
-                    switch (event.getCode())
-                    {
-                        case UP:
-                            if (errorAndFixDisplay != null && errorAndFixDisplay.hasFixes() && errorAndFixDisplay.isShowing())
-                            {
-                                errorAndFixDisplay.up();
-                            }
-                            else
-                            {
-                                row.focusUp(TextSlot.this, false);
+                //Which key?
+                switch (event.getCode()) {
+                    case UP:
+                        if (errorAndFixDisplay != null && errorAndFixDisplay.hasFixes() && errorAndFixDisplay.isShowing()) {
+                            errorAndFixDisplay.up();
+                        } else {
+                            row.focusUp(TextSlot.this, false);
+                        }
+                        event.consume();
+                        break;
+                    case DOWN:
+                        if (errorAndFixDisplay != null && errorAndFixDisplay.hasFixes() && errorAndFixDisplay.isShowing()) {
+                            errorAndFixDisplay.down();
+                        } else {
+                            row.focusDown(TextSlot.this);
+                        }
+                        event.consume();
+                        break;
+                    case LEFT:
+                        if (getSelection().getStart() == 0) {
+                            row.focusLeft(TextSlot.this);
+                            event.consume();
+                        }
+                        break;
+                    case RIGHT:
+                        if (getSelection().getEnd() == getLength()) {
+                            row.focusRight(TextSlot.this);
+                            event.consume();
+                        }
+                        break;
+                    case ENTER:
+                        if (errorAndFixDisplay != null) {
+                            errorAndFixDisplay.executeSelected();
+                        } else {
+                            row.focusEnter(TextSlot.this);
+                        }
+                        event.consume();
+                        break;
+                    case BACK_SPACE:
+                        if (getCaretPosition() == 0 && !hasSelection()) {
+                            for (SlotValueListener listener : listeners) {
+                                listener.backSpacePressedAtStart(TextSlot.this);
                             }
                             event.consume();
-                            break;
-                        case DOWN:
-                            if (errorAndFixDisplay != null && errorAndFixDisplay.hasFixes() && errorAndFixDisplay.isShowing())
-                            {
-                                errorAndFixDisplay.down();
-                            }
-                            else
-                            {
-                                row.focusDown(TextSlot.this);
+                        }
+                        break;
+                    case DELETE:
+                        // If they are at the end and have no text selected:
+                        if (getCaretPosition() == getLength() && anchorProperty().get() == getCaretPosition()) {
+                            for (SlotValueListener listener : listeners) {
+                                listener.deletePressedAtEnd(TextSlot.this);
                             }
                             event.consume();
-                            break;
-                        case LEFT:
-                            if (getSelection().getStart() == 0) {
-                                row.focusLeft(TextSlot.this);
-                                event.consume();
-                            }
-                            break;
-                        case RIGHT:
-                            if (getSelection().getEnd() == getLength())
-                            {
-                                row.focusRight(TextSlot.this);
-                                event.consume();
-                            }
-                            break;
-                        case ENTER:
-                            if (errorAndFixDisplay != null)
-                            {
-                                errorAndFixDisplay.executeSelected();
-                            }
-                            else
-                            {
-                                row.focusEnter(TextSlot.this);
-                            }
+                        }
+                        break;
+                    case SPACE:
+                        if (event.isControlDown()) {
+                            showSuggestionDisplay(suggestionListener);
                             event.consume();
-                            break;
-                        case BACK_SPACE:
-                            if (getCaretPosition() == 0 && !hasSelection()) {
-                                for (SlotValueListener listener : listeners) {
-                                    listener.backSpacePressedAtStart(TextSlot.this);
-                                }
-                                event.consume();
-                            }
-                            break;
-                        case DELETE:
-                            // If they are at the end and have no text selected:
-                            if (getCaretPosition() == getLength() && anchorProperty().get() == getCaretPosition()) {
-                                for (SlotValueListener listener : listeners) {
-                                    listener.deletePressedAtEnd(TextSlot.this);
-                                }
-                                event.consume();
-                            }
-                            break;
-                        case SPACE:
-                            if (event.isControlDown())
-                            {
-                                showSuggestionDisplay(suggestionListener);
-                                event.consume();
-                            }
-                            break;
-                        case ESCAPE:
-                            row.escape(TextSlot.this);
-                            break;
-                        default:
-                            break;
-                    }
+                        }
+                        break;
+                    case ESCAPE:
+                        row.escape(TextSlot.this);
+                        break;
+                    default:
+                        break;
+                }
             });
-            
-            
-            
+
+
             //When focus leaves, if this is still blank, keep white. If has been filled in, blend in transparent with background.
             JavaFXUtil.addFocusListener(getFocusableNode(), newValue -> {
-                    if (newValue)
-                    {
-                        valueOnGain = getText();
-                        editor.beginRecordingState(TextSlot.this);
-                        setTransparent(false);
-                        //Stop the behaviour of selecting text when tabbing to a field:
-                        //Need to wrap in runLater as selection happens after this method
-                        Platform.runLater(this::deselect);
-                        showErrorAtCaret(getCaretPosition());                        
+                if (newValue) {
+                    valueOnGain = getText();
+                    editor.beginRecordingState(TextSlot.this);
+                    setTransparent(false);
+                    //Stop the behaviour of selecting text when tabbing to a field:
+                    //Need to wrap in runLater as selection happens after this method
+                    Platform.runLater(this::deselect);
+                    showErrorAtCaret(getCaretPosition());
+                } else {
+                    setTransparent(!getText().isEmpty() && suggestionDisplayProperty.get() == null);
+                    editor.endRecordingState(TextSlot.this);
+                    if (errorAndFixDisplay != null) {
+                        errorAndFixDisplay.hide();
+                        errorAndFixDisplay = null;
                     }
-                    else {
-                        setTransparent(!getText().isEmpty() && suggestionDisplayProperty.get() == null);
-                        editor.endRecordingState(TextSlot.this);
-                        if (errorAndFixDisplay != null)
-                        {
-                            errorAndFixDisplay.hide();
-                            errorAndFixDisplay = null;
-                        }
-                        if (!getText().equals(valueOnGain))
-                        {
-                            // Don't show new value as old:
-                            recentValues.removeAll(getText());
-                            // Remove any old value from middle, re-add at top:
-                            recentValues.removeAll(valueOnGain);
-                            recentValues.add(0, valueOnGain);
-                            // Trim list to last three:
-                            while (recentValues.size() > 3)
-                                recentValues.remove(3);
-                            valueChangedLostFocus(valueOnGain, getText());
-                        }
+                    if (!getText().equals(valueOnGain)) {
+                        // Don't show new value as old:
+                        recentValues.removeAll(getText());
+                        // Remove any old value from middle, re-add at top:
+                        recentValues.removeAll(valueOnGain);
+                        recentValues.add(0, valueOnGain);
+                        // Trim list to last three:
+                        while (recentValues.size() > 3)
+                            recentValues.remove(3);
+                        valueChangedLostFocus(valueOnGain, getText());
                     }
+                }
             });
-            
+
             //Text changes
             this.textProperty().addListener((observable, oldValue, newValue) -> {
                 slotElement = null;
 
                 //Unless still focused (or notionally focused because code completion is showing), go transparent
-                if (!isFocused() && suggestionDisplayProperty.get() == null)
-                {
-                    if (newValue.length() > 0)
-                    {
+                if (!isFocused() && suggestionDisplayProperty.get() == null) {
+                    if (newValue.length() > 0) {
                         setTransparent(true);
                     }
                 }
 
                 boolean allowed = true;
-                for (SlotValueListener listener : listeners)
-                {
+                for (SlotValueListener listener : listeners) {
                     boolean listenerAllow = listener.valueChanged(TextSlot.this, oldValue, newValue, row);
                     allowed = allowed && listenerAllow;
                 }
 
-                if (!allowed)
-                {
+                if (!allowed) {
                     setText(oldValue);
-                } else
-                {
+                } else {
                     // After update has taken effect, update suggestions:
                     // It doesn't matter if we run this while loading because
                     // we won't be showing code completion:
                     JavaFXUtil.runPlatformLater(() -> {
-                        if (suggestionDisplayProperty.get() != null)
-                        {
+                        if (suggestionDisplayProperty.get() != null) {
                             String beforeNewPrefix = getText().substring(0, getStartOfCurWord());
-                            if (!beforeNewPrefix.equals(lastBeforePrefix))
-                            {
+                            if (!beforeNewPrefix.equals(lastBeforePrefix)) {
                                 // The type we are completing on may have changed, need to refresh
                                 // But if the change ends in a bracket, cancel code completion.  Only
                                 // re-show if not bracket
                                 if (!beforeNewPrefix.endsWith("("))
                                     showSuggestionDisplay(suggestionListener);
-                            } else
-                            {
+                            } else {
                                 // Same prefix, just update existing completion:
-                                updateSuggestions(true);
+                                updateSuggestions();
                             }
                         }
                     });
                     editor.modifiedFrame(frameParent, false);
                 }
             });
-            
+
             // Autosizing the slot to fit contents:
             minWidthProperty().bind(new DoubleBinding() {
-                { super.bind(textProperty());
-                  super.bind(promptTextProperty());
-                  super.bind(fontProperty()); }
-
-                private String lastText;
-                private double monospaceWidth;
+                {
+                    super.bind(textProperty());
+                    super.bind(promptTextProperty());
+                    super.bind(fontProperty());
+                }
 
                 @Override
-                protected double computeValue()
-                {
+                protected double computeValue() {
                     String effectiveText = textProperty().get().length() > 0 ? textProperty().get() : promptTextProperty().get();
                     return Math.max(10, 5 + measureString(effectiveText, true));
                 }
             });
             prefWidthProperty().bind(minWidthProperty());
-            
-            caretPositionProperty().addListener( (observable, oldValue, newVal) -> {
-                    if (isFocused())
-                        JavaFXUtil.runNowOrLater(() -> showErrorAtCaret(newVal.intValue()));
-                    // TODO cancel code completion if we've moved away from it
+
+            caretPositionProperty().addListener((observable, oldValue, newVal) -> {
+                if (isFocused())
+                    JavaFXUtil.runNowOrLater(() -> showErrorAtCaret(newVal.intValue()));
+                // TODO cancel code completion if we've moved away from it
             });
-            
+
             // Need to allow parent's constructor to execute, and
             // need to be in the scene:
             JavaFXUtil.onceInScene(getNode(), () -> setContextMenu(MenuItems.makeContextMenu(getMenuItems(true))));
         }
 
-        public final int getCaretPosition()
-        {
-            return caretPositionProperty().get();
-        }    
-        
-        protected void setTransparent(boolean transparent)
-        {
+        protected void setTransparent(boolean transparent) {
             field.setPseudoclass("bj-transparent", transparent);
         }
-        
-        public String getCurWord()
-        {
+
+        public String getCurWord() {
             return getText().substring(getStartOfCurWord(), getCaretPosition());
         }
 
         @OnThread(Tag.FXPlatform)
-        private void updateSuggestions(boolean initialState)
-        {
+        private void updateSuggestions() {
             String prefix = getCurWord();
-            suggestionDisplayProperty.get().calculateEligible(prefix, true, initialState);
+            suggestionDisplayProperty.get().calculateEligible(prefix, true, true);
             suggestionDisplayProperty.get().updateVisual(prefix);
             lastBeforePrefix = getText().substring(0, getStartOfCurWord());
         }
 
         @OnThread(Tag.FXPlatform)
-        private void showSuggestionDisplay(SuggestionListListener listener)
-        {
+        private void showSuggestionDisplay(SuggestionListListener listener) {
             if (completionCalculator == null)
                 return; // Completion not possible in this slot
 
@@ -541,22 +480,16 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
             FXPlatformConsumer<SuggestionList> handler = s ->
             {
                 suggestionDisplayProperty.set(s);
-                updateSuggestions(true);
+                updateSuggestions();
                 suggestionDisplayProperty.get().highlightFirstEligible();
-                //Debug.time("!!! Showing");
-                suggestionDisplayProperty.get().show(field.getNode(), new BoundingBox(suggestionXOffset.get(), 0, 0, field.heightProperty().get()));
-                //Debug.time("!!! Shown");
+                suggestionDisplayProperty.get().show(field.getNode(),
+                        new BoundingBox(suggestionXOffset.get(), 0, 0, field.heightProperty().get()));
                 field.setFakeCaretShowing(true);
             };
-            //Debug.time("!!! Requesting suggestion");
-            // TODO we shouldn't need to regen whole code repeatedly if they only modify this slot:
             editor.afterRegenerateAndReparse(() -> {
                 final int stringPos = field.getCaretPosition();
-                //Debug.time("!!! Calculating suggestions");
-                completionCalculator.withCalculatedSuggestionList(getSlotElement().getPosInSourceDoc(stringPos), codeFrameParent.getCode(), listener, suggList -> {
-                    editor.recordCodeCompletionStarted(getSlotElement(), stringPos, getCurWord(), suggList.getRecordingId());
-                    handler.accept(suggList);
-                });
+                completionCalculator.withCalculatedSuggestionList(getSlotElement().getPosInSourceDoc(stringPos),
+                        codeFrameParent.getCode(), listener, handler);
 
             });
         }
@@ -564,88 +497,74 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
 
         // Make the parent method visible in this class:
         @Override
-        protected double calculateCaretPosition(int beforeIndex)
-        {
+        protected double calculateCaretPosition(int beforeIndex) {
             return super.calculateCaretPosition(beforeIndex);
         }
 
 
-        public TextOverlayPosition getOverlayLocation(int caretPos)
-        {
+        public TextOverlayPosition getOverlayLocation(int caretPos) {
             double x;
             if (caretPos == Integer.MAX_VALUE)
                 x = widthProperty().get();
-            else
-            {
+            else {
                 caretPos = Math.max(0, Math.min(caretPos, getLength()));
                 x = calculateCaretPosition(caretPos);
             }
-            
+
             return TextOverlayPosition.nodeToOverlay(field.getNode(), x, 0, getBaseline(), field.heightProperty().get());
         }
     }
 
-    public Region getNode()
-    {
+    public Region getNode() {
         return field.getNode();
     }
 
-    public void addValueListener(SlotValueListener listener)
-    {
+    public void addValueListener(SlotValueListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public Frame getParentFrame()
-    {
+    public Frame getParentFrame() {
         return frameParent;
     }
 
-    public final String getText()
-    {
+    public final String getText() {
         return field.textProperty().get();
     }
 
     @Override
-    public final SLOT_FRAGMENT getSlotElement()
-    {
+    public final SLOT_FRAGMENT getSlotElement() {
         if (slotElement == null)
             slotElement = createFragment(getText());
         return slotElement;
     }
 
     @Override
-    public void focusAndPositionAtError(CodeError err)
-    {
+    public void focusAndPositionAtError(CodeError err) {
         requestFocus();
         field.positionCaret(err.getStartPosition());
     }
 
 
-    public final void setPromptText(String arg0)
-    {
+    public final void setPromptText(String arg0) {
         field.promptTextProperty().set(arg0);
     }
 
-    public final void setText(String arg0)
-    {
+    public final void setText(String arg0) {
         field.textProperty().set(arg0);
     }
-    
-    public void setText(SLOT_FRAGMENT f)
-    {
+
+    public void setText(SLOT_FRAGMENT f) {
         field.textProperty().set(f.getContent());
         f.registerSlot(this);
     }
 
-    public final ReadOnlyStringProperty textProperty()
-    {
+    public final ReadOnlyStringProperty textProperty() {
         return field.textProperty();
     }
 
     @Override
-    public void requestFocus(Focus on)
-    {
+    public void requestFocus(Focus on) {
         field.requestFocus();
         if (null != on) switch (on) {
             case LEFT:
@@ -663,70 +582,59 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
 
     @OnThread(Tag.FXPlatform)
     @Override
-    public void addError(CodeError err)
-    {
+    public void addError(CodeError err) {
         allErrors.add(err);
-        err.bindFresh(getFreshExtra(err).or(getParentFrame().freshProperty()), editor);
+        err.bindFresh(getFreshExtra(err).or(getParentFrame().freshProperty()));
         recalculateShownErrors();
     }
 
-    protected BooleanExpression getFreshExtra(CodeError err)
-    {
+    protected BooleanExpression getFreshExtra(CodeError err) {
         return new ReadOnlyBooleanWrapper(false);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void flagErrorsAsOld()
-    {
+    public void flagErrorsAsOld() {
         allErrors.forEach(CodeError::flagAsOld);
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public void removeOldErrors()
-    {
+    public void removeOldErrors() {
         allErrors.removeIf(CodeError::isFlaggedAsOld);
         recalculateShownErrors();
     }
 
     @OnThread(Tag.FXPlatform)
-    private void recalculateShownErrors()
-    {
+    private void recalculateShownErrors() {
         shownErrors.clear();
-        
+
         // We need to find all non-overlapping errors, preferring our own errors
         // to those of javac, and then preferring shorter errors (as probably being more specific)
         List<CodeError> sortedErrors = allErrors.stream()
-            .sorted((a, b) -> CodeError.compareErrors(a, b)).collect(Collectors.toList());
-        
-        for (CodeError e : sortedErrors)
-        {
+                .sorted((a, b) -> CodeError.compareErrors(a, b)).collect(Collectors.toList());
+
+        for (CodeError e : sortedErrors) {
             // Add the error if it doesn't overlap:
-            if (shownErrors.stream().allMatch(shown -> !shown.overlaps(e)))
-            {
+            if (shownErrors.stream().allMatch(shown -> !shown.overlaps(e))) {
                 shownErrors.add(e);
                 e.setShowingIndicator(true);
-            }
-            else
-            {
+            } else {
                 e.setShowingIndicator(false);
             }
         }
-        
+
         field.clearErrorMarkers(this);
         shownErrors.forEach(e -> field.drawErrorMarker(this, e.getStartPosition(), e.getEndPosition(), e.isJavaPos(), b -> showErrorHover(b ? e : null), e.visibleProperty()));
-        
+
         if (field.isFocused())
             showErrorAtCaret(field.getCaretPosition());
     }
 
     @OnThread(Tag.FXPlatform)
-    private void showErrorHover(CodeError error)
-    {
-        if (errorAndFixDisplay != null)
-        {
-            if (error != null && errorAndFixDisplay.getError().equals(error)){
+    private void showErrorHover(CodeError error) {
+        if (errorAndFixDisplay != null) {
+            if (error != null && errorAndFixDisplay.getError().equals(error)) {
                 hoverErrorCurrentlyShown = error; //update current error
                 return; // Already showing
             }
@@ -736,16 +644,15 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
                     .findFirst();
             // If we are turning off the hover error, but the caret is in the error,
             // we do not stop showing it.
-            if (error == null && field.isFocused() && errorAtCaret.isPresent() && errorAtCaret.get().equals(errorAndFixDisplay.getError())){
+            if (error == null && field.isFocused() && errorAtCaret.isPresent() && errorAtCaret.get().equals(errorAndFixDisplay.getError())) {
                 hoverErrorCurrentlyShown = null; //update current error
                 return;
             }
             errorAndFixDisplay.hide();
             errorAndFixDisplay = null;
         }
-        
-        if (error != null && error.visibleProperty().get())
-        {
+
+        if (error != null && error.visibleProperty().get()) {
             hoverErrorCurrentlyShown = error; //update current error
             errorAndFixDisplay = new ErrorAndFixDisplay(editor, error, this);
             errorAndFixDisplay.showBelow(field.getNode(), Duration.ZERO);
@@ -753,30 +660,17 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
     }
 
     @OnThread(Tag.FXPlatform)
-    private void showErrorAtCaret(int caretPosition)
-    {   
+    private void showErrorAtCaret(int caretPosition) {
         // Note: we do want <= and <= here, so that the explanation shows
         // if the caret is at either end of the error (visually, if the caret is touching
         // the red underline from either side)
-        Optional<CodeError> errorAtCaret = shownErrors.stream()
-                .filter(e -> e.getStartPosition() <= caretPosition && caretPosition <= e.getEndPosition())
-                .findFirst();
-        
-        if (errorAtCaret.isPresent() && errorAndFixDisplay != null && errorAndFixDisplay.getError().equals(errorAtCaret.get()))
-        {
-            // Already displaying that error; fine:
+        Optional<CodeError> errorAtCaret = getCodeError(caretPosition, shownErrors, errorAndFixDisplay);
+        if (!errorAtCaret.isPresent()) {
             return;
         }
-        // In all other cases, hide the current display:
-        if (errorAndFixDisplay != null)
-        {
-            errorAndFixDisplay.hide();
-            errorAndFixDisplay = null;
-        }
-        
+
         // If there is now a (new) error to show, do so:
-        if (errorAtCaret.isPresent() && errorAtCaret.get().visibleProperty().get())
-        {
+        if (errorAtCaret.get().visibleProperty().get()) {
             errorAndFixDisplay = new ErrorAndFixDisplay(editor, errorAtCaret.get(), this);
             errorAndFixDisplay.showBelow(field.getNode());
         }
@@ -784,36 +678,29 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
 
     // Gets index of start of current word.  0 means start of String.
     // In outer class to allow overriding
-    public int getStartOfCurWord()
-    {
+    public int getStartOfCurWord() {
         // It seems that caret position can report beyond the length of the text, so start at end in that case:
-        for (int i = Math.min(field.getCaretPosition(), getText().length()) - 1; i >= 0; i--)
-        {
-            if (!Character.isJavaIdentifierPart(getText().charAt(i)))
-            {
+        for (int i = Math.min(field.getCaretPosition(), getText().length()) - 1; i >= 0; i--) {
+            if (!Character.isJavaIdentifierPart(getText().charAt(i))) {
                 return i + 1;
             }
         }
         return 0;
     }
-    
+
     @Override
-    public void cleanup()
-    {
-        if (editor.getCodeOverlayPane() != null)
-        {
-            if (errorAndFixDisplay != null)
-            {
+    public void cleanup() {
+        if (editor.getCodeOverlayPane() != null) {
+            if (errorAndFixDisplay != null) {
                 final ErrorAndFixDisplay errorAndFixDisplayToHide = this.errorAndFixDisplay;
-                JavaFXUtil.runNowOrLater(() -> errorAndFixDisplayToHide.hide());
+                JavaFXUtil.runNowOrLater(errorAndFixDisplayToHide::hide);
                 this.errorAndFixDisplay = null;
             }
         }
         JavaFXUtil.runNowOrLater(() -> field.clearErrorMarkers(this));
     }
 
-    public void replace(int startPosInSlot, int endPosInSlot, String replacement)
-    {
+    public void replace(int startPosInSlot, int endPosInSlot, String replacement) {
         String before = getText().substring(0, startPosInSlot);
         String after = getText().substring(endPosInSlot);
         setText(before + replacement + after);
@@ -822,146 +709,122 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void fixedError(CodeError err)
-    {
+    public void fixedError(CodeError err) {
         allErrors.remove(err);
         recalculateShownErrors();
     }
 
-    // Returns true if should be dismissed
+    /**
+     * Executes a suggestion.
+     *
+     * @param highlighted if it's highlighted
+     * @return true if should be dismissed
+     */
     @OnThread(Tag.FXPlatform)
-    private boolean executeSuggestion(SuggestionList suggestionList, int highlighted)
-    {
-        final int position = getStartOfCurWord();
-        String word = field.getCurWord();
-        final boolean success = field.executeCompletion(completionCalculator, highlighted, position);
-        if (success)
-        {
-            editor.recordCodeCompletionEnded(getSlotElement(), position, word, getText(), suggestionList.getRecordingId());
-        }
-        return success;
+    private boolean executeSuggestion(int highlighted) {
+        return field.executeCompletion(completionCalculator, highlighted, getStartOfCurWord());
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return field.textProperty().get().isEmpty();
     }
 
-    public void addFocusListener(Frame frame)
-    {
-        field.focusedProperty().addListener( (observable, oldValue, newValue) -> {
-                if (!newValue) {
-                   frame.checkForEmptySlot();
-                }
+    public void addFocusListener(Frame frame) {
+        field.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                frame.checkForEmptySlot();
+            }
         });
     }
 
     @Override
-    public boolean isFocused()
-    {
+    public boolean isFocused() {
         return field.isFocused();
     }
 
     @Override
-    public int getFocusInfo()
-    {
+    public int getFocusInfo() {
         return field.getCaretPosition();
     }
 
     @Override
-    public Node recallFocus(int info)
-    {
+    public Node recallFocus(int info) {
         requestFocus(Focus.LEFT);
         field.positionCaret(info);
         return field.getNode();
     }
 
     @OnThread(Tag.FXPlatform)
-    public Stream<CodeError> getCurrentErrors()
-    {
+    public Stream<CodeError> getCurrentErrors() {
         return shownErrors.stream();
     }
 
     @OnThread(Tag.FXPlatform)
-    public void addUnderline(Underline u)
-    {
+    public void addUnderline(Underline u) {
         underlines.add(u);
         drawUnderlines();
     }
 
     @OnThread(Tag.FXPlatform)
-    public void removeAllUnderlines()
-    {
+    public void removeAllUnderlines() {
         underlines.clear();
         drawUnderlines();
     }
 
     @OnThread(Tag.FXPlatform)
-    private void drawUnderlines()
-    {
+    private void drawUnderlines() {
         field.clearUnderlines();
         underlines.forEach(u -> field.drawUnderline(this, u.getStartPosition(), u.getEndPosition(), u.getOnClick()));
     }
 
     @Override
-    public void saved()
-    {
+    public void saved() {
         // Nothing to do
     }
 
     @Override
-    public ObservableList<Node> getComponents()
-    {
+    public ObservableList<Node> getComponents() {
         return FXCollections.observableArrayList(field.getNode());
     }
 
     @Override
-    public TextOverlayPosition getOverlayLocation(int caretPos, boolean javaPos)
-    {
+    public TextOverlayPosition getOverlayLocation(int caretPos, boolean javaPos) {
         return field.getOverlayLocation(caretPos);
     }
 
     public abstract List<? extends PossibleLink> findLinks();
-    
-    public void lostFocus()
-    {
+
+    public void lostFocus() {
         // No extra work to do; losing focus is enough to deselect
 
         // Need to set transparent state, in case user dismissed code completion by clicking on another field:
         field.setTransparent(!getText().isEmpty());
     }
-    
+
     protected abstract SLOT_FRAGMENT createFragment(String content);
-    
+
     /**
      * Called when the slot has lost focus, and the value has changed since focus was gained.
-     * 
-     * Allows us to perform actions like pop-up prompts or renaming the compilation unit. 
+     * <p>
+     * Allows us to perform actions like pop-up prompts or renaming the compilation unit.
      */
     @OnThread(Tag.FXPlatform)
     public abstract void valueChangedLostFocus(String oldValue, String newValue);
 
     @Override
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         // If Java preview or bird's eye, disallow editing and focusing:
         field.editableProperty().set(newView == View.NORMAL);
         field.disableProperty().set(newView != View.NORMAL);
 
-        if (newView == Frame.View.JAVA_PREVIEW)
-        {
-            animate.addOnStopped(() -> {
-                JavaFXUtil.setPseudoclass("bj-java-preview", newView == Frame.View.JAVA_PREVIEW, field.getFocusableNode());
-            });
-        }
-        else
-        {
-            JavaFXUtil.setPseudoclass("bj-java-preview", newView == Frame.View.JAVA_PREVIEW, field.getFocusableNode());
+        if (newView == Frame.View.JAVA_PREVIEW) {
+            animate.addOnStopped(() -> JavaFXUtil.setPseudoclass("bj-java-preview", true, field.getFocusableNode()));
+        } else {
+            JavaFXUtil.setPseudoclass("bj-java-preview", false, field.getFocusableNode());
         }
     }
-        
-    protected Map<TopLevelMenu, MenuItems> getExtraContextMenuItems()
-    {
+
+    protected Map<TopLevelMenu, MenuItems> getExtraContextMenuItems() {
         return Collections.emptyMap();
     }
 
@@ -969,66 +832,58 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
     public final Map<TopLevelMenu, MenuItems> getMenuItems(boolean contextMenu) {
         Map<TopLevelMenu, MenuItems> itemMap = new HashMap<>(getExtraContextMenuItems());
         final ObservableList<SortedMenuItem> menuItems = FXCollections.observableArrayList();
-        if (contextMenu)
-        {
+        if (contextMenu) {
             menuItems.add(getRecentValuesMenu());
         }
         final MenuItem cutItem = JavaFXUtil.makeMenuItem(Config.getString("frame.slot.cut"), field::cut, new KeyCodeCombination(KeyCode.X, KeyCodeCombination.SHORTCUT_DOWN));
         final MenuItem copyItem = JavaFXUtil.makeMenuItem(Config.getString("frame.slot.copy"), field::copy, new KeyCodeCombination(KeyCode.C, KeyCodeCombination.SHORTCUT_DOWN));
 
         final MenuItem pasteItem = JavaFXUtil.makeMenuItem(Config.getString("frame.slot.paste"), field::paste,
-            // Work around a behaviour on Mac where pressing Cmd-V will paste
-            // in TextField even without the existing of the accelerator.
-            // Thus, the existing of the accelerator will make it paste twice.
-            Config.isMacOS() ? null : new KeyCodeCombination(KeyCode.V, KeyCodeCombination.SHORTCUT_DOWN));
+                // Work around a behaviour on Mac where pressing Cmd-V will paste
+                // in TextField even without the existing of the accelerator.
+                // Thus, the existing of the accelerator will make it paste twice.
+                Config.isMacOS() ? null : new KeyCodeCombination(KeyCode.V, KeyCodeCombination.SHORTCUT_DOWN));
 
         menuItems.addAll(
-            MenuItemOrder.CUT.item(cutItem),
-            MenuItemOrder.COPY.item(copyItem),
-            MenuItemOrder.PASTE.item(pasteItem));
+                MenuItemOrder.CUT.item(cutItem),
+                MenuItemOrder.COPY.item(copyItem),
+                MenuItemOrder.PASTE.item(pasteItem));
         itemMap.put(TopLevelMenu.EDIT, MenuItems.concat(
                 new MenuItems(menuItems) {
 
-            @Override
-            @OnThread(Tag.FXPlatform)
-            public void onShowing() {
-                if (hoverErrorCurrentlyShown != null ){
-                    errorAndFixDisplay.hide();
-                }
-                // Cut & copy are available if there is a selection:
-                boolean selectionPresent = field.hasSelection();
-                cutItem.setDisable(!selectionPresent);
-                copyItem.setDisable(!selectionPresent);
-                // Paste is available if there is plain text data on the clipboard:
-                pasteItem.setDisable(!Clipboard.getSystemClipboard().hasString());
-            }
+                    @Override
+                    @OnThread(Tag.FXPlatform)
+                    public void onShowing() {
+                        if (hoverErrorCurrentlyShown != null) {
+                            errorAndFixDisplay.hide();
+                        }
+                        // Cut & copy are available if there is a selection:
+                        boolean selectionPresent = field.hasSelection();
+                        cutItem.setDisable(!selectionPresent);
+                        copyItem.setDisable(!selectionPresent);
+                        // Paste is available if there is plain text data on the clipboard:
+                        pasteItem.setDisable(!Clipboard.getSystemClipboard().hasString());
+                    }
 
-        },
+                },
                 itemMap.get(TopLevelMenu.EDIT)
         ));
         return itemMap;
     }
 
-    private SortedMenuItem getRecentValuesMenu()
-    {
+    private SortedMenuItem getRecentValuesMenu() {
         final Menu recent = new Menu(Config.getString("frame.slot.recent"));
         recent.setDisable(true);
-        recentValues.addListener((ListChangeListener)c -> {
+        //noinspection unchecked
+        recentValues.addListener((ListChangeListener) c -> {
             recent.getItems().clear();
-            if (recentValues.isEmpty())
-            {
+            if (recentValues.isEmpty()) {
                 recent.setDisable(true);
-            }
-            else
-            {
+            } else {
                 recent.setDisable(false);
                 recentValues.forEach(v -> {
                     MenuItem item = new MenuItem(v);
-                    item.setOnAction(e -> {
-                        editor.recordEdits(StrideEditReason.FLUSH);
-                        setText(v);
-                        editor.recordEdits(StrideEditReason.UNDO_LOCAL);
-                    });
+                    item.setOnAction(e -> setText(v));
                     recent.getItems().add(item);
                 });
             }
@@ -1037,14 +892,12 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
     }
 
     @Override
-    public boolean isAlmostBlank()
-    {
+    public boolean isAlmostBlank() {
         return getText().isEmpty();
     }
 
     @Override
-    public boolean isEditable()
-    {
+    public boolean isEditable() {
         // JavaFX docs warn to use disabledProperty to get effective state.  But actually
         // I think we're fine to query disable; we just want to know if setEditable(true/false)
         // was previously called, for which this works fine:
@@ -1052,14 +905,16 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
     }
 
     @Override
-    public void setEditable(boolean editable)
-    {
+    public void setEditable(boolean editable) {
         field.disableProperty().set(!editable);
     }
 
     @Override
-    public Stream<Node> makeDisplayClone(InteractionManager editor)
-    {
+    public Stream<Node> makeDisplayClone(InteractionManager editor) {
+        return makeDisplayClone(editor, field);
+    }
+
+    public static Stream<Node> makeDisplayClone(InteractionManager editor, final TextField field) {
         TextField f = new TextField();
         f.textProperty().bind(field.textProperty());
         f.prefWidthProperty().bind(field.prefWidthProperty());
@@ -1070,9 +925,24 @@ public abstract class TextSlot<SLOT_FRAGMENT extends TextSlotFragment> implement
         return Stream.of(f);
     }
 
+    public static Optional<CodeError> getCodeError(int caretPosition, @OnThread(Tag.FXPlatform) List<CodeError> shownErrors, ErrorAndFixDisplay errorAndFixDisplay) {
+        Optional<CodeError> errorAtCaret = shownErrors.stream()
+                .filter(e -> e.getStartPosition() <= caretPosition && caretPosition <= e.getEndPosition())
+                .findFirst();
+
+        if (errorAtCaret.isPresent() && errorAndFixDisplay != null && errorAndFixDisplay.getError().equals(errorAtCaret.get())) {
+            // Already displaying that error; fine:
+            return Optional.empty();
+        }
+        // In all other cases, hide the current display:
+        if (errorAndFixDisplay != null) {
+            errorAndFixDisplay.hide();
+        }
+        return errorAtCaret;
+    }
+
     @Override
-    public int calculateEffort()
-    {
+    public int calculateEffort() {
         // We put a ceiling of 4 keypresses, approximating code completion:
         return Math.min(4, getText().length());
     }

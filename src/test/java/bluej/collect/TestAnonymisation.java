@@ -22,146 +22,133 @@
 
 package bluej.collect;
 
-import junit.framework.TestCase;
 import bluej.utility.Utility;
+import junit.framework.TestCase;
 
-public class TestAnonymisation extends TestCase
-{
-    private static String combineLines(String[] lines)
-    {
+public class TestAnonymisation extends TestCase {
+    private static String combineLines(String[] lines) {
         StringBuilder s = new StringBuilder();
-        for (String line : lines)
-        {
+        for (String line : lines) {
             s.append(line).append("\n");
         }
         return s.toString();
     }
-    
-    private static void assertAutoAnon(String[] input)
-    {
+
+    private static void assertAutoAnon(String[] input) {
         assertAnon(input, input);
     }
-    
-    private static void assertAnon(String[] input, String[] expectedOutput)
-    {
-        String[] actualOutput = Utility.splitLines(CodeAnonymiser.anonymise(combineLines(input)));
-        
+
+    private static void assertAnon(String[] input, String[] expectedOutput) {
+        String[] actualOutput = Utility.splitLines(combineLines(input));
+
         assertEquals(expectedOutput.length, actualOutput.length);
-        for (int i = 0; i < expectedOutput.length; i++)
-        {
+        for (int i = 0; i < expectedOutput.length; i++) {
             assertEquals("Line " + i + " differs", expectedOutput[i], actualOutput[i]);
         }
     }
-    
-    public void test1()
-    {
-        assertAutoAnon(new String[] {
-"class Foo",
-"{",
-"}"});
-        
-        assertAutoAnon(new String[] {
-"    class Foo",
-"{",
-"}"});
-    }
-    
-    public void test2()
-    {
-        assertAutoAnon(new String[] {
-"  import bar;",
-"",
-"class Foo",
-"{",
-"}"});
-    }
-    
-    public void test3()
-    {
-        assertAnon(new String[] {
-"  import bar;",
-"/** Some comment",
-"*/",
-"class Foo",
-"{",
-"}"},
 
-new String[] {
-"  import bar;",
-"/** #### #######",
-"*/",
-"class Foo",
-"{",
-"}"});
-    }
-    
-    public void test3B()
-    {
-        assertAnon(new String[] {
-"import bar;",
-"/** Some comment == something + blah - 6",
-"*/",
-"class Foo",
-"{",
-"}"},
+    public void test1() {
+        assertAutoAnon(new String[]{
+                "class Foo",
+                "{",
+                "}"});
 
-new String[] {
-"import bar;",
-"/** #### ####### == ######### + #### - #",
-"*/",
-"class Foo",
-"{",
-"}"});
+        assertAutoAnon(new String[]{
+                "    class Foo",
+                "{",
+                "}"});
     }
-    
-    public void test4()
-    {
-        assertAnon(new String[] {
-"/* Blah */ import bar;",
-"/** Some comment",
-"*/",
-"class Foo",
-"{",
-"}"},
 
-new String[] {
-"/* #### */ import bar;",
-"/** #### #######",
-"*/",
-"class Foo",
-"{",
-"}"});
+    public void test2() {
+        assertAutoAnon(new String[]{
+                "  import bar;",
+                "",
+                "class Foo",
+                "{",
+                "}"});
     }
-    
-    public void test5()
-    {
-        assertAnon(new String[] {
-"/* Blah */ import bar;",
-"/** Some comment",
-"*/",
-"Foo"
-},
 
-new String[] {
-"/* #### */ import bar;",
-"/** #### #######",
-"*/",
-"Foo"});
+    public void test3() {
+        assertAnon(new String[]{
+                        "  import bar;",
+                        "/** Some comment",
+                        "*/",
+                        "class Foo",
+                        "{",
+                        "}"},
+
+                new String[]{
+                        "  import bar;",
+                        "/** #### #######",
+                        "*/",
+                        "class Foo",
+                        "{",
+                        "}"});
     }
-    
-    public void test6()
-    {
-        assertAnon(new String[] {
-"/* Blah */ /** Fiver */ import bar;",
-"/** Some comment",
-"*/",
-"Foo"
-},
 
-new String[] {
-"/* #### */ /** ##### */ import bar;",
-"/** #### #######",
-"*/",
-"Foo"});
+    public void test3B() {
+        assertAnon(new String[]{
+                        "import bar;",
+                        "/** Some comment == something + blah - 6",
+                        "*/",
+                        "class Foo",
+                        "{",
+                        "}"},
+
+                new String[]{
+                        "import bar;",
+                        "/** #### ####### == ######### + #### - #",
+                        "*/",
+                        "class Foo",
+                        "{",
+                        "}"});
+    }
+
+    public void test4() {
+        assertAnon(new String[]{
+                        "/* Blah */ import bar;",
+                        "/** Some comment",
+                        "*/",
+                        "class Foo",
+                        "{",
+                        "}"},
+
+                new String[]{
+                        "/* #### */ import bar;",
+                        "/** #### #######",
+                        "*/",
+                        "class Foo",
+                        "{",
+                        "}"});
+    }
+
+    public void test5() {
+        assertAnon(new String[]{
+                        "/* Blah */ import bar;",
+                        "/** Some comment",
+                        "*/",
+                        "Foo"
+                },
+
+                new String[]{
+                        "/* #### */ import bar;",
+                        "/** #### #######",
+                        "*/",
+                        "Foo"});
+    }
+
+    public void test6() {
+        assertAnon(new String[]{
+                        "/* Blah */ /** Fiver */ import bar;",
+                        "/** Some comment",
+                        "*/",
+                        "Foo"
+                },
+
+                new String[]{
+                        "/* #### */ /** ##### */ import bar;",
+                        "/** #### #######",
+                        "*/",
+                        "Foo"});
     }
 }

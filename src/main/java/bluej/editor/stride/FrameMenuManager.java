@@ -56,8 +56,7 @@ import java.util.Map;
 /**
  * A class to manage the menus for a frame editor.
  */
-class FrameMenuManager extends TabMenuManager
-{
+class FrameMenuManager extends TabMenuManager {
     // The editor we are managing the menu for:
     private final FrameEditorTab editor;
 
@@ -81,8 +80,7 @@ class FrameMenuManager extends TabMenuManager
     // Keeps track of whether Java preview mode is currently enabled:
     private final BooleanProperty javaPreviewShowing;
 
-    FrameMenuManager(FrameEditorTab editor)
-    {
+    FrameMenuManager(FrameEditorTab editor) {
         super(editor);
         this.editor = editor;
         this.javaPreviewShowing = new SimpleBooleanProperty(editor.getView() == View.JAVA_PREVIEW);
@@ -102,16 +100,13 @@ class FrameMenuManager extends TabMenuManager
 
     }
 
-    void notifyView(View v)
-    {
+    void notifyView(View v) {
         javaPreviewShowing.set(v == View.JAVA_PREVIEW);
     }
 
     @OnThread(Tag.FXPlatform)
-    List<Menu> getMenus()
-    {
-        if (menus == null)
-        {
+    List<Menu> getMenus() {
+        if (menus == null) {
             // The edit menu consists of defaultEditItems plus contextualEditItems:
             Menu editMenu = JavaFXUtil.makeMenu(Config.getString("frame.editmenu.title"));
             JavaFXUtil.bindList(editMenu.getItems(), SortedMenuItem.sortAndAddDividers(contextualEditItems, defaultEditItems));
@@ -119,33 +114,36 @@ class FrameMenuManager extends TabMenuManager
             editMenu.setOnHidden(e -> Utility.ifNotNull(editMenuListener, EditableSlot.MenuItems::onHidden));
 
             MenuItem birdsEyeItem = JavaFXUtil.makeMenuItem("", editor::enableCycleBirdseyeView, new KeyCharacterCombination("d", KeyCombination.SHORTCUT_DOWN));
-            birdsEyeItem.textProperty().bind(new StringBinding()
-            {
-                {super.bind(editor.viewProperty());}
-                @Override
-                protected String computeValue()
+            birdsEyeItem.textProperty().bind(new StringBinding() {
                 {
-                    switch (editor.viewProperty().get())
-                    {
-                        case BIRDSEYE_NODOC: return Config.getString("frame.viewmenu.birdseye.doc");
-                        default: return Config.getString("frame.viewmenu.birdseye");
+                    super.bind(editor.viewProperty());
+                }
+
+                @Override
+                protected String computeValue() {
+                    if (editor.viewProperty().get() == View.BIRDSEYE_NODOC) {
+                        return Config.getString("frame.viewmenu.birdseye.doc");
                     }
+                    return Config.getString("frame.viewmenu.birdseye");
                 }
             });
 
-            FXPlatformConsumer<? super Boolean> frameCatalogueShownListener = newValue ->
-                    editor.recordShowHideFrameCatalogue(newValue, FrameCatalogue.ShowReason.MENU_OR_SHORTCUT);
             ObservableList<MenuItem> standardViewMenuItems = FXCollections.observableArrayList(
-                    JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.nextError"), editor::nextError, new KeyCharacterCombination("k", KeyCombination.SHORTCUT_DOWN))
-                    ,new SeparatorMenuItem()
-                    ,JavaFXUtil.makeCheckMenuItem(Config.getString("frame.viewmenu.cheatsheet"), editor.cheatSheetShowingProperty(), new KeyCodeCombination(KeyCode.F1), frameCatalogueShownListener)
-                    ,birdsEyeItem
-                    ,JavaFXUtil.makeCheckMenuItem(Config.getString("frame.viewmenu.java"), javaPreviewShowing, new KeyCharacterCombination("j", KeyCombination.SHORTCUT_DOWN))
-                    ,new SeparatorMenuItem()
-                    ,JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.fontbigger"), editor::increaseFontSize, new KeyCharacterCombination("=", KeyCombination.SHORTCUT_DOWN))
-                    ,JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.fontsmaller"), editor::decreaseFontSize, new KeyCharacterCombination("-", KeyCombination.SHORTCUT_DOWN))
-                    ,JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.fontdefault"), editor::resetFontSize, new KeyCharacterCombination("0", KeyCombination.SHORTCUT_DOWN))
-            );
+                    JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.nextError"),
+                            editor::nextError, new KeyCharacterCombination("k", KeyCombination.SHORTCUT_DOWN)),
+                    new SeparatorMenuItem(),
+                    JavaFXUtil.makeCheckMenuItem(Config.getString("frame.viewmenu.cheatsheet"),
+                            editor.cheatSheetShowingProperty(), new KeyCodeCombination(KeyCode.F1)),
+                    birdsEyeItem,
+                    JavaFXUtil.makeCheckMenuItem(Config.getString("frame.viewmenu.java"),
+                            javaPreviewShowing, new KeyCharacterCombination("j", KeyCombination.SHORTCUT_DOWN)),
+                    new SeparatorMenuItem(),
+                    JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.fontbigger"),
+                            editor::increaseFontSize, new KeyCharacterCombination("=", KeyCombination.SHORTCUT_DOWN)),
+                    JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.fontsmaller"),
+                            editor::decreaseFontSize, new KeyCharacterCombination("-", KeyCombination.SHORTCUT_DOWN)),
+                    JavaFXUtil.makeMenuItem(Config.getString("frame.viewmenu.fontdefault"),
+                            editor::resetFontSize, new KeyCharacterCombination("0", KeyCombination.SHORTCUT_DOWN)));
 
             Menu viewMenu = new Menu(Config.getString("frame.viewmenu.title"));
             //ConcatListBinding.bind(viewMenu.getItems(), FXCollections.observableArrayList(standardViewMenuItems /*, extraViewItems*/));
@@ -156,54 +154,47 @@ class FrameMenuManager extends TabMenuManager
             updateMoveMenus();
 
             menus = Arrays.asList(
-                    JavaFXUtil.makeMenu(Config.getString("frame.classmenu.title")
-                            , mainMoveMenu
-                            , JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.print"), () -> print(), new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN))
-                            , JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.close"), () -> editor.getParent().close(editor), new KeyCodeCombination(KeyCode.W, KeyCombination.SHORTCUT_DOWN))
-                    ),
+                    getClassMenu(),
                     editMenu,
                     viewMenu
             );
-        }
-        else
-        {
+        } else {
             updateMoveMenus();
         }
         return menus;
+    }
+
+    private Menu getClassMenu() {
+        return JavaFXUtil.makeMenu(Config.getString("frame.classmenu.title"),
+                mainMoveMenu,
+                JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.print"),
+                        this::print, new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN)),
+                JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.close"),
+                        () -> editor.getParent().close(editor),
+                        new KeyCodeCombination(KeyCode.W, KeyCombination.SHORTCUT_DOWN)));
     }
 
     /**
      * Print the Stride class of the associated editor.
      */
     @OnThread(Tag.FXPlatform)
-    private void print()
-    {
+    private void print() {
         PrinterJob job = JavaFXUtil.createPrinterJob();
-        if (job == null)
-        {
-            DialogManager.showErrorFX(editor.getParent().getWindow(),"print-no-printers");
-        }
-        else if (job.showPrintDialog(editor.getParent().getWindow()))
-        {
-            FXRunnable printAction = editor.getFrameEditor().printTo(job, PrefMgr.PrintSize.STANDARD, false, false);
-            new Thread()
-            {
-                @Override
-                @OnThread(value = Tag.FX, ignoreParent = true)
-                public void run()
-                {
-                    printAction.run();
-                    job.endJob();
-                }
-            }.start();
+        if (job == null) {
+            DialogManager.showErrorFX(editor.getParent().getWindow(), "print-no-printers");
+        } else if (job.showPrintDialog(editor.getParent().getWindow())) {
+            FXRunnable printAction = editor.getFrameEditor()
+                    .printTo(job, PrefMgr.PrintSize.STANDARD, false, false);
+            new Thread(() -> {
+                printAction.run();
+                job.endJob();
+            }).start();
         }
     }
 
     // Updates our menu items using binding.
-    void setMenuItems(Map<EditableSlot.TopLevelMenu, EditableSlot.MenuItems> items)
-    {
-        if (unbindEditItems != null)
-        {
+    void setMenuItems(Map<EditableSlot.TopLevelMenu, EditableSlot.MenuItems> items) {
+        if (unbindEditItems != null) {
             unbindEditItems.run();
             unbindEditItems = null;
             contextualEditItems.clear();
@@ -216,8 +207,7 @@ class FrameMenuManager extends TabMenuManager
             unbindEditItems = JavaFXUtil.bindList(contextualEditItems, editItems.getItems());
         }
 
-        if (unbindViewItems != null)
-        {
+        if (unbindViewItems != null) {
             unbindViewItems.run();
             unbindViewItems = null;
             extraViewItems.clear();
@@ -225,8 +215,7 @@ class FrameMenuManager extends TabMenuManager
         }
 
         EditableSlot.MenuItems viewItems = items.get(EditableSlot.TopLevelMenu.VIEW);
-        if (viewItems != null)
-        {
+        if (viewItems != null) {
             viewMenuListener = viewItems;
             unbindViewItems = JavaFXUtil.bindList(extraViewItems, viewItems.getItems());
         }

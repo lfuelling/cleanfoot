@@ -23,7 +23,6 @@ package bluej.pkgmgr;
 
 import bluej.*;
 import bluej.classmgr.BPClassLoader;
-import bluej.collect.DataCollector;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
 import bluej.debugger.Debugger;
@@ -1164,8 +1163,6 @@ public class PkgMgrFrame
         getPackage().closeAllEditors();
         getPackage().setEditor(null);
 
-        DataCollector.packageClosed(thePkg);
-
         Project proj = getProject();
 
         editor = null;
@@ -1370,7 +1367,6 @@ public class PkgMgrFrame
             }
             else if (JavaNames.isIdentifier(newObjectName))
             {
-                DataCollector.benchGet(getPackage(), newObjectName, gotObj.getClassName(), getTestIdentifier());
                 putObjectOnBench(newObjectName, gotObj, iType, ir, animateFromScenePoint);
                 tryAgain = false;
             }
@@ -1408,7 +1404,7 @@ public class PkgMgrFrame
         if (Project.createNewProject(dirName)) {
             Project proj = Project.openProject(dirName);
 
-            Package unNamedPkg = proj.getPackage("");
+            Package unNamedPkg = Objects.requireNonNull(proj).getPackage("");
 
             if (isEmptyFrame()) {
                 openPackage( unNamedPkg, this );
@@ -1521,8 +1517,6 @@ public class PkgMgrFrame
             thePkg.compileQuiet(target, CompileReason.NEW_CLASS, CompileType.INDIRECT_USER_COMPILE);
         }
 
-        DataCollector.addClass(thePkg, target);
-
         return true;
     }
 
@@ -1555,7 +1549,6 @@ public class PkgMgrFrame
             }
             target.analyseSource();
 
-            DataCollector.addClass(getPackage(), target);
         }
         catch (IOException e)
         {
@@ -1851,7 +1844,8 @@ public class PkgMgrFrame
     public void doAddFromFile()
     {
         // multi selection file dialog that shows .java and .class files
-        List<File> classes = FileUtility.getMultipleFilesFX(getFXWindow(), Config.getString("pkgmgr.addClass.title"), FileUtility.getJavaStrideSourceFilterFX());
+        List<File> classes = FileUtility.getMultipleFilesFX(getFXWindow(),
+                Config.getString("pkgmgr.addClass.title"), FileUtility.getJavaStrideSourceFilterFX());
 
         if (classes == null || classes.isEmpty())
             return;
@@ -2421,9 +2415,7 @@ public class PkgMgrFrame
     {
         if (testTarget != null) {
             testRecordingEnded();
-            
-            DataCollector.endTestMethod(getPackage(), testIdentifier);
-            
+
             if (testTarget.getRole() instanceof UnitTestClassRole) {
                 UnitTestClassRole utcr = (UnitTestClassRole) testTarget.getRole();
                 
@@ -2449,8 +2441,6 @@ public class PkgMgrFrame
     public void doCancelTest()
     {
         testRecordingEnded();
-        
-        DataCollector.cancelTestMethod(getPackage(), testIdentifier);
 
         // remove objects from object bench (may have been put there
         // when testing was started)
@@ -2500,7 +2490,6 @@ public class PkgMgrFrame
         this.testTargetMethod = testName;
         this.testTarget = testClass;
         this.testIdentifier = nextTestIdentifier.incrementAndGet(); // Allocate next test identifier
-        DataCollector.startTestMethod(getPackage(), testIdentifier, testClass.getSourceFile(), testName);
     }
 
     /**
@@ -2551,9 +2540,7 @@ public class PkgMgrFrame
         libraryCallDialog.setResult(null);
         libraryCallDialog.requestfocus();
         Optional<CallableView> result = libraryCallDialog.showAndWait();
-        result.ifPresent(viewToCall -> {
-            pkgRef.callStaticMethodOrConstructor(viewToCall);
-        });
+        result.ifPresent(pkgRef::callStaticMethodOrConstructor);
     }
 
     /**
@@ -2589,7 +2576,6 @@ public class PkgMgrFrame
         if (!isEmptyFrame())
         {
             getProject().restartVM();
-            DataCollector.restartVM(getProject());
         }
     }
 

@@ -61,9 +61,9 @@ class Job
     /**
      * Create a job with a set of sources.
      */
-    public Job(CompileInputFile[] sourceFiles, Compiler compiler, CompileObserver observer,
-                        BPClassLoader bpClassLoader, File destDir, boolean internal,
-                        List<String> userCompileOptions, Charset fileCharset, CompileType type, CompileReason reason)
+    public Job(CompileInputFile[] sourceFiles, Compiler compiler,
+               BPClassLoader bpClassLoader, File destDir, boolean internal,
+               List<String> userCompileOptions, Charset fileCharset, CompileType type, CompileReason reason)
     {
         this.sources = sourceFiles;
         this.compiler = compiler;

@@ -24,8 +24,6 @@ package bluej.editor.stride;
 
 
 import bluej.Config;
-import bluej.collect.DiagnosticWithShown;
-import bluej.collect.StrideEditReason;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
 import bluej.compiler.Diagnostic;
@@ -89,60 +87,76 @@ import java.util.stream.Stream;
  * FrameEditor implements Editor, the interface to the rest of BlueJ that existed
  * before our frame editor was created.  Because of this, not all of the methods make
  * sense -- see comments throughout the class.
- *
+ * <p>
  * Most of the major functionality is actually in FrameEditorTab; this FrameEditor class
  * really just exists to integrate the editor into BlueJ.  Also, FrameEditor can exist without
  * the graphical editor being opened, whereas FrameEditorTab is tied to the graphical aspect.
  */
 @OnThread(Tag.FXPlatform)
-public class FrameEditor implements Editor
-{
-    /** Whether the code has been successfully compiled since last edit */
-    @OnThread(Tag.FXPlatform) private boolean isCompiled;
-    
+public class FrameEditor implements Editor {
+    /**
+     * Whether the code has been successfully compiled since last edit
+     */
+    @OnThread(Tag.FXPlatform)
+    private boolean isCompiled;
+
     // If the code has been changed since last save:
-    @OnThread(Tag.FXPlatform) private boolean changedSinceLastSave = false;
+    @OnThread(Tag.FXPlatform)
+    private boolean changedSinceLastSave = false;
     // The code at point of last save (only modify on FX thread)
-    @OnThread(Tag.FX) private String lastSavedSource = null;
+    @OnThread(Tag.FX)
+    private String lastSavedSource = null;
     // The generated Java code at point of last save:
-    @OnThread(Tag.FX) private SaveJavaResult lastSavedJava = null;
-    
-    /** Location of the .stride file */
+    @OnThread(Tag.FX)
+    private SaveJavaResult lastSavedJava = null;
+
+    /**
+     * Location of the .stride file
+     */
     private File frameFilename;
     private File javaFilename;
-    
-    @OnThread(Tag.FX) private final EntityResolver resolver;
+
+    @OnThread(Tag.FX)
+    private final EntityResolver resolver;
     private final EditorWatcher watcher;
     private final JavadocResolver javadocResolver;
-    
+
     /**
      * Set to the latest version of the JavaSource.  null if the editor has not yet been opened;
      * you can observe it to see when it becomes non-null if you want to do something when
      * the editor opens.
      */
-    @OnThread(Tag.FX) private final SimpleObjectProperty<JavaSource> javaSource;
+    @OnThread(Tag.FX)
+    private final SimpleObjectProperty<JavaSource> javaSource;
     private final bluej.pkgmgr.Package pkg;
-    @OnThread(Tag.FX) private FrameEditorTab panel;
+    @OnThread(Tag.FX)
+    private FrameEditorTab panel;
     private final DebugInfo debugInfo = new DebugInfo();
-    @OnThread(Tag.FXPlatform) private HighlightedBreakpoint curBreakpoint;
-    @OnThread(Tag.FXPlatform) private final List<HighlightedBreakpoint> execHistory = new ArrayList<>();
+    @OnThread(Tag.FXPlatform)
+    private HighlightedBreakpoint curBreakpoint;
+    @OnThread(Tag.FXPlatform)
+    private final List<HighlightedBreakpoint> execHistory = new ArrayList<>();
 
-    /** Stride source at last save. Assigned on FX thread only, readable on any thread. */
+    /**
+     * Stride source at last save. Assigned on FX thread only, readable on any thread.
+     */
     private volatile TopLevelCodeElement lastSource;
-    
+
     /**
      * Errors from compilation to be shown once the editor is opened
      * (and thus we don't have to recompile just because the editor opens)
      */
-    @OnThread(Tag.FX) private final List<QueuedError> queuedErrors = new ArrayList<>();
+    @OnThread(Tag.FX)
+    private final List<QueuedError> queuedErrors = new ArrayList<>();
 
     /**
      * A callback to call (on the Swing thread) when this editor is opened.
      * Callback can be accessed from any thread to be queued up, but should always
      * be passed to SwingUtilities.invokeLater
      */
-    @OnThread(Tag.Any) private final FXPlatformRunnable callbackOnOpen;
-    
+    @OnThread(Tag.Any)
+    private final FXPlatformRunnable callbackOnOpen;
+
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private List<Integer> latestBreakpoints = Collections.emptyList();
     /**
@@ -161,8 +175,7 @@ public class FrameEditor implements Editor
     private int mostRecentCompileIdentifier = -1;
 
     @OnThread(Tag.Any)
-    public synchronized List<Integer> getBreakpoints()
-    {
+    public synchronized List<Integer> getBreakpoints() {
         return new ArrayList<>(latestBreakpoints);
     }
 
@@ -170,14 +183,12 @@ public class FrameEditor implements Editor
      * A javac compile error.
      */
     @OnThread(Tag.Any)
-    private static class QueuedError
-    {
+    private static class QueuedError {
         private final long startLine, startColumn, endLine, endColumn;
         private final String message;
         private final int identifier;
 
-        private QueuedError(long startLine, long startColumn, long endLine, long endColumn, String message, int identifier)
-        {
+        private QueuedError(long startLine, long startColumn, long endLine, long endColumn, String message, int identifier) {
             this.startLine = startLine;
             this.startColumn = startColumn;
             this.endLine = endLine;
@@ -188,8 +199,7 @@ public class FrameEditor implements Editor
     }
 
     @OnThread(Tag.FX)
-    public FrameEditor(File frameFilename, File javaFilename, EditorWatcher watcher, EntityResolver resolver, JavadocResolver javadocResolver, bluej.pkgmgr.Package pkg, FXPlatformRunnable callbackOnOpen)
-    {
+    public FrameEditor(File frameFilename, File javaFilename, EditorWatcher watcher, EntityResolver resolver, JavadocResolver javadocResolver, bluej.pkgmgr.Package pkg, FXPlatformRunnable callbackOnOpen) {
         this.frameFilename = frameFilename;
         this.javaFilename = javaFilename;
         this.watcher = watcher;
@@ -200,33 +210,28 @@ public class FrameEditor implements Editor
         this.callbackOnOpen = callbackOnOpen;
         lastSource = Loader.loadTopLevelElement(frameFilename, resolver);
     }
-    
+
     @OnThread(Tag.FXPlatform)
-    private void createPanel(boolean visible, boolean toFront)
-    {
+    private void createPanel(boolean visible, boolean toFront) {
         //Debug.message("&&&&&& Creating panel: " + System.currentTimeMillis());
         this.panel = new FrameEditorTab(pkg.getProject(), resolver, this, lastSource);
         //Debug.message("&&&&&& Adding panel to editor: " + System.currentTimeMillis());
-        if (visible)
-        {
+        if (visible) {
             // This calls initialiseFX:
             pkg.getProject().getDefaultFXTabbedEditor().addTab(this.panel, visible, toFront);
-        }
-        else
-        {
+        } else {
             // This is ok to call multiple times:
             this.panel.initialiseFX();
         }
         //Debug.message("&&&&&& Done! " + System.currentTimeMillis());
         // Saving Java will trigger any pending actions like jumping to a stack trace location:
         panel.initialisedProperty().addListener((a, b, newVal) -> {
-            if (newVal)
-            {
+            if (newVal) {
                 // runLater so that the panel will have been added:
                 JavaFXUtil.runPlatformLater(() -> {
                     saveFX();
                     // No relevant other compilation, so use -1 as identifier:
-                    findLateErrors(-1);
+                    findLateErrors();
                 });
 
             }
@@ -237,10 +242,8 @@ public class FrameEditor implements Editor
     // Editor methods:
 
     @Override
-    public void close()
-    {
-        if (panel != null)
-        {
+    public void close() {
+        if (panel != null) {
             lastSource = panel.getSource();
             panel.setWindowVisible(false, false);
             panel.cleanup();
@@ -249,54 +252,39 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void save() throws IOException
-    {
-        if (changedSinceLastSave)
-        {
+    public void save() throws IOException {
+        if (changedSinceLastSave) {
             SaveResult result = saveFX();
-            if (result.exception != null)
-            {
+            if (result.exception != null) {
                 throw new IOException(result.exception);
             }
-            
-            if (watcher != null)
-            {
-                watcher.recordStrideEdit(result.javaResult.javaSourceStringContent,
-                        result.savedSource, null);
-            }
-        }
-        else if (lastSavedJava == null)
-        {
+        } else if (lastSavedJava == null) {
             // If we haven't generated Java yet, we should do so:
             lastSavedJava = saveJava(lastSource, true);
         }
     }
-    
+
     /**
      * Set the saved/changed status of this buffer to SAVED.
      */
-    private void setSaved()
-    {
+    private void setSaved() {
         if (watcher != null) {
             watcher.saveEvent(this);
         }
     }
 
-    private static class SaveResult
-    {
+    private static class SaveResult {
         private final IOException exception;
         private final String savedSource;
         private final SaveJavaResult javaResult;
 
-        public SaveResult(IOException exception)
-        {
+        public SaveResult(IOException exception) {
             this.exception = exception;
             this.savedSource = null;
             this.javaResult = null;
         }
 
-        public SaveResult(String savedSource, SaveJavaResult javaResult)
-        {
+        public SaveResult(String savedSource, SaveJavaResult javaResult) {
             this.savedSource = savedSource;
             this.javaResult = javaResult;
             this.exception = null;
@@ -306,53 +294,45 @@ public class FrameEditor implements Editor
     /**
      * Saves the code, if it has been modified since it was last saved. If any IOException occurs,
      * it is caught and returned; otherwise, the saved XML source is returned.<p>
-     * 
+     * <p>
      * The Java source is also generated if it is stale or has not yet been generated.
      */
     @OnThread(Tag.FXPlatform)
-    private SaveResult saveFX()
-    {
-        try
-        {
-            if (!changedSinceLastSave && lastSavedSource != null)
-            {
-                if (lastSavedJava == null)
-                {
+    private SaveResult saveFX() {
+        try {
+            if (!changedSinceLastSave && lastSavedSource != null) {
+                if (lastSavedJava == null) {
                     lastSavedJava = saveJava(lastSource, true);
                 }
                 return new SaveResult(lastSavedSource, lastSavedJava);
             }
-            
+
             // If frame editor is closed, we just need to write the Java code
-            if (panel == null || panel.getSource() == null)
-            {
+            if (panel == null || panel.getSource() == null) {
                 SaveJavaResult javaResult = saveJava(lastSource, true);
                 return new SaveResult(Utility.serialiseCodeToString(lastSource.toXML()), javaResult);
             }
 
             panel.regenerateAndReparse();
             TopLevelCodeElement source = panel.getSource();
-            
+
             if (source == null)
                 return new SaveResult(Utility.serialiseCodeToString(lastSource.toXML()), null); // classFrame not initialised yet
 
             // Save Frame source:
-            try (FileOutputStream os = new FileOutputStream(frameFilename))
-            {
+            try (FileOutputStream os = new FileOutputStream(frameFilename)) {
                 Utility.serialiseCodeTo(source.toXML(), os);
             }
 
             lastSavedJava = saveJava(panel.getSource(), true);
             changedSinceLastSave = false;
             lastSavedSource = Utility.serialiseCodeToString(source.toXML());
-        
+
             setSaved();
             panel.saved();
             lastSource = panel.getSource();
             return new SaveResult(lastSavedSource, lastSavedJava);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             return new SaveResult(e);
         }
     }
@@ -361,19 +341,16 @@ public class FrameEditor implements Editor
      * Saves the .java file without the "warning: auto-generated" text at the top
      */
     @OnThread(Tag.FXPlatform)
-    public void saveJavaWithoutWarning() throws IOException
-    {
+    public void saveJavaWithoutWarning() throws IOException {
         saveJava(lastSource, false);
     }
 
-    private class SaveJavaResult
-    {
+    private class SaveJavaResult {
         private final JavaSource javaSource;
         private final String javaSourceStringContent;
         private final LocationMap xpathLocations;
 
-        public SaveJavaResult(JavaSource javaSource, String javaSourceStringContent, LocationMap xpathLocations)
-        {
+        public SaveJavaResult(JavaSource javaSource, String javaSourceStringContent, LocationMap xpathLocations) {
             this.javaSource = javaSource;
             this.javaSourceStringContent = javaSourceStringContent;
             this.xpathLocations = xpathLocations;
@@ -384,8 +361,7 @@ public class FrameEditor implements Editor
      * @param warning Whether to include the "auto-generated" warning at the top of the file
      */
     @OnThread(Tag.FXPlatform)
-    private SaveJavaResult saveJava(TopLevelCodeElement source, boolean warning) throws IOException
-    {
+    private SaveJavaResult saveJava(TopLevelCodeElement source, boolean warning) throws IOException {
         if (source == null)
             return null; // Not fully loaded yet
 
@@ -406,7 +382,7 @@ public class FrameEditor implements Editor
 
     /**
      * Eugh.
-     *
+     * <p>
      * So: some uses of Editor in the BlueJ code (which predate frames) assume that the program
      * is written in text, in order to modify some aspect.  That doesn't apply well to frames, so
      * really any use of this assumeText() method on a frame editor is wrong.  Ideally, this method
@@ -422,114 +398,153 @@ public class FrameEditor implements Editor
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void setLastModified(long millisSinceEpoch)
-            {
+            public void setLastModified(long millisSinceEpoch) {
                 FrameEditor.this.setLastModified(millisSinceEpoch);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void writeMessage(String msg) { FrameEditor.this.writeMessage(msg); }
+            public void writeMessage(String msg) {
+                FrameEditor.this.writeMessage(msg);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void showInterface(boolean interfaceStatus) { FrameEditor.this.showInterface(interfaceStatus); }
+            public void showInterface(boolean interfaceStatus) {
+                FrameEditor.this.showInterface(interfaceStatus);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void setEditorVisible(boolean vis) { FrameEditor.this.setEditorVisible(vis); }
+            public void setEditorVisible(boolean vis) {
+                FrameEditor.this.setEditorVisible(vis);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void setReadOnly(boolean readOnly) { FrameEditor.this.setReadOnly(readOnly); }
+            public void setReadOnly(boolean readOnly) {
+                FrameEditor.this.setReadOnly(readOnly);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void setProperty(String propertyKey, Object value) { FrameEditor.this.setProperty(propertyKey, value); }
-            
-            @Override
-            @OnThread(Tag.FXPlatform)
-            public void setCompiled(boolean compiled) { FrameEditor.this.setCompiled(compiled); }
+            public void setProperty(String propertyKey, Object value) {
+                FrameEditor.this.setProperty(propertyKey, value);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void save() throws IOException { FrameEditor.this.save(); }
+            public void setCompiled(boolean compiled) {
+                FrameEditor.this.setCompiled(compiled);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void removeStepMark() { FrameEditor.this.removeStepMark(); }
+            public void save() throws IOException {
+                FrameEditor.this.save();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void removeBreakpoints() { FrameEditor.this.removeBreakpoints(); }
+            public void removeStepMark() {
+                FrameEditor.this.removeStepMark();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void reloadFile() { FrameEditor.this.reloadFile(); }
+            public void removeBreakpoints() {
+                FrameEditor.this.removeBreakpoints();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void refresh() { FrameEditor.this.refresh(); }
+            public void reloadFile() {
+                FrameEditor.this.reloadFile();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void reInitBreakpoints() { FrameEditor.this.reInitBreakpoints(); }
+            public void refresh() {
+                FrameEditor.this.refresh();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public FXRunnable printTo(PrinterJob printerJob, PrintSize printSize, boolean printLineNumbers, boolean printBackground) { return FrameEditor.this.printTo(printerJob, printSize, printLineNumbers, printBackground); }
+            public void reInitBreakpoints() {
+                FrameEditor.this.reInitBreakpoints();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean isOpen() { return FrameEditor.this.isOpen(); }
+            public FXRunnable printTo(PrinterJob printerJob, PrintSize printSize, boolean printLineNumbers, boolean printBackground) {
+                return FrameEditor.this.printTo(printerJob, printSize, printLineNumbers, printBackground);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean isReadOnly() { return FrameEditor.this.isReadOnly(); }
+            public boolean isOpen() {
+                return FrameEditor.this.isOpen();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean isModified() { return FrameEditor.this.isModified(); }
+            public boolean isReadOnly() {
+                return FrameEditor.this.isReadOnly();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public Object getProperty(String propertyKey) { return FrameEditor.this.getProperty(propertyKey); }
+            public boolean isModified() {
+                return FrameEditor.this.isModified();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void displayMessage(String message, int lineNumber, int column) { FrameEditor.this.displayMessage(message, lineNumber, column); }
+            public Object getProperty(String propertyKey) {
+                return FrameEditor.this.getProperty(propertyKey);
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean displayDiagnostic(Diagnostic diagnostic, int errorIndex, CompileType compileType)
-            {
+            public void displayMessage(String message, int lineNumber, int column) {
+                FrameEditor.this.displayMessage(message, lineNumber, column);
+            }
+
+            @Override
+            @OnThread(Tag.FXPlatform)
+            public boolean displayDiagnostic(Diagnostic diagnostic, int errorIndex, CompileType compileType) {
                 return FrameEditor.this.displayDiagnostic(diagnostic, errorIndex, compileType);
             }
-            
+
             @Override
             @OnThread(Tag.FXPlatform)
             public void setStepMark(int lineNumber, String message,
-                    boolean isBreak, DebuggerThread thread)
-            {
+                                    boolean isBreak, DebuggerThread thread) {
                 FrameEditor.this.setStepMark(lineNumber, message, isBreak, thread);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void close() { FrameEditor.this.close(); }
+            public void close() {
+                FrameEditor.this.close();
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void changeName(String title, String filename, String javaFilename, String docFileName) { FrameEditor.this.changeName(title, filename, javaFilename, docFileName); }
-            
+            public void changeName(String title, String filename, String javaFilename, String docFileName) {
+                FrameEditor.this.changeName(title, filename, javaFilename, docFileName);
+            }
+
             @Override
             @OnThread(Tag.FXPlatform)
-            public TextEditor assumeText() { return this; }
+            public TextEditor assumeText() {
+                return this;
+            }
 
             @Override
             @OnThread(Tag.FXPlatform)
             public boolean showFile(String filename, Charset charset, boolean compiled,
-                    String docFilename) {
+                                    String docFilename) {
                 throw new UnsupportedOperationException();
             }
 
@@ -543,7 +558,7 @@ public class FrameEditor implements Editor
             @Override
             @OnThread(Tag.FXPlatform)
             public void setSelection(int firstlineNumber, int firstColumn,
-                    int secondLineNumber, int SecondColumn) {
+                                     int secondLineNumber, int SecondColumn) {
                 throw new UnsupportedOperationException();
 
             }
@@ -651,92 +666,79 @@ public class FrameEditor implements Editor
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void compileFinished(boolean successful, boolean classesKept)
-            {
-                throw new UnsupportedOperationException();                
+            public void compileFinished(boolean successful, boolean classesKept) {
+                throw new UnsupportedOperationException();
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void insertAppendMethod(NormalMethodElement method, FXPlatformConsumer<Boolean> after)
-            {
+            public void insertAppendMethod(NormalMethodElement method, FXPlatformConsumer<Boolean> after) {
                 FrameEditor.this.insertAppendMethod(method, after);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void insertMethodCallInConstructor(String className, CallElement methodName, FXPlatformConsumer<Boolean> after)
-            {
+            public void insertMethodCallInConstructor(String className, CallElement methodName, FXPlatformConsumer<Boolean> after) {
                 FrameEditor.this.insertMethodCallInConstructor(className, methodName, after);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public FrameEditor assumeFrame()
-            {
+            public FrameEditor assumeFrame() {
                 return FrameEditor.this;
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean compileStarted(int compilationSequence)
-            {
+            public boolean compileStarted(int compilationSequence) {
                 return FrameEditor.this.compileStarted(compilationSequence);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void focusMethod(String methodName, List<String> paramTypes)
-            {
+            public void focusMethod(String methodName, List<String> paramTypes) {
                 FrameEditor.this.focusMethod(methodName, paramTypes);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void setExtendsClass(String className, ClassInfo classInfo)
-            {
+            public void setExtendsClass(String className, ClassInfo classInfo) {
                 FrameEditor.this.setExtendsClass(className, classInfo);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void addImplements(String className, ClassInfo classInfo)
-            {
+            public void addImplements(String className, ClassInfo classInfo) {
                 FrameEditor.this.addImplements(className, classInfo);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void removeExtendsClass(ClassInfo classInfo)
-            {
+            public void removeExtendsClass(ClassInfo classInfo) {
                 FrameEditor.this.removeExtendsClass(classInfo);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void addExtendsInterface(String interfaceName, ClassInfo classInfo)
-            {
+            public void addExtendsInterface(String interfaceName, ClassInfo classInfo) {
                 FrameEditor.this.addExtendsInterface(interfaceName, classInfo);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void removeExtendsOrImplementsInterface(String interfaceName, ClassInfo classInfo)
-            {
+            public void removeExtendsOrImplementsInterface(String interfaceName, ClassInfo classInfo) {
                 FrameEditor.this.removeExtendsOrImplementsInterface(interfaceName, classInfo);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void removeImports(List<String> importTargets)
-            {
+            public void removeImports(List<String> importTargets) {
                 FrameEditor.this.removeImports(importTargets);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void setHeaderImage(Image image)
-            {
+            public void setHeaderImage(Image image) {
                 FrameEditor.this.setHeaderImage(image);
             }
         };
@@ -744,20 +746,17 @@ public class FrameEditor implements Editor
 
 
     @Override
-    public void reloadFile()
-    {
+    public void reloadFile() {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void refresh()
-    {
+    public void refresh() {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void displayMessage(String message, final int lineNumber, int column)
-    {
+    public void displayMessage(String message, final int lineNumber, int column) {
         //This is a message from a clickable stack trace following an exception
         JavaFXUtil.onceNotNull(javaSource, js -> JavaFXUtil.runNowOrLater(() -> {
             setVisibleFX(true, true);
@@ -766,16 +765,13 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public boolean displayDiagnostic(final Diagnostic diagnostic, int errorIndex, CompileType compileType)
-    {
-        if (lastSavedJava != null && lastSavedJava.javaSource != null && lastSavedJava.xpathLocations != null)
-        {
-            JavaFragment fragment = lastSavedJava.javaSource.findError((int)diagnostic.getStartLine(), (int)diagnostic.getStartColumn(), (int)diagnostic.getEndLine(), (int)diagnostic.getEndColumn(), diagnostic.getMessage());
-            if (fragment != null)
-            {
+    public boolean displayDiagnostic(final Diagnostic diagnostic, int errorIndex, CompileType compileType) {
+        if (lastSavedJava != null && lastSavedJava.javaSource != null && lastSavedJava.xpathLocations != null) {
+            JavaFragment fragment = lastSavedJava.javaSource.findError((int) diagnostic.getStartLine(), (int) diagnostic.getStartColumn(), (int) diagnostic.getEndLine(), (int) diagnostic.getEndColumn(), diagnostic.getMessage());
+            if (fragment != null) {
                 String xpath = lastSavedJava.xpathLocations.locationFor(fragment);
-                int start = fragment.getErrorStartPos((int)diagnostic.getStartLine(), (int)diagnostic.getStartColumn());
-                int end = fragment.getErrorEndPos((int)diagnostic.getEndLine(), (int)diagnostic.getEndColumn());
+                int start = fragment.getErrorStartPos((int) diagnostic.getStartLine(), (int) diagnostic.getStartColumn());
+                int end = fragment.getErrorEndPos((int) diagnostic.getEndLine(), (int) diagnostic.getEndColumn());
                 if (xpath != null)
                     diagnostic.setXPath(xpath, start, end);
             }
@@ -783,33 +779,28 @@ public class FrameEditor implements Editor
 
 
         // Don't show javac errors if we are not valid for compilation:
-        if (panel != null && panel.getSource() != null)
-        {
+        if (panel != null && panel.getSource() != null) {
             JavaFXUtil.onceNotNull(javaSource, js ->
                     js.handleError((int) diagnostic.getStartLine(), (int) diagnostic.getStartColumn(),
-                        (int) diagnostic.getEndLine(), (int) diagnostic.getEndColumn(), diagnostic.getMessage(), diagnostic.getIdentifier())
+                            (int) diagnostic.getEndLine(), (int) diagnostic.getEndColumn(), diagnostic.getMessage(), diagnostic.getIdentifier())
             );
-        }
-        else
-        {
+        } else {
             queuedErrors.add(new QueuedError(diagnostic.getStartLine(), diagnostic.getStartColumn(), diagnostic.getEndLine(), diagnostic.getEndColumn(), diagnostic.getMessage(), diagnostic.getIdentifier()));
         }
 
-        if (compileType.showEditorOnError())
-        {
+        if (compileType.showEditorOnError()) {
             setVisibleFX(true, true);
         }
         return false;
     }
-    
+
     @Override
     public void setStepMark(int lineNumber, String message, boolean isBreak,
-            DebuggerThread thread)
-    {
+                            DebuggerThread thread) {
         // Disable Stride debugger:
         if (true)
             return;
-        
+
         removeStepMark();
         setVisibleFX(true, true);
         HashMap<String, DebugVarInfo> vars = new HashMap<String, DebugVarInfo>();
@@ -818,16 +809,14 @@ public class FrameEditor implements Editor
             if (currentObject != null && !currentObject.isNullObject()) {
                 Map<String, Set<String>> restrictedClasses = pkg.getProject().getExecControls().getRestrictedClasses();
                 List<DebuggerField> fields = currentObject.getFields();
-                for (DebuggerField field : fields)
-                {
-                    if (! Modifier.isStatic(field.getModifiers())) {
+                for (DebuggerField field : fields) {
+                    if (!Modifier.isStatic(field.getModifiers())) {
                         String declaringClass = field.getDeclaringClassName();
                         Set<String> whiteList = restrictedClasses.get(declaringClass);
                         if (whiteList == null || whiteList.contains(field.getName())) {
                             if (field.isReferenceType()) {
                                 vars.put(field.getName(), new ReferenceDebugVarInfo(pkg, null, field));
-                            }
-                            else {
+                            } else {
                                 vars.put(field.getName(), new PrimitiveDebugVarInfo(field.getValueString()));
                             }
                         }
@@ -847,31 +836,25 @@ public class FrameEditor implements Editor
                 js = saveJava(lastSource, true).javaSource;
             }
             curBreakpoint = js.handleStop(lineNumber, debugInfo);
-            if (curBreakpoint.isBreakpointFrame())
-            {
+            if (curBreakpoint.isBreakpointFrame()) {
                 thread.step();
-            }
-            else
-            {
+            } else {
                 if (execHistory.isEmpty() || execHistory.get(execHistory.size() - 1) != curBreakpoint)
                     execHistory.add(curBreakpoint);
                 panel.redrawExecHistory(execHistory);
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             Debug.reportError("Exception attempting to save Java source for Stride class", ioe);
         }
     }
 
     @Override
-    public void writeMessage(String msg)
-    {
-      // Not needed yet.
+    public void writeMessage(String msg) {
+        // Not needed yet.
     }
 
     @Override
-    public void removeStepMark()
-    {
+    public void removeStepMark() {
         /*
         Platform.runLater(() -> {
             if (debugInfo != null)
@@ -881,27 +864,23 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void changeName(String title, String filename, String javaFilename, String docFileName)
-    {
+    public void changeName(String title, String filename, String javaFilename, String docFileName) {
         this.frameFilename = new File(filename);
         this.javaFilename = new File(javaFilename);
     }
-    
+
     @Override
-    public void setCompiled(boolean compiled)
-    {
+    public void setCompiled(boolean compiled) {
         isCompiled = compiled;
     }
 
     @Override
-    public void removeBreakpoints() 
-    {
+    public void removeBreakpoints() {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void reInitBreakpoints()
-    {
+    public void reInitBreakpoints() {
         watcher.clearAllBreakpoints();
 
         if (javaSource.get() == null) {
@@ -909,40 +888,31 @@ public class FrameEditor implements Editor
             if (e != null)
                 Debug.reportError(e);
         }
-        if (javaSource.get() != null)
-        {
+        if (javaSource.get() != null) {
             JavaSource latestSource = this.javaSource.get();
             watcher.clearAllBreakpoints();
             List<Integer> breaks = latestSource.registerBreakpoints(this, watcher);
-            synchronized (this)
-            {
+            synchronized (this) {
                 latestBreakpoints = breaks;
             }
         }
     }
 
     @Override
-    public boolean isModified() 
-    {
+    public boolean isModified() {
         return changedSinceLastSave;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public FXRunnable printTo(PrinterJob job, PrintSize printSize, boolean printLineNumbers, boolean printBackground)
-    {
+    public FXRunnable printTo(PrinterJob job, PrintSize printSize, boolean printLineNumbers, boolean printBackground) {
         CompletableFuture<Boolean> inited = new CompletableFuture<>();
-        if (panel == null)
-        {
+        if (panel == null) {
             setVisibleFX(true, false);
         }
-        JavaFXUtil.onceTrue(panel.initialisedProperty(), init -> {
-            inited.complete(init);
-
-        });
+        JavaFXUtil.onceTrue(panel.initialisedProperty(), inited::complete);
         return () -> {
-            try
-            {
+            try {
                 inited.get();
                 // If we try to print off-thread
                 // then things get seriously messed up for the editors
@@ -953,9 +923,7 @@ public class FrameEditor implements Editor
                     done.complete(true);
                 });
                 done.get();
-            }
-            catch (InterruptedException | ExecutionException e)
-            {
+            } catch (InterruptedException | ExecutionException e) {
                 Debug.reportError(e);
             }
         };
@@ -963,76 +931,65 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void setReadOnly(boolean readOnly) 
-    {
+    public void setReadOnly(boolean readOnly) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public boolean isReadOnly() 
-    {
+    public boolean isReadOnly() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void showInterface(boolean interfaceStatus) 
-    {
+    public void showInterface(boolean interfaceStatus) {
         // No need to do anything here
         // panel.showWindow();
     }
 
     @Override
-    public Object getProperty(String propertyKey) 
-    {
+    public Object getProperty(String propertyKey) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void setProperty(String propertyKey, Object value) 
-    {
+    public void setProperty(String propertyKey, Object value) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void setEditorVisible(boolean vis)
-    {
+    public void setEditorVisible(boolean vis) {
         setVisibleFX(vis, true);
     }
 
     @OnThread(Tag.FXPlatform)
-    private void setVisibleFX(boolean show, boolean bringToFront)
-    {
+    private void setVisibleFX(boolean show, boolean bringToFront) {
         if (panel == null && show) // No need to create the panel if we don't want to show it
         {
             createPanel(show, bringToFront);
         }
 
-        if (panel != null)
-        {
+        if (panel != null) {
             panel.setWindowVisible(show, bringToFront);
             if (callbackOnOpen != null && show)
                 callbackOnOpen.run();
         }
 
 
-        if (show)
-        {
+        if (show) {
             // We wait to try to show errors until the frame has finished loading, because
             // otherwise we won't have the correct references to work out where the error should be
             // shown.
             // We need this runLater to make sure we only run after we've finished setting up the editor
             // (and it case it uses any runLaters)
-            panel.withTopLevelFrame(f -> JavaFXUtil.runPlatformLater(() -> {
+            Objects.requireNonNull(panel).withTopLevelFrame(f -> JavaFXUtil.runPlatformLater(() -> {
                 // We only need to worry about queued errors from the latest compile:
-                if (!queuedErrors.isEmpty())
-                {
+                if (!queuedErrors.isEmpty()) {
                     // First, save, so that the AST elements all have the correct references back to
                     // the GUI frames which generated them:
                     Exception ex = saveFX().exception;
-                    if (ex != null)
-                    {
+                    if (ex != null) {
                         Debug.reportError(ex);
                         return;
                     }
@@ -1043,13 +1000,10 @@ public class FrameEditor implements Editor
                     // (after r15373) actually always be available, but that means the code will just run immediately so that's fine:
 
                     JavaFXUtil.onceNotNull(javaSource, js -> {
-                        for (QueuedError e : queueCopy)
-                        {
+                        for (QueuedError e : queueCopy) {
                             // Use runlater because we might be mid-save, so need to wait for current code to finish:
-                            JavaFXUtil.runPlatformLater(() -> {
-                                js.handleError((int) e.startLine, (int) e.startColumn,
-                                        (int) e.endLine, (int) e.endColumn, e.message, e.identifier);
-                            });
+                            JavaFXUtil.runPlatformLater(() -> js.handleError((int) e.startLine, (int) e.startColumn,
+                                    (int) e.endLine, (int) e.endColumn, e.message, e.identifier));
                         }
                         // We need to use runLater to account for the fact that adding errors uses a runLater:
                         JavaFXUtil.runPlatformLater(() -> panel.updateErrorOverviewBar(false));
@@ -1059,36 +1013,30 @@ public class FrameEditor implements Editor
         }
     }
 
-    public void codeModified()
-    {
+    public void codeModified() {
         changedSinceLastSave = true;
         isCompiled = false;
         watcher.modificationEvent(this);
         watcher.scheduleCompilation(false, CompileReason.MODIFIED, CompileType.ERROR_CHECK_ONLY);
     }
-    
+
     @Override
     @OnThread(Tag.FX)
-    public FrameEditor assumeFrame()
-    {
+    public FrameEditor assumeFrame() {
         return this;
     }
 
     @Override
-    public boolean isOpen()
-    {
+    public boolean isOpen() {
         return false;
     }
 
     @Override
-    public void compileFinished(boolean successful, boolean classesKept)
-    {
-        if (panel != null && panel.isWindowVisible())
-        {
-            if (!foundLateErrorsForMostRecentCompile)
-            {
+    public void compileFinished(boolean successful, boolean classesKept) {
+        if (panel != null && panel.isWindowVisible()) {
+            if (!foundLateErrorsForMostRecentCompile) {
                 foundLateErrorsForMostRecentCompile = true;
-                findLateErrors(mostRecentCompileIdentifier);
+                findLateErrors();
                 // Shouldn't use the same one twice anyway as we are guarded by the boolean flag:
                 mostRecentCompileIdentifier = -1;
             }
@@ -1099,40 +1047,17 @@ public class FrameEditor implements Editor
     }
 
     @OnThread(Tag.FXPlatform)
-    private void findLateErrors(int compilationIdentifier)
-    {
+    private void findLateErrors() {
         panel.removeOldErrors();
         TopLevelCodeElement el = panel.getSource();
         if (el == null)
             return;
-        Stream<CodeElement> allElements = Stream.concat(Stream.of((CodeElement)el), el.streamContained());
-        LocationMap rootPathMap = el.toXML().buildLocationMap();
-        // We must start these futures going on the FX thread
-        List<Future<List<DirectSlotError>>> futures = allElements.flatMap(e -> e.findDirectLateErrors(panel, rootPathMap)).collect(Collectors.toList());
-        // Then wait for them on another thread, and hop back to FX to finish:
-        Utility.runBackground(() -> {
-            ArrayList<DirectSlotError> allLates = new ArrayList<>();
-            try
-            {
-                // Wait for all futures:
-                for (Future<List<DirectSlotError>> f : futures)
-                    allLates.addAll(f.get());
-            }
-            catch (ExecutionException | InterruptedException e)
-            {
-                Debug.reportError(e);
-            }
-            Platform.runLater(() -> {
-                panel.updateErrorOverviewBar(false);
-                List<DiagnosticWithShown> diagnostics = Utility.mapList(allLates, e -> e.toDiagnostic(javaFilename.getName(), frameFilename));
-                watcher.recordLateErrors(diagnostics, compilationIdentifier);
-            });
-        });
+
+        panel.updateErrorOverviewBar(false);
     }
-        
+
     @Override
-    public boolean compileStarted(int compilationSequence)
-    {
+    public boolean compileStarted(int compilationSequence) {
         foundLateErrorsForMostRecentCompile = false;
         mostRecentCompileIdentifier = compilationSequence;
         if (panel != null)
@@ -1142,52 +1067,49 @@ public class FrameEditor implements Editor
         // Note lastSourceRef may refer to a stale source, but this shouldn't cause any
         // significant issues.  In fact, it probably makes sense to use the source at
         // point of last save, rather than any modifications in the window since.
-        return earlyErrorCheck(lastSource.findEarlyErrors(), compilationSequence);
+        return earlyErrorCheck(lastSource.findEarlyErrors());
     }
 
     /**
-     * Given a stream of early errors, records them and returns true if there were any errors (i.e. if the stream was non-empty)
+     * Given a stream of early errors returns true if there were any errors (i.e. if the stream was non-empty)
      */
     //package-visible
     @OnThread(Tag.FXPlatform)
-    boolean earlyErrorCheck(Stream<SyntaxCodeError> earlyErrors, int compilationIdentifier)
-    {
-        List<SyntaxCodeError> earlyList = earlyErrors.collect(Collectors.toList());
-        List<DiagnosticWithShown> diagnostics = Utility.mapList(earlyList, e -> e.toDiagnostic(javaFilename.getName(), frameFilename));
-        watcher.recordEarlyErrors(diagnostics, compilationIdentifier);
-        return !earlyList.isEmpty();
+    boolean earlyErrorCheck(Stream<SyntaxCodeError> earlyErrors) {
+        return earlyErrors.count() != 0;
     }
 
-    public AssistContent[] getCompletions(TopLevelCodeElement allCode, PosInSourceDoc pos, ExpressionSlot<?> completing, CodeElement codeEl)
-    {
+    public AssistContent[] getCompletions(TopLevelCodeElement allCode,
+                                          PosInSourceDoc pos,
+                                          ExpressionSlot<?> completing,
+                                          CodeElement codeEl) {
+
         CodeSuggestions suggests = allCode.getCodeSuggestions(pos, completing);
-        
+
         ArrayList<AssistContent> joined = new ArrayList<>();
-        if (suggests != null)
-        {
+        if (suggests != null) {
             AssistContent[] assists = ParseUtils.getPossibleCompletions(suggests, javadocResolver, null);
             if (assists != null)
                 joined.addAll(Arrays.asList(assists));
         }
-        
+
         // We only want to add Greenfoot. suggestions and local var suggestions
         // when they are completing having written only a simple string prefix,
         // not a compound type (like "this.pre" or "Greenfoot.pre" or "getWorld().pre").
-        if (suggests != null && suggests.isPlain())
-        {    
+        if (suggests != null && suggests.isPlain()) {
             // Special case to support completing static methods from Greenfoot class
 
-            if (Config.isGreenfoot())
-            {
+            if (Config.isGreenfoot()) {
                 // TODO in future, only do this if we are importing Greenfoot classes.
                 JavaReflective greenfootClassRef = new JavaReflective(pkg.loadClass("greenfoot.Greenfoot"));
                 CodeSuggestions greenfootClass = new CodeSuggestions(new GenTypeClass(greenfootClassRef), null, null, true, false);
                 AssistContent[] greenfootStatic = ParseUtils.getPossibleCompletions(greenfootClass, javadocResolver, null);
-                Arrays.stream(greenfootStatic).filter(ac -> ac.getKind() == CompletionKind.METHOD).forEach(ac -> joined.add(new PrefixCompletionWrapper(ac, "Greenfoot.")));
+                Arrays.stream(Objects.requireNonNull(greenfootStatic))
+                        .filter(ac -> ac.getKind() == CompletionKind.METHOD)
+                        .forEach(ac -> joined.add(new PrefixCompletionWrapper(ac, "Greenfoot.")));
             }
 
-            for (LocalParamInfo v : ASTUtility.findLocalsAndParamsInScopeAt(codeEl, false, false))
-            {
+            for (LocalParamInfo v : ASTUtility.findLocalsAndParamsInScopeAt(codeEl, false, false)) {
                 AssistContent c = LocalCompletion.getCompletion(v.getType(), v.getName(), v.isParam());
                 if (c != null)
                     joined.add(c);
@@ -1195,22 +1117,22 @@ public class FrameEditor implements Editor
         }
         return joined.toArray(new AssistContent[0]);
     }
-    
+
     // Gets the available fields in this class (i.e. those in this class and all superclasses)
-    public List<AssistContent> getAvailableMembers(TopLevelCodeElement allCode, PosInSourceDoc pos, Set<CompletionKind> kinds, boolean includeOverridden)
-    {
+    public List<AssistContent> getAvailableMembers(TopLevelCodeElement allCode,
+                                                   PosInSourceDoc pos,
+                                                   Set<CompletionKind> kinds,
+                                                   boolean includeOverridden) {
+
         CodeSuggestions suggests = allCode.getCodeSuggestions(pos, null);
         if (suggests == null)
             return Collections.emptyList();
         List<AssistContent> members;
-        if (includeOverridden)
-        {
+        if (includeOverridden) {
             members = new ArrayList<>();
             // Add it whether overridden or not:
             ParseUtils.getPossibleCompletions(suggests, javadocResolver, (ac, isOverridden) -> members.add(ac));
-        }
-        else
-        {
+        } else {
             AssistContent[] result = ParseUtils.getPossibleCompletions(suggests, javadocResolver, null);
             if (result == null)
                 members = Collections.emptyList();
@@ -1222,10 +1144,8 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void insertAppendMethod(NormalMethodElement method, FXPlatformConsumer<Boolean> after)
-    {
-        if (panel == null)
-        {
+    public void insertAppendMethod(NormalMethodElement method, FXPlatformConsumer<Boolean> after) {
+        if (panel == null) {
             createPanel(false, false);
         }
         panel.insertAppendMethod(method, after);
@@ -1233,10 +1153,8 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void insertMethodCallInConstructor(String className, CallElement methodName, FXPlatformConsumer<Boolean> after)
-    {
-        if (panel == null)
-        {
+    public void insertMethodCallInConstructor(String className, CallElement methodName, FXPlatformConsumer<Boolean> after) {
+        if (panel == null) {
             createPanel(false, false);
         }
         panel.insertMethodCallInConstructor(methodName, after);
@@ -1244,10 +1162,8 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void removeImports(List<String> importTargets)
-    {
-        if (panel == null)
-        {
+    public void removeImports(List<String> importTargets) {
+        if (panel == null) {
             createPanel(false, false);
         }
         panel.removeImports(importTargets);
@@ -1256,107 +1172,79 @@ public class FrameEditor implements Editor
 
     /**
      * Set the header image (in the tab header) for this editor
+     *
      * @param image The image to use (any size).
      */
     @Override
-    public void setHeaderImage(Image image)
-    {
-        if (panel != null)
-        {
+    public void setHeaderImage(Image image) {
+        if (panel != null) {
             panel.setHeaderImage(image);
         }
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setLastModified(long millisSinceEpoch)
-    {
+    public void setLastModified(long millisSinceEpoch) {
         // We don't keep track of disk modification time, so nothing to do.
     }
 
     @OnThread(Tag.FX)
-    public TopLevelCodeElement getSource()
-    {
+    public TopLevelCodeElement getSource() {
         return panel.getSource();
     }
 
     @OnThread(Tag.FXPlatform)
-    public List<AssistContentThreadSafe> getLocalTypes(Class<?> superType, boolean includeSelf, Set<Kind> kinds)
-    {
+    public List<AssistContentThreadSafe> getLocalTypes(Class<?> superType, boolean includeSelf, Set<Kind> kinds) {
         return pkg.getClassTargets()
-                  .stream()
-                  .filter(ct -> {
-                      if (superType != null)
-                      {
-                          ClassInfo info = ct.getSourceInfo().getInfoIfAvailable();
-                          if (info == null)
-                              return false;
-                          // This code won't pick up the case where A extends B, and B has "superType"
-                          // as a super type, but I'm not sure how we can easily tell that.
-                          boolean hasSuperType = false;
-                          hasSuperType |= superType.getName().equals(info.getSuperclass());
-                          // Check interfaces:
-                          hasSuperType |= info.getImplements().stream().anyMatch(s -> superType.getName().equals(s));
-                          if (!hasSuperType)
-                              return false;
-                      }
-                      
-                      if (ct.isInterface())
-                          return kinds.contains(Kind.INTERFACE);
-                      else if (ct.isEnum())
-                          return kinds.contains(Kind.ENUM);
-                      else 
-                          return kinds.contains(Kind.CLASS_FINAL) || kinds.contains(Kind.CLASS_NON_FINAL);
-                  })
-                  .map(ct -> new AssistContentThreadSafe(LocalTypeCompletion.getCompletion(ct)))
-                  .collect(Collectors.toList());
+                .stream()
+                .filter(ct -> {
+                    if (superType != null) {
+                        ClassInfo info = ct.getSourceInfo().getInfoIfAvailable();
+                        if (info == null)
+                            return false;
+                        // This code won't pick up the case where A extends B, and B has "superType"
+                        // as a super type, but I'm not sure how we can easily tell that.
+                        boolean hasSuperType = superType.getName().equals(info.getSuperclass());
+                        // Check interfaces:
+                        hasSuperType |= info.getImplements().stream().anyMatch(s -> superType.getName().equals(s));
+                        if (!hasSuperType)
+                            return false;
+                    }
+
+                    if (ct.isInterface())
+                        return kinds.contains(Kind.INTERFACE);
+                    else if (ct.isEnum())
+                        return kinds.contains(Kind.ENUM);
+                    else
+                        return kinds.contains(Kind.CLASS_FINAL) || kinds.contains(Kind.CLASS_NON_FINAL);
+                })
+                .map(ct -> new AssistContentThreadSafe(Objects.requireNonNull(LocalTypeCompletion.getCompletion(ct))))
+                .collect(Collectors.toList());
     }
 
-    public void showNextError()
-    {
-       panel.nextError();
+    public void showNextError() {
+        panel.nextError();
     }
 
     @Override
-    public void focusMethod(String methodName, List<String> paramTypes)
-    {
+    public void focusMethod(String methodName, List<String> paramTypes) {
         if (panel == null) {
             createPanel(true, true);
         }
         panel.focusMethod(methodName);
     }
 
-    public JavadocResolver getJavadocResolver()
-    {
+    public JavadocResolver getJavadocResolver() {
         return javadocResolver;
     }
 
-    //    public void changedName(String oldName, String newName)
-//    {
-//        watcher.changedName(oldName, newName);
-//    }
-
     @OnThread(Tag.Any)
-    public EditorWatcher getWatcher()
-    {
+    public EditorWatcher getWatcher() {
         return watcher;
     }
 
-    @OnThread(Tag.FXPlatform)
-    public void recordEdits(StrideEditReason reason)
-    {
-        SaveResult result = saveFX();
-        if (result.exception == null)
-        {
-            watcher.recordStrideEdit(result.javaResult.javaSourceStringContent, result.savedSource, reason);
-        }
-        else
-            Debug.reportError(result.exception);
-    }
-
     @Override
-    public void addImplements(String className, ClassInfo classInfo)
-    {
+    public void addImplements(String className, ClassInfo classInfo) {
         if (panel == null) {
             createPanel(false, false);
         }
@@ -1364,8 +1252,7 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void setExtendsClass(String className, ClassInfo classInfo)
-    {
+    public void setExtendsClass(String className, ClassInfo classInfo) {
         if (panel == null) {
             createPanel(false, false);
         }
@@ -1373,8 +1260,7 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void removeExtendsClass(ClassInfo classInfo)
-    {
+    public void removeExtendsClass(ClassInfo classInfo) {
         if (panel == null) {
             createPanel(false, false);
         }
@@ -1382,8 +1268,7 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void addExtendsInterface(String interfaceName, ClassInfo classInfo)
-    {
+    public void addExtendsInterface(String interfaceName, ClassInfo classInfo) {
         if (panel == null) {
             createPanel(false, false);
         }
@@ -1391,8 +1276,7 @@ public class FrameEditor implements Editor
     }
 
     @Override
-    public void removeExtendsOrImplementsInterface(String interfaceName, ClassInfo classInfo)
-    {
+    public void removeExtendsOrImplementsInterface(String interfaceName, ClassInfo classInfo) {
         if (panel == null) {
             createPanel(false, false);
         }

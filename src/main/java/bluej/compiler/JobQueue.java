@@ -70,22 +70,19 @@ public class JobQueue
 
     /**
      * Adds a job to the compile queue.
-     * 
+     *  @param classPath The classpath to use to locate objects/source code
      * @param sources   The files to compile
-     * @param observer  Observer to be notified when compilation begins,
-     *                  errors/warnings, completes
-     * @param classPath The classpath to use to locate objects/source code
      * @param destDir   Destination for class files?
      * @param suppressUnchecked    Suppress "unchecked" warning in java 1.5
      */
-    public void addJob(CompileInputFile[] sources, CompileObserver observer, BPClassLoader bpClassLoader, File destDir,
+    public void addJob(CompileInputFile[] sources, BPClassLoader bpClassLoader, File destDir,
                        boolean suppressUnchecked, Charset fileCharset, CompileReason reason, CompileType type)
     {
         List<String> options = new ArrayList<String>();
         String optionString = Config.getPropString(Compiler.COMPILER_OPTIONS, "");
         options.addAll(Utility.dequoteCommandLine(optionString));
         
-        thread.addJob(new Job(sources, compiler, observer, bpClassLoader,
+        thread.addJob(new Job(sources, compiler, bpClassLoader,
                 destDir, suppressUnchecked, options, fileCharset, type, reason));
     }
 

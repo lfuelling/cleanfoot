@@ -21,7 +21,6 @@
  */
 package bluej.stride.generic;
 
-import bluej.collect.StrideEditReason;
 import bluej.editor.stride.*;
 import bluej.parser.AssistContent;
 import bluej.stride.framedjava.ast.JavaFragment;
@@ -133,34 +132,10 @@ public interface InteractionManager extends SuggestionListParent
 
     FrameEditor getFrameEditor();
 
-    // See corresponding DataCollector methods for more parameter info.
-    @OnThread(Tag.FXPlatform)
-    void recordCodeCompletionStarted(SlotFragment position, int index, String stem, int codeCompletionId);
-
-    // See corresponding DataCollector methods for more parameter info.
-    @OnThread(Tag.FXPlatform)
-    void recordCodeCompletionEnded(SlotFragment position, int index, String stem, String completion, int codeCompletionId);
-
-    @OnThread(Tag.FXPlatform)
-    void recordErrorIndicatorShown(int identifier);
-
     boolean isEditable();
 
     @OnThread(Tag.FXPlatform)
     BooleanProperty cheatSheetShowingProperty();
-
-    @OnThread(Tag.FXPlatform)
-    void recordUnknownCommandKey(Frame enclosingFrame, int index, char key);
-
-    /**
-     * Records the reason and the focused cursor info, if any, when showing or hiding the FrameCatalogue of this editor.
-     *
-     * @param show                 true for showing and false for hiding
-     * @param reason               The event which triggers the change.
-     *                             It is one of the values in the FrameCatalogue.ShowReason enum.
-     */
-    @OnThread(Tag.FXPlatform)
-    void recordShowHideFrameCatalogue(boolean show, FrameCatalogue.ShowReason reason);
 
     /**
      * Gets an image for the class, suitable for displaying as an overlay in the class
@@ -229,9 +204,6 @@ public interface InteractionManager extends SuggestionListParent
      */
     public void modifiedFrame(Frame f, boolean force);
 
-    @OnThread(Tag.FXPlatform)
-    public void recordEdits(StrideEditReason reason);
-    
     /**
      * Once loading is complete, generates the Java code, parses it, then runs the given action if not-null
      */

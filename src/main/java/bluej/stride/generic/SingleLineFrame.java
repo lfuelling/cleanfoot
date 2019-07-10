@@ -22,7 +22,6 @@
 package bluej.stride.generic;
 
 import bluej.Config;
-import bluej.collect.StrideEditReason;
 import bluej.stride.framedjava.ast.Loader;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.frames.CodeFrame;
@@ -44,9 +43,7 @@ import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public abstract class SingleLineFrame extends Frame
 {
@@ -124,23 +121,22 @@ public abstract class SingleLineFrame extends Frame
                     @OnThread(Tag.FXPlatform)
                     protected void execute(List<Frame> frames)
                     {
-                        editor.recordEdits(StrideEditReason.FLUSH);
-                        getParentCanvas().replaceBlock(SingleLineFrame.this, Loader.loadElement(state.value).createFrame(editor));
-                        editor.recordEdits(StrideEditReason.UNDO_LOCAL);
+                        getParentCanvas().replaceBlock(SingleLineFrame.this,
+                                Objects.requireNonNull(Loader.loadElement(state.value)).createFrame(editor));
                     }
 
                     @Override
                     public List<ItemLabel> getLabels()
                     {
-                        return Arrays.asList(l(Config.getString("frame.slot.recent"), MenuItemOrder.RECENT_VALUES), l("0", MenuItemOrder.RECENT_VALUES));
+                        return Arrays.asList(l(Config.getString("frame.slot.recent"),
+                                MenuItemOrder.RECENT_VALUES), l("0", MenuItemOrder.RECENT_VALUES));
                     }
 
                     @Override
                     protected CustomMenuItem initializeCustomItem()
                     {
                         ImageView view = new ImageView(state.picture);
-                        CustomMenuItem item = new CustomMenuItem(view);
-                        return item;
+                        return new CustomMenuItem(view);
                     }
 
                     @Override
@@ -184,7 +180,7 @@ public abstract class SingleLineFrame extends Frame
         else
         {
             JavaFXUtil.runAfterCurrent(() -> {
-                Image pic = takeShot(Arrays.asList(this), null);
+                Image pic = takeShot(Collections.singletonList(this), null);
                 FrameState s = new FrameState(pic, el, xml);
                 // No need to worry about duplicates because we've checked that already
                 // Add to front of list:

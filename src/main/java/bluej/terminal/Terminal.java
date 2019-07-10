@@ -25,7 +25,6 @@ import bluej.BlueJEvent;
 import bluej.BlueJEventListener;
 import bluej.BlueJTheme;
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.debugger.Debugger;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
@@ -77,70 +76,59 @@ import java.util.regex.Pattern;
  * The Frame part of the Terminal window used for I/O when running programs
  * under BlueJ.
  *
- * @author  Michael Kolling
- * @author  Philip Stevens
+ * @author Michael Kolling
+ * @author Philip Stevens
  */
 @SuppressWarnings("serial")
 public final class Terminal
-    implements BlueJEventListener, DebuggerTerminal
-{
+        implements BlueJEventListener, DebuggerTerminal {
     private static final int MAX_BUFFER_LINES = 200;
     private VirtualizedScrollPane<?> errorScrollPane;
 
-    private static interface TextAreaStyle
-    {
+    private static interface TextAreaStyle {
         public String getCSSClass();
     }
 
     // The style for text in the stdout pane: was it output by the program, or input by the user?
     // Or third option: details about method recording
-    private static enum StdoutStyle implements TextAreaStyle
-    {
+    private static enum StdoutStyle implements TextAreaStyle {
         OUTPUT("terminal-output"), INPUT("terminal-input"), METHOD_RECORDING("terminal-method-record");
 
         private final String cssClass;
 
-        private StdoutStyle(String cssClass)
-        {
+        private StdoutStyle(String cssClass) {
             this.cssClass = cssClass;
         }
 
-        public String getCSSClass()
-        {
+        public String getCSSClass() {
             return cssClass;
         }
     }
 
-    private static enum StderrStyleType
-    {
+    private static enum StderrStyleType {
         NORMAL("terminal-error"), LINKED_STACK_TRACE("terminal-stack-link"), FOREIGN_STACK_TRACE("terminal-stack-foreign");
 
         private final String cssClass;
 
-        private StderrStyleType(String cssClass)
-        {
+        private StderrStyleType(String cssClass) {
             this.cssClass = cssClass;
         }
 
-        public String getCSSClass()
-        {
+        public String getCSSClass() {
             return cssClass;
         }
     }
 
-    private static class StderrStyle implements TextAreaStyle
-    {
+    private static class StderrStyle implements TextAreaStyle {
         private final StderrStyleType type;
         private final ExceptionSourceLocation exceptionSourceLocation;
 
-        private StderrStyle(StderrStyleType type)
-        {
+        private StderrStyle(StderrStyleType type) {
             this.type = type;
             this.exceptionSourceLocation = null;
         }
 
-        public StderrStyle(ExceptionSourceLocation exceptionSourceLocation)
-        {
+        public StderrStyle(ExceptionSourceLocation exceptionSourceLocation) {
             this.type = StderrStyleType.LINKED_STACK_TRACE;
             this.exceptionSourceLocation = exceptionSourceLocation;
         }
@@ -149,8 +137,7 @@ public final class Terminal
         public static final StderrStyle FOREIGN_STACK_TRACE = new StderrStyle(StderrStyleType.FOREIGN_STACK_TRACE);
 
         @Override
-        public String getCSSClass()
-        {
+        public String getCSSClass() {
             return type.getCSSClass();
         }
     }
@@ -166,7 +153,7 @@ public final class Terminal
     // -- instance --
 
     private final Project project;
-    
+
     private final StyledTextArea<Void, StdoutStyle> text;
     private StyledTextArea<Void, StderrStyle> errorText = null;
     private final TextField input;
@@ -183,22 +170,25 @@ public final class Terminal
     private final InputBuffer buffer;
     private final BooleanProperty showingProperty = new SimpleBooleanProperty(false);
 
-    @OnThread(Tag.Any) private final Reader in = new TerminalReader();
-    @OnThread(Tag.Any) private final Writer out = new TerminalWriter(false);
-    @OnThread(Tag.Any) private final Writer err = new TerminalWriter(true);
+    @OnThread(Tag.Any)
+    private final Reader in = new TerminalReader();
+    @OnThread(Tag.Any)
+    private final Writer out = new TerminalWriter(false);
+    @OnThread(Tag.Any)
+    private final Writer err = new TerminalWriter(true);
 
     private Stage window;
 
     /**
      * Create a new terminal window with default specifications.
      */
-    public Terminal(Project project)
-    {
+    public Terminal(Project project) {
         this.title = WINDOWTITLE + " - " + project.getProjectName();
         this.project = project;
 
         buffer = new InputBuffer(256);
-        text = new StyledTextArea<Void, StdoutStyle>(null, (t, v) -> {}, StdoutStyle.OUTPUT, this::applyStyle);
+        text = new StyledTextArea<Void, StdoutStyle>(null, (t, v) -> {
+        }, StdoutStyle.OUTPUT, this::applyStyle);
 
         VirtualizedScrollPane<?> scrollPane = new VirtualizedScrollPane<>(text);
         text.setEditable(false);
@@ -223,9 +213,15 @@ public final class Terminal
 
         Nodes.addInputMap(input, InputMap.sequence(
                 // CTRL-D (unix/Mac EOF)
-                InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)), e -> {sendInput(true); e.consume();}),
+                InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)), e -> {
+                    sendInput(true);
+                    e.consume();
+                }),
                 // CTRL-Z (DOS/Windows EOF)
-                InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN)), e -> {sendInput(true); e.consume();}),
+                InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN)), e -> {
+                    sendInput(true);
+                    e.consume();
+                }),
                 InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.EQUALS, KeyCombination.SHORTCUT_DOWN)), e -> Utility.increaseFontSize(PrefMgr.getEditorFontSize())),
                 InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN)), e -> Utility.decreaseFontSize(PrefMgr.getEditorFontSize())),
                 InputMap.consume(EventPattern.keyPressed(new KeyCodeCombination(KeyCode.DIGIT0, KeyCombination.SHORTCUT_DOWN)), e -> PrefMgr.getEditorFontSize().set(PrefMgr.DEFAULT_JAVA_FONT_SIZE))
@@ -234,8 +230,7 @@ public final class Terminal
         // Make a single click on stdout area focus the input, to help users
         // who are used to BlueJ 3 where you typed into the stdout area directly
         text.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY)
-            {
+            if (e.getButton() == MouseButton.PRIMARY) {
                 input.requestFocus();
                 e.consume();
             }
@@ -283,47 +278,35 @@ public final class Terminal
         BlueJEvent.addListener(this);
     }
 
-    private void sendInput(boolean eof)
-    {
+    private void sendInput(boolean eof) {
         String inputString = this.input.getText() + (eof ? "" : "\n");
         buffer.putString(inputString);
-        if (eof)
-        {
+        if (eof) {
             buffer.signalEOF();
-        }
-        else
-        {
+        } else {
             buffer.notifyReaders();
         }
         this.input.clear();
         writeToPane(text, inputString, StdoutStyle.INPUT);
     }
 
-    private void applyStyle(TextExt t, TextAreaStyle s)
-    {
+    private void applyStyle(TextExt t, TextAreaStyle s) {
         JavaFXUtil.addStyleClass(t, s.getCSSClass());
     }
 
     /**
      * Show or hide the Terminal window.
      */
-    public void showHide(boolean show)
-    {
-        DataCollector.showHideTerminal(project, show);
-
-        if (show)
-        {
+    public void showHide(boolean show) {
+        if (show) {
             window.show();
             input.requestFocus();
-        }
-        else
-        {
+        } else {
             window.hide();
         }
     }
-    
-    public void dispose()
-    {
+
+    public void dispose() {
         showHide(false);
         window = null;
     }
@@ -331,17 +314,15 @@ public final class Terminal
     /**
      * Return true if the window is currently displayed.
      */
-    public boolean isShown()
-    {
+    public boolean isShown() {
         return window.isShowing();
     }
 
     /**
      * Make the input field active, or not
      */
-    public void activate(boolean active)
-    {
-        if(active != isActive) {
+    public void activate(boolean active) {
+        if (active != isActive) {
             input.setEditable(active);
             isActive = active;
         }
@@ -350,10 +331,9 @@ public final class Terminal
     /**
      * Clear the terminal.
      */
-    public void clear()
-    {
+    public void clear() {
         text.replaceText("");
-        if(errorText!=null) {
+        if (errorText != null) {
             errorText.replaceText("");
         }
         hideErrorPane();
@@ -362,46 +342,39 @@ public final class Terminal
     /**
      * Save the terminal text to file.
      */
-    public void save()
-    {
+    public void save() {
         File fileName = FileUtility.getSaveFileFX(window,
                 Config.getString("terminal.save.title"),
                 null, false);
-        if(fileName != null) {
-            if (fileName.exists()){
+        if (fileName != null) {
+            if (fileName.exists()) {
                 if (DialogManager.askQuestionFX(window, "error-file-exists") != 0)
                     return;
             }
 
-            try
-            {
+            try {
                 FileWriter writer = new FileWriter(fileName);
-                String output = text.getText().replace("\n", System.lineSeparator())   ;
+                String output = text.getText().replace("\n", System.lineSeparator());
                 writer.write(output);
                 writer.close();
-            }
-            catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 DialogManager.showErrorFX(window, "error-save-file");
             }
         }
     }
 
     @OnThread(Tag.FXPlatform)
-    public void print()
-    {
+    public void print() {
         PrinterJob job = JavaFXUtil.createPrinterJob();
-        if (job == null)
-        {
-            DialogManager.showErrorFX(window,"print-no-printers");
-        }
-        else if (job.showPrintDialog(window))
-        {
+        if (job == null) {
+            DialogManager.showErrorFX(window, "print-no-printers");
+        } else if (job.showPrintDialog(window)) {
             EditableStyledDocument<Void, String, StdoutStyle> doc = new GenericEditableStyledDocument<>(null, StdoutStyle.OUTPUT, SegmentOps.styledTextOps());
             doc.replace(0, 0, ReadOnlyStyledDocument.from(text.getDocument()));
             // Need to make a copy of the text pane for off-thread use:
             StyledTextArea<Void, StdoutStyle> offScreenEditor = new StyledTextArea<Void, StdoutStyle>(
-                null, (t, v) -> {}, StdoutStyle.OUTPUT, this::applyStyle, doc);
+                    null, (t, v) -> {
+            }, StdoutStyle.OUTPUT, this::applyStyle, doc);
             Scene scene = new Scene(offScreenEditor);
             Config.addTerminalStylesheets(scene);
             // JavaFX seems to always print at 72 DPI, regardless of printer DPI:
@@ -420,13 +393,12 @@ public final class Terminal
 
             VirtualFlow<?, ?> virtualFlow = (VirtualFlow<?, ?>) offScreenEditor.lookup(".virtual-flow");
             // Run in background thread:
-            new Thread(new Runnable()
-            {
+            new Thread(new Runnable() {
                 @Override
                 @OnThread(value = Tag.FX, ignoreParent = true)
-                public void run()
-                {
-                    MoeEditor.printPages(job, offScreenEditor, n -> {}, offScreenEditor, virtualFlow);
+                public void run() {
+                    MoeEditor.printPages(job, offScreenEditor, n -> {
+                    }, offScreenEditor, virtualFlow);
                     job.endJob();
                 }
             }).start();
@@ -436,12 +408,11 @@ public final class Terminal
     /**
      * Write some text to the terminal.
      */
-    private <S extends TextAreaStyle> void writeToPane(StyledTextArea<Void, S> pane, String s, S style)
-    {
+    private <S extends TextAreaStyle> void writeToPane(StyledTextArea<Void, S> pane, String s, S style) {
         prepare();
         if (pane == errorText)
             showErrorPane();
-        
+
         // The form-feed character should clear the screen.
         int n = s.lastIndexOf('\f');
         if (n != -1) {
@@ -451,8 +422,7 @@ public final class Terminal
 
         pane.append(styled(s, style));
 
-        if (pane != errorText)
-        {
+        if (pane != errorText) {
             trimToMaxBufferLines(pane);
         }
 
@@ -460,10 +430,8 @@ public final class Terminal
         pane.requestFollowCaret();
     }
 
-    private <S extends TextAreaStyle> void trimToMaxBufferLines(StyledTextArea<Void, S> pane)
-    {
-        if (!unlimitedBufferingCall.get() && pane.getParagraphs().size() >= MAX_BUFFER_LINES)
-        {
+    private <S extends TextAreaStyle> void trimToMaxBufferLines(StyledTextArea<Void, S> pane) {
+        if (!unlimitedBufferingCall.get() && pane.getParagraphs().size() >= MAX_BUFFER_LINES) {
             int newStart = pane.position(pane.getParagraphs().size() - MAX_BUFFER_LINES, 0).toOffset();
             pane.replaceText(0, newStart, "");
         }
@@ -472,13 +440,11 @@ public final class Terminal
     /**
      * Prepare the terminal for I/O.
      */
-    private void prepare()
-    {
+    private void prepare() {
         if (newMethodCall) {   // prepare only once per method call
             showHide(true);
             newMethodCall = false;
-        }
-        else if (Config.isGreenfoot()) {
+        } else if (Config.isGreenfoot()) {
             // In greenfoot new output should always show the terminal
             if (!window.isShowing()) {
                 showHide(true);
@@ -489,42 +455,38 @@ public final class Terminal
     /**
      * An interactive method call has been made by a user.
      */
-    private void methodCall(String callString)
-    {
+    private void methodCall(String callString) {
         newMethodCall = false;
-        if(clearOnMethodCall.get()) {
+        if (clearOnMethodCall.get()) {
             clear();
         }
-        if(recordMethodCalls.get()) {
+        if (recordMethodCalls.get()) {
             text.append(styled(callString + "\n", StdoutStyle.METHOD_RECORDING));
         }
         newMethodCall = true;
     }
 
-    private static <S> ReadOnlyStyledDocument<Void, String, S> styled(String text, S style)
-    {
+    private static <S> ReadOnlyStyledDocument<Void, String, S> styled(String text, S style) {
         return ReadOnlyStyledDocument.fromString(text, null, style, SegmentOps.styledTextOps());
     }
 
-    private void constructorCall(InvokerRecord ir)
-    {
+    private void constructorCall(InvokerRecord ir) {
         newMethodCall = false;
-        if(clearOnMethodCall.get()) {
+        if (clearOnMethodCall.get()) {
             clear();
         }
-        if(recordMethodCalls.get()) {
+        if (recordMethodCalls.get()) {
             String callString = ir.getResultTypeString() + " " + ir.getResultName() + " = " + ir.toExpression() + ";";
             text.append(styled(callString + "\n", StdoutStyle.METHOD_RECORDING));
         }
         newMethodCall = true;
     }
-    
-    private void methodResult(ExecutionEvent event)
-    {
+
+    private void methodResult(ExecutionEvent event) {
         if (recordMethodCalls.get()) {
             String result = null;
             String resultType = event.getResult();
-            
+
             if (resultType == ExecutionEvent.NORMAL_EXIT) {
                 DebuggerObject object = event.getResultObject();
                 if (object != null) {
@@ -532,13 +494,11 @@ public final class Terminal
                         // Constructor call - the result object is the created object.
                         // Don't display the result separately:
                         return;
-                    }
-                    else {
+                    } else {
                         // if the method returns a void, we must handle it differently
                         if (object.isNullObject()) {
                             return; // Don't show result of void calls
-                        }
-                        else {
+                        } else {
                             // other - the result object is a wrapper with a single result field
                             DebuggerField resultField = object.getField(0);
                             result = "    returned " + resultField.getType().toString(true) + " ";
@@ -546,14 +506,12 @@ public final class Terminal
                         }
                     }
                 }
-            }
-            else if (resultType == ExecutionEvent.EXCEPTION_EXIT) {
+            } else if (resultType == ExecutionEvent.EXCEPTION_EXIT) {
                 result = "    Exception occurred.";
-            }
-            else if (resultType == ExecutionEvent.TERMINATED_EXIT) {
+            } else if (resultType == ExecutionEvent.TERMINATED_EXIT) {
                 result = "    VM terminated.";
             }
-            
+
             if (result != null) {
                 text.append(styled(result + "\n", StdoutStyle.METHOD_RECORDING));
             }
@@ -564,8 +522,7 @@ public final class Terminal
      * Looks through the contents of the terminal for lines
      * that look like they are part of a stack trace.
      */
-    private void scanForStackTrace()
-    {
+    private void scanForStackTrace() {
         try {
             String content = errorText.getText();
 
@@ -574,8 +531,7 @@ public final class Terminal
             // at greenfoot.localdebugger.LocalDebugger$QueuedExecution.run(LocalDebugger.java:267)
             //    ^--------------------group 1----------------------------^ ^--group 2--^      ^3^
             Matcher m = p.matcher(content);
-            while (m.find())
-            {
+            while (m.find()) {
                 String fullyQualifiedMethodName = m.group(1);
                 String javaFile = m.group(2);
                 int lineNumber = Integer.parseInt(m.group(3));
@@ -590,12 +546,9 @@ public final class Terminal
                 //Find out if that file is available, and only link if it is:
                 Package pkg = project.getPackage(packageName);
 
-                if (pkg != null && pkg.getAllClassnames().contains(javaFile))
-                {
+                if (pkg != null && pkg.getAllClassnames().contains(javaFile)) {
                     errorText.setStyle(m.start(1), m.end(), new StderrStyle(new ExceptionSourceLocation(m.start(1), m.end(), pkg, javaFile, lineNumber)));
-                }
-                else
-                {
+                } else {
                     errorText.setStyle(m.start(), m.end(), StderrStyle.FOREIGN_STACK_TRACE);
                 }
             }
@@ -606,25 +559,21 @@ public final class Terminal
             // Matches things like:
             //  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
             m = p.matcher(content);
-            while (m.find())
-            {
+            while (m.find()) {
                 errorText.setStyle(m.start(), m.end(), StderrStyle.FOREIGN_STACK_TRACE);
             }
-        }
-        catch (NumberFormatException e ) {
+        } catch (NumberFormatException e) {
             //In case it looks like an exception but has a large line number:
             e.printStackTrace();
         }
     }
 
 
-
     /**
      * Return the input stream that can be used to read from this terminal.
      */
     @OnThread(value = Tag.Any, ignoreParent = true)
-    public Reader getReader()
-    {
+    public Reader getReader() {
         return in;
     }
 
@@ -633,8 +582,7 @@ public final class Terminal
      * Return the output stream that can be used to write to this terminal
      */
     @OnThread(value = Tag.Any, ignoreParent = true)
-    public Writer getWriter()
-    {
+    public Writer getWriter() {
         return out;
     }
 
@@ -643,8 +591,7 @@ public final class Terminal
      * when there is reading request from the terminal on the remote virtual machine
      */
     @OnThread(Tag.Any)
-    public void showOnInput()
-    {
+    public void showOnInput() {
         Platform.runLater(() -> {
             if (!this.isShown()) {
                 this.showHide(true);
@@ -661,8 +608,7 @@ public final class Terminal
      * Return the output stream that can be used to write error output to this terminal
      */
     @OnThread(value = Tag.Any, ignoreParent = true)
-    public Writer getErrorWriter()
-    {
+    public Writer getErrorWriter() {
         return err;
     }
 
@@ -673,30 +619,26 @@ public final class Terminal
      * type. The implementation of this method should check first whether
      * the event type is of interest an return immediately if it isn't.
      *
-     * @param eventId  A constant identifying the event. One of the event id
-     *                 constants defined in BlueJEvent.
-     * @param arg      An event specific parameter. See BlueJEvent for
-     *                 definition.
+     * @param eventId A constant identifying the event. One of the event id
+     *                constants defined in BlueJEvent.
+     * @param arg     An event specific parameter. See BlueJEvent for
+     *                definition.
      */
     @Override
-    public void blueJEvent(int eventId, Object arg)
-    {
-        if(eventId == BlueJEvent.METHOD_CALL) {
+    public void blueJEvent(int eventId, Object arg) {
+        if (eventId == BlueJEvent.METHOD_CALL) {
             InvokerRecord ir = (InvokerRecord) arg;
             if (ir.getResultName() != null) {
                 constructorCall(ir);
-            }
-            else {
+            } else {
                 boolean isVoid = ir.hasVoidResult();
                 if (isVoid) {
                     methodCall(ir.toStatement());
-                }
-                else {
+                } else {
                     methodCall(ir.toExpression());
                 }
             }
-        }
-        else if (eventId == BlueJEvent.EXECUTION_RESULT) {
+        } else if (eventId == BlueJEvent.EXECUTION_RESULT) {
             methodResult((ExecutionEvent) arg);
         }
     }
@@ -706,14 +648,14 @@ public final class Terminal
     /**
      * Show the errorPane for error output
      */
-    private void showErrorPane()
-    {
-        if(errorShown) {
+    private void showErrorPane() {
+        if (errorShown) {
             return;
         }
 
-        if(errorText == null) {
-            errorText = new StyledTextArea<Void, StderrStyle>(null, (t, v) -> {}, StderrStyle.NORMAL, this::applyStyle);
+        if (errorText == null) {
+            errorText = new StyledTextArea<Void, StderrStyle>(null, (t, v) -> {
+            }, StderrStyle.NORMAL, this::applyStyle);
             errorText.getStyleClass().add("terminal-error");
             errorScrollPane = new VirtualizedScrollPane<>(errorText);
             errorText.styleProperty().bind(PrefMgr.getEditorFontCSS(true));
@@ -725,12 +667,9 @@ public final class Terminal
 
                 StderrStyle style = errorText.getStyleAtPosition(hit.getInsertionIndex());
 
-                if (style.exceptionSourceLocation != null)
-                {
+                if (style.exceptionSourceLocation != null) {
                     style.exceptionSourceLocation.showInEditor();
-                }
-                else
-                {
+                } else {
                     // Default behaviour:
                     errorText.moveTo(hit.getInsertionIndex(), SelectionPolicy.CLEAR);
                 }
@@ -742,13 +681,12 @@ public final class Terminal
         Config.rememberDividerPosition(window, splitPane, "bluej.terminal.dividerpos");
         errorShown = true;
     }
-    
+
     /**
      * Hide the pane with the error output.
      */
-    private void hideErrorPane()
-    {
-        if(!errorShown) {
+    private void hideErrorPane() {
+        if (!errorShown) {
             return;
         }
         splitPane.getItems().remove(errorScrollPane);
@@ -756,16 +694,14 @@ public final class Terminal
     }
 
 
-    public BooleanProperty showingProperty()
-    {
+    public BooleanProperty showingProperty() {
         return showingProperty;
     }
-    
+
     /**
      * Create the terminal's menubar, all menus and items.
      */
-    private MenuBar makeMenuBar()
-    {
+    private MenuBar makeMenuBar() {
         MenuBar menubar = new MenuBar();
         menubar.setUseSystemMenuBar(true);
         Menu menu = new Menu(Config.getString("terminal.options"));
@@ -808,8 +744,7 @@ public final class Terminal
         return menubar;
     }
 
-    public Stage getWindow()
-    {
+    public Stage getWindow() {
         return window;
     }
 
@@ -817,8 +752,7 @@ public final class Terminal
      * Cleanup any resources or listeners the terminal has created/registered.
      * Called when the project is closing.
      */
-    public void cleanup()
-    {
+    public void cleanup() {
         BlueJEvent.removeListener(this);
     }
 
@@ -826,28 +760,26 @@ public final class Terminal
      * A Reader which reads from the terminal.
      */
     @OnThread(Tag.Any)
-    private class TerminalReader extends Reader
-    {
-        public int read(char[] cbuf, int off, int len)
-        {
+    private class TerminalReader extends Reader {
+        public int read(char[] cbuf, int off, int len) {
             int charsRead = 0;
 
-            while(charsRead < len) {
+            while (charsRead < len) {
                 cbuf[off + charsRead] = buffer.getChar();
                 charsRead++;
-                if(buffer.isEmpty())
+                if (buffer.isEmpty())
                     break;
             }
             return charsRead;
         }
 
         @Override
-        public boolean ready()
-        {
-            return ! buffer.isEmpty();
+        public boolean ready() {
+            return !buffer.isEmpty();
         }
-        
-        public void close() { }
+
+        public void close() {
+        }
     }
 
     /**
@@ -856,18 +788,15 @@ public final class Terminal
      * output.
      */
     @OnThread(Tag.Any)
-    private class TerminalWriter extends Writer
-    {
+    private class TerminalWriter extends Writer {
         private boolean isErrorOut;
-        
-        TerminalWriter(boolean isError)
-        {
+
+        TerminalWriter(boolean isError) {
             super();
             isErrorOut = isError;
         }
 
-        public void write(final char[] cbuf, final int off, final int len)
-        {
+        public void write(final char[] cbuf, final int off, final int len) {
             try {
                 // We use a wait so that terminal output is limited to
                 // the processing speed of the event queue. This means the UI
@@ -875,33 +804,28 @@ public final class Terminal
                 // gushing.
                 CompletableFuture<Boolean> written = new CompletableFuture<>();
                 Platform.runLater(() -> {
-                    try
-                    {
+                    try {
                         String s = new String(cbuf, off, len);
-                        if (isErrorOut)
-                        {
+                        if (isErrorOut) {
                             showErrorPane();
                             writeToPane(errorText, s, StderrStyle.NORMAL);
-                        }
-                        else
+                        } else
                             writeToPane(text, s, StdoutStyle.OUTPUT);
-                    }
-                    finally
-                    {
+                    } finally {
                         written.complete(true);
                     }
                 });
                 // Timeout in case something goes wrong with the printing:
                 written.get(2000, TimeUnit.MILLISECONDS);
-            }
-            catch (InterruptedException | ExecutionException | TimeoutException ie)
-            {
+            } catch (InterruptedException | ExecutionException | TimeoutException ie) {
                 Debug.reportError(ie);
             }
         }
 
-        public void flush() { }
+        public void flush() {
+        }
 
-        public void close() { }
+        public void close() {
+        }
     }
 }

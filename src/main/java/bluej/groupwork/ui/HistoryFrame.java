@@ -22,7 +22,6 @@
 package bluej.groupwork.ui;
 
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.groupwork.*;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
@@ -262,8 +261,6 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
                     historyInfoList = responseList;
 
                     resetFilterBoxes();
-
-                    DataCollector.teamHistoryProject(project, repository);
                 }
             }
         }

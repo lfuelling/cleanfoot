@@ -22,7 +22,6 @@
 package bluej.groupwork.actions;
 
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.groupwork.*;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
@@ -144,7 +143,6 @@ public class ShareAction extends TeamAction
                     if (!result.isError())
                     {
                         pmf.setStatus(Config.getString("team.shared"));
-                        DataCollector.teamShareProject(project, repository);
                     }
                     else
                     {

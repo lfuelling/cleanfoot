@@ -24,8 +24,6 @@ package greenfoot.guifx;
 import bluej.Boot;
 import bluej.Config;
 import bluej.Main;
-import bluej.collect.DataCollector;
-import bluej.collect.GreenfootInterfaceEvent;
 import bluej.compiler.*;
 import bluej.debugger.Debugger;
 import bluej.debugger.DebuggerObject;
@@ -81,7 +79,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
@@ -119,10 +116,8 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static bluej.pkgmgr.t4rget.ClassTarget.MENU_STYLE_INBUILT;
 import static greenfoot.vmcomm.Command.*;
@@ -220,14 +215,8 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
     // before saving to avoid stacking unneeded properties hanging forever.
     private ScenarioInfo scenarioInfo;
 
-    private ChangeListener<String> playerNameListener = new ChangeListener<String>() {
-        @Override
-        @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-        public void changed(ObservableValue<? extends String> observable, String oldValue,
-                            String newValue) {
+    private ChangeListener<String> playerNameListener = (observable, oldValue, newValue) ->
             sendPropertyToDebugVM("greenfoot.player.name", newValue);
-        }
-    };
 
     /**
      * Details for a new actor being added to the world, after you have made it
@@ -248,7 +237,8 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
         private final JavaType[] paramTypes;
 
         private Region makePreviewNode(ImageView imageView) {
-            ImageView cannotDropIcon = new ImageView(this.getClass().getClassLoader().getResource("noParking.png").toExternalForm());
+            ImageView cannotDropIcon = new ImageView(Objects.requireNonNull(this.getClass()
+                    .getClassLoader().getResource("noParking.png")).toExternalForm());
             cannotDropIcon.visibleProperty().bind(cannotDrop);
             StackPane.setAlignment(cannotDropIcon, Pos.CENTER);
             StackPane stackPane = new StackPane(imageView, cannotDropIcon);
@@ -345,7 +335,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
         worldViewScroll.visibleProperty().bind(worldVisible);
         StackPane worldPane = new StackPane(backgroundMessage, worldViewScroll, hungMessage);
         ImageView shareIcon = new ImageView(new Image(
-                getClass().getClassLoader().getResourceAsStream("export-publish.png")));
+                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("export-publish.png"))));
         shareIcon.setPreserveRatio(true);
         shareIcon.setFitHeight(24.0);
         Button shareButton = new Button(Config.getString("export.project"), shareIcon);
@@ -367,9 +357,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
         setMinWidth(700);
         setMinHeight(400);
 
-        setOnCloseRequest((e) -> {
-            doClose(false);
-        });
+        setOnCloseRequest((e) -> doClose(false));
 
         JavaFXUtil.addChangeListenerPlatform(stateProperty, this::updateGUIState);
 
@@ -383,7 +371,6 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
 
         JavaFXUtil.addChangeListenerPlatform(focusedProperty(), focused -> {
             if (focused && project != null) {
-                DataCollector.recordGreenfootEvent(project, GreenfootInterfaceEvent.WINDOW_ACTIVATED);
                 // If any classes are uncompiled, compile-all.  If all compiled, may need a reset:
                 if (project.getUnnamedPackage().getClassTargets().stream()
                         .anyMatch(ct -> !ct.isCompiled())) {
@@ -394,16 +381,6 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
                 }
             }
         });
-        
-        /* Uncomment this to use ScenicView temporarily during development (use reflection to avoid needing to mess with Ant classpath)
-        try
-        {
-            getClass().getClassLoader().loadClass("org.scenicview.ScenicView").getMethod("show", Scene.class).invoke(null, scene);
-        }
-        catch (Exception e)
-        {
-            Debug.reportError(e);
-        }*/
     }
 
     /**
@@ -540,7 +517,6 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
 
     @Override
     public void userReset() {
-        DataCollector.recordGreenfootEvent(project, GreenfootInterfaceEvent.WORLD_RESET);
         doReset();
     }
 
@@ -837,7 +813,6 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
      */
     public void act() {
         if (stateProperty.get() == State.PAUSED) {
-            DataCollector.recordGreenfootEvent(project, GreenfootInterfaceEvent.WORLD_ACT);
             debugHandler.getVmComms().act();
             stateProperty.set(State.PAUSED_REQUESTED_ACT_OR_RUN);
             saveTheWorldRecorder.invalidateRecording();
@@ -849,13 +824,11 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
      */
     public void doRunPause() {
         if (stateProperty.get() == State.PAUSED) {
-            DataCollector.recordGreenfootEvent(project, GreenfootInterfaceEvent.WORLD_RUN);
             debugHandler.getVmComms().runSimulation();
             stateProperty.set(State.PAUSED_REQUESTED_ACT_OR_RUN);
             saveTheWorldRecorder.invalidateRecording();
             worldDisplay.requestFocus();
         } else if (stateProperty.get() == State.RUNNING) {
-            DataCollector.recordGreenfootEvent(project, GreenfootInterfaceEvent.WORLD_PAUSE);
             debugHandler.getVmComms().pauseSimulation();
             stateProperty.set(State.RUNNING_REQUESTED_PAUSE);
         }
@@ -963,7 +936,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
             scenarioMenu.getItems().add(new SeparatorMenuItem());
             scenarioMenu.getItems().add(JavaFXUtil.makeMenuItem("greenfoot.quit",
                     new KeyCodeCombination(KeyCode.Q, KeyCombination.SHORTCUT_DOWN),
-                    () -> Main.wantToQuit(), null)
+                    Main::wantToQuit, null)
             );
         }
 
@@ -999,7 +972,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
         if (!Config.isMacOS()) {
             toolsMenu.getItems().add(JavaFXUtil.makeMenuItem("greenfoot.preferences",
                     new KeyCodeCombination(KeyCode.COMMA, KeyCombination.SHORTCUT_DOWN),
-                    () -> showPreferences(), null));
+                    GreenfootStage::showPreferences, null));
         }
 
         Menu helpMenu = new Menu(Config.getString("menu.help"), null);
@@ -1032,7 +1005,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
                         JavaFXUtil.makeMenuItem("new.other.class", new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN),
                                 () -> newNonImageClass(project.getUnnamedPackage(), null), hasNoProject),
                         JavaFXUtil.makeMenuItem("import.action",
-                                new KeyCodeCombination(KeyCode.I, KeyCombination.SHORTCUT_DOWN), () -> doImportClass(),
+                                new KeyCodeCombination(KeyCode.I, KeyCombination.SHORTCUT_DOWN), this::doImportClass,
                                 hasNoProject)
                 ),
                 new Menu(Config.getString("menu.controls"), null, controlPanel.makeMenuItems().toArray(new MenuItem[0])
@@ -1184,24 +1157,20 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
                 }
             }
         });
-        newActorProperty.addListener(new ChangeListener<NewActor>() {
-            @Override
-            @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-            public void changed(ObservableValue<? extends NewActor> prop, NewActor oldVal, NewActor newVal) {
-                if (oldVal != null) {
-                    glassPane.getChildren().remove(oldVal.previewNode);
-                }
+        newActorProperty.addListener((prop, oldVal, newVal) -> {
+            if (oldVal != null) {
+                glassPane.getChildren().remove(oldVal.previewNode);
+            }
 
-                if (newVal != null) {
-                    glassPane.getChildren().add(newVal.previewNode);
-                    // Need to do a layout to get the correct width and height:
-                    glassPane.requestLayout();
-                    glassPane.layout();
+            if (newVal != null) {
+                glassPane.getChildren().add(newVal.previewNode);
+                // Need to do a layout to get the correct width and height:
+                glassPane.requestLayout();
+                glassPane.layout();
 
-                    newVal.previewNode.setTranslateX(lastMousePosInScene.getX() - newVal.previewNode.getWidth() / 2.0);
-                    newVal.previewNode.setTranslateY(lastMousePosInScene.getY() - newVal.previewNode.getHeight() / 2.0);
-                    newVal.cannotDrop.set(!worldDisplay.worldContains(worldDisplay.sceneToWorld(lastMousePosInScene)));
-                }
+                newVal.previewNode.setTranslateX(lastMousePosInScene.getX() - newVal.previewNode.getWidth() / 2.0);
+                newVal.previewNode.setTranslateY(lastMousePosInScene.getY() - newVal.previewNode.getHeight() / 2.0);
+                newVal.cannotDrop.set(!worldDisplay.worldContains(worldDisplay.sceneToWorld(lastMousePosInScene)));
             }
         });
     }
@@ -1402,7 +1371,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
                 // We don't call sizeToScene() directly while holding the file lock because it can
                 // cause us to re-enter the animation timer (see commit comment).  So we set this
                 // flag to true as a way of queueing up the request:
-                JavaFXUtil.runAfterCurrent(() -> sizeToScene());
+                JavaFXUtil.runAfterCurrent(this::sizeToScene);
             }
         }
         try {
@@ -1596,7 +1565,11 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
         JavaFXUtil.addStyleClass(inspectItem, MENU_STYLE_INBUILT);
         inspectItem.setOnAction(e -> {
             InvokerRecord ir = new ObjectInspectInvokerRecord(debuggerObject.getClassName());
-            project.getInspectorInstance(debuggerObject, debuggerObject.getClassName(), project.getUnnamedPackage(), ir, this, null);  // shows the inspector
+            project.getInspectorInstance(debuggerObject,
+                    debuggerObject.getClassName(),
+                    project.getUnnamedPackage(),
+                    ir,
+                    this, null);  // shows the inspector
         });
         return inspectItem;
     }

@@ -22,7 +22,6 @@
 package bluej.pkgmgr.t4rget.role;
 
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
 import bluej.debugger.DebuggerObject;
@@ -129,12 +128,10 @@ public class UnitTestClassRole extends ClassRole
 
                 if (m.getAnnotation(testClass) != null) {
                     if (!Modifier.isPublic(m.getModifiers())) return false;
-                    if (m.getParameterTypes().length != 0) return false;
-                    return true;
+                    return m.getParameterTypes().length == 0;
                 }
             }
-            catch (ClassNotFoundException cnfe) {}
-            catch (LinkageError le) {}
+            catch (ClassNotFoundException | LinkageError ignored) {}
 
             // No suitable annotations found, so not a test class
             return false;
@@ -144,15 +141,13 @@ public class UnitTestClassRole extends ClassRole
             if (!m.getName().startsWith("test")) return false;
             if (!Modifier.isPublic(m.getModifiers())) return false;
             if (m.getParameterTypes().length != 0) return false;
-            if (!m.getReturnType().equals(Void.TYPE)) return false;
-            return true;
+            return m.getReturnType().equals(Void.TYPE);
         }
     }
     
     /**
      * Generate a popup menu for this TestClassRole.
      * @param cl the class object that is represented by this target
-     * @param editorFrame the frame in which this targets package is displayed
      * @return the generated JPopupMenu
      */
     @Override
@@ -400,8 +395,6 @@ public class UnitTestClassRole extends ClassRole
 
         pmf.getProject().removeClassLoader();
 
-        runTestSetup(pmf, ct, false);
-
         pmf.getObjectBench().resetRecordingInteractions();
         pmf.setTestInfo(newTestName, ct);
     }
@@ -441,46 +434,6 @@ public class UnitTestClassRole extends ClassRole
         return uta;
     }
     
-    /**
-     * Run the test setup.
-     * @param pmf  The package manager frame to run the setup in
-     * @param ct   The classtarget for the test class
-     */
-    private void runTestSetup(final PkgMgrFrame pmf, final ClassTarget ct, final boolean recordAsFixtureToBench)
-    {
-        Project project = pmf.getProject();
-
-        // Avoid running test setup (which is user code) on the event thread.
-        // Run it on a new thread instead.
-        new Thread() {
-            @OnThread(value = Tag.Worker, ignoreParent = true)
-            public void run() {
-
-                final FXPlatformSupplier<Map<String, DebuggerObject>> dobs = project.getDebugger().runTestSetUp(ct.getQualifiedName());
-                
-                Platform.runLater(() -> {
-                    List<DataCollector.NamedTyped> recordObjects = new ArrayList<DataCollector.NamedTyped>();
-                    Iterator<Map.Entry<String, DebuggerObject>> it = dobs.get().entrySet().iterator();
-
-                    while(it.hasNext()) {
-                        Map.Entry<String, DebuggerObject> mapent = it.next();
-                        DebuggerObject objVal = mapent.getValue();
-
-                        if (! objVal.isNullObject()) {
-                            String actualName = pmf.putObjectOnBench(mapent.getKey(), objVal, objVal.getGenType(), null, Optional.empty());
-                            recordObjects.add(new DataCollector.NamedTyped(actualName, objVal.getClassName()));
-                        }
-                    }
-
-                    if (recordAsFixtureToBench)
-                    {
-                        DataCollector.fixtureToObjectBench(pmf.getPackage(), ct.getSourceFile(), recordObjects);
-                    }
-                });
-            }
-        }.start();
-    }
-
     private static final String spaces = "                                 ";
     
     /**
@@ -589,9 +542,7 @@ public class UnitTestClassRole extends ClassRole
         catch (IOException ioe) {
             PkgMgrFrame.showMessageWithText(pmf.getPackage(), "generic-file-save-error", ioe.getLocalizedMessage());
         }
-        
-        runTestSetup(pmf, ct, true);
-        
+
         pmf.getObjectBench().addInteraction(existing);
     }   
     
@@ -647,15 +598,6 @@ public class UnitTestClassRole extends ClassRole
             // make it worse by trying to edit the source
             if (fixtureInsertLocation == null) {
                 return;
-            }
-            
-            {
-                List<String> names = new ArrayList<String>();
-                for (ObjectWrapper obj : pmf.getObjectBench().getObjects())
-                {
-                    names.add(obj.getName());
-                }
-                DataCollector.objectBenchToFixture(pmf.getPackage(), ct.getSourceFile(), names);
             }
             
             // find the curly brackets for the setUp() method

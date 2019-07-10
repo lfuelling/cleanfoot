@@ -22,7 +22,6 @@
 package bluej.stride.operations;
 
 import bluej.Config;
-import bluej.collect.StrideEditReason;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.Frame;
@@ -36,6 +35,7 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PasteFrameOperation extends FrameOperation
@@ -51,7 +51,6 @@ public class PasteFrameOperation extends FrameOperation
     {
         List<CodeElement> elements = GreenfootFrameUtil.getClipboardElements(editor.getFocusedCursor().getParentCanvas().getContext());
         if (elements != null && elements.size() > 0) {
-            editor.recordEdits(StrideEditReason.FLUSH);
             if (frames.size() > 0) {
                 FrameCursor insertionCursor = frames.get(0).getCursorBefore();
                 DeleteFrameOperation.deleteFrames(frames, editor);
@@ -74,13 +73,12 @@ public class PasteFrameOperation extends FrameOperation
                     frame.getCursorAfter().requestFocus();
                 }
             });
-            editor.recordEdits(StrideEditReason.PASTE_FRAMES);
         }
     }
 
     @Override
     public List<AbstractOperation.ItemLabel> getLabels()
     {
-        return Arrays.asList(l(Config.getString("frame.operation.paste"), MenuItemOrder.PASTE));
+        return Collections.singletonList(l(Config.getString("frame.operation.paste"), MenuItemOrder.PASTE));
     }
 }

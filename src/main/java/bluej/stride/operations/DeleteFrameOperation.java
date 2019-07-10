@@ -22,7 +22,6 @@
 package bluej.stride.operations;
 
 import bluej.Config;
-import bluej.collect.StrideEditReason;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCursor;
 import bluej.stride.generic.InteractionManager;
@@ -34,6 +33,7 @@ import threadchecker.Tag;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class DeleteFrameOperation extends FrameOperation
 {
@@ -67,11 +67,9 @@ public class DeleteFrameOperation extends FrameOperation
     @OnThread(Tag.FXPlatform)
     protected void execute(List<Frame> frames)
     {
-        editor.recordEdits(StrideEditReason.FLUSH);
         int effort = frames.stream().mapToInt(Frame::calculateEffort).sum();
         editor.showUndoDeleteBanner(effort);
         deleteFrames(frames, editor);
-        editor.recordEdits(StrideEditReason.DELETE_FRAMES_MENU);
     }
 
     @OnThread(Tag.FXPlatform)
@@ -83,7 +81,7 @@ public class DeleteFrameOperation extends FrameOperation
             frames.forEach(frame -> frame.getParentCanvas().removeBlock(frame));
             // Clear selection first to prevent problem in frame cursor focus looking at selection for menu items:
             editor.getSelection().clear();
-            focusAfter.requestFocus();
+            Objects.requireNonNull(focusAfter).requestFocus();
         }
         else
         {

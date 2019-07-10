@@ -24,7 +24,6 @@ package bluej.debugmgr.codepad;
 
 import bluej.BlueJEvent;
 import bluej.Config;
-import bluej.collect.DataCollector;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.ExceptionDescription;
@@ -70,14 +69,14 @@ import java.util.stream.Collectors;
 
 /**
  * A code pad which can evaluate fragments of Java code.
- * 
+ * <p>
  * In JavaFX this is built using a ListView.  ListViews have virtualised
  * cells, which means that only enough rows are created to display
  * the currently visible portion of the scroll pane, not every row in the list.
  * So if the user has a history 200 lines long, but only 8 lines are visible
  * in the codepad, then no matter where they scroll to, only 8 display lines will be
  * created, not 200.
- * 
+ * <p>
  * ListViews allow editing of any individual cell, but we hack it here so that
  * (a) only the last row can be edited, and (b) the last row is *always* in an editing state.
  * This means the users see one text field at the bottom of the list, and rows
@@ -85,8 +84,7 @@ import java.util.stream.Collectors;
  */
 @OnThread(Tag.FXPlatform)
 public class CodePad extends VBox
-    implements ValueCollection, PkgMgrFrame.PkgMgrPane
-{
+        implements ValueCollection, PkgMgrFrame.PkgMgrPane {
     /**
      * The list view containing all the history items:
      */
@@ -108,15 +106,13 @@ public class CodePad extends VBox
      * This might be the currently edited row (the last row), or
      * a read-only item detailing a past command or command outcome;
      */
-    private abstract static @OnThread(Tag.FX) class HistoryRow
-    {
+    private abstract static @OnThread(Tag.FX) class HistoryRow {
         // Text content of the row
         private final String text;
 
         // Different styles used for the rows
         @OnThread(Tag.Any)
-        public static enum RowStyle
-        {
+        public static enum RowStyle {
             COMMAND_PARTIAL("bj-codepad-cmd-partial"),
             COMMAND_END("bj-codepad-cmd-end"),
             ERROR("bj-codepad-error"),
@@ -124,60 +120,63 @@ public class CodePad extends VBox
 
             private final String pseudo;
 
-            public String getPseudoClass()
-            {
+            public String getPseudoClass() {
                 return pseudo;
             }
 
-            private RowStyle(String pseudo)
-            {
+            private RowStyle(String pseudo) {
                 this.pseudo = pseudo;
             }
         }
 
-        public HistoryRow(String text)
-        {
+        public HistoryRow(String text) {
             this.text = text;
         }
 
-        public final String getText() { return text; }
+        public final String getText() {
+            return text;
+        }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return getText();
         }
 
         public abstract Node getGraphic();
-        /** Gets the graphical style that should be used for displaying this row. */
+
+        /**
+         * Gets the graphical style that should be used for displaying this row.
+         */
         public abstract RowStyle getStyle();
     }
 
     @OnThread(Tag.FX)
-    public static abstract class IndentedRow extends HistoryRow
-    {
+    public static abstract class IndentedRow extends HistoryRow {
         // Crude way of making sure all lines are spaced the same as ones with an object image;
         // use an invisible rectangle as a spacer:
         protected Rectangle r;
 
-        public IndentedRow(String text)
-        {
+        public IndentedRow(String text) {
             super(text);
-            r  = new Rectangle(objectImage.getWidth(), objectImage.getHeight());
+            r = new Rectangle(objectImage.getWidth(), objectImage.getHeight());
             r.setVisible(false);
         }
 
-        /** Gets the graphic to display alongside the row */
+        /**
+         * Gets the graphic to display alongside the row
+         */
         @Override
-        public Node getGraphic() { return r; }
+        public Node getGraphic() {
+            return r;
+        }
     }
 
     // Handy array with all the different row pseudo-class styles.
     private static final String[] allRowStyles;
+
     static {
         allRowStyles = new String[HistoryRow.RowStyle.values().length];
-        for (int i = 0; i < HistoryRow.RowStyle.values().length; i++)
-        {
+        for (int i = 0; i < HistoryRow.RowStyle.values().length; i++) {
             allRowStyles[i] = HistoryRow.RowStyle.values()[i].getPseudoClass();
         }
     }
@@ -189,25 +188,22 @@ public class CodePad extends VBox
      * of commands, but currently don't use it differently in the CSS file.
      */
     @OnThread(Tag.FX)
-    private static class CommandRow extends HistoryRow
-    {
+    private static class CommandRow extends HistoryRow {
         private final boolean isFinalLine;
-        public CommandRow(String text, boolean isFinalLine)
-        {
+
+        public CommandRow(String text, boolean isFinalLine) {
             super(text);
             this.isFinalLine = isFinalLine;
         }
 
         // No indent spacer on command rows in our current style:
         @Override
-        public Node getGraphic()
-        {
+        public Node getGraphic() {
             return null;
         }
 
         @Override
-        public RowStyle getStyle()
-        {
+        public RowStyle getStyle() {
             return isFinalLine ? RowStyle.COMMAND_END : RowStyle.COMMAND_PARTIAL;
         }
     }
@@ -217,17 +213,14 @@ public class CodePad extends VBox
      * have an object as an output.
      */
     @OnThread(Tag.FX)
-    private class OutputSuccessRow extends IndentedRow
-    {
+    private class OutputSuccessRow extends IndentedRow {
         private final ImageView graphic;
         private Path arrow;
         private FXPlatformRunnable cancelAddToBench;
 
-        public OutputSuccessRow(String text, ObjectInfo objInfo)
-        {
+        public OutputSuccessRow(String text, ObjectInfo objInfo) {
             super(text);
-            if (objInfo != null)
-            {
+            if (objInfo != null) {
                 graphic = new ImageView(objectImage);
                 graphic.setMouseTransparent(false);
                 // It turns out that LabeledSkinBase contains this code:
@@ -246,8 +239,7 @@ public class CodePad extends VBox
                 });
                 graphic.setCursor(Cursor.HAND);
                 graphic.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-                    if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1)
-                    {
+                    if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1) {
                         // It seems odd to nest a run-later inside a delay, but JavaFX doesn't let you
                         // show a modal dialog from an animation (which is how delay is implemented)
                         // hence we use animation for delay, then run-later to be able to go modal.
@@ -261,18 +253,14 @@ public class CodePad extends VBox
                             cancelAddToBench = null;
                         }));
                         e.consume();
-                    }
-                    else if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2)
-                    {
+                    } else if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                         // Cancel the single click that was adding to bench:
-                        if (cancelAddToBench != null)
-                        {
+                        if (cancelAddToBench != null) {
                             cancelAddToBench.run();
                             cancelAddToBench = null;
                         }
                         Project project = frame.getProject();
-                        if (project != null)
-                        {
+                        if (project != null) {
                             project.getInspectorInstance(objInfo.obj, "", frame.getPackage(), objInfo.ir, frame.getFXWindow(), graphic).bringToFront();
                         }
                         e.consume();
@@ -281,22 +269,21 @@ public class CodePad extends VBox
                 graphic.setOnMouseEntered(e -> {
                     graphic.setImage(objectImageHighlight);
                     graphic.setEffect(new ColorAdjust(0.0, -0.2, 0.45, 0.0));
-                    if (arrow == null)
-                    {
+                    if (arrow == null) {
                         arrow = new Path();
                         JavaFXUtil.addStyleClass(arrow, "codepad-add-object-arrow");
                         double centreAngle = 35.0;
                         arrow.getElements().addAll(
                                 new MoveTo(40.0, 10.0),
                                 new QuadCurveTo(25.0, -10.0, 0.0, 10.0), //new LineTo(0.0, 10.0),
-                                new LineTo(0 + Math.cos(Math.toRadians(centreAngle + 45.0))*10.0, 10.0 - Math.sin(Math.toRadians(centreAngle + 45.0))*10.0),
+                                new LineTo(0 + Math.cos(Math.toRadians(centreAngle + 45.0)) * 10.0, 10.0 - Math.sin(Math.toRadians(centreAngle + 45.0)) * 10.0),
                                 new MoveTo(0.0, 10.0),
-                                new LineTo(0 + Math.cos(Math.toRadians(centreAngle - 45.0))*10.0, 10.0 - Math.sin(Math.toRadians(centreAngle - 45.0))*10.0)
+                                new LineTo(0 + Math.cos(Math.toRadians(centreAngle - 45.0)) * 10.0, 10.0 - Math.sin(Math.toRadians(centreAngle - 45.0)) * 10.0)
                         );
                     }
                     Bounds b = arrowOverlay.sceneToLocal(graphic.localToScene(graphic.getBoundsInLocal()));
                     arrow.setLayoutX(b.getMinX() - 40.0);
-                    arrow.setLayoutY(b.getMinY() - 10.0 + b.getHeight()*0.5);
+                    arrow.setLayoutY(b.getMinY() - 10.0 + b.getHeight() * 0.5);
                     arrowOverlay.getChildren().add(arrow);
 
                 });
@@ -305,22 +292,19 @@ public class CodePad extends VBox
                     graphic.setEffect(null);
                     arrowOverlay.getChildren().remove(arrow);
                 });
-            }
-            else
+            } else
                 graphic = null;
         }
 
         // Graphic is an object icon if applicable, otherwise
         // we use the invisible spacer from the parent:
         @Override
-        public Node getGraphic()
-        {
+        public Node getGraphic() {
             return graphic != null ? graphic : super.getGraphic();
         }
 
         @Override
-        public RowStyle getStyle()
-        {
+        public RowStyle getStyle() {
             return RowStyle.OUTPUT;
         }
     }
@@ -329,29 +313,26 @@ public class CodePad extends VBox
      * A row with an error output of a previous command.
      */
     @OnThread(Tag.FX)
-    private static class ErrorRow extends IndentedRow
-    {
-        public ErrorRow(String text)
-        {
+    private static class ErrorRow extends IndentedRow {
+        public ErrorRow(String text) {
             super(text);
         }
 
         @Override
-        public RowStyle getStyle()
-        {
+        public RowStyle getStyle() {
             return RowStyle.ERROR;
         }
     }
 
     private static final String nullLabel = "null";
-    
+
     private static final String uninitializedWarning = Config.getString("pkgmgr.codepad.uninitialized");
 
     private static final Image objectImage =
             Config.getImageAsFXImage("image.eval.object");
     private static final Image objectImageHighlight =
             Config.getImageAsFXImage("image.eval.object");
-    
+
     private final PkgMgrFrame frame;
     @OnThread(Tag.FX)
     private String currentCommand = "";
@@ -359,7 +340,7 @@ public class CodePad extends VBox
     private IndexHistory history;
     private Invoker invoker = null;
     private TextAnalyzer textParser = null;
-    
+
     // Keeping track of invocation
     private boolean firstTry;
     private boolean wrappedResult;
@@ -373,8 +354,7 @@ public class CodePad extends VBox
     // The action which removes the hover state on the object icon
     private Runnable removeHover;
 
-    public CodePad(PkgMgrFrame frame, Pane arrowOverlay)
-    {
+    public CodePad(PkgMgrFrame frame, Pane arrowOverlay) {
         this.frame = frame;
         this.arrowOverlay = arrowOverlay;
         JavaFXUtil.addStyleClass(this, "codepad");
@@ -391,27 +371,25 @@ public class CodePad extends VBox
         historyView.styleProperty().bind(PrefMgr.getEditorFontCSS(false));
 
         Nodes.addInputMap(inputField, InputMap.sequence(
-            InputMap.consume(EventPattern.keyPressed(KeyCode.EQUALS, KeyCombination.SHORTCUT_DOWN), e -> Utility.increaseFontSize(PrefMgr.getEditorFontSize())),
-            InputMap.consume(EventPattern.keyPressed(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN), e -> Utility.decreaseFontSize(PrefMgr.getEditorFontSize()))
+                InputMap.consume(EventPattern.keyPressed(KeyCode.EQUALS, KeyCombination.SHORTCUT_DOWN), e -> Utility.increaseFontSize(PrefMgr.getEditorFontSize())),
+                InputMap.consume(EventPattern.keyPressed(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN), e -> Utility.decreaseFontSize(PrefMgr.getEditorFontSize()))
         ));
 
         // We can't lookup the scroll bar until we're in the scene and showing.
         // But also, we don't care about showing the shadow until there are items in the history
         // to be scrolled.  So a neat solution is to add the effect the first time items
         // appear in the history (which can only happen once it's on screen).
-        historyView.getItems().addListener(new ListChangeListener<HistoryRow>()
-        {
+        historyView.getItems().addListener(new ListChangeListener<HistoryRow>() {
             @Override
             @OnThread(Tag.FX)
-            public void onChanged(Change<? extends HistoryRow> c)
-            {
+            public void onChanged(Change<? extends HistoryRow> c) {
                 // When the codepad history is not at the very bottom, add a shadow to indicate
                 // that there is more beneath.  Otherwise, if you scroll to just the right point,
                 // it looks like you are looking at the most recent item when in fact you're scrolled up.
-                ScrollBar scrollBar = (ScrollBar)historyView.lookup(".scroll-bar");
+                ScrollBar scrollBar = (ScrollBar) historyView.lookup(".scroll-bar");
                 // Need to keep a permanent reference to avoid GCing weak reference:
                 shadowShowing = scrollBar.visibleProperty().and(scrollBar.valueProperty().isNotEqualTo(1.0, 0.01));
-                inputField.effectProperty().bind(Bindings.when(shadowShowing).<Effect>then(new DropShadow(6.0, 0.0, -3.0, Color.GRAY)).otherwise((Effect)null));
+                inputField.effectProperty().bind(Bindings.when(shadowShowing).<Effect>then(new DropShadow(6.0, 0.0, -3.0, Color.GRAY)).otherwise((Effect) null));
                 historyView.getItems().removeListener(this);
             }
         });
@@ -428,39 +406,33 @@ public class CodePad extends VBox
 
         // Add context menu with copy:
         historyView.setContextMenu(new ContextMenu(
-            JavaFXUtil.makeMenuItem(Config.getString("editor.copyLabel"), () -> copySelectedRows(), null),
-            JavaFXUtil.makeMenuItem(Config.getString("codepad.copyAll"), () -> {
-                historyView.getSelectionModel().selectAll();
-                copySelectedRows();
-            }, null),
+                JavaFXUtil.makeMenuItem(Config.getString("editor.copyLabel"), () -> copySelectedRows(), null),
+                JavaFXUtil.makeMenuItem(Config.getString("codepad.copyAll"), () -> {
+                    historyView.getSelectionModel().selectAll();
+                    copySelectedRows();
+                }, null),
 
-            JavaFXUtil.makeMenuItem(Config.getString("codepad.clear"), () -> {
-                historyView.getSelectionModel().clearSelection();
-                historyView.getItems().clear();
-            }, null)
+                JavaFXUtil.makeMenuItem(Config.getString("codepad.clear"), () -> {
+                    historyView.getSelectionModel().clearSelection();
+                    historyView.getItems().clear();
+                }, null)
         ));
-        
+
         // Add keyboard shortcut ourselves:
         historyView.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            if (e.getCode() == KeyCode.C && e.isShortcutDown())
-            {
+            if (e.getCode() == KeyCode.C && e.isShortcutDown()) {
                 copySelectedRows();
                 e.consume();
             }
         });
         inputField.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            if (e.getCode() == KeyCode.UP)
-            {
+            if (e.getCode() == KeyCode.UP) {
                 historyBack();
                 e.consume();
-            }
-            else if (e.getCode() == KeyCode.DOWN)
-            {
+            } else if (e.getCode() == KeyCode.DOWN) {
                 historyForward();
                 e.consume();
-            }
-            else if (e.getCode() == KeyCode.ENTER && e.isShiftDown())
-            {
+            } else if (e.getCode() == KeyCode.ENTER && e.isShiftDown()) {
                 softReturn();
                 e.consume();
             }
@@ -473,8 +445,7 @@ public class CodePad extends VBox
             inputField.setEditable(false);    // don't allow input while we're thinking
             inputField.setText("");
             currentCommand = (currentCommand + line).trim();
-            if(currentCommand.length() != 0)
-            {
+            if (currentCommand.length() != 0) {
                 history.add(line);
                 String cmd = currentCommand;
                 currentCommand = "";
@@ -489,17 +460,13 @@ public class CodePad extends VBox
 
             @Override
             @OnThread(Tag.FX)
-            public void updateItem(HistoryRow item, boolean empty)
-            {
+            public void updateItem(HistoryRow item, boolean empty) {
                 super.updateItem(item, empty);
-                if (!empty && item != null)
-                {
+                if (!empty && item != null) {
                     setGraphic(item.getGraphic());
                     setText(item.getText());
                     JavaFXUtil.selectPseudoClass(this, Arrays.asList(allRowStyles).indexOf(item.getStyle().getPseudoClass()), allRowStyles);
-                }
-                else
-                {
+                } else {
                     setGraphic(null);
                     setText("");
                     JavaFXUtil.selectPseudoClass(this, -1, allRowStyles);
@@ -508,8 +475,7 @@ public class CodePad extends VBox
         });
     }
 
-    private void copySelectedRows()
-    {
+    private void copySelectedRows() {
         // If they right click on background with no items selected,
         // copy all items:
         if (historyView.getSelectionModel().isEmpty())
@@ -522,75 +488,59 @@ public class CodePad extends VBox
     /**
      * Clear the local variables.
      */
-    public void clearVars()
-    {
+    public void clearVars() {
         localVars.clear();
         if (textParser != null && frame.getProject() != null) {
             textParser.newClassLoader(frame.getProject().getClassLoader());
         }
     }
-    
+
     //   --- ValueCollection interface ---
-    
+
     /*
      * @see bluej.debugmgr.ValueCollection#getValueIterator()
      */
-    public Iterator<CodepadVar> getValueIterator()
-    {
+    public Iterator<CodepadVar> getValueIterator() {
         return localVars.iterator();
     }
-    
+
     /*
      * @see bluej.debugmgr.ValueCollection#getNamedValue(java.lang.String)
      */
-    public NamedValue getNamedValue(String name)
-    {
+    public NamedValue getNamedValue(String name) {
         Class<Object> c = Object.class;
         NamedValue nv = getLocalVar(name);
         if (nv != null) {
             return nv;
-        }
-        else {
+        } else {
             return frame.getObjectBench().getNamedValue(name);
         }
     }
-    
+
     /**
      * Search for a named local variable, but do not fall back to the object
      * bench if it cannot be found (return null in this case).
-     * 
-     * @param name  The name of the variable to search for
-     * @return    The named variable, or null
+     *
+     * @param name The name of the variable to search for
+     * @return The named variable, or null
      */
-    private NamedValue getLocalVar(String name)
-    {
+    private NamedValue getLocalVar(String name) {
         Iterator<CodepadVar> i = localVars.iterator();
         while (i.hasNext()) {
             NamedValue nv = (NamedValue) i.next();
             if (nv.getName().equals(name))
                 return nv;
         }
-        
+
         // not found
         return null;
     }
-    
-    private class CodePadResultWatcher implements ResultWatcher
-    {
+
+    private class CodePadResultWatcher implements ResultWatcher {
         private final String command;
 
-        public CodePadResultWatcher(String command)
-        {
+        public CodePadResultWatcher(String command) {
             this.command = command;
-        }
-
-        /*
-                 * @see bluej.debugmgr.ResultWatcher#beginExecution()
-                 */
-        @Override
-        @OnThread(Tag.FXPlatform)
-        public void beginCompile()
-        {
         }
 
         /*
@@ -598,8 +548,15 @@ public class CodePad extends VBox
          */
         @Override
         @OnThread(Tag.FXPlatform)
-        public void beginExecution(InvokerRecord ir)
-        {
+        public void beginCompile() {
+        }
+
+        /*
+         * @see bluej.debugmgr.ResultWatcher#beginExecution()
+         */
+        @Override
+        @OnThread(Tag.FXPlatform)
+        public void beginExecution(InvokerRecord ir) {
             BlueJEvent.raiseEvent(BlueJEvent.METHOD_CALL, ir);
         }
 
@@ -608,18 +565,15 @@ public class CodePad extends VBox
          */
         @Override
         @OnThread(Tag.FXPlatform)
-        public void putResult(final DebuggerObject result, final String name, final InvokerRecord ir)
-        {
+        public void putResult(final DebuggerObject result, final String name, final InvokerRecord ir) {
             frame.getObjectBench().addInteraction(ir);
             updateInspectors();
 
             // Newly declared variables are now initialized
-            if (newlyDeclareds != null)
-            {
+            if (newlyDeclareds != null) {
                 Iterator<CodepadVar> i = newlyDeclareds.iterator();
-                while (i.hasNext())
-                {
-                    CodepadVar cpv = (CodepadVar)i.next();
+                while (i.hasNext()) {
+                    CodepadVar cpv = (CodepadVar) i.next();
                     cpv.setInitialized();
                 }
                 newlyDeclareds = null;
@@ -627,16 +581,14 @@ public class CodePad extends VBox
 
             boolean giveUninitializedWarning = autoInitializedVars != null && autoInitializedVars.size() != 0;
 
-            if (giveUninitializedWarning && Utility.firstTimeThisRun("TextEvalPane.uninitializedWarning"))
-            {
+            if (giveUninitializedWarning && Utility.firstTimeThisRun("TextEvalPane.uninitializedWarning")) {
                 // Some variables were automatically initialized - warn the user that
                 // this won't happen in "real" code.
 
                 String warning = uninitializedWarning;
 
                 int findex = 0;
-                while (findex < warning.length())
-                {
+                while (findex < warning.length()) {
                     int nindex = warning.indexOf('\n', findex);
                     if (nindex == -1)
                         nindex = warning.length();
@@ -649,39 +601,27 @@ public class CodePad extends VBox
                 autoInitializedVars.clear();
             }
 
-            if (!result.isNullObject())
-            {
+            if (!result.isNullObject()) {
                 DebuggerField resultField = result.getField(0);
                 String resultString = resultField.getValueString();
 
-                if (resultString.equals(nullLabel))
-                {
-                    DataCollector.codePadSuccess(frame.getPackage(), ir.getOriginalCommand(), resultString);
+                if (resultString.equals(nullLabel)) {
                     output(resultString);
-                }
-                else
-                {
+                } else {
                     boolean isObject = resultField.isReferenceType();
 
-                    if (isObject)
-                    {
+                    if (isObject) {
                         DebuggerObject resultObject = resultField.getValueObject(null);
                         String resultType = resultObject.getGenType().toString(true);
                         String resultOutputString = resultString + "   (" + resultType + ")";
-                        DataCollector.codePadSuccess(frame.getPackage(), ir.getOriginalCommand(), resultOutputString);
                         objectOutput(resultOutputString, new ObjectInfo(resultObject, ir));
-                    }
-                    else
-                    {
+                    } else {
                         String resultType = resultField.getType().toString(true);
                         String resultOutputString = resultString + "   (" + resultType + ")";
-                        DataCollector.codePadSuccess(frame.getPackage(), ir.getOriginalCommand(), resultOutputString);
                         output(resultOutputString);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 //markCurrentAs(TextEvalSyntaxView.OUTPUT, false);
             }
 
@@ -696,8 +636,7 @@ public class CodePad extends VBox
             busy = false;
         }
 
-        private void updateInspectors()
-        {
+        private void updateInspectors() {
             Project proj = frame.getPackage().getProject();
             proj.updateInspectors();
         }
@@ -706,12 +645,9 @@ public class CodePad extends VBox
          * An invocation has failed - here is the error message
          */
         @Override
-        public void putError(String message, InvokerRecord ir)
-        {
-            if (firstTry)
-            {
-                if (wrappedResult)
-                {
+        public void putError(String message, InvokerRecord ir) {
+            if (firstTry) {
+                if (wrappedResult) {
                     // We thought we knew what the result type should be, but there
                     // was a compile time error. So try again, assuming that we
                     // got it wrong, and we'll use the dynamic result type (meaning
@@ -721,36 +657,28 @@ public class CodePad extends VBox
                     invoker = new Invoker(frame, CodePad.this, command, this);
                     invoker.setImports(textParser.getImportStatements());
                     invoker.doFreeFormInvocation("");
-                }
-                else
-                {
+                } else {
                     // We thought there was going to be a result, but compilation failed.
                     // Try again, but assume we have a statement this time.
                     firstTry = false;
                     invoker = new Invoker(frame, CodePad.this, command, this);
                     invoker.setImports(textParser.getImportStatements());
                     invoker.doFreeFormInvocation(null);
-                    if (errorMessage == null)
-                    {
+                    if (errorMessage == null) {
                         errorMessage = message;
                     }
                 }
-            }
-            else
-            {
-                if (errorMessage == null)
-                {
+            } else {
+                if (errorMessage == null) {
                     errorMessage = message;
                 }
 
                 // An error. Remove declared variables.
-                if (autoInitializedVars != null)
-                {
+                if (autoInitializedVars != null) {
                     autoInitializedVars.clear();
                 }
 
                 removeNewlyDeclareds();
-                DataCollector.codePadError(frame.getPackage(), ir.getOriginalCommand(), errorMessage);
                 showErrorMsg(errorMessage);
                 errorMessage = null;
             }
@@ -760,8 +688,7 @@ public class CodePad extends VBox
          * A runtime exception occurred.
          */
         @Override
-        public void putException(ExceptionDescription exception, InvokerRecord ir)
-        {
+        public void putException(ExceptionDescription exception, InvokerRecord ir) {
             ExecutionEvent executionEvent = new ExecutionEvent(frame.getPackage());
             executionEvent.setCommand(command);
             executionEvent.setResult(ExecutionEvent.EXCEPTION_EXIT);
@@ -769,14 +696,12 @@ public class CodePad extends VBox
             BlueJEvent.raiseEvent(BlueJEvent.EXECUTION_RESULT, executionEvent);
             updateInspectors();
 
-            if (autoInitializedVars != null)
-            {
+            if (autoInitializedVars != null) {
                 autoInitializedVars.clear();
             }
 
             removeNewlyDeclareds();
             String message = exception.getClassName() + " (" + exception.getText() + ")";
-            DataCollector.codePadException(frame.getPackage(), ir.getOriginalCommand(), message);
             showExceptionMsg(message);
         }
 
@@ -785,8 +710,7 @@ public class CodePad extends VBox
          * execution).
          */
         @Override
-        public void putVMTerminated(InvokerRecord ir)
-        {
+        public void putVMTerminated(InvokerRecord ir) {
             if (autoInitializedVars != null)
                 autoInitializedVars.clear();
 
@@ -794,19 +718,17 @@ public class CodePad extends VBox
 
 
             String message = Config.getString("pkgmgr.codepad.vmTerminated");
-            DataCollector.codePadError(frame.getPackage(), ir.getOriginalCommand(), message);
             error(message);
 
             completeExecution();
         }
     }
-    
+
     /**
      * Remove the newly declared variables from the value collection.
      * (This is needed if compilation fails, or execution bombs with an exception).
      */
-    private void removeNewlyDeclareds()
-    {
+    private void removeNewlyDeclareds() {
         if (newlyDeclareds != null) {
             Iterator<CodepadVar> i = newlyDeclareds.iterator();
             while (i.hasNext()) {
@@ -815,48 +737,44 @@ public class CodePad extends VBox
             newlyDeclareds = null;
         }
     }
-    
+
     //   --- end of ResultWatcher interface ---
-    
+
     /**
      * Show an error message, and allow further command input.
      */
-    private void showErrorMsg(final String message)
-    {
+    private void showErrorMsg(final String message) {
         error("Error: " + message);
         completeExecution();
     }
-    
+
     /**
      * Show an exception message, and allow further command input.
      */
-    private void showExceptionMsg(final String message)
-    {
+    private void showExceptionMsg(final String message) {
         error("Exception: " + message);
         completeExecution();
     }
-    
+
     /**
      * Execution of the current command has finished (one way or another).
      * Allow further command input.
      */
-    private void completeExecution()
-    {
+    private void completeExecution() {
         inputField.setEditable(true);
         busy = false;
     }
 
     /**
      * Record part of a command
+     *
      * @param s
      */
-    private void command(String s, boolean isFinalLine)
-    {
+    private void command(String s, boolean isFinalLine) {
         addRow(new CommandRow(s, isFinalLine));
     }
 
-    private void addRow(HistoryRow row)
-    {
+    private void addRow(HistoryRow row) {
         historyView.getSelectionModel().clearSelection();
         historyView.getItems().add(row);
         historyView.scrollTo(historyView.getItems().size() - 1);
@@ -864,33 +782,32 @@ public class CodePad extends VBox
 
     /**
      * Write a (non-error) message to the text area.
+     *
      * @param s The message
      */
-    private void output(String s)
-    {
+    private void output(String s) {
         addRow(new OutputSuccessRow(s, null));
     }
-    
+
     /**
      * Write a (non-error) message to the text area.
+     *
      * @param s The message
      */
-    private void objectOutput(String s, ObjectInfo objInfo)
-    {
+    private void objectOutput(String s, ObjectInfo objInfo) {
         addRow(new OutputSuccessRow(s, objInfo));
     }
-    
+
     /**
      * Write an error message to the text area.
+     *
      * @param s The message
      */
-    private void error(String s)
-    {
+    private void error(String s) {
         addRow(new ErrorRow(s));
     }
 
-    public void clear()
-    {
+    public void clear() {
         clearVars();
     }
 
@@ -898,17 +815,15 @@ public class CodePad extends VBox
      * Clear the CodePad after closing the project that the only one is opened,
      * When opening a new project, the CodePad appears again and it is clear.
      */
-    public void clearHistoryView()
-    {
+    public void clearHistoryView() {
         historyView.getItems().clear();
     }
 
-    private void executeCommand(String command)
-    {
+    private void executeCommand(String command) {
         if (busy) {
             return;
         }
-        
+
         firstTry = true;
         busy = true;
         if (textParser == null) {
@@ -918,7 +833,7 @@ public class CodePad extends VBox
         String retType;
         retType = textParser.parseCommand(command);
         wrappedResult = (retType != null && retType.length() != 0);
-        
+
         // see if any variables were declared
         if (retType == null) {
             firstTry = false; // Only try once.
@@ -933,10 +848,10 @@ public class CodePad extends VBox
                     if (autoInitializedVars == null) {
                         autoInitializedVars = new ArrayList<String>();
                     }
-                    
+
                     DeclaredVar dv = i.next();
                     String declaredName = dv.getName();
-                    
+
                     if (getLocalVar(declaredName) != null) {
                         // The variable has already been declared
                         String errMsg = Config.getString("pkgmgr.codepad.redefinedVar");
@@ -945,7 +860,7 @@ public class CodePad extends VBox
                         removeNewlyDeclareds();
                         return;
                     }
-                    
+
                     CodepadVar cpv = new CodepadVar(dv.getName(), dv.getDeclaredType(), dv.isFinal());
                     newlyDeclareds.add(cpv);
                     localVars.add(cpv);
@@ -953,7 +868,7 @@ public class CodePad extends VBox
                     // If the variable was declared but not initialized, the codepad
                     // auto-initializes it. We add to a list so that we can display
                     // a warning to that effect, once the command has completed.
-                    if (! dv.isInitialized()) {
+                    if (!dv.isInitialized()) {
                         autoInitializedVars.add(dv.getName());
                     }
                 }
@@ -970,8 +885,7 @@ public class CodePad extends VBox
         }
     }
 
-    private void softReturn()
-    {
+    private void softReturn() {
         String line = inputField.getText();
         if (line.trim().isEmpty())
             return; // Don't allow entry of blank lines
@@ -981,32 +895,28 @@ public class CodePad extends VBox
         inputField.setText("");
     }
 
-    private void historyBack()
-    {
+    private void historyBack() {
         String line = history.getPrevious();
-        if(line != null) {
+        if (line != null) {
             setInput(line);
         }
     }
 
-    private void setInput(String line)
-    {
+    private void setInput(String line) {
         inputField.setText(line);
         // When going back in history, seems best to put cursor at the end of the field
         // but by default it gets put at the beginning when setting new text.:
         inputField.end();
     }
 
-    private void historyForward()
-    {
+    private void historyForward() {
         String line = history.getNext();
-        if(line != null) {
+        if (line != null) {
             setInput(line);
         }
     }
 
-    public void focusInputField()
-    {
+    public void focusInputField() {
         inputField.requestFocus();
     }
 
@@ -1014,7 +924,7 @@ public class CodePad extends VBox
     final class ObjectInfo {
         DebuggerObject obj;
         InvokerRecord ir;
-        
+
         /**
          * Create an object holding information about an invocation.
          */
@@ -1023,45 +933,39 @@ public class CodePad extends VBox
             this.ir = ir;
         }
     }
-    
+
     final class CodepadVar implements NamedValue {
-        
+
         String name;
         boolean finalVar;
         boolean initialized = false;
         JavaType type;
-        
-        public CodepadVar(String name, JavaType type, boolean finalVar)
-        {
+
+        public CodepadVar(String name, JavaType type, boolean finalVar) {
             this.name = name;
             this.finalVar = finalVar;
             this.type = type;
         }
-        
-        public String getName()
-        {
+
+        public String getName() {
             return name;
         }
-        
-        public JavaType getGenType()
-        {
+
+        public JavaType getGenType() {
             return type;
         }
-        
-        public boolean isFinal()
-        {
+
+        public boolean isFinal() {
             return finalVar;
         }
-        
-        public boolean isInitialized()
-        {
+
+        public boolean isInitialized() {
             return initialized;
         }
-        
-        public void setInitialized()
-        {
+
+        public void setInitialized() {
             initialized = true;
         }
     }
-    
+
 }

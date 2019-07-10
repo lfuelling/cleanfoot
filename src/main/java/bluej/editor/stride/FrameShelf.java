@@ -21,7 +21,6 @@
  */
 package bluej.editor.stride;
 
-import bluej.collect.StrideEditReason;
 import bluej.parser.AssistContent;
 import bluej.stride.framedjava.ast.JavaFragment;
 import bluej.stride.framedjava.ast.Loader;
@@ -65,11 +64,10 @@ import java.util.*;
  * This is the GUI representation of the frame shelf, one per Stride editor window.
  */
 @OnThread(Tag.FX)
-public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCheck
-{
+public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCheck {
     private final SimpleStringProperty fakeName = new SimpleStringProperty("...");
     private final ObjectProperty<Frame.View> viewHolder = new ReadOnlyObjectWrapper<>(Frame.View.NORMAL);
-    
+
     private final FXTabbedEditor parent;
     private final BorderPaneWithHighlightColor shelfPane = new BorderPaneWithHighlightColor();
     private final FrameCanvas canvas = new FrameCanvas(this, this, "shelf-");
@@ -77,8 +75,7 @@ public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCh
     private final FrameShelfStorage centralStorage;
     private FrameCursor dragTarget;
 
-    public FrameShelf(FXTabbedEditor parent, FrameShelfStorage storage)
-    {
+    public FrameShelf(FXTabbedEditor parent, FrameShelfStorage storage) {
         this.parent = parent;
         shelfPane.setCenter(canvas.getNode());
         shelfPane.setStyle(getFontCSS().get());
@@ -88,399 +85,303 @@ public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCh
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void withCompletions(JavaFragment.PosInSourceDoc pos, ExpressionSlot<?> completing, CodeElement codeEl, FXPlatformConsumer<List<AssistContentThreadSafe>> handler)
-    {
+    public void withCompletions(JavaFragment.PosInSourceDoc pos, ExpressionSlot<?> completing, CodeElement codeEl, FXPlatformConsumer<List<AssistContentThreadSafe>> handler) {
         JavaFXUtil.runAfterCurrent(() -> handler.accept(Collections.emptyList()));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void withAccessibleMembers(JavaFragment.PosInSourceDoc pos, Set<AssistContent.CompletionKind> kinds, boolean includeOverridden, FXPlatformConsumer<List<AssistContentThreadSafe>> handler)
-    {
+    public void withAccessibleMembers(JavaFragment.PosInSourceDoc pos, Set<AssistContent.CompletionKind> kinds, boolean includeOverridden, FXPlatformConsumer<List<AssistContentThreadSafe>> handler) {
         JavaFXUtil.runAfterCurrent(() -> handler.accept(Collections.emptyList()));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void withSuperConstructors(FXPlatformConsumer<List<AssistContentThreadSafe>> handler)
-    {
+    public void withSuperConstructors(FXPlatformConsumer<List<AssistContentThreadSafe>> handler) {
         JavaFXUtil.runAfterCurrent(() -> handler.accept(Collections.emptyList()));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void withTypes(BackgroundConsumer<Map<String, AssistContentThreadSafe>> handler)
-    {
+    public void withTypes(BackgroundConsumer<Map<String, AssistContentThreadSafe>> handler) {
         Utility.runBackground(() -> handler.accept(Collections.emptyMap()));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void withTypes(Class<?> superType, boolean includeSelf, Set<Kind> kinds, BackgroundConsumer<Map<String, AssistContentThreadSafe>> handler)
-    {
+    public void withTypes(Class<?> superType, boolean includeSelf, Set<Kind> kinds, BackgroundConsumer<Map<String, AssistContentThreadSafe>> handler) {
         Utility.runBackground(() -> handler.accept(Collections.emptyMap()));
     }
 
     @Override
     @OnThread(Tag.Any)
-    public Map<SuggestionList.SuggestionShown, Collection<AssistContentThreadSafe>> getImportSuggestions()
-    {
+    public Map<SuggestionList.SuggestionShown, Collection<AssistContentThreadSafe>> getImportSuggestions() {
         return Collections.emptyMap();
     }
 
     @Override
-    public void addImport(String importSrc)
-    {
+    public void addImport(String importSrc) {
 
     }
 
     @Override
-    public FrameCursor getFocusedCursor()
-    {
+    public FrameCursor getFocusedCursor() {
         return null; // TODO
     }
 
     @Override
-    public List<FileCompletion> getAvailableFilenames()
-    {
+    public List<FileCompletion> getAvailableFilenames() {
         return Collections.emptyList();
     }
 
     @Override
-    public ObservableStringValue nameProperty()
-    {
+    public ObservableStringValue nameProperty() {
         return fakeName;
     }
 
     @Override
-    public FrameDictionary<StrideCategory> getDictionary()
-    {
+    public FrameDictionary<StrideCategory> getDictionary() {
         return StrideDictionary.getDictionary();
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void searchLink(PossibleLink link, FXPlatformConsumer<Optional<LinkedIdentifier>> callback)
-    {
+    public void searchLink(PossibleLink link, FXPlatformConsumer<Optional<LinkedIdentifier>> callback) {
         JavaFXUtil.runAfterCurrent(() -> callback.accept(Optional.empty()));
     }
 
     @Override
-    public Pane getDragTargetCursorPane()
-    {
+    public Pane getDragTargetCursorPane() {
         return parent.getDragCursorPane();
     }
 
     @Override
-    public void ensureImportsVisible()
-    {
+    public void ensureImportsVisible() {
         // Not applicable
     }
 
     @Override
-    public void updateCatalog(FrameCursor f)
-    {
+    public void updateCatalog(FrameCursor f) {
         // TODO
     }
 
     @Override
-    public void updateErrorOverviewBar()
-    {
+    public void updateErrorOverviewBar() {
         // Not applicable
     }
 
     @Override
-    public Paint getHighlightColor()
-    {
+    public Paint getHighlightColor() {
         return shelfPane.cssHighlightColorProperty().get();
     }
 
     @Override
-    public List<AssistContentThreadSafe> getThisConstructors()
-    {
+    public List<AssistContentThreadSafe> getThisConstructors() {
         return Collections.emptyList();
     }
 
     @Override
-    public FrameEditor getFrameEditor()
-    {
+    public FrameEditor getFrameEditor() {
         return null;
     }
 
     @Override
-    public void recordCodeCompletionStarted(SlotFragment position, int index, String stem, int codeCompletionId)
-    {
-        // Not applicable
-    }
-
-    @Override
-    public void recordCodeCompletionEnded(SlotFragment position, int index, String stem, String completion, int codeCompletionId)
-    {
-        // Not applicable
-    }
-
-    @Override
-    public void recordErrorIndicatorShown(int identifier)
-    {
-        // Not applicable
-    }
-
-    @Override
-    public void setupFrame(Frame f)
-    {
+    public void setupFrame(Frame f) {
         FXTabbedEditor.setupFrameDrag(f, true, () -> parent, () -> true, () -> selection);
     }
 
     @Override
-    public void setupFrameCursor(FrameCursor c)
-    {
+    public void setupFrameCursor(FrameCursor c) {
         // TODO ?
     }
 
     @Override
-    public void setupFocusableSlotComponent(EditableSlot parent, Node focusableComponent, boolean canCodeComplete, FXSupplier<List<ExtensionDescription>> getExtensions, List<FrameCatalogue.Hint> hints)
-    {
+    public void setupFocusableSlotComponent(EditableSlot parent, Node focusableComponent, boolean canCodeComplete, FXSupplier<List<ExtensionDescription>> getExtensions, List<FrameCatalogue.Hint> hints) {
         // TODO ?
     }
 
     @Override
-    public void setupSuggestionWindow(Stage window)
-    {
+    public void setupSuggestionWindow(Stage window) {
         // TODO ?
     }
 
     @Override
-    public void clickNearestCursor(double sceneX, double sceneY, boolean shiftDown)
-    {
+    public void clickNearestCursor(double sceneX, double sceneY, boolean shiftDown) {
         FrameCursor c = canvas.findClosestCursor(sceneX, sceneY, Collections.emptyList(), false, true);
         if (c != null)
             c.requestFocus();
     }
 
     @Override
-    public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend)
-    {
+    public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend) {
         return canvas.findClosestCursor(sceneX, sceneY, exclude, isDrag, canDescend);
     }
 
     @Override
-    public FrameCursor createCursor(FrameCanvas parent)
-    {
+    public FrameCursor createCursor(FrameCanvas parent) {
         return new FrameCursor(this, parent);
     }
 
     @Override
-    public Observable getObservableScroll()
-    {
+    public Observable getObservableScroll() {
         return new ReadOnlyDoubleWrapper(0.0); // Not applicable
     }
 
     @Override
-    public DoubleExpression getObservableViewportHeight()
-    {
+    public DoubleExpression getObservableViewportHeight() {
         return new ReadOnlyDoubleWrapper(0.0); // Not applicable
     }
 
     @Override
-    public WindowOverlayPane getWindowOverlayPane()
-    {
+    public WindowOverlayPane getWindowOverlayPane() {
         return null; // TODO
     }
 
     @Override
-    public CodeOverlayPane getCodeOverlayPane()
-    {
+    public CodeOverlayPane getCodeOverlayPane() {
         return null; // TODO
     }
 
     @Override
-    public void modifiedFrame(Frame f, boolean force)
-    {
+    public void modifiedFrame(Frame f, boolean force) {
         // Not applicable
     }
 
     @Override
-    public void recordEdits(StrideEditReason reason)
-    {
-         // Not applicable
-    }
-
-    @Override
-    public void afterRegenerateAndReparse(FXPlatformRunnable action)
-    {
+    public void afterRegenerateAndReparse(FXPlatformRunnable action) {
         // TODO
     }
 
     @Override
-    public void beginRecordingState(RecallableFocus f)
-    {
+    public void beginRecordingState(RecallableFocus f) {
         // TODO ?
     }
 
     @Override
-    public void endRecordingState(RecallableFocus f)
-    {
+    public void endRecordingState(RecallableFocus f) {
         // TODO ?
     }
 
     @Override
-    public void scrollTo(Node n, double yOffsetFromTop, Duration duration)
-    {
+    public void scrollTo(Node n, double yOffsetFromTop, Duration duration) {
         // TODO ?
     }
 
     @Override
-    public FrameSelection getSelection()
-    {
+    public FrameSelection getSelection() {
         return selection;
     }
 
     @Override
-    public void registerStackHighlight(Frame frame)
-    {
+    public void registerStackHighlight(Frame frame) {
         // Not applicable
     }
 
     @Override
-    public boolean isLoading()
-    {
+    public boolean isLoading() {
         return false; // TODO
     }
 
     @Override
-    public ReadOnlyObjectProperty<Frame.View> viewProperty()
-    {
+    public ReadOnlyObjectProperty<Frame.View> viewProperty() {
         return viewHolder;
     }
 
     @Override
-    public void showUndoDeleteBanner(int totalEffort)
-    {
+    public void showUndoDeleteBanner(int totalEffort) {
         // Not applicable ?
     }
 
     @Override
-    public boolean isEditable()
-    {
+    public boolean isEditable() {
         return true;
     }
 
     @Override
-    public BooleanProperty cheatSheetShowingProperty()
-    {
+    public BooleanProperty cheatSheetShowingProperty() {
         return null; // TODO
-    }
-
-    @Override
-    public void recordUnknownCommandKey(Frame enclosingFrame, int index, char key)
-    {
-        // Not applicable
-    }
-
-    @Override
-    public void recordShowHideFrameCatalogue(boolean show, FrameCatalogue.ShowReason reason)
-    {
-        // Not applicable
     }
 
     @Override
     @OnThread(Tag.FX)
-    public ImageView makeClassImageView()
-    {
+    public ImageView makeClassImageView() {
         // Not applicable
         return null;
     }
 
     @Override
-    public FrameTypeCheck check(FrameCanvas childCanvas)
-    {
+    public FrameTypeCheck check(FrameCanvas childCanvas) {
         return this;
     }
 
     @Override
-    public FrameCursor getCursorBefore(FrameCanvas c)
-    {
+    public FrameCursor getCursorBefore(FrameCanvas c) {
         return null;
     }
 
     @Override
-    public FrameCursor getCursorAfter(FrameCanvas c)
-    {
+    public FrameCursor getCursorAfter(FrameCanvas c) {
         return null;
     }
 
     @Override
-    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas)
-    {
+    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas) {
         return Collections.emptyList();
     }
 
     @Override
-    public InteractionManager getEditor()
-    {
+    public InteractionManager getEditor() {
         return this;
     }
 
     @Override
-    public void modifiedCanvasContent()
-    {
+    public void modifiedCanvasContent() {
         // Not applicable
     }
 
     @Override
-    public Frame getFrame()
-    {
+    public Frame getFrame() {
         return null;
     }
 
     @Override
-    public CanvasKind getChildKind(FrameCanvas c)
-    {
+    public CanvasKind getChildKind(FrameCanvas c) {
         return null; // TODO
     }
 
     @Override
-    public boolean canInsert(StrideCategory category)
-    {
+    public boolean canInsert(StrideCategory category) {
         // Anything goes:
         return true;
     }
 
     @Override
-    public boolean canPlace(Class<? extends Frame> type)
-    {
+    public boolean canPlace(Class<? extends Frame> type) {
         // Anything goes:
         return true;
     }
 
     @Override
-    public StringExpression getFontCSS()
-    {
+    public StringExpression getFontCSS() {
         return new ReadOnlyStringWrapper("-fx-font-size:10pt;");
     }
 
-    public Node getNode()
-    {
+    public Node getNode() {
         return shelfPane;
     }
 
     @OnThread(Tag.FXPlatform)
-    public void draggedTo(List<Frame> dragSourceFrames, double sceneX, double sceneY, boolean copying)
-    {
+    public void draggedTo(List<Frame> dragSourceFrames, double sceneX, double sceneY, boolean copying) {
         Bounds shelfBounds = shelfPane.localToScene(shelfPane.getBoundsInLocal());
-        if (sceneX < shelfBounds.getMinX() || sceneX > shelfBounds.getMaxX())
-        {
+        if (sceneX < shelfBounds.getMinX() || sceneX > shelfBounds.getMaxX()) {
             // Drag has moved out of editor section, don't show any drag target for now:
             if (dragTarget != null) {
                 dragTarget.stopShowAsDropTarget();
                 dragTarget = null;
             }
-        }
-        else
-        {
+        } else {
             FrameCursor newDragTarget = canvas.findClosestCursor(sceneX, sceneY, dragSourceFrames, true, true);
-            if (newDragTarget != null && dragTarget != newDragTarget)
-            {
+            if (newDragTarget != null && dragTarget != newDragTarget) {
                 if (dragTarget != null) {
                     dragTarget.stopShowAsDropTarget();
                     dragTarget = null;
@@ -495,25 +396,20 @@ public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCh
             }
         }
 
-        if (dragTarget != null)
-        {
+        if (dragTarget != null) {
             dragTarget.updateDragCopyState(copying);
         }
     }
 
     @OnThread(Tag.FXPlatform)
-    public void dragEnd(ArrayList<Frame> dragSourceFrames, boolean fromShelf, boolean copying)
-    {
+    public void dragEnd(ArrayList<Frame> dragSourceFrames, boolean fromShelf, boolean copying) {
         // First, move the blocks:
-        if (dragSourceFrames != null && !dragSourceFrames.isEmpty())
-        {
-            if (dragTarget != null)
-            {
+        if (dragSourceFrames != null && !dragSourceFrames.isEmpty()) {
+            if (dragTarget != null) {
                 // Check all of them can be dragged to new location:
                 boolean canMove = dragSourceFrames.stream().allMatch(src -> dragTarget.getParentCanvas().acceptsType(src));
 
-                if (canMove && !FXTabbedEditor.isUselessDrag(dragTarget, dragSourceFrames, copying))
-                {
+                if (canMove && !FXTabbedEditor.isUselessDrag(dragTarget, dragSourceFrames, copying)) {
                     beginRecordingState(dragTarget);
                     performDrag(dragSourceFrames, fromShelf, copying);
                     endRecordingState(dragTarget);
@@ -528,17 +424,11 @@ public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCh
     }
 
     @OnThread(Tag.FXPlatform)
-    private void performDrag(List<Frame> dragSourceFrames, boolean fromShelf, boolean copying)
-    {
+    private void performDrag(List<Frame> dragSourceFrames, boolean fromShelf, boolean copying) {
         Frame parentFrame = dragTarget.getParentCanvas().getParent().getFrame();
         boolean shouldDisable = parentFrame != null && !parentFrame.isFrameEnabled();
 
         InteractionManager editor = dragSourceFrames.get(0).getEditor();
-        
-        // We only record if we are moving from an editor.
-        // Copying from editor, or coming from shelf, doesn't change code.
-        if (!fromShelf && !copying)
-            editor.recordEdits(StrideEditReason.FLUSH);
 
         // We must add blocks in reverse order after cursor:
         Collections.reverse(dragSourceFrames);
@@ -552,30 +442,26 @@ public class FrameShelf implements InteractionManager, CanvasParent, FrameTypeCh
         if (!copying)
             dragSourceFrames.forEach(src -> src.getParentCanvas().removeBlock(src));
 
-        if (!fromShelf && !copying)
-            editor.recordEdits(StrideEditReason.FRAMES_DRAG_SHELF);
     }
 
-    public void cleanup()
-    {
+    public void cleanup() {
         centralStorage.deregisterShelf(this);
     }
 
     /**
      * Gets the observable list of frames on this graphical shelf interface.
-     *
+     * <p>
      * Do not modify the contents directly under any circumstances!  Only use it for listening.
      */
-    public ObservableList<Frame> getContent()
-    {
+    public ObservableList<Frame> getContent() {
         return canvas.getBlockContents();
     }
 
-    public void setContent(Element framesElement)
-    {
+    public void setContent(Element framesElement) {
         canvas.clear();
         for (int i = 0; i < framesElement.getChildElements().size(); i++) {
-            canvas.insertBlockAfter(Loader.loadElement(framesElement.getChildElements().get(i)).createFrame(this), null);
+            canvas.insertBlockAfter(Objects.requireNonNull(Loader.loadElement(framesElement.getChildElements().get(i)))
+                    .createFrame(this), null);
         }
     }
 }
