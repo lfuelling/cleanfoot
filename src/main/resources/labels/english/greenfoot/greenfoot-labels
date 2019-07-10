@@ -1,0 +1,360 @@
+#i18n for greenfoot
+
+greenfoot.nyi=Not Yet Implemented - sorry.
+greenfoot.preferences=Preferences...
+greenfoot.copyright=Copyright...
+greenfoot.quit=Quit
+
+greenfoot.launchFailed=Greenfoot failed to launch. For help go to http://www.greenfoot.org/support
+
+
+# Greenfoot project version info
+project.version.none=The scenario being opened has been written using an older version of Greenfoot (before greenfoot version 0.5). This will most likely result in some errors that will have to be fixed manually.
+project.version.notGreenfoot=This is not a Greenfoot scenario: 
+project.version.mismatch=Versions do not match
+# The next 3 items will be shown if the major digit in the version number has changed. 
+# part3 should be updated to describe the changes that has happened.
+project.version.older.part1=The scenario being opened has been written using an older version of Greenfoot (API version 
+# project version inserted here by Greenfoot
+project.version.older.part2=). The scenario will be updated to the current version (API version 
+# api version inserted here by Greenfoot
+
+#Info about changes in this new version of the API that might break existing scenarios.
+project.version.older.part3=). The following changes to the Greenfoot API might break this scenario:
+
+# Note the versions here are API versions, not Greenfoot versions!
+project.version.changes.1=2.1.0 The methods 'stopSimulation', 'startSimulation' and 'setSimulationSpeed' in the Greenfoot class have been renamed to 'start', 'stop' and 'setSpeed'. 
+project.version.changes.2=2.1.0 Actor's methods 'getWidth' and 'getHeight' have been removed. Use 'getImage().getWidth()' and 'getImage().getHeight()' instead.
+project.version.changes.3=2.1.0 Actor's method 'getObjectsInRange' now uses cells instead of pixels as the unit for the range. 
+project.version.changes.4=2.1.0 Greenfoot has been made case sensitive when dealing with sound and image files.
+project.version.changes.5=2.1.0 World's methods 'setTiled' and 'getTiled' have been removed.
+project.version.changes.6=2.1.0 World's 'getBackground' now returns an image that is the size of the entire background.
+project.version.changes.7=2.2.0 A 'move' method and a 'turn' method have been added to the Actor class.
+project.version.changes.8=2.3.0 Greenfoot.getMouseInfo() now only returns null if the mouse is not in the world.
+project.version.changes.9=2.3.0 A 'turnTowards(int,int)' method has been added to the Actor class.
+project.version.changes.10=2.4.0 A 'UserInfo' class was added (renamed from 'PlayerData' in the Greenfoot 2.2.0 beta).
+project.version.changes.11=2.5.0 The 'isTouching' and 'removeTouching' methods were added to the Actor class.
+project.version.changes.12=2.6.0 The 'showText' method was added to the World class, and a new constructor added to GreenfootImage.
+project.version.changes.13=2.7.0 The 'ask' method was added to the Greenfoot class.
+project.version.changes.14=2.8.0 The 'getWorldOfType' method was added to the Actor class, and generics were added to API.
+project.version.changes.15=3.0.0 The greenfoot.Color and greenfoot.Font classes were introduced, to replace the java.awt classes.
+
+project.version.newer.part1=The scenario being opened has been written using a newer version of Greenfoot (API version 
+# project version inserted here by Greenfoot
+project.version.newer.part2=). Opening the scenario with your current version of Greenfoot might result in some errors that will have to be fixed manually.\n\nDo you want to continue opening the scenario?
+project.close=Close
+
+# Actions
+greenfoot.about=About Greenfoot...
+compile.all=Compile
+compile.class=Compile
+duplicate.class=Duplicate...
+edit.class=Open editor
+edit.images=Scenario Images...
+new.other.class=New Class...
+new.sub.class=New subclass...
+stride.new.project=New Stride Scenario...
+java.new.project=New Java Scenario...
+open.project=Open...
+open.gfar.project=Open GFAR...
+open.recentProject=Open recent
+remove.class=Delete
+remove.selected=Delete Class
+convert.to.java.class=Convert to Java
+convert.to.java.selected=Convert class to Java
+inspect.class=Inspect
+reset.world=Reset
+run.once=Act
+run.simulation=Run
+project.save=Save
+project.saveAs=Save As...
+select.image=Set image...
+show.readme=Scenario Information
+pause.simulation=Pause
+show.apidoc=Open Documentation
+save.world=Save the World
+
+newProject.prompt=Enter a name for the new scenario
+
+# Remove class confirmation
+remove.confirm.title=Confirm deleting of class
+remove.confirm.text1=About to delete class
+remove.confirm.text2=Continue?
+
+# Convert to Java class confirmation
+convert.to.java.confirm.title=Confirm converting a class
+convert.to.java.confirm.text1=About to convert
+convert.to.java.confirm.text2=class from Stride to Java.
+convert.to.java.confirm.text3=This operation may not be reversible. Continue?
+
+# Save As project dialog
+project.saveAs.title=Save Scenario As
+
+# Export scenario dialog
+export.project=Share...
+export.progress.bundling=Bundling scenario...
+export.progress.publishing=Publishing...
+export.progress.writingHTML=Writing web page...
+export.progress.writingJar=Writing jar file...
+export.progress.writingGfar=Writing gfar file...
+export.progress.complete=Export complete.
+export.publish.fail=Publish failed:
+export.publish.unknownHost=Publish failed: Unknown host
+export.publish.errorResponse=Unrecognized response from the server.
+export.publish.errorPassword=Invalid username or password
+export.publish.errorTooLarge=The scenario is too large
+export.publish.complete=Publish complete
+export.publish.proxyAuth=Proxy Authentication
+export.publish.needProxyAuth=Proxy authentication is required.
+export.app.help=Create an executable jar file that can be run on its own.
+export.app.location=Save to:
+export.app.browse=Browse
+export.app.choose=Save executable jar file
+export.project.help=Create a standalone project gfar file.
+export.project.location=Save to:
+export.project.browse=Browse
+export.project.choose=Save project gfar file
+export.dialog.title=Share
+export.dialog.export=Export
+export.dialog.share=Share
+export.dialog.update=Update
+export.lock.label=Lock scenario
+export.controls.label=Hide controls
+export.fullScreen.label=Full screen
+export.fullScreen.description=Opens scenario in full screen
+export.controls.description=Hides the Play/Pause and Reset buttons.
+export.snapshot.label=Keep existing screenshot
+export.lock.description=Prevents: Speed change, Act-button, and changing of actor locations while paused.
+export.publish.help=Publish the scenario to:
+export.publish.info=Information for display on
+export.publish.image1=Scenario icon:
+export.publish.image2=(scale and move it)
+export.publish.title=Title:
+export.publish.tags.additional1=Additional tags:
+export.publish.tags.additional2=(one tag per line)
+export.publish.tags.popular=Popular tags:
+export.publish.tags.loading=loading...
+export.publish.shortDescription=One-line description:
+export.publish.longDescription=Longer description:
+export.publish.update=Changes in update:
+export.publish.url=Your own page (URL):
+export.publish.login=Login
+export.publish.username=Username:
+export.publish.password=Password:
+export.publish.createAccount=Create account
+export.publish.includeSource=Publish source code
+export.web.help=Create a web page with an applet.
+export.web.exportLocation=Export location:
+export.web.browse=Browse
+export.web.choose=Choose Export Directory Name
+export.icontab.publish=Publish
+export.icontab.webpage=Webpage
+export.icontab.application=Application
+export.icontab.project=Project
+export.noworld.dialog.title=Error: No world class found.
+export.noworld.dialog.msg=No world class could be found in the scenario. To export, a subclass of World is required.
+export.noconstructor.dialog.title=Error: No suitable constructor
+export.noconstructor.dialog.msg=The world class has no default constructor. To export, a zero-argument constructor is required.
+
+publish.event.error=Error:
+publish.event.status=Status:
+
+world.handlerDelegate.inspect=Inspect
+world.handlerDelegate.remove=Delete
+
+record.method.comment1=Prepare the world for the start of the program.
+record.method.comment2=That is: create the initial objects and add them to the world.
+
+greenfoot.utilDelegate.newScenario=New Scenario
+
+#File choosers
+chooser.newFile.button=Choose
+chooser.scenario.title=Open Scenario
+chooser.scenario.button=Open
+
+#New Class dialog
+newclass.dialog.title=Create new class
+newclass.dialog.help1=A class name cannot contain spaces or punctuation 
+newclass.dialog.help2=characters and should start with a capital letter.
+newclass.dialog.className=New class name: 
+newclass.dialog.err.classExists=Class with that name already exists.
+newclass.dialog.err.classNameIllegal=Not a valid $LANGUAGE class name.
+newclass.dialog.selectionLabel=Language:
+newclass.dialog.class=Class
+newclass.dialog.interface=Interface
+
+# Image Lib Preview
+imagelib.paste.image=Paste Image...
+imagelib.title=Select class image:
+imagelib.newClass=New class
+imagelib.projectImages=Scenario images:
+imagelib.categories=Image Categories:
+imagelib.images=Library images:
+imagelib.browse.button=Import from file...
+imagelib.create.button=Create new image...
+imagelib.edit=Edit
+imagelib.edit.tooltip=Edit the selected image by opening it in the image editor.
+imagelib.duplicate=Duplicate
+imagelib.duplicate.tooltip=Duplicate the selected image.
+imagelib.delete=Delete
+imagelib.delete.tooltip=Delete the selected image.
+imagelib.import.button=Import from library...
+imagelib.create.tooltip=Create a new image with a default size and name, and open it in the image editor.
+imagelib.paste.tooltip=Paste an image from the system clipboard.
+imagelib.import.tooltip=Select an image from a library to import it to the scenario.
+imagelib.className=New class name:
+imagelib.newClass.image=New class image:
+imagelib.file.noPreview=No preview
+imagelib.choose.button=Select
+imagelib.write.exists.title=Confirm file replace
+imagelib.greenfoot.frame.title=Greenfoot Library Images
+imagelib.scenario.frame.title=Scenario Images
+imagelib.image.invalid.title=Invalid Image
+imagelib.rename.exists.text=Cannot rename file because a file with that name already exists.
+imagelib.rename.exists.title=Rename Failed
+imagelib.new.image.title=New Image
+imagelib.new.image.name=Name:
+imagelib.new.image.name.prompt=Enter a name for the new image
+imagelib.new.image.width=Width:
+imagelib.new.image.height=Height:
+imagelib.new.image.type=Type:
+imagelib.more=More Actions...
+imagelib.duplicate.image.name.suffix=Copy
+
+editor.paste.image.title=Paste Image
+editor.paste.image.prompt=File Name:
+editor.paste.image.name.prompt=Enter a name for the pasted image
+
+scenario.viewer.appletInfo=Applet generated with Greenfoot (www.greenfoot.org). Scenario name:
+
+# Simulation Control Panel
+controls.runonce.shortDescription=Call 'act' once for every actor.
+controls.runonce.longDescription=Call 'act' once for every actor.
+controls.run.shortDescription=Run the simulation.
+controls.run.longDescription=Run the simulation until stopped.
+controls.pause.shortDescription=Pause the simulation.
+controls.pause.longDescription=Pause the simulation, leaving it in the current state.
+controls.run.button=Run
+controls.pause.button=Pause
+controls.reset.shortDescription=Instantiate a new world.
+controls.reset.longDescription=Instantiate a new world.
+controls.speed.label=Speed:
+controls.speedSlider.tooltip=Adjusts the execution speed
+
+# Class browser
+browser.border.world=World classes
+browser.border.actors=Actor classes
+browser.border.others=Other classes
+
+# Sound Recorder
+
+soundRecorder.title=Sound Recorder
+soundRecorder.record=Record
+soundRecorder.stopRecord=Stop recording
+soundRecorder.trim=Trim to selection
+soundRecorder.play=Play
+soundRecorder.playSelection=Play selection
+soundRecorder.stopPlay=Stop playing
+soundRecorder.filename=Filename
+soundRecorder.save=Save
+soundRecorder.close=Close
+soundRecorder.close.without.saving=Close without saving
+
+# Import 
+import.import=Import
+import.dialogTitle=Import Class
+import.action=Import Class...
+import.restartMessage=Greenfoot has to be restarted for this project to work properly
+
+set.player=Set Player Name
+playername.dialog.title=Set Player Name
+playername.dialog.help=Set the username used by the UserInfo class
+playername.dialog.playerName=Player Name
+
+prefmgr.misc.playername.title=Player Name
+prefmgr.misc.playerNameNote=You can change this quickly using the shortcut:
+
+# Menus
+
+menu.openRecent=Open recent
+menu.noRecentProjects=(no recent scenarios)
+
+menu.scenario=Scenario
+
+menu.edit=Edit
+menu.new=New
+
+menu.controls=Controls
+
+menu.debugger=Show Debugger
+
+menu.soundRecorder=Show Sound Recorder
+
+menu.help=Help
+menu.help.about=About Greenfoot...
+menu.help.classDoc=Greenfoot Class Documentation
+menu.help.javadoc=Java Library Documentation
+menu.help.tutorial=Greenfoot Tutorial
+menu.help.website=Greenfoot Web Site
+menu.help.moreScenarios=Get more scenarios
+menu.help.discuss=Greenfoot Discussion
+
+#Copyright
+
+menu.help.copyright.title=Greenfoot Copyright, Licensing and Redistribution
+menu.help.copyright.line0=Greenfoot \u00a9 2005-2018 Michael K\u00F6lling, Poul Henriksen.
+menu.help.copyright.line1=Greenfoot is available under the GNU General Public License  
+menu.help.copyright.line2=version 2 with Classpath exception.
+menu.help.copyright.line3=For more information please see the files LICENSE.txt 
+menu.help.copyright.line4=and THIRDPARTYLICENSE.txt.
+
+
+# Popup menu
+classPopup.needsCompile=Needs compiling
+classPopup.containsError=Contains error(s)
+
+# Project does not exist dialog
+noproject.dialog.title=Error opening project
+noproject.dialog.msg=Project does not exist: 
+ 
+# Header for the properties file
+properties.heading.greenfoot=Greenfoot properties. Settings in this file override \"bluej.defs\" and \"greenfoot.defs\"
+
+# Message to display if a file cannot be created
+greenfoot.cannotCreateClass=The class file could not be created. Check that the project folder is writable.
+
+# General error messages
+greenfoot.cannotFindAPIDocumentation=The API documentation seems to be missing, or unreadable.
+
+# Message for sound related errors
+sound-line-unavailable=Cannot get access to the sound card. If you have a sound \ncard installed, check your system settings, and close down \nany other programs that might be using the sound card.
+
+# MainFrame central messages
+centrePanel.message.openScenario=\u2196 Create or Open a scenario using the Scenario menu
+centrePanel.message.createWorldClass=Create a new subclass of World
+centrePanel.message.createWorldObject=Instantiate a new World object
+centrePanel.message.compile1=The world class can't be compiled.
+centrePanel.message.compile2=One of the classes may have an error, check them to initialize the scenario \u2197
+centrePanel.message.initialising=The world is being constructed...
+centrePanel.message.initialisingTooLong1=The constructor for the world is taking a long time.
+centrePanel.message.initialisingTooLong2=You may have an infinite loop.
+centrePanel.message.notFocused=To construct the world, click on this window.
+centrePanel.restartButton.label=Restart
+centrePanel.message.error1=The world constructor threw an exception.
+centrePanel.message.error2=See the Terminal window for more details.
+centrePanel.message.afterRestarting1=Greenfoot has been restarted because the World could not be constructed.
+centrePanel.message.afterRestarting2=Check the constructor of the World subclass.
+centrePanel.message.missingWorldConstructor1=The world could not be constructed. The world subclass may not
+centrePanel.message.missingWorldConstructor2=have a public constructor without parameters, or may not be public.
+
+centrePanel.message.hung=Execution is taking a long time.  You may need to terminate execution using the spinning button, below right.
+
+executionDisplay.openDebugger=Open debugger
+executionDisplay.restart=Terminate Execution
+
+# Not a package
+notAProject.greenfoot.title=Not A Greenfoot Scenario
+notAProject.greenfoot.message=The selected folder does not contain a Greenfoot scenario:
+notAProject.greenfoot.subDirs=Some child folders contain Greenfoot scenarios.  Did you mean:
+notAProject.greenfoot.subDirButton=Open Selected
+notAProject.greenfoot.button=Choose Again...
