@@ -1,5 +1,5 @@
 
-Lists of 65 third-party dependencies.
+Lists of 66 third-party dependencies.
      (The Apache Software License, Version 2.0) FindBugs-jsr305 (com.google.code.findbugs:jsr305:3.0.2 - http://findbugs.sourceforge.net/)
      (Apache 2.0) error-prone annotations (com.google.errorprone:error_prone_annotations:2.3.2 - http://nexus.sonatype.org/oss-repository-hosting.html/error_prone_parent/error_prone_annotations)
      (The Apache Software License, Version 2.0) Guava InternalFutureFailureAccess and InternalFutures (com.google.guava:failureaccess:1.0.1 - https://github.com/google/guava/failureaccess)
@@ -58,6 +58,7 @@ Lists of 65 third-party dependencies.
      (The Apache Software License, Version 2.0) LZ4 and xxHash (org.lz4:lz4-java:1.4.1 - https://github.com/lz4/lz4-java)
      (ISC) jBCrypt (org.mindrot:jbcrypt:0.4 - https://github.com/djmdjm/jBCrypt)
      (The BSD 2-Clause License) ReactFX (org.reactfx:reactfx:2.0-M5 - http://www.reactfx.org/)
+     (The New BSD License) (WTFPL) Reflections (org.reflections:reflections:0.9.11 - http://github.com/ronmamo/reflections)
      (MIT License) SLF4J API Module (org.slf4j:slf4j-api:1.7.26 - http://www.slf4j.org)
      (GNU General Public License (GPL)) SQLJet Java(tm) Sqlite Library (org.tmatesoft.sqljet:sqljet:1.1.12 - https://sqljet.com/)
      (TMate Open Source License) SVNKit Java(tm) Subversion Library (org.tmatesoft.svnkit:svnkit:1.10.1 - https://svnkit.com/)
