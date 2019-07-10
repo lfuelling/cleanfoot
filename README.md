@@ -19,7 +19,7 @@ To use this library, you need to use the GammelCloud repo:
 </repositories>
 ```
 
-If you want to use this library in your project, please replace both the `greenfoot` and the `bluej` dependency used in the blog post above with the following:
+And the following dependency:
 
 ```xml
 <dependency>
