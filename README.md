@@ -1,4 +1,4 @@
-# Cleanfoot
+# Cleanfoot [![CircleCI](https://circleci.com/gh/lfuelling/cleanfoot.svg?style=svg)](https://circleci.com/gh/lfuelling/cleanfoot)
 
 This is a fork of Greenfoot 3.5.4 (the last version supporting Java 8) which was moved from Ant to Maven. 
 
