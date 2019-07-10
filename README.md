@@ -1,4 +1,4 @@
-# Cleanfoot ![Java Version](https://img.shields.io/badge/java-1.8-blue.svg) ![Greenfoot version](https://img.shields.io/badge/greenfoot-3.5.4-blue.svg)
+# Cleanfoot
 
 This is a fork of Greenfoot 3.5.4 (the last version supporting Java 8) which was moved from Ant to Maven. 
 
