@@ -123,7 +123,7 @@ public class ExportPublishTab extends ExportTab
     public ExportPublishTab(Project project, ExportDialog exportDialog,
                             ScenarioSaver scenarioSaver, ScenarioInfo scenarioInfo)
     {
-        super(scenarioInfo, "export-publish.png");
+        super(scenarioInfo, "images/export-publish.png");
         this.project = project;
         this.exportDialog = exportDialog;
         this.scenarioSaver = scenarioSaver;

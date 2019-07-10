@@ -238,7 +238,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
 
         private Region makePreviewNode(ImageView imageView) {
             ImageView cannotDropIcon = new ImageView(Objects.requireNonNull(this.getClass()
-                    .getClassLoader().getResource("noParking.png")).toExternalForm());
+                    .getClassLoader().getResource("images/noParking.png")).toExternalForm());
             cannotDropIcon.visibleProperty().bind(cannotDrop);
             StackPane.setAlignment(cannotDropIcon, Pos.CENTER);
             StackPane stackPane = new StackPane(imageView, cannotDropIcon);
@@ -335,7 +335,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
         worldViewScroll.visibleProperty().bind(worldVisible);
         StackPane worldPane = new StackPane(backgroundMessage, worldViewScroll, hungMessage);
         ImageView shareIcon = new ImageView(new Image(
-                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("export-publish.png"))));
+                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("images/export-publish.png"))));
         shareIcon.setPreserveRatio(true);
         shareIcon.setFitHeight(24.0);
         Button shareButton = new Button(Config.getString("export.project"), shareIcon);
@@ -2062,8 +2062,8 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
      */
     public static void aboutGreenfoot(Window parentWindow) {
         // Finds the image file that is supposed to be exist in the "resources" directory
-        URL resource = Boot.class.getResource("gen-greenfoot-splash.png");
-        Image image = new Image(resource.toString());
+        URL resource = Boot.class.getClassLoader().getResource("images/greenfoot-splash.png");
+        Image image = new Image(Objects.requireNonNull(resource).toString());
 
         String[] translatorNames = {
                 "Arabic", "Hakim Hadjaissa",

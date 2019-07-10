@@ -95,7 +95,7 @@ public class ImageCategorySelector extends ListView<File>
     @OnThread(Tag.FXPlatform)
     private static class ImageCell extends ListCell<File>
     {
-        private static final String iconFile = "openRight.png";
+        private static final String iconFile = "images/openRight.png";
         private static final Image openRightIcon = new Image(ImageCategorySelector.class.getClassLoader().getResource(iconFile).toString());
 
         @Override

@@ -36,6 +36,8 @@ import javafx.scene.image.ImageView;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Objects;
+
 /**
  * ExportTab is a superclass for all changing tabs that can appear
  * in the Export dialogue.
@@ -62,7 +64,8 @@ public abstract class ExportTab extends Tab
     {
         setClosable(false);
         this.scenarioInfo = scenarioInfo;
-        ImageView imageView = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(iconName)));
+        ImageView imageView = new ImageView(new Image(Objects.requireNonNull(getClass().getClassLoader()
+                .getResourceAsStream("images/" + iconName))));
         imageView.setPreserveRatio(true);
         setGraphic(imageView);
 

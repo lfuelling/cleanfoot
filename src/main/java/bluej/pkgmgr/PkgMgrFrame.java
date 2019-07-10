@@ -276,7 +276,7 @@ public class PkgMgrFrame
      * This constructor can only be called via createFrame().
      */
     private PkgMgrFrame() {
-        stageProperty = new SimpleObjectProperty<>(new Stage());
+        stageProperty = new SimpleObjectProperty<>();
         paneProperty = new SimpleObjectProperty<>(null);
         showingTextEval = new SimpleBooleanProperty(false);
         showingDebugger = new SimpleBooleanProperty(false);
@@ -1840,7 +1840,8 @@ public class PkgMgrFrame
                 "Marion Zalk",
         };
 
-        Image image = new Image(Boot.class.getResource("gen-bluej-splash.png").toString());
+        Image image = new Image(Objects.requireNonNull(Boot.class.getClassLoader()
+                .getResource("images/bluej-splash.png")).toString());
         new AboutDialogTemplate(getFXWindow(), Boot.BLUEJ_VERSION,
                 "http://www.bluej.org/", image, translatorNames, previousTeamMembers).showAndWait();
     }

@@ -51,6 +51,7 @@ import threadchecker.Tag;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The control panel in GreenfootStage: the act/run/reset buttons,
@@ -58,18 +59,17 @@ import java.util.List;
  * left of the window.
  */
 @OnThread(Tag.FXPlatform)
-public class ControlPanel extends GridPane
-{
+public class ControlPanel extends GridPane {
     private static final String PAUSE_BUTTON_TEXT = Config.getString("controls.pause.button");
     private static final String RUN_BUTTON_TEXT = Config.getString("controls.run.button");
     private static final String RUN_BUTTON_TOOLTIP_TEXT = Config.getString("controls.run.shortDescription");
     private static final String PAUSE_BUTTON_TOOLTIP_TEXT = Config.getString("controls.pause.shortDescription");
-    
+
     private final Node run_icon = makeRunIcon();
     private final Node pause_icon = makePauseIcon();
     private final Node act_icon = makeActIcon();
     private final Node reset_icon = makeResetIcon();
-    
+
     private final Button actButton;
     private final Button runPauseButton;
     private final Label speedLabel;
@@ -85,14 +85,13 @@ public class ControlPanel extends GridPane
 
     /**
      * Make a new control panel.
-     * 
-     * @param greenfootStage The GreenfootStage holding this control panel
+     *
+     * @param greenfootStage   The GreenfootStage holding this control panel
      * @param executionTwirler The execution twirler.  This class does nothing
      *                         with it apart from add it to the panel; its state
      *                         is managed by GreenfootStage.
      */
-    public ControlPanel(ControlPanelListener listener, Node executionTwirler)
-    {
+    public ControlPanel(ControlPanelListener listener, Node executionTwirler) {
         this.listener = listener;
         actButton = unfocusableButton(Config.getString("run.once"));
         actButton.setTooltip(new Tooltip(Config.getString("controls.runonce.shortDescription")));
@@ -106,8 +105,7 @@ public class ControlPanel extends GridPane
         actButton.disableProperty().bind(actDisabled);
         runPauseButton.disableProperty().bind(runPauseDisabled);
         resetButton.disableProperty().bind(resetDisabled);
-        for (Button button : Arrays.asList(actButton, runPauseButton, resetButton))
-        {
+        for (Button button : Arrays.asList(actButton, runPauseButton, resetButton)) {
             button.setMaxWidth(Double.MAX_VALUE);
         }
         int min = 0;
@@ -115,8 +113,7 @@ public class ControlPanel extends GridPane
         speedSlider = new Slider() {
             @Override
             @OnThread(Tag.FX)
-            public void requestFocus()
-            {
+            public void requestFocus() {
                 // Not focusable
             }
         };
@@ -125,7 +122,7 @@ public class ControlPanel extends GridPane
         speedSlider.setShowTickMarks(true);
         speedSlider.setMin(min);
         speedSlider.setMax(max);
-        speedSlider.setMajorTickUnit( max / 2 );
+        speedSlider.setMajorTickUnit(max / 2);
         speedSlider.setMinorTickCount(1);
         speedSlider.setBlockIncrement(20);
         speedSlider.setTooltip(new Tooltip(Config.getString("controls.speedSlider.tooltip")));
@@ -138,8 +135,8 @@ public class ControlPanel extends GridPane
         resetButton.setOnAction(e -> this.listener.userReset());
         // Note - if you alter this listener code, make sure to check notifySimulationSpeed() as well:
         JavaFXUtil.addChangeListenerPlatform(speedSlider.valueProperty(),
-            newSpeed -> this.listener.setSpeedFromSlider(newSpeed.intValue()));
-        
+                newSpeed -> this.listener.setSpeedFromSlider(newSpeed.intValue()));
+
         TilePane controlPanel = new TilePane(actButton, runPauseButton, resetButton);
         controlPanel.setPrefColumns(3);
         controlPanel.getStyleClass().add("buttons-panel");
@@ -152,8 +149,7 @@ public class ControlPanel extends GridPane
         GridPane speedAndTwirler = new GridPane();
         speedAndTwirler.add(speedLabel, 0, 0);
         speedAndTwirler.add(speedSlider, 1, 0, 2, 1);
-        if (executionTwirler != null)
-        {
+        if (executionTwirler != null) {
             speedAndTwirler.add(executionTwirler, 3, 0);
         }
         speedAndTwirler.getStyleClass().add("speed-panel");
@@ -177,13 +173,11 @@ public class ControlPanel extends GridPane
     /**
      * Makes a button with the given text, which cannot be focused.
      */
-    private static Button unfocusableButton(String text)
-    {
+    private static Button unfocusableButton(String text) {
         return new Button(text) {
             @Override
             @OnThread(Tag.FX)
-            public void requestFocus()
-            {
+            public void requestFocus() {
                 // Not focusable
             }
         };
@@ -192,8 +186,7 @@ public class ControlPanel extends GridPane
     /**
      * Called by GreenfootStage to update the state of our buttons.
      */
-    public void updateState(State newState, boolean atBreakpoint)
-    {
+    public void updateState(State newState, boolean atBreakpoint) {
         actDisabled.setValue(newState != State.PAUSED || atBreakpoint);
         runDisabled.setValue(newState != State.PAUSED || atBreakpoint);
         pauseDisabled.setValue(newState != State.RUNNING || atBreakpoint);
@@ -202,22 +195,17 @@ public class ControlPanel extends GridPane
         speedLabel.setDisable(newState == State.NO_PROJECT);
 
         boolean showingPause = newState == State.RUNNING || newState == State.RUNNING_REQUESTED_PAUSE;
-        if (showingPause)
-        {
+        if (showingPause) {
             // Only change button text and tooltip if needed; changing the tooltip to another
             // tooltip with the same text causes it to disappear needlessly if the user is currently viewing it:
-            if (!runPauseButton.getText().equals(PAUSE_BUTTON_TEXT))
-            {
+            if (!runPauseButton.getText().equals(PAUSE_BUTTON_TEXT)) {
                 runPauseButton.setGraphic(pause_icon);
                 runPauseButton.setText(PAUSE_BUTTON_TEXT);
                 runPauseButton.setTooltip(new Tooltip(PAUSE_BUTTON_TOOLTIP_TEXT));
             }
-        }
-        else
-        {
+        } else {
             // Ditto: only change text and tooltip if needed
-            if (!runPauseButton.getText().equals(RUN_BUTTON_TEXT))
-            {
+            if (!runPauseButton.getText().equals(RUN_BUTTON_TEXT)) {
                 runPauseButton.setGraphic(run_icon);
                 runPauseButton.setText(RUN_BUTTON_TEXT);
                 runPauseButton.setTooltip(new Tooltip(RUN_BUTTON_TOOLTIP_TEXT));
@@ -228,31 +216,28 @@ public class ControlPanel extends GridPane
     /**
      * Change the speed slider's value
      */
-    public void setSpeed(int simSpeed)
-    {
+    public void setSpeed(int simSpeed) {
         speedSlider.setValue(simSpeed);
     }
 
     /**
      * Locks the controls: hides the act button and the speed slider.
      */
-    public void lockControls()
-    {
+    public void lockControls() {
         actButton.setVisible(false);
         speedSlider.setVisible(false);
         speedLabel.setVisible(false);
     }
-    
+
     /**
      * Make the act/run/pause/reset menu items for GreenfootStage.
      * They are made here because their disabled state is managed by ControlPanel.
      */
-    public List<MenuItem> makeMenuItems()
-    {
+    public List<MenuItem> makeMenuItems() {
         return Arrays.asList(
-        JavaFXUtil.makeMenuItem("run.once", getIcon("step.png"),
-                new KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_DOWN),
-                listener::act, actDisabled),
+                JavaFXUtil.makeMenuItem("run.once", getIcon("step.png"),
+                        new KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_DOWN),
+                        listener::act, actDisabled),
                 JavaFXUtil.makeMenuItem("controls.run.button", getIcon("run.png"),
                         new KeyCodeCombination(KeyCode.R, KeyCombination.SHORTCUT_DOWN),
                         listener::doRunPause, runDisabled),
@@ -272,16 +257,15 @@ public class ControlPanel extends GridPane
      * @param fileName The file name of the image
      * @return An image view containing the image.
      */
-    private ImageView getIcon(String fileName)
-    {
-        return new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(fileName)));
+    private ImageView getIcon(String fileName) {
+        return new ImageView(new Image(Objects.requireNonNull(getClass().getClassLoader()
+                .getResourceAsStream("images/" + fileName))));
     }
 
     /**
      * A listener for when the user uses the controls
      */
-    public static interface ControlPanelListener
-    {
+    public static interface ControlPanelListener {
         /**
          * Act button pressed: run one frame
          */
@@ -299,24 +283,24 @@ public class ControlPanel extends GridPane
 
         /**
          * The user has moved the speed slider.
+         *
          * @param speed The new speed.
          */
         void setSpeedFromSlider(int speed);
     }
-    
+
     /**
      * The green &gt; symbol for act.
      * Currently, can't be used in a menuItem as JavaFX doesn't deal
      * with this type of nodes properly on menuItem, at least on Mac.
      */
     @OnThread(Tag.FXPlatform)
-    private static Node makeActIcon()
-    {
+    private static Node makeActIcon() {
         return JavaFXUtil.withStyleClass(
                 new Polyline(
-                    0, 0,
-                    12, 5,
-                    0, 10
+                        0, 0,
+                        12, 5,
+                        0, 10
                 ),
                 "act-icon");
     }
@@ -327,14 +311,13 @@ public class ControlPanel extends GridPane
      * with this type of nodes properly on menuItem, at least on Mac.
      */
     @OnThread(Tag.FXPlatform)
-    private static Node makeRunIcon()
-    {
+    private static Node makeRunIcon() {
         return JavaFXUtil.withStyleClass(
                 new Polygon(
-                    0, 0,
-                    12, 5,
-                    0, 10
-                ), 
+                        0, 0,
+                        12, 5,
+                        0, 10
+                ),
                 "run-icon");
     }
 
@@ -344,14 +327,13 @@ public class ControlPanel extends GridPane
      * with this type of nodes properly on menuItem, at least on Mac.
      */
     @OnThread(Tag.FXPlatform)
-    private static Node makePauseIcon()
-    {
+    private static Node makePauseIcon() {
         return JavaFXUtil.withStyleClass(
                 new Path(
-                    new MoveTo(2, 0),
-                    new LineTo(2, 10),
-                    new MoveTo(8, 0),
-                    new LineTo(8, 10)
+                        new MoveTo(2, 0),
+                        new LineTo(2, 10),
+                        new MoveTo(8, 0),
+                        new LineTo(8, 10)
                 ),
                 "pause-icon");
     }
@@ -362,8 +344,7 @@ public class ControlPanel extends GridPane
      * with this type of nodes properly on menuItem, at least on Mac.
      */
     @OnThread(Tag.FXPlatform)
-    private static Node makeResetIcon()
-    {
+    private static Node makeResetIcon() {
         Canvas canvas = new Canvas(15, 15);
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.setStroke(javafx.scene.paint.Color.SADDLEBROWN);
@@ -387,19 +368,19 @@ public class ControlPanel extends GridPane
         g.setStroke(null);
         // Arrow head is a rotated equilateral triangle around arcEndX, arcEndY:
         g.fillPolygon(
-                new double[] {
-                    arcEndX + arrowRadius * Math.cos(Math.toRadians(triangleHeading)),
-                    arcEndX + arrowRadius * Math.cos(Math.toRadians(triangleHeading + 120)),
-                    arcEndX + arrowRadius * Math.cos(Math.toRadians(triangleHeading + 240))
+                new double[]{
+                        arcEndX + arrowRadius * Math.cos(Math.toRadians(triangleHeading)),
+                        arcEndX + arrowRadius * Math.cos(Math.toRadians(triangleHeading + 120)),
+                        arcEndX + arrowRadius * Math.cos(Math.toRadians(triangleHeading + 240))
                 },
-                new double[] {
-                    arcEndY - arrowRadius * Math.sin(Math.toRadians(triangleHeading)),
-                    arcEndY - arrowRadius * Math.sin(Math.toRadians(triangleHeading + 120)),
-                    arcEndY - arrowRadius * Math.sin(Math.toRadians(triangleHeading + 240))
+                new double[]{
+                        arcEndY - arrowRadius * Math.sin(Math.toRadians(triangleHeading)),
+                        arcEndY - arrowRadius * Math.sin(Math.toRadians(triangleHeading + 120)),
+                        arcEndY - arrowRadius * Math.sin(Math.toRadians(triangleHeading + 240))
                 },
                 3
         );
         return canvas;
     }
-    
+
 }
