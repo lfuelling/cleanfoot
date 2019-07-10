@@ -6,7 +6,7 @@ jobs:
       MAVEN_OPTS: -Xmx2g
 
     docker:
-      - image: amazoncorretto:8
+      - image: lerk/corretto-8-ant-maven
 
     steps:
       - checkout
