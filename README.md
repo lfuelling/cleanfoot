@@ -1,4 +1,4 @@
-# Cleanfoot [![CircleCI](https://circleci.com/gh/lfuelling/cleanfoot.svg?style=svg)](https://circleci.com/gh/lfuelling/cleanfoot)
+# Cleanfoot
 
 This is a fork of Greenfoot 3.5.4 (the last version supporting Java 8) which was moved from Ant to Maven. 
 
@@ -6,7 +6,7 @@ The goal of this project is to provide a Java 1.8 compatible, supported Greenfoo
 
 ## Usage
 
-If you need information regarding using Greenfoot with Maven and it's implications, please see [this blog post](https://lerks.blog/making-games-with-greenfoot-without-greenfoot/). 
+If you need information regarding using Greenfoot with Maven and its implications, please see [this blog post](https://lerks.blog/making-games-with-greenfoot-without-greenfoot/). 
 
 If you want to use this library in your project, please replace both the `greenfoot` and the `bluej` dependency used in th eblog post above with the following:
 
@@ -18,7 +18,7 @@ If you want to use this library in your project, please replace both the `greenf
 </dependency>
 ```
 
-The library can then be used like regular Greenfoot.
+The library can then be used like the regular Greenfoot project is used (ie. no package names have been changed).
 
 ## Development
 
