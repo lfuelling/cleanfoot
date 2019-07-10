@@ -140,7 +140,9 @@ public class InfoParser extends EditorParser
         try {
             fis.close();
         }
-        catch (IOException ioe) {}
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
         return info;
     }
     

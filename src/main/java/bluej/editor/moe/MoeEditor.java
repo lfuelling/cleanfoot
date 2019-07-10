@@ -1397,6 +1397,7 @@ public final class MoeEditor extends ScopeColorsBorderPane
             try {
                 save();
             } catch (IOException ignored) {
+                ignored.printStackTrace();
             }
             // Note we can safely ignore the exception here: a message has
             // already been displayed in the editor status bar

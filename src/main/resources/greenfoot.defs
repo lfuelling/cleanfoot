@@ -1,0 +1,151 @@
+####################################################################
+##               Greenfoot properties default values
+#####################################################################
+##
+## All settings in this file may be changed to configure Greenfoot.
+## Settings in this file are system wide and apply to all users.
+##
+## Greenfoot property settings may also be specified on a per-user 
+## basis in the user property file. The user property file is in
+##
+##    <USER_HOME>/.bluej/bluej.properties                     (Unix)
+##    C:\Winnt\profiles\<USER_NAME>\bluej\bluej.properties    (WinNT)
+##    C:\<JDK_HOME>\bluej\bluej.properties                    (Win9x)
+##
+## Each of the properties in this file may be copied to the user
+## properties file. Settings in the user file override the system
+## wide settings here.
+##
+#####################################################################
+
+
+
+#####################################################################
+## The interface language. A directory must exist for the language in
+## <GREENFOOT_HOME>/lib. Language directories can be created by copying
+## an existing language directory and translating the contents of the
+## text files in that directory. If you make a language version for
+## a new language, please send it to support@greenfoot.org
+#####################################################################
+bluej.language=english
+#bluej.language=arabic
+#bluej.language=chinese
+#bluej.language=czech
+#bluej.language=dutch
+#bluej.language=french
+#bluej.language=german
+#bluej.language=greek
+#bluej.language=italian
+#bluej.language=korean
+#bluej.language=polish
+#bluej.language=portuguese
+#bluej.language=russian
+#bluej.language=spanish
+
+#####################################################################
+## User's home directory. This is also defined by Java, and if that's
+## fine for you, don't specify this property. This property, if
+## specified, will override Java's user.home property.
+##
+## You can specify multiple values by appending consecutive numbers
+## (starting at 2) to the property name, eg:
+##
+##   bluej.userHome=/home/mik/tmp
+##   bluej.userHome2=/some/other/directory
+##   bluej.userHome3=/yet/another/directory
+##
+## In this case the first location that is writable will be selected.
+#####################################################################
+
+#bluej.userHome=/home/mik/tmp
+
+#####################################################################
+## If you have a translated version of the Greenfoot API documentation
+## you can change this URL to point at it.
+#####################################################################
+#greenfoot.url.javadoc=file:///Greenfoot/labels/german/greenfoot/API/index.html
+
+#####################################################################
+## URLs for the Greenfoot manuals and documentation. If you have the
+## documents installed locally and want to use your local version,
+## edit these URLs.
+#####################################################################
+
+greenfoot.url.greenfoot=http://www.greenfoot.org/
+greenfoot.url.scenarios=http://www.greenfoot.org/scenarios/index.html
+greenfoot.url.tutorial=http://www.greenfoot.org/doc/tutorial.html
+greenfoot.url.discuss=http://www.greenfootgallery.org/topics/
+
+
+# The URL for the Java API documentation can be specified here, however
+# this will only apply the first time you use Greenfoot. After that, the
+# setting is saved in the user preferences file (and the setting here
+# is ignored). You can adjust the user preferences via the preferences
+# dialog in Greenfoot.
+greenfoot.url.javaStdLib=https://docs.oracle.com/javase/8/docs/api/
+
+# Options for the generation of the JavaDoc shown in the documentation view of the editor.
+doctool.options=-author -version -nodeprecated -protected  -Xdoclint:none
+
+#####################################################################
+## Information about the game server to publish to via the 'Export'
+## function
+#####################################################################
+
+greenfoot.gameserver.name=Greenfoot Gallery
+greenfoot.gameserver.address=http://www.greenfoot.org/
+greenfoot.gameserver.createAccount.address=http://www.greenfoot.org/users/new
+
+# If you need to use a HTTP proxy, set and uncomment the following items
+#proxy.host=
+#proxy.port=80
+
+#####################################################################
+## Compiler options. 
+## 
+## Here, you can add compile options for the Java compiler. 
+## 
+## Normally it should not be necessary to change this.
+##
+#####################################################################
+bluej.compiler.options=-source 1.8 -target 1.8
+
+#####################################################################
+## Options for starting the internal virtual machine.
+## bluej.vm.args provides arguments to the debug VM that 
+## is launched to run Java code, the code pad and the object bench. 
+## This setting is likely to not be needed in most instances.
+## It is provided for situations where Greenfoot and/or Java defaults
+## need to be modified. Multiple args can be specified on the one line.
+## Settings here have the ability to stop Greenfoot running correctly
+## if not configured properly.  
+#####################################################################
+
+bluej.vm.args=-Dawt.useSystemAAFontSettings=on -XX:MaxGCPauseMillis=50
+
+#####################################################################
+## External program used for editing images.
+## If this is commented out, Greenfoot will try to use a default set
+## for your system if it exists. If defined here, this overrides the
+## default.
+#####################################################################
+#greenfoot.editor.image=/Applications/Adobe Photoshop CS3/Adobe Photoshop CS3.app
+
+greenfoot.image.create.width=150
+greenfoot.image.create.height=150
+
+#####################################################################
+## The VM that the windows client should use. When Greenfoot is
+## bundled with a JDK, this will refer to the bundled JDK.
+## Otherwise this can be used to specify an arbitrary JDK that
+## Greenfoot should use.
+##
+## NOTE: this setting is _only_ used under windows, and only when
+##       Greenfoot is launched with the standard windows launcher
+#####################################################################
+
+# This setting is an example only (unless the JDK is bundled):
+#greenfoot.windows.vm=X\:\\Programming Apps\\JDK_1.7.0_55
+
+# command line arguments, if any:
+greenfoot.windows.vm.args=-Xmx512M -Djavafx.embed.singleThread=true

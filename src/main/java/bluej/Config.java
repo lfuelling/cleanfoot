@@ -179,7 +179,7 @@ public final class Config
 
         // construct paths for the configuration directories
         Config.bluejLibDir = bluejLibDir;
-        Config.greenfootLibDir = new File(bluejLibDir, "greenfoot");
+        Config.greenfootLibDir = bluejLibDir;
         
         // setup our heirarchy of property objects if it is not done yet:
         if(systemProps == null)
@@ -796,7 +796,8 @@ public final class Config
     private static Properties loadLanguageLabels(String language)
     {
         // add the defaults (English)
-        Properties labels = loadDefs(DEFAULT_LANGUAGE + File.separator + "labels", System.getProperties());
+        Properties labels = loadDefs(DEFAULT_LANGUAGE + File.separator +
+                "labels", System.getProperties());
 
         // Load frame labels
         String frameLabels = DEFAULT_LANGUAGE + File.separator + "frame-labels";
@@ -811,7 +812,7 @@ public final class Config
         // if greenfoot, add specific additional labels
         if(isGreenfoot())
         {
-            // load greenfoot labels to default lanbels
+            // load greenfoot labels to default labels
             String greenfootLabels = DEFAULT_LANGUAGE + File.separator + "greenfoot/greenfoot-labels";
             File greenfootLabelFile = new File(bluejLibDir, greenfootLabels);
             try{
@@ -823,7 +824,7 @@ public final class Config
         }
         // add localised labels if necessary...
         if(!DEFAULT_LANGUAGE.equals(language)) {
-            String languageFileName = language + File.separator + "labels";
+            String languageFileName = File.separator + "labels"  + File.separator + language + File.separator + "labels";
             File languageFile = new File(bluejLibDir, languageFileName);
             try{
                 labels.load(new FileInputStream(languageFile));
@@ -833,7 +834,7 @@ public final class Config
             }
 
             // Load frame labels
-            String languageFrameLabels = language + File.separator + "frame-labels";
+            String languageFrameLabels = "labels" + File.separator + language + File.separator + "frame-labels";
             File languageFrameLabelFile = new File(bluejLibDir, languageFrameLabels);
             try{
                 labels.load(new FileInputStream(languageFrameLabelFile));
@@ -843,7 +844,7 @@ public final class Config
             }
 
             if(isGreenfoot()) {
-                File greenfootLabels = new File(bluejLibDir, language + File.separator + "greenfoot/greenfoot-labels");
+                File greenfootLabels = new File(bluejLibDir, "labels" + File.separator + language + File.separator + "greenfoot/greenfoot-labels");
                 try{
                     labels.load(new FileInputStream(greenfootLabels));
                 }

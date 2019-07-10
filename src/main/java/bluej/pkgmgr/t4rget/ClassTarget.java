@@ -1781,6 +1781,7 @@ public class ClassTarget extends DependentTarget
             enforcePackage(getPackage().getQualifiedName());
             getEditor().reloadFile();
         } catch (IOException ignored) {
+            ignored.printStackTrace();
         }
     }
 

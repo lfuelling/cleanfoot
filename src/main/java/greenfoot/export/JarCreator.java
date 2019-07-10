@@ -314,7 +314,9 @@ public class JarCreator
                 if (jStream != null)
                     jStream.close();
             }
-            catch (IOException e) {}
+            catch (IOException e) {
+                e.printStackTrace();
+            }
             if(propertiesFile != null) {
                 propertiesFile.delete();
             }
@@ -350,16 +352,10 @@ public class JarCreator
             file.createNewFile();
             os = new BufferedOutputStream(new FileOutputStream(file));
             properties.store(os, "Properties for running Greenfoot scenarios alone.");
-        }
-        catch (FileNotFoundException e) {
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-        catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        finally {
+        } finally {
             try {
                 if (os != null) {
                     os.close();
@@ -729,7 +725,6 @@ public class JarCreator
         }
         catch (IOException e) {
             Debug.reportError("Exception during file translation from " + template + " to " + outputFile);
-            e.printStackTrace();
         }
     }
     

@@ -783,6 +783,7 @@ public class Invoker
                 try {
                     shell.close();
                 } catch (IOException ignored) {
+                    ignored.printStackTrace();
                 }
             }
             shellFile.delete();

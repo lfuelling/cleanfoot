@@ -144,6 +144,7 @@ public class Debug
      */
     public static void reportError(Throwable error)
     {
+        error.printStackTrace();
         synchronized (debugStream) {
             message("An unexpected exception occurred:");
             PrintWriter pwriter = new PrintWriter(debugStream);

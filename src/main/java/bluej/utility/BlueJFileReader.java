@@ -110,8 +110,9 @@ public class BlueJFileReader
             }
         }
         catch(IOException e) {
-            // This use to show a dialog, but showing a dialog involves reading the
+            // This used to show a dialog, but showing a dialog involves reading the
             // help file... infinite recursion! just ignore and return null
+            e.printStackTrace();
         }
         finally {
             if(in != null) {

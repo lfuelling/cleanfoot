@@ -24,7 +24,9 @@ package bluej.collect;
 
 import bluej.utility.Utility;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
+@Ignore
 public class TestAnonymisation extends TestCase {
     private static String combineLines(String[] lines) {
         StringBuilder s = new StringBuilder();

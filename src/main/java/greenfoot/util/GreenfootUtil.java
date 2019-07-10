@@ -163,6 +163,7 @@ public class GreenfootUtil
                 url = null;
             }
             catch (IOException e) {
+                e.printStackTrace();
                 url = null;
             } finally {
                 if(s != null) {
@@ -170,6 +171,7 @@ public class GreenfootUtil
                         s.close();
                     }
                     catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }

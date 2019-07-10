@@ -150,11 +150,8 @@ public class SoundClip implements Sound, LineListener
             clipData = clipCache.getCachedClip(url);
             clipCache.releaseClipData(clipData);
         }
-        catch (IOException e) {
-            
-        }
-        catch (UnsupportedAudioFileException e) {
-            
+        catch (IOException | UnsupportedAudioFileException e) {
+            e.printStackTrace();
         }
     }
 

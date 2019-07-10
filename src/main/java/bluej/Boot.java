@@ -310,15 +310,12 @@ public class Boot
                 // above us to use
                 File startingDir = (new File(new URI(bootFullName)).getParentFile());
                 while((startingDir != null) &&
-                        !(new File(startingDir.getParentFile(), "lib").isDirectory())) {
+                        !(new File(startingDir.getParentFile(), "labels").isDirectory())) {
                     startingDir = startingDir.getParentFile();
                 }
-                
-                if (startingDir == null) {
-                    bluejDir = null;
-                }
-                else {
-                    bluejDir = new File(startingDir.getParentFile(), "lib");
+
+                if (startingDir != null) {
+                    bluejDir = startingDir.getParentFile();
                 }
             }
             else {
@@ -331,7 +328,7 @@ public class Boot
                 bluejDir = finalFile.getParentFile();
             }   
         } 
-        catch (URISyntaxException use) { }
+        catch (URISyntaxException ignored) { }
         
         return bluejDir;
     }

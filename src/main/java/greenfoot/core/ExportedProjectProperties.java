@@ -74,7 +74,9 @@ public class ExportedProjectProperties implements ReadOnlyProjectProperties
                 try {
                     is.close();
                 }
-                catch (IOException e) {}
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

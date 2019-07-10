@@ -687,7 +687,9 @@ public abstract class IncrementalParsingNode extends JavaParentNode
                 }
             }
         }
-        catch (IOException ioe) {}
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
         return ALL_OK;
     }
     
