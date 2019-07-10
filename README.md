@@ -6,9 +6,20 @@ The goal of this project is to provide a Java 1.8 compatible, supported Greenfoo
 
 ## Usage
 
-If you need information regarding using Greenfoot with Maven and its implications, please see [this blog post](https://lerks.blog/making-games-with-greenfoot-without-greenfoot/). 
+### Maven
 
-If you want to use this library in your project, please replace both the `greenfoot` and the `bluej` dependency used in th eblog post above with the following:
+To use this library, you need to use the GammelCloud repo:
+
+```xml
+<repositories>
+    <repository>
+        <id>gammel</id>
+        <url>https://nexus.gammel.cloud/repository/maven-public/</url>
+    </repository>
+</repositories>
+```
+
+If you want to use this library in your project, please replace both the `greenfoot` and the `bluej` dependency used in the blog post above with the following:
 
 ```xml
 <dependency>
@@ -18,7 +29,26 @@ If you want to use this library in your project, please replace both the `greenf
 </dependency>
 ```
 
-The library can then be used like the regular Greenfoot project is used (ie. no package names have been changed).
+### Gradle 
+
+If you use Gradle, you can reference the repository like this:
+
+```groovy
+repositories {
+        maven { url 'https://nexus.gammel.cloud/repository/maven-public/' }
+}
+```
+
+and the dependency itself like this:
+
+```groovy
+implementation 'sh.lrk:cleanfoot:3.5.5'
+```
+
+### Code
+
+After adding it, the library can be used like the regular Greenfoot project is used (ie. no package names have been changed). 
+If you need more information regarding using Greenfoot with Maven/Gradle and its implications, please see [this blog post](https://lerks.blog/making-games-with-greenfoot-without-greenfoot/).
 
 ## Development
 
