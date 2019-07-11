@@ -47,8 +47,7 @@ import java.io.IOException;
  * @Author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class PastedImageNameDialog extends FXCustomizedDialog<File>
-{
+public class PastedImageNameDialog extends FXCustomizedDialog<File> {
     private final File projImagesDir;
     private final Image image;
     private final TextField fileNameField = new TextField();
@@ -61,8 +60,7 @@ public class PastedImageNameDialog extends FXCustomizedDialog<File>
      * @param image         The pasted content as an image object.
      * @param projImagesDir The directory in which the images for the project are placed.
      */
-    public PastedImageNameDialog(Window parent, Image image, File projImagesDir)
-    {
+    public PastedImageNameDialog(Window parent, Image image, File projImagesDir) {
         super(parent, Config.getString("editor.paste.image.title"), "");
 
         this.projImagesDir = projImagesDir;
@@ -73,8 +71,7 @@ public class PastedImageNameDialog extends FXCustomizedDialog<File>
     /**
      * Build the user interface for the dialog.
      */
-    private void buildUI()
-    {
+    private void buildUI() {
         fileNameField.setAlignment(Pos.BASELINE_LEFT);
         fileNameField.setPromptText(Config.getString("editor.paste.image.name.prompt"));
         fileNameField.requestFocus();
@@ -103,7 +100,7 @@ public class PastedImageNameDialog extends FXCustomizedDialog<File>
         this.getDialogPane().setMaxHeight(900);
 
         // Position the stage in the top-left of the owner
-        stage.setX(this.getOwner().getX() + 50 );
+        stage.setX(this.getOwner().getX() + 50);
         stage.setY(this.getOwner().getY() + 50);
 
         // add buttons
@@ -120,15 +117,13 @@ public class PastedImageNameDialog extends FXCustomizedDialog<File>
      * contents will be written in it and it will be written on the disk.
      *
      * @return If the image file was created successfully, it will be returned.
-     *         If the file has not been written successfully or the user
-     *         chose not to overwrite an existing file, null will be returned.
+     * If the file has not been written successfully or the user
+     * chose not to overwrite an existing file, null will be returned.
      */
-    private File createImageFile()
-    {
+    private File createImageFile() {
         File file = new File(projImagesDir, fileNameField.getText() + ".png");
-        if (file.exists())
-        {
-            boolean overwrite = DialogManager.askQuestionFX(this.asWindow(), "file-exists-overwrite", new String[] {file.getName()}) == 0;
+        if (file.exists()) {
+            boolean overwrite = DialogManager.askQuestionFX(this.asWindow(), "file-exists-overwrite", new String[]{file.getName()}) == 0;
             return overwrite && writeImage(file) ? file : null;
         }
         return writeImage(file) ? file : null;
@@ -140,17 +135,12 @@ public class PastedImageNameDialog extends FXCustomizedDialog<File>
      * @param file The image file to be written.
      * @return True if the file is written successfully on the disk, false otherwise.
      */
-    private boolean writeImage(File file)
-    {
-        try
-        {
-            if (ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file))
-            {
+    private boolean writeImage(File file) {
+        try {
+            if (ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file)) {
                 return true;
             }
-        }
-        catch (IOException ex)
-        {
+        } catch (IOException ex) {
             // No need to repeat the error message here and in case writing the image returned false.
         }
         DialogManager.showErrorFX(asWindow(), "imagelib-writing-image-failed");

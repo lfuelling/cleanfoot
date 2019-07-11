@@ -35,13 +35,14 @@ import java.util.Properties;
  * class name is a legal name of a Java class and that the class does not
  * already exist. It is also possible to listen for changes in the validity of
  * the TextField.
- * 
+ *
  * @author Poul Henriksen
  * @author Amjad Altadmri
  */
-public class ClassNameVerifier
-{
-    /** The package the class will be added to */
+public class ClassNameVerifier {
+    /**
+     * The package the class will be added to
+     */
     private Package pkg;
 
     private String message;
@@ -49,7 +50,9 @@ public class ClassNameVerifier
     private Properties localProperties = new Properties();
     private final String classExists = Config.getString("newclass.dialog.err.classExists");
 
-    /** The text field to listen for DocumentEvents on */
+    /**
+     * The text field to listen for DocumentEvents on
+     */
     private final StringProperty textProperty;
     private final ReadOnlyObjectProperty<SourceType> sourceTypeProperty;
 
@@ -58,29 +61,25 @@ public class ClassNameVerifier
      * the textField.
      * <p>
      * If using a Cancel button it might be useful to set
-     * {@link JComponent.#setVerifyInputWhenFocusTarget(boolean)} to false on
-     * the cancel button.
-     * 
+     * some boolean to false on the cancel button.
+     *
      * @param pkg Package containing the user classes for which to check against.
      */
-    public ClassNameVerifier(Package pkg, StringProperty textProperty, ReadOnlyObjectProperty<SourceType> sourceTypeProperty)
-    {
+    public ClassNameVerifier(Package pkg, StringProperty textProperty, ReadOnlyObjectProperty<SourceType> sourceTypeProperty) {
         this.pkg = pkg;
         this.textProperty = textProperty;
         this.sourceTypeProperty = sourceTypeProperty;
         checkValidity();
     }
 
-    public String getMessage()
-    {
+    public String getMessage() {
         return message;
     }
 
-    private void buildTheErrorMessage()
-    {
+    private void buildTheErrorMessage() {
         SourceType sourceType = sourceTypeProperty.get();
-        localProperties.put("LANGUAGE", sourceType !=null ? sourceType.toString() : "");
-        illegalClassName = Config.getString("newclass.dialog.err.classNameIllegal", null,  localProperties);
+        localProperties.put("LANGUAGE", sourceType != null ? sourceType.toString() : "");
+        illegalClassName = Config.getString("newclass.dialog.err.classNameIllegal", null, localProperties);
     }
 
     /**
@@ -90,29 +89,26 @@ public class ClassNameVerifier
      *
      * @return True if the class name is valid, false otherwise.
      */
-    public boolean checkValidity()
-    {
+    public boolean checkValidity() {
         buildTheErrorMessage();
         String className = textProperty.get();
-        boolean valid = !className.isEmpty() && JavaNames.isIdentifier(className) && !classNameExist(className) && !isGreenfootClassName(className);
+        boolean valid = !className.isEmpty() && JavaNames.isIdentifier(className) && !classNameExists(className) && !isGreenfootClassName(className);
         message = valid || className.isEmpty() ? "" :
-                (classNameExist(className) || isGreenfootClassName(className) ? classExists : illegalClassName);
+                (classNameExists(className) || isGreenfootClassName(className) ? classExists : illegalClassName);
         return valid;
     }
 
-    private boolean isGreenfootClassName(String className)
-    {
+    private boolean isGreenfootClassName(String className) {
         return className.equals("Actor") || className.equals("World");
     }
-    
+
     /**
      * Returns true if a class with the given name already exists.
-     * 
-     * @param className
-     * @return
+     *
+     * @param className the class name.
+     * @return true if the class name exists
      */
-    private boolean classNameExist(String className)
-    {
+    private boolean classNameExists(String className) {
         return pkg.getTarget(className) != null;
     }
 }

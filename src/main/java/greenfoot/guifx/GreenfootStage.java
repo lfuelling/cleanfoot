@@ -1836,8 +1836,8 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
 
             // Copy the lib files cross:
             File libFolder = new File(srcFile.getParentFile(), className + "/lib");
-            if ((libFolder.exists()) && (libFolder.listFiles().length > 0)) {
-                for (File srcLibFile : libFolder.listFiles()) {
+            if ((libFolder.exists()) && (Objects.requireNonNull(libFolder.listFiles()).length > 0)) {
+                for (File srcLibFile : Objects.requireNonNull(libFolder.listFiles())) {
                     File destLibFile = new File(project.getProjectDir(), "+libs/" + srcLibFile.getName());
                     GreenfootUtil.copyFile(srcLibFile, destLibFile);
                 }
@@ -2195,15 +2195,13 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
             }
 
             // Shouldn't wait on debug VM in the UI thread, so run in a separate thread:
-            new Thread() {
-                public void run() {
-                    project.getDebugger()
-                            .instantiateClass("greenfoot.core.SetWorldHelper",
-                                    new String[]{"java.lang.Object"},
-                                    new DebuggerObject[]{result});
-                    Platform.runLater(() -> saveTheWorldRecorder.recordingValid());
-                }
-            }.start();
+            new Thread(() -> {
+                project.getDebugger()
+                        .instantiateClass("greenfoot.core.SetWorldHelper",
+                                new String[]{"java.lang.Object"},
+                                new DebuggerObject[]{result});
+                Platform.runLater(() -> saveTheWorldRecorder.recordingValid());
+            }).start();
         } else {
             // If neither actor nor world, we just inspect the constructed object:
             project.getInspectorInstance(result, "<object>", project.getUnnamedPackage(), null, this, null);
@@ -2319,9 +2317,9 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
                 unNamedPkg.save(props);
                 ProjectManager.instance().launchProject(proj);
                 GreenfootStage stage = findStageForProject(proj);
-                LocalGClassNode worldClass = stage.createNewClass(unNamedPkg, "World",
+                LocalGClassNode worldClass = Objects.requireNonNull(stage).createNewClass(unNamedPkg, "World",
                         "MyWorld", sourceType, getWorldTemplateFileName(true, sourceType));
-                stage.currentWorld = worldClass.getClassTarget();
+                stage.currentWorld = Objects.requireNonNull(worldClass).getClassTarget();
                 stage.toFront();
                 return true;
             } else {

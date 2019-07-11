@@ -33,8 +33,7 @@ import threadchecker.Tag;
  * algorithm implemented as we want.
  */
 @OnThread(Tag.FXPlatform)
-class GreenfootStageContentPane extends Pane
-{
+class GreenfootStageContentPane extends Pane {
     private static final int CLASS_DIAGRAM_PADDING = 12;
     private static final int IDEAL_WORLD_PADDING = 30;
     private final Pane worldViewScroll;
@@ -46,8 +45,7 @@ class GreenfootStageContentPane extends Pane
      * Construct a content pane for the three major components: the world view,
      * the class diagram, and the control panel.
      */
-    public GreenfootStageContentPane(Pane worldViewScroll, Button shareButton, ScrollPane classDiagramScroll, ControlPanel controlPanel)
-    {
+    public GreenfootStageContentPane(Pane worldViewScroll, Button shareButton, ScrollPane classDiagramScroll, ControlPanel controlPanel) {
         this.worldViewScroll = worldViewScroll;
         this.shareButton = shareButton;
         this.classDiagramScroll = classDiagramScroll;
@@ -57,46 +55,42 @@ class GreenfootStageContentPane extends Pane
 
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected void layoutChildren()
-    {
+    protected void layoutChildren() {
         final double ourWidth = getWidth();
         final double ourHeight = getHeight();
-        
+
         final double idealWorldWidth = worldViewScroll.prefWidth(-1);
 
         // The share button gets its ideal width and height:
         final double shareButtonWidth = shareButton.prefWidth(-1);
         final double shareButtonHeight = shareButton.prefHeight(-1);
-        
+
         // Class diagram height is known: our height minus padding minus shareButtonHeight
         final double classDiagramHeight = ourHeight - 3 * CLASS_DIAGRAM_PADDING - shareButtonHeight;
         final double idealClassDiagramWidth = classDiagramScroll.prefWidth(classDiagramHeight);
-        
+
         double classDiagramWidth;
-        if (idealClassDiagramWidth + 2 * CLASS_DIAGRAM_PADDING + idealWorldWidth > ourWidth)
-        {
+        if (idealClassDiagramWidth + 2 * CLASS_DIAGRAM_PADDING + idealWorldWidth > ourWidth) {
             // Someone is going to have lose some width.  We start by taking it from class diagram:
             double minClassDiagramWidth = classDiagramScroll.minWidth(classDiagramHeight);
-            classDiagramWidth = Math.max(minClassDiagramWidth, 
-                ourWidth - idealWorldWidth - 2 * CLASS_DIAGRAM_PADDING);
-        }
-        else
-        {
+            classDiagramWidth = Math.max(minClassDiagramWidth,
+                    ourWidth - idealWorldWidth - 2 * CLASS_DIAGRAM_PADDING);
+        } else {
             // Everyone can have what they want, width-wise:
             classDiagramWidth = idealClassDiagramWidth;
         }
         // Make sure the width is not smaller than a minimum required
         // to show the share button properly.
         classDiagramWidth = Math.max(classDiagramWidth, shareButtonWidth + 2 * CLASS_DIAGRAM_PADDING);
-        
+
         // The control panel is always its preferred height:
         final double worldWidth = ourWidth - (classDiagramWidth + 2 * CLASS_DIAGRAM_PADDING);
         final double controlPanelHeight = controlPanel.prefHeight(worldWidth);
-        
+
         worldViewScroll.resizeRelocate(0, 0, worldWidth, ourHeight - controlPanelHeight);
         shareButton.resizeRelocate(worldWidth + CLASS_DIAGRAM_PADDING, CLASS_DIAGRAM_PADDING,
                 classDiagramWidth, shareButtonHeight);
-        classDiagramScroll.resizeRelocate(worldWidth + CLASS_DIAGRAM_PADDING, 
+        classDiagramScroll.resizeRelocate(worldWidth + CLASS_DIAGRAM_PADDING,
                 2 * CLASS_DIAGRAM_PADDING + shareButtonHeight,
                 classDiagramWidth, classDiagramHeight);
         controlPanel.resizeRelocate(0, ourHeight - controlPanelHeight, worldWidth, controlPanelHeight);
@@ -104,20 +98,18 @@ class GreenfootStageContentPane extends Pane
 
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected double computePrefWidth(double height)
-    {
+    protected double computePrefWidth(double height) {
         // Not quite accurate, but shouldn't matter when we have no real parent.
         // This is really just for calculating the initial window size:
-        return worldViewScroll.prefWidth(height) + 2 * IDEAL_WORLD_PADDING /* Some world spacing */ 
+        return worldViewScroll.prefWidth(height) + 2 * IDEAL_WORLD_PADDING /* Some world spacing */
                 + Math.max(shareButton.prefWidth(-1), classDiagramScroll.prefWidth(height)) + 2 * CLASS_DIAGRAM_PADDING;
     }
 
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected double computePrefHeight(double width)
-    {
+    protected double computePrefHeight(double width) {
         // Again, not quite accurate, but should be close enough when we are topmost container:
-        return Math.max(shareButton.prefHeight(-1) + classDiagramScroll.prefHeight(-1) + 3 * CLASS_DIAGRAM_PADDING, 
-            worldViewScroll.prefHeight(-1) + 2 * IDEAL_WORLD_PADDING + controlPanel.prefHeight(-1));
+        return Math.max(shareButton.prefHeight(-1) + classDiagramScroll.prefHeight(-1) + 3 * CLASS_DIAGRAM_PADDING,
+                worldViewScroll.prefHeight(-1) + 2 * IDEAL_WORLD_PADDING + controlPanel.prefHeight(-1));
     }
 }

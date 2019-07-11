@@ -36,19 +36,17 @@ import javafx.stage.Window;
  *
  * @author Amjad Altadmri
  */
-public class SetPlayerDialog extends FXCustomizedDialog<String>
-{
+public class SetPlayerDialog extends FXCustomizedDialog<String> {
     private TextField playerNameTextField;
 
     /**
      * Construct a set player dialog with the current player name as the default
      * text in the name text field.
      *
-     * @param parent         The parent window.
-     * @param curPlayerName  The current player name.
+     * @param parent        The parent window.
+     * @param curPlayerName The current player name.
      */
-    public SetPlayerDialog(Window parent, String curPlayerName)
-    {
+    public SetPlayerDialog(Window parent, String curPlayerName) {
         super(parent, Config.getString("playername.dialog.title"), null);
         setResizable(false);
 

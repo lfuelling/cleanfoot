@@ -32,60 +32,47 @@ import java.io.File;
 
 /**
  * A GUI handler for Greenfoot.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class GreenfootGuiHandler implements GuiHandler
-{
+public class GreenfootGuiHandler implements GuiHandler {
     @Override
-    public boolean tryOpen(File path, boolean displayError)
-    {
+    public boolean tryOpen(File path, boolean displayError) {
         Project project = Project.openProject(path.toString());
         if (project != null) {
             ProjectManager.instance().launchProject(project);
             return true;
-        }
-        else
-        {
-            if (GreenfootStage.openArchive(path, null))
-            {
-                return true;
-            }
+        } else {
+            return GreenfootStage.openArchive(path, null);
             // TODO: display error dialog if displayError == true
-            return false;
         }
     }
 
     @Override
-    public void handleAbout()
-    {
+    public void handleAbout() {
         GreenfootStage.aboutGreenfoot(null);
     }
 
     @Override
-    public void handlePreferences()
-    {
+    public void handlePreferences() {
         GreenfootStage.showPreferences();
     }
 
     @Override
-    public void handleQuit()
-    {
+    public void handleQuit() {
         Main.wantToQuit();
     }
 
     @Override
-    public void initialOpenComplete(boolean projectOpen)
-    {
-        if (! projectOpen) {
+    public void initialOpenComplete(boolean projectOpen) {
+        if (!projectOpen) {
             GreenfootStage.makeStage(null, null).show();
         }
     }
-    
+
     @Override
-    public void doExitCleanup()
-    {
+    public void doExitCleanup() {
         GreenfootStage.closeAll();
     }
 }

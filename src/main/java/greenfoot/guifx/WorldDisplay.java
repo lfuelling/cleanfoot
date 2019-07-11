@@ -36,15 +36,13 @@ import threadchecker.Tag;
  * A class for handling the world part of the main GreenfootStage window.
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class WorldDisplay extends StackPane
-{
+public class WorldDisplay extends StackPane {
     private final ImageView imageView = new ImageView();
     private final AskPaneFX askPane = new AskPaneFX();
-    
-    public WorldDisplay()
-    {
+
+    public WorldDisplay() {
         // Need a stack pane to be able to provide border around image and Greenfoot.ask() :
-        StackPane stackPane = new StackPane(imageView,askPane);
+        StackPane stackPane = new StackPane(imageView, askPane);
         stackPane.getStyleClass().add("world-display-wrapper");
         // Make StackPane fit exactly around the contained imageView:
         stackPane.setMaxWidth(USE_PREF_SIZE);
@@ -56,11 +54,10 @@ public class WorldDisplay extends StackPane
 
     /**
      * Sets the world image.  Turns off any greying effect.
-     * 
+     * <p>
      * Returns true if the world changed size
      */
-    public boolean setImage(Image image)
-    {
+    public boolean setImage(Image image) {
         Image oldImage = imageView.getImage();
         boolean newSize = oldImage == null || image == null ||
                 image.getWidth() != oldImage.getWidth() ||
@@ -75,8 +72,7 @@ public class WorldDisplay extends StackPane
      * Greys out the world to indicate it isn't in a valid state.
      * Turned off by next setImage call.
      */
-    public void greyOutWorld()
-    {
+    public void greyOutWorld() {
         ColorAdjust grey = new ColorAdjust(0.0, -1.0, -0.1, 0.0);
         GaussianBlur blur = new GaussianBlur();
         blur.setInput(grey);
@@ -89,8 +85,7 @@ public class WorldDisplay extends StackPane
      * same ask request without disturbing the GUI.
      */
     @OnThread(Tag.FXPlatform)
-    public void ensureAsking(String prompt, FXPlatformConsumer<String> withAnswer)
-    {
+    public void ensureAsking(String prompt, FXPlatformConsumer<String> withAnswer) {
         // Remember, all of this should be fine to call multiple times:
         imageView.setDisable(true);
         greyOutWorld();
@@ -111,16 +106,14 @@ public class WorldDisplay extends StackPane
     /**
      * Is the ask pane currently showing?
      */
-    public boolean isAsking()
-    {
+    public boolean isAsking() {
         return askPane.isVisible();
     }
 
     /**
      * Converts a point in the scene to world coordinates.
      */
-    public Point2D sceneToWorld(Point2D point2D)
-    {
+    public Point2D sceneToWorld(Point2D point2D) {
         // We use imageView, not ourselves, because there may be extra margin around the imageView
         // in this StackPane if the user has sized the window to be larger than the world size.
         return imageView.sceneToLocal(point2D);
@@ -129,8 +122,7 @@ public class WorldDisplay extends StackPane
     /**
      * Converts a point in world coordinates into screen coordinates.
      */
-    public Point2D worldToScreen(Point2D point2D)
-    {
+    public Point2D worldToScreen(Point2D point2D) {
         // We use imageView, not ourselves, because there may be extra margin around the imageView
         // in this StackPane if the user has sized the window to be larger than the world size.
         return imageView.localToScreen(point2D);
@@ -139,8 +131,7 @@ public class WorldDisplay extends StackPane
     /**
      * Checks if the given point (in world coordinates) lies inside the world or not.
      */
-    public boolean worldContains(Point2D point2D)
-    {
+    public boolean worldContains(Point2D point2D) {
         return imageView.contains(point2D);
     }
 
@@ -148,25 +139,23 @@ public class WorldDisplay extends StackPane
      * Is the world greyed out?  (It will be if there has been a call
      * to greyOutWorld(), but not yet followed by setImage)
      */
-    public boolean isGreyedOut()
-    {
+    public boolean isGreyedOut() {
         return imageView.getEffect() != null;
     }
 
     /**
      * Returns a rendered image which illustrates a snapshot of the world display.
+     *
      * @return the rendered image
      */
-    public Image getSnapshot()
-    {
+    public Image getSnapshot() {
         return imageView.snapshot(null, null);
     }
-    
+
     /**
      * Get the node containing the actual world image (sans any spacing/border).
      */
-    public Node getImageView()
-    {
+    public Node getImageView() {
         return imageView;
     }
 }
