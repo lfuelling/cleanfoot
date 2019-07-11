@@ -46,14 +46,11 @@ import java.net.URL;
 @OnThread(Tag.SwingIsFX)
 public class GreenfootExtension extends Extension implements ApplicationListener
 {
-    private BlueJ theBlueJ;
-
     /**
      * When this method is called, the extension may start its work.
      */
     public void startup(BlueJ bluej)
     {
-        theBlueJ = bluej;
         Main.setGuiHandler(new GreenfootGuiHandler());
 
         // We can do this at any point, because although the submission failure may have already
@@ -99,7 +96,7 @@ public class GreenfootExtension extends Extension implements ApplicationListener
             public void compileError(CompileEvent event) { }
         });
 
-        theBlueJ.addApplicationListener(this);
+        bluej.addApplicationListener(this);
     }
 
     /**
@@ -141,7 +138,7 @@ public class GreenfootExtension extends Extension implements ApplicationListener
     public URL getURL()
     {
         try {
-            return new URL("https://github.com/lfuelling/clearfoot");
+            return new URL("http://greenfoot.org");
         }
         catch (MalformedURLException e) {
             return null;

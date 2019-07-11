@@ -276,7 +276,7 @@ public class PkgMgrFrame
      * This constructor can only be called via createFrame().
      */
     private PkgMgrFrame() {
-        stageProperty = new SimpleObjectProperty<>();
+        stageProperty = new SimpleObjectProperty<>(null);
         paneProperty = new SimpleObjectProperty<>(null);
         showingTextEval = new SimpleBooleanProperty(false);
         showingDebugger = new SimpleBooleanProperty(false);

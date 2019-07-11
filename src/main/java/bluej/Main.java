@@ -31,6 +31,7 @@ import com.apple.eawt.Application;
 import com.apple.eawt.QuitResponse;
 import de.codecentric.centerdevice.MenuToolkit;
 import de.codecentric.centerdevice.dialogs.about.AboutStageBuilder;
+import greenfoot.guifx.GreenfootGuiHandler;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Menu;
@@ -97,7 +98,11 @@ public class Main {
         Config.initialise(bluejLibDir, commandLineProps, boot.isGreenfoot());
 
         if (guiHandler == null) {
-            guiHandler = new BlueJGuiHandler();
+            if(Config.isGreenfoot()) {
+                guiHandler = new GreenfootGuiHandler();
+            } else {
+                guiHandler = new BlueJGuiHandler();
+            }
         }
 
         // Note we must do this OFF the AWT dispatch thread. On MacOS X, if the
