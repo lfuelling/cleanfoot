@@ -2062,7 +2062,7 @@ public class GreenfootStage extends Stage implements FXCompileObserver,
      */
     public static void aboutGreenfoot(Window parentWindow) {
         // Finds the image file that is supposed to be exist in the "resources" directory
-        URL resource = Boot.class.getClassLoader().getResource("images/greenfoot-splash.png");
+        URL resource = Boot.class.getClassLoader().getResource("images/greenfoot-icon-128.png");
         Image image = new Image(Objects.requireNonNull(resource).toString());
 
         String[] translatorNames = {

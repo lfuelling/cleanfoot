@@ -37,6 +37,8 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -58,6 +60,9 @@ import static org.reflections.ReflectionUtils.forName;
  * A class which manages scanning the classpath for available imports.
  */
 public class ImportScanner {
+
+    private static final Logger log = LoggerFactory.getLogger(ImportScanner.class);
+
     // A lock item :
     private final Object monitor = new Object();
     // Root package with "" as ident.
@@ -240,7 +245,7 @@ public class ImportScanner {
     // Gets the class loader config to pass to the Reflections library
     @OnThread(Tag.Worker)
     private ConfigurationBuilder getClassloaderConfig() {
-        List<ClassLoader> classLoadersList = new ArrayList<ClassLoader>();
+        List<ClassLoader> classLoadersList = new ArrayList<>();
         classLoadersList.add(ClasspathHelper.contextClassLoader());
         classLoadersList.add(ClasspathHelper.staticClassLoader());
         try {
@@ -274,6 +279,7 @@ public class ImportScanner {
                     if (f.getName().startsWith(".")) return true;
                     if (f.getName().endsWith(".so")) return true;
                 } catch (URISyntaxException usexc) {
+                    log.warn("Invalid Syntax!", usexc);
                 }
             }
             return false;
@@ -284,11 +290,13 @@ public class ImportScanner {
 
         ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0]));
 
-        return new ConfigurationBuilder()
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .setScanners(new SubTypesScanner(false /* don't exclude Object.class */))
                 .setUrls(urls)
                 .addClassLoader(cl)
                 .useParallelExecutor();
+
+        return configurationBuilder;
     }
 
     /**
@@ -469,7 +477,7 @@ public class ImportScanner {
     }
 
     private static <T> Set<String> getSubTypeNamesOf(Reflections reflections, final Class<T> type) {
-        if (reflections.getStore().get(SubTypesScanner.class + "") == null) {
+        if (reflections.getStore().get(SubTypesScanner.class.getSimpleName()) == null) {
             throw new ReflectionsException(SubTypesScanner.class + " not configured.");
         }
         Set<String> subTypes = getSubTypesOf(reflections.getStore(), type.getName());
