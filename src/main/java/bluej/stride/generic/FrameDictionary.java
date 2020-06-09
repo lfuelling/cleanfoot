@@ -47,7 +47,7 @@ public abstract class FrameDictionary<CATEGORY>
         private final boolean showingInCatalogue;
 
         public Entry(char shortcutKey, FrameFactory<? extends Frame> factory, boolean validOnSelection,
-                     CATEGORY category, String nameLabel, String descriptionLabel)
+                CATEGORY category, String nameLabel, String descriptionLabel)
         {
             this(Arrays.asList(shortcutKey), factory, validOnSelection, category, nameLabel, descriptionLabel, true);
         }

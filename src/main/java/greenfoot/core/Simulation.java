@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2005-2010,2011,2012,2013,2014,2016  Poul Henriksen and Michael Kolling 
+ Copyright (C) 2005-2010,2011,2012,2013,2014,2016,2019  Poul Henriksen and Michael Kolling 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -41,6 +41,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import javax.swing.event.EventListenerList;
+
 /**
  * The main class of the simulation. It drives the simulation and calls act()
  * on the objects in the world and then paints them.
@@ -80,7 +82,7 @@ public class Simulation extends Thread
     
     /** Tasks that are queued to run on the simulation thread */
     @OnThread(value = Tag.Any, requireSynchronized = true)
-    private Queue<SimulationRunnable> queuedTasks = new LinkedList<>();
+    private final Queue<SimulationRunnable> queuedTasks = new LinkedList<>();
 
     @OnThread(Tag.Any)
     private final List<SimulationListener> listenerList = new ArrayList<>();
@@ -100,7 +102,7 @@ public class Simulation extends Thread
      * Lock to synchronize access to the two fields: delaying and interruptDelay
      */
     @OnThread(Tag.Any)
-    private Object interruptLock = new Object();
+    private final Object interruptLock = new Object();
     /** Whether we are currently delaying between act-loops. */
     @OnThread(Tag.Any)
     private boolean delaying;
@@ -234,10 +236,9 @@ public class Simulation extends Thread
         }
     }   
     
-    public static interface SimulationRunnable
+    public interface SimulationRunnable
     {
-        @OnThread(Tag.Simulation)
-        public void run();
+        @OnThread(Tag.Simulation) void run();
     }
 
     /**
@@ -904,7 +905,8 @@ public class Simulation extends Thread
 
         try
         {
-            worldHandler.repaint();
+            // If we will be asleep for more than 1/100th of a second, force repaint, otherwise rely on usual if-due mechanism.
+            worldHandler.paint(numCycles * delay > 100_000_000L);
             for (int i = 0; i < numCycles; i++)
             {
                 HDTimer.sleep(delay);

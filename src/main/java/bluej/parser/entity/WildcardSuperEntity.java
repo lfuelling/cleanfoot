@@ -34,7 +34,7 @@ import threadchecker.Tag;
  */
 public class WildcardSuperEntity extends TypeArgumentEntity
 {
-    private JavaEntity superBound;
+    private final JavaEntity superBound;
     
     public WildcardSuperEntity(JavaEntity superBound)
     {

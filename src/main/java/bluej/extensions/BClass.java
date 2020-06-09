@@ -21,6 +21,11 @@
  */
 package bluej.extensions;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
 import bluej.compiler.JobQueue;
@@ -29,18 +34,13 @@ import bluej.extensions.editor.EditorBridge;
 import bluej.parser.symtab.ClassInfo;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.Target;
 import bluej.utility.JavaNames;
 import bluej.views.ConstructorView;
 import bluej.views.FieldView;
 import bluej.views.MethodView;
 import bluej.views.View;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * A wrapper for a class. This is used to represent both classes which have a representation
@@ -53,7 +53,7 @@ import java.util.WeakHashMap;
  */
 public class BClass
 {
-    private static Map<Identifier, BClass> externalClasses = new WeakHashMap<Identifier, BClass>();
+    private static final Map<Identifier,BClass> externalClasses = new WeakHashMap<Identifier,BClass>();
 
     private Identifier classId;
 
@@ -684,6 +684,7 @@ public class BClass
      * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
      * @deprecated As of BlueJ 2.0, replaced by {@link Editor#setReadOnly(boolean readOnly)}
      */
+    @Deprecated
     public void beginChangeSource()
              throws ProjectNotOpenException, PackageNotFoundException
     {
@@ -712,6 +713,7 @@ public class BClass
      * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
      * @deprecated As of BlueJ 2.0, replaced by {@link Editor#setReadOnly(boolean readOnly)}
      */
+    @Deprecated
     public void endChangeSource()
              throws ProjectNotOpenException, PackageNotFoundException
     {

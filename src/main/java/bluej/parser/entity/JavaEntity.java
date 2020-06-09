@@ -21,12 +21,12 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * A general abstraction for handling entities which may have fields or

@@ -116,7 +116,7 @@ public class GenTypeClass extends GenTypeSolid
             if(mparams.get(nextName) == null)
                 params.add(new GenTypeExtends(next.getBound()));
             else {
-                params.add((GenTypeParameter) mparams.get(nextName));
+                params.add(mparams.get(nextName));
                 mparams.remove(nextName);
             }
         }
@@ -328,10 +328,7 @@ public class GenTypeClass extends GenTypeSolid
         }
         
         // and there must be the same number of parameters
-        if( j.hasNext() )
-            return false;
-
-        return true;
+        return !j.hasNext();
     }
     
     /**
@@ -397,7 +394,7 @@ public class GenTypeClass extends GenTypeSolid
         }
         
         // Check each of the reference supertypes
-        GenTypeClass[] stypes = ((GenTypeSolid) t).getReferenceSupertypes();
+        GenTypeClass [] stypes = ((GenTypeSolid) t).getReferenceSupertypes();
         for (int i = 0; i < stypes.length; i++) {
             if (isAssignableFrom(stypes[i]))
                 return true;
@@ -448,10 +445,7 @@ public class GenTypeClass extends GenTypeSolid
         Reflective r = c.reflective;
 
         // check the inheritance hierarchy
-        if( getInheritanceChain(r, reflective.getName()) != null)
-            return true;
-        else
-            return false;
+        return getInheritanceChain(r, reflective.getName()) != null;
     }
     
     /**
@@ -486,7 +480,7 @@ public class GenTypeClass extends GenTypeSolid
         GenTypeClass ccc = this;
         
         do {
-            baseType = (Reflective)i.next();
+            baseType = i.next();
             bname = baseType.getName();
             Map<String,GenTypeParameter> tparams = ccc.getMap();
             ccc = mapGenericParamsToDirectBase(tparams, subType, baseType);
@@ -502,14 +496,14 @@ public class GenTypeClass extends GenTypeSolid
      * @param baseType  the base type
      */
     private static GenTypeClass mapGenericParamsToDirectBase(Map<String,? extends GenTypeParameter> tparams,
-                                                             Reflective subType, Reflective baseType)
+            Reflective subType, Reflective baseType)
     {
         GenTypeClass baseClass = subType.superTypeByName(baseType.getName());
         if (tparams == null) {
             // sub-type inherits from the raw base class
             return new GenTypeClass(baseClass.reflective);
         }
-        baseClass = (GenTypeClass) baseClass.mapTparsToTypes(tparams);
+        baseClass = baseClass.mapTparsToTypes(tparams);
         return baseClass;
     }
     
@@ -543,7 +537,7 @@ public class GenTypeClass extends GenTypeSolid
         
         GenTypeClass newOuter = null;
         if (outer != null) {
-            newOuter = (GenTypeClass) outer.mapTparsToTypes(tparams);
+            newOuter = outer.mapTparsToTypes(tparams);
         }
         
         return new GenTypeClass(reflective, retlist, newOuter);
@@ -574,7 +568,7 @@ public class GenTypeClass extends GenTypeSolid
         classes.pop();
         
         while( ! classes.empty() ) {
-            Reflective curSubtype = (Reflective)classes.pop();
+            Reflective curSubtype = classes.pop();
             HashMap<String,GenTypeParameter> newMap = new HashMap<String,GenTypeParameter>();
            
             // Check that the super inherits from the generic version of base
@@ -645,7 +639,7 @@ public class GenTypeClass extends GenTypeSolid
         while (paramIterator.hasNext() && formalIterator.hasNext())
         {
             GenTypeParameter paramType = paramIterator.next();
-            GenTypeDeclTpar formalType = (GenTypeDeclTpar)formalIterator.next();
+            GenTypeDeclTpar formalType = formalIterator.next();
             
             String paramName = formalType.getTparName();
             m.put(paramName, paramType);
@@ -726,7 +720,7 @@ public class GenTypeClass extends GenTypeSolid
         refs.push(reflective);
         
         while(! refs.empty()) {
-            Reflective r = (Reflective) refs.pop();
+            Reflective r = refs.pop();
             if (! s.contains(r)) {
                 // The reflective is not already in the set, so
                 // add it and queue its supertypes
@@ -736,7 +730,7 @@ public class GenTypeClass extends GenTypeSolid
         }
     }
     
-    public GenTypeClass[] getReferenceSupertypes()
+    public GenTypeClass [] getReferenceSupertypes()
     {
         return new GenTypeClass[] {this};
     }

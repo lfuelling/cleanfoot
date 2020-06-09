@@ -32,12 +32,12 @@ public interface PackageListener
      * This method will be called when a package has been opened.
      * If a long operation must be performed you should start a Thread.
      */
-    public void packageOpened (PackageEvent event);
+    void packageOpened(PackageEvent event);
 
     /**
      * This method will be called when a package is about to be closed.
      * If a long operation must be performed you should start a Thread.
      */
-    public void packageClosing (PackageEvent event);
+    void packageClosing(PackageEvent event);
 
 }

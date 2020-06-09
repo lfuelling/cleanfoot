@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017,2018 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,13 +21,19 @@
  */
 package bluej.stride.framedjava.slots;
 
-import bluej.stride.framedjava.slots.StructuredSlot.SplitInfo;
-import bluej.stride.generic.Frame.View;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.*;
-import bluej.utility.javafx.binding.DeepListBinding;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -39,16 +45,29 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
+
+import bluej.stride.framedjava.slots.StructuredSlot.SplitInfo;
+import bluej.stride.generic.Frame.View;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.FXFunction;
+import bluej.utility.javafx.FXPlatformConsumer;
+import bluej.utility.javafx.FXPlatformFunction;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
+import bluej.utility.javafx.TextFieldDelegate;
+import bluej.utility.javafx.binding.DeepListBinding;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class is the major part of the display and logic for expressions.  Here's how the architecture works:
@@ -836,7 +855,7 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
     public boolean selectNextWord(StructuredSlotField f)
     {
         setAnchorIfUnset(getCurrentPos());
-        if (f.getCurrentPos().equals(f.getEndPos()))
+        if (Objects.equals(f.getCurrentPos(), f.getEndPos()))
         {
             int i = findField(f);
             if (fields.get(i) instanceof StringLiteralExpression)
@@ -860,7 +879,7 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
     public boolean selectPreviousWord(StructuredSlotField f)
     {
         setAnchorIfUnset(getCurrentPos());
-        if (f.getCurrentPos().equals(f.getStartPos()))
+        if (Objects.equals(f.getCurrentPos(), f.getStartPos()))
         {
             int i = findField(f);
             if (fields.get(i) instanceof StringLiteralExpression)
@@ -1381,7 +1400,7 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
                         
                         operators.remove(index, token);
                         int newPos = f.getText().length();
-                        f.setText(f.getText() + opRemaining + ((StructuredSlotField)fields.get(index + 1)).getText(), token);
+                        f.setText(f.getText() + opRemaining + fields.get(index + 1).getText(), token);
                         fields.remove(index + 1, token);
                         
                         
@@ -1845,7 +1864,7 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
         {
             // Need to merge dot back in:
             int prevLen = f.getText().length();
-            f.setText(f.getText() + nextOp + ((StructuredSlotField)fields.get(index + 1)).getText(), token);
+            f.setText(f.getText() + nextOp + fields.get(index + 1).getText(), token);
             operators.remove(index, token);
             fields.remove(index+1, token);
             
@@ -1910,7 +1929,7 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
         {
             // Need to merge dot back in:
             int prevLen = f.getText().length();
-            f.setText(f.getText() + nextOp + ((StructuredSlotField)fields.get(index + 1)).getText(), token);
+            f.setText(f.getText() + nextOp + fields.get(index + 1).getText(), token);
             operators.remove(index, token);
             fields.remove(index+1, token);
             
@@ -2178,10 +2197,8 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
         
         if (fields.size() == 1 && parent == null)
         {
-            if (slot != null && slot.canCollapse())
-                return true; // Can collapse in this case
-            else
-                return false; // Only field at top level, not constructor params
+            // Only field at top level, not constructor params
+            return slot != null && slot.canCollapse(); // Can collapse in this case
         }
         else if (fields.size() == 1 && parent != null)
             return true; // Only field in brackets
@@ -2476,13 +2493,10 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
         if (! (fields.get(1) instanceof BracketedStructured))
             return false;
         BracketedStructured e = (BracketedStructured) fields.get(1);
-        if (e.getOpening() == '{')
-            return true;
         // We don't allow brackets around it, but this code would allow that:
         //else if (e.getOpening() == '(')
-            //return e.getContent().isCurlyLiteral();
-        else
-            return false;
+        //return e.getContent().isCurlyLiteral();
+        return e.getOpening() == '{';
         
     }
 
@@ -2665,10 +2679,10 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
      * {Hi!\n C:\\}: NORMAL
      * 
      */
-    private static enum EscapeStatus { NORMAL, AFTER_BACKSLASH }
+    private enum EscapeStatus { NORMAL, AFTER_BACKSLASH }
 
     // package-visible:
-    static enum RangeType { RANGE_CONSTANT, RANGE_NON_CONSTANT, NOT_RANGE }
+    enum RangeType { RANGE_CONSTANT, RANGE_NON_CONSTANT, NOT_RANGE }
 
     /**
      * Stores a mapping between a CaretPos structure and a traditional
@@ -2723,9 +2737,7 @@ public abstract class InfixStructured<SLOT extends StructuredSlot<?, INFIX, ?>, 
             }
             else if (!posOuter.equals(other.posOuter))
                 return false;
-            if (startIndex != other.startIndex)
-                return false;
-            return true;
+            return startIndex == other.startIndex;
         }
 
         @Override

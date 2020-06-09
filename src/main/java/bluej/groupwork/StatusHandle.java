@@ -52,9 +52,9 @@ public interface StatusHandle
      *               specified. (The commit can still fail if the file is committed
      * @param commitComment  The comment for this commit
      */
-    public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
-                                     Set<File> deletedFiles, Set<File> files, Set<TeamStatusInfo> forceFiles,
-                                     String commitComment);
+    TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
+                              Set<File> deletedFiles, Set<File> files, Set<TeamStatusInfo> forceFiles,
+                              String commitComment);
 
     /**
      * After a status command, get a command which can be used to
@@ -65,20 +65,20 @@ public interface StatusHandle
      * latest revision, which might have changed since the status
      * was performed.
      */
-    public TeamworkCommand updateTo(UpdateListener listener, Set<File> files, Set<File> forceFiles);
+    TeamworkCommand updateTo(UpdateListener listener, Set<File> files, Set<File> forceFiles);
     
     /**
      * Gets the repository.  Used for data collection.
      * @return
      */
-    public Repository getRepository();
+    Repository getRepository();
     
     /**
      * Push changes into remote repository. Shall not be used on Subversion or cvs.
      * @param filesToPush set of files to be pushed into the remote repository
      * @return TeamworkCommand if a VCS, null otherwise.
      */
-    public default TeamworkCommand pushAll(Set<File> filesToPush){
+    default TeamworkCommand pushAll(Set<File> filesToPush){
         return null;
     }
     
@@ -89,7 +89,7 @@ public interface StatusHandle
      * @return 
      */
     @OnThread(Tag.Worker)
-    public default boolean pushNeeded()
+    default boolean pushNeeded()
     {
         return true;
     }
@@ -101,7 +101,7 @@ public interface StatusHandle
      * @return 
      */
     @OnThread(Tag.Worker)
-    public default boolean pullNeeded()
+    default boolean pullNeeded()
     {
         return false;
     }

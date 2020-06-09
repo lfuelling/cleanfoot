@@ -21,13 +21,26 @@
  */
 package bluej.editor.moe;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import bluej.prefmgr.PrefMgr.PrintSize;
+import org.fxmisc.flowless.Cell;
+import org.fxmisc.flowless.VirtualFlow;
+import org.fxmisc.flowless.VirtualFlowHit;
+import org.fxmisc.richtext.Caret.CaretVisibility;
+import org.fxmisc.richtext.StyledTextArea;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.io.CharStreams;
+
 import bluej.Config;
 import bluej.editor.moe.BlueJSyntaxView.ScopeInfo;
 import bluej.prefmgr.PrefMgr;
-import bluej.prefmgr.PrefMgr.PrintSize;
 import bluej.utility.javafx.JavaFXUtil;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.CharStreams;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
@@ -35,22 +48,16 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Side;
 import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.paint.ImagePattern;
-import org.fxmisc.flowless.Cell;
-import org.fxmisc.flowless.VirtualFlow;
-import org.fxmisc.flowless.VirtualFlowHit;
-import org.fxmisc.richtext.Caret.CaretVisibility;
-import org.fxmisc.richtext.StyledTextArea;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import javax.swing.text.DefaultEditorKit;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * MoeJEditorPane - an editor pane implementation based on StyledTextArea from the RichTextFX library.
@@ -338,8 +345,8 @@ public final class MoeEditorPane extends StyledTextArea<ScopeInfo, ImmutableSet<
     public void selectWord()
     {
         MoeActions actions = MoeActions.getActions(editor);
-        actions.getActionByName(DefaultEditorKit.beginWordAction).actionPerformed();
-        actions.getActionByName(DefaultEditorKit.selectionEndWordAction).actionPerformed();
+        actions.getActionByName(DefaultEditorKit.beginWordAction).actionPerformed(false);
+        actions.getActionByName(DefaultEditorKit.selectionEndWordAction).actionPerformed(false);
     }
 
     @Override
@@ -350,13 +357,13 @@ public final class MoeEditorPane extends StyledTextArea<ScopeInfo, ImmutableSet<
         // on moe editor and rather it selects all the lines above the current line where the triple 
         // click happens. So we need to override the triple click behaviour in RichTextFX which is 
         // a private method that calls selectParagraph() method that we can override.
-        moveCaretPosition(editor.getSelectionEnd().getLine());
+        editor.getSourcePane().moveCaretPosition(editor.getSelectionEnd().getLine());
         int offset = 0;
         for (int i = 0; i < editor.getSelectionEnd().getLine(); i++) 
         {
             offset = offset + editor.getLineLength(i);
         }
-        select(offset - editor.getLineLength(
+        editor.getSourcePane().select(offset - editor.getLineLength(
                 editor.getSelectionEnd().getLine() - 1), offset);
     }
 }

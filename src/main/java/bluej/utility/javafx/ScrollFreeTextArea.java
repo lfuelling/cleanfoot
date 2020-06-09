@@ -21,8 +21,9 @@
  */
 package bluej.utility.javafx;
 
-import bluej.Config;
-import bluej.stride.generic.InteractionManager;
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -45,8 +46,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import java.util.ArrayList;
-import java.util.List;
+import bluej.Config;
+import bluej.stride.generic.InteractionManager;
 
 /**
  * This is a class to make sure a TextArea always resizes to fit its content.

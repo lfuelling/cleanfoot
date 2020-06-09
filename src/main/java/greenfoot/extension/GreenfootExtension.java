@@ -22,21 +22,22 @@
 package greenfoot.extension;
 
 import bluej.Boot;
+import bluej.extensions.event.CompileEvent;
+import bluej.extensions.event.CompileListener;
+import greenfoot.guifx.GreenfootGuiHandler;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import bluej.Config;
 import bluej.Main;
 import bluej.extensions.BlueJ;
 import bluej.extensions.Extension;
 import bluej.extensions.event.ApplicationEvent;
 import bluej.extensions.event.ApplicationListener;
-import bluej.extensions.event.CompileEvent;
-import bluej.extensions.event.CompileListener;
-import greenfoot.guifx.GreenfootGuiHandler;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * This is the starting point of Greenfoot as a BlueJ Extension.
@@ -46,11 +47,14 @@ import java.net.URL;
 @OnThread(Tag.SwingIsFX)
 public class GreenfootExtension extends Extension implements ApplicationListener
 {
+    private BlueJ theBlueJ;
+
     /**
      * When this method is called, the extension may start its work.
      */
     public void startup(BlueJ bluej)
     {
+        theBlueJ = bluej;
         Main.setGuiHandler(new GreenfootGuiHandler());
 
         // We can do this at any point, because although the submission failure may have already
@@ -61,15 +65,6 @@ public class GreenfootExtension extends Extension implements ApplicationListener
             public void blueJReady(ApplicationEvent event)
             {
 
-            }
-
-            @Override
-            public void dataSubmissionFailed(ApplicationEvent event)
-            {
-                if (Boot.isTrialRecording())
-                {
-                    System.err.println("Data collection would have errored, but since it's removed... ¯\\_(ツ)_/¯");
-                }
             }
         });
 
@@ -96,7 +91,7 @@ public class GreenfootExtension extends Extension implements ApplicationListener
             public void compileError(CompileEvent event) { }
         });
 
-        bluej.addApplicationListener(this);
+        theBlueJ.addApplicationListener(this);
     }
 
     /**
@@ -138,7 +133,7 @@ public class GreenfootExtension extends Extension implements ApplicationListener
     public URL getURL()
     {
         try {
-            return new URL("http://greenfoot.org");
+            return new URL("http://www.greenfoot.org");
         }
         catch (MalformedURLException e) {
             return null;

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2011,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -39,7 +39,12 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -55,9 +60,9 @@ import org.fxmisc.richtext.model.TwoDimensional.Position;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import javax.swing.text.Segment;
 import java.util.*;
 import java.util.Map.Entry;
+import javax.swing.text.Segment;
 
 /**
  * A Swing view implementation that does syntax colouring and adds some utility.
@@ -104,7 +109,7 @@ public class BlueJSyntaxView
     
     // Draw a "small" version:
     @OnThread(Tag.FX)
-    private boolean small = false;
+    private final boolean small = false;
 
     /* Scope painting colours */
     /* The following are initialized by resetColors() */
@@ -127,7 +132,7 @@ public class BlueJSyntaxView
     // Each item in the list maps the list index (as number of spaces) to indent amount
     private final List<Double> cachedSpaceSizes = new ArrayList<>();
 
-    public static enum ParagraphAttribute
+    public enum ParagraphAttribute
     {
         STEP_MARK("bj-step-mark"), BREAKPOINT("bj-breakpoint"), ERROR("bj-error");
 
@@ -503,11 +508,6 @@ public class BlueJSyntaxView
     protected void recalcScopeMarkers(Map<Integer, ScopeInfo> pendingScopes, int fullWidth,
             int firstLine, int lastLine, boolean onlyMethods)
     {
-        //optimization for the raspberry pi.
-        //if (strength == 0) {
-            //return;
-        //}
-        
         Element map = document.getDefaultRootElement();
         ParsedNode rootNode = document.getParsedNode();
 
@@ -1035,9 +1035,7 @@ public class BlueJSyntaxView
                 return true;
             }
             int nws = findNonWhitespaceComment(nap, lineEl, segment, napPos - lineEl.getStartOffset());
-            if (nws == -1) {
-                return true;
-            }
+            return nws == -1;
         }
         return false;
     }
@@ -1062,9 +1060,7 @@ public class BlueJSyntaxView
                 return false;
             }
             int nws = findNonWhitespace(segment, 0);
-            if (nws == -1 || lineEl.getStartOffset() + nws >= napEnd) {
-                return true;
-            }
+            return nws == -1 || lineEl.getStartOffset() + nws >= napEnd;
         }
         return false;
     }
@@ -1984,9 +1980,9 @@ public class BlueJSyntaxView
     public static class ScopeInfo
     {
         // For display purposes.  Step overrides breakpoint.
-        public static enum Special
+        public enum Special
         {
-            NONE, BREAKPOINT, STEP;
+            NONE, BREAKPOINT, STEP
         }
 
         private final List<SingleNestedScope> nestedScopes = new ArrayList<>();

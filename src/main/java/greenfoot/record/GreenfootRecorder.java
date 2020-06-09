@@ -21,23 +21,24 @@
  */
 package greenfoot.record;
 
-import bluej.Config;
 import bluej.debugger.DebuggerObject;
-import bluej.debugger.gentype.JavaType;
 import bluej.editor.Editor;
-import bluej.stride.framedjava.elements.CallElement;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.elements.NormalMethodElement;
-import bluej.stride.framedjava.elements.VarElement;
 import bluej.utility.javafx.FXPlatformFunction;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import bluej.Config;
+import bluej.debugger.gentype.JavaType;
+import bluej.stride.framedjava.elements.CallElement;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.elements.NormalMethodElement;
+import bluej.stride.framedjava.elements.VarElement;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Builder for code sequences representing a recording of what the user has
@@ -107,7 +108,7 @@ public class GreenfootRecorder
         // has got crab, crab2, crab3, and we save the world again, it's only by naming the objects using
         // the same algorithm that we know the next one should be crab4 (the alternative of introspecting the
         // prepare method to see the existing names would be too intricate -- this way is simple best-effort).
-        for (int i = 2; objectNames.values().contains(name); i++)
+        for (int i = 2; objectNames.containsValue(name); i++)
         {
             name = root + i;
         }
@@ -177,7 +178,7 @@ public class GreenfootRecorder
             //An actor that we don't know about is being added to the world: ignore
             return;
         }
-        code.add(callElement("addObject(" + actorObjectName + "," + String.valueOf(x) + "," + String.valueOf(y) + ")"));
+        code.add(callElement("addObject(" + actorObjectName + "," + x + "," + y + ")"));
     }
 
     /**
@@ -259,7 +260,7 @@ public class GreenfootRecorder
             // We'll just have to ignore it
             return;
         }
-        code.add(callElement(actorObjectName + ".setLocation(" + String.valueOf(xCell) + "," + String.valueOf(yCell) + ")"));
+        code.add(callElement(actorObjectName + ".setLocation(" + xCell + "," + yCell + ")"));
     }
 
     /**
@@ -327,7 +328,7 @@ public class GreenfootRecorder
         editor.insertAppendMethod(method, inserted -> {
             if (inserted)
             {
-                editor.setEditorVisible(true);
+                editor.setEditorVisible(true, false);
             }
         });
         // Now that we've inserted the code, we must reset the recorder,

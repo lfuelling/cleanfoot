@@ -24,6 +24,8 @@ package greenfoot.event;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.EventListener;
+
 /**
  * Listener for simulation events.
  * 
@@ -37,7 +39,7 @@ public interface SimulationListener
     /**
      * Simulation events which can occur off the simulation thread.
      */
-    public static enum AsyncEvent
+    enum AsyncEvent
     {
         /** The simulation was paused */
         STOPPED,
@@ -49,14 +51,14 @@ public interface SimulationListener
          * The simulation was disabled and cannot be restarted
          * until a STOPPED event is received.
          */
-        DISABLED;
+        DISABLED
     }
 
     /**
      * Simulation events which always occur on the simulation thread
      * (and where the listener is thus called on the simulation thread)
      */
-    public static enum SyncEvent
+    enum SyncEvent
     {
         /** The simulation started running */
         STARTED,
@@ -89,7 +91,7 @@ public interface SimulationListener
         /**
          * Delay loop is completed
          */
-        DELAY_LOOP_COMPLETED;    
+        DELAY_LOOP_COMPLETED
     }
     
     
@@ -97,9 +99,7 @@ public interface SimulationListener
      * The simulation state changed or a simulation event occurred. The simulation may have
      * stopped, started, changed enabled state, begun a new act round, etc.
      */
-    @OnThread(Tag.Simulation)
-    public void simulationChangedSync(SyncEvent e);
+    @OnThread(Tag.Simulation) void simulationChangedSync(SyncEvent e);
 
-    @OnThread(Tag.Any)
-    public void simulationChangedAsync(AsyncEvent e);
+    @OnThread(Tag.Any) void simulationChangedAsync(AsyncEvent e);
 }

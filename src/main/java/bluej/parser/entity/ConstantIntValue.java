@@ -30,7 +30,7 @@ import bluej.debugger.gentype.JavaType;
  */
 public class ConstantIntValue extends ValueEntity
 {
-    private long value;
+    private final long value;
     
     /**
      * Construct a constant integer value entity.

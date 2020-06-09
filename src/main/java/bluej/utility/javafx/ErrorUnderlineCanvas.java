@@ -21,7 +21,10 @@
  */
 package bluej.utility.javafx;
 
-import bluej.stride.framedjava.slots.TextOverlayPosition;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.stride.framedjava.slots.TextOverlayPosition.Line;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -34,12 +37,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import bluej.stride.framedjava.slots.TextOverlayPosition;
+import bluej.stride.slots.EditableSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * There are several points in the interface where we need to show
@@ -119,13 +120,13 @@ public class ErrorUnderlineCanvas
     /**
      * More information about the position of underline extents 
      */
-    public static interface UnderlineInfo
+    public interface UnderlineInfo
     {
         /**
          * Given a position (and whether it is a Java position or not),
          * gives back the corresponding TextOverlayPosition
          */
-        public TextOverlayPosition getOverlayLocation(int caretPos, boolean javaPos);
+        TextOverlayPosition getOverlayLocation(int caretPos, boolean javaPos);
 
         /**
          * Gets all the lines between two given positions (which may be java positions or not).
@@ -133,7 +134,7 @@ public class ErrorUnderlineCanvas
          * Default implementation assumes a single text-line slot, and thus
          * just delegates to getOverlayLocation for each end.  Override for multi-line slots.
          */
-        default public List<Line> getAllLines(int start, int end, boolean javaPos)
+        default List<Line> getAllLines(int start, int end, boolean javaPos)
         {
             return TextOverlayPosition.groupIntoLines(Arrays.asList(getOverlayLocation(start, javaPos), getOverlayLocation(end, javaPos)));
         }

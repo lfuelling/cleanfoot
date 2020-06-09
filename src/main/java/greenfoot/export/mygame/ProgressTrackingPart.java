@@ -21,10 +21,14 @@
  */
 package greenfoot.export.mygame;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.content.FileBody;
-
-import java.io.*;
 
 /**
  * A FormBodyPart which tracks upload progress.
@@ -41,7 +45,7 @@ public class ProgressTrackingPart extends FormBodyPart
     
     private static class ProgressTrackingFileBody extends FileBody
     {
-        private MyGameClient listener;
+        private final MyGameClient listener;
         
         public ProgressTrackingFileBody(File file, MyGameClient listener)
         {

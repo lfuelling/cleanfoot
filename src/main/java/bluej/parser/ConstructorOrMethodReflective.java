@@ -21,12 +21,12 @@
  */
 package bluej.parser;
 
+import java.util.Collections;
+import java.util.List;
+
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by neil on 08/09/15.
@@ -63,7 +63,7 @@ public class ConstructorOrMethodReflective
      */
     public List<GenTypeDeclTpar> getTparTypes()
     {
-        return tparTypes == null ? Collections.<GenTypeDeclTpar>emptyList() : tparTypes;
+        return tparTypes == null ? Collections.emptyList() : tparTypes;
     }
 
 

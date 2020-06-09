@@ -21,11 +21,13 @@
  */
 package bluej.stride.framedjava.convert;
 
-import bluej.parser.lexer.LocatableToken;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import bluej.parser.lexer.LocatableToken;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A modifier.  Might be a keyword (e.g. "public", "final") or an annotation
@@ -36,17 +38,17 @@ interface Modifier
     /**
      * Returns true if this is a keyword modifier equal to the given string
      */
-    public boolean isKeyword(String modifier);
+    boolean isKeyword(String modifier);
 
     /**
      * Returns true if this is an annotation where the name matches the given name.
      */
-    public boolean isAnnotation(String annotation);
+    boolean isAnnotation(String annotation);
 
     LocatableToken getStart();
     LocatableToken getEnd();
 
-    static class KeywordModifier implements Modifier
+    class KeywordModifier implements Modifier
     {
         private final LocatableToken keyword;
         
@@ -86,7 +88,7 @@ interface Modifier
         }
     }
 
-    static class AnnotationModifier implements Modifier
+    class AnnotationModifier implements Modifier
     {
         // Without the "@"
         private final String annotation;

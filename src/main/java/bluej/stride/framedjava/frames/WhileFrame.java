@@ -26,6 +26,10 @@
 package bluej.stride.framedjava.frames;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.ast.HighlightedBreakpoint;
@@ -35,8 +39,14 @@ import bluej.stride.framedjava.elements.WhileElement;
 import bluej.stride.framedjava.frames.BreakFrame.BreakEncloser;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
-import bluej.stride.generic.*;
+import bluej.stride.generic.ExtensionDescription;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleCanvasFrame;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.SlotLabel;
@@ -44,10 +54,6 @@ import bluej.utility.Utility;
 import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Container-block representing a while loop.
@@ -189,7 +195,7 @@ public class WhileFrame extends SingleCanvasFrame
             @Override
             public Class<WhileFrame> getBlockClass()
             {
-                return WhileFrame.class;
+                return WhileFrame.class; 
             }
         };
     }

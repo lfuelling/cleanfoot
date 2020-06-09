@@ -36,21 +36,21 @@ public interface Sound
     /**
      * Closes this sound. Will immediately release any resources for the sound.
      */
-    public abstract void close();
+    void close();
 
     /**
      * Stop this sound. 
      *
      * After this method has been called: isStopped=true, isPlaying=false, isPaused=false.
      */
-    public abstract void stop();
+    void stop();
 
     /**
      * Pause the song. Paused sounds can be resumed.
      *
      * After this method has been called: isStopped=false, isPlaying=false, isPaused=true.
      */
-    public abstract void pause();
+    void pause();
 
     /**
      * Play this sound. 
@@ -59,7 +59,7 @@ public interface Sound
      * If a problem occurs it should be: isStopped=true, isPlaying=false, isPaused=false.
      * 
      */
-    public abstract void play();
+    void play();
 
     /**
      * Plays this sound in a loop. 
@@ -68,35 +68,35 @@ public interface Sound
      * If a problem occurs it should be: isStopped=true, isPlaying=false, isPaused=false.
      * 
      */
-    public abstract void loop();
+    void loop();
 
     /**
      * True if the sound is currently playing.
      * 
      */
-    public abstract boolean isPlaying();
+    boolean isPlaying();
 
     /**
      * True if the sound is currently paused.
      * 
      */
-    public abstract boolean isPaused();
+    boolean isPaused();
 
     /**
      * True if the sound is currently paused.
      * 
      */
-    public abstract boolean isStopped();
+    boolean isStopped();
 
     /**
      * Set the sound volume.
      * @param level the level between 0-100 of the sound.
      */
-    public abstract void setVolume(int level);
+    void setVolume(int level);
 
     /**
      * Get the current volume of the sound.
      * @return the sound volume, between 0-100.
      */
-    public abstract int getVolume();
+    int getVolume();
 }

@@ -21,11 +21,8 @@
  */
 package bluej.editor.stride;
 
-import bluej.Config;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.List;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -40,7 +37,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
-import java.util.List;
+import bluej.Config;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
 
 /**
  * The bar down the right-hand side of the code that shows small red rectangles where the errors are.
@@ -52,7 +53,7 @@ public class ErrorOverviewBar extends VBox
      * could be errors, but we're not showing them yet if there are.
      * NO_ERRORS and ERRORS are the other two self-explanatory states when there are no fresh frames.
      */
-    public static enum ErrorState { NO_ERRORS, ERRORS, EDITING }
+    public enum ErrorState { NO_ERRORS, ERRORS, EDITING }
 
     /**
      * The small icon at the top of the error bad, indicating the ErrorState

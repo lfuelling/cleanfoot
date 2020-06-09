@@ -32,9 +32,9 @@ import java.util.*;
  */
 public class IntersectionType extends GenTypeSolid
 {
-    private GenTypeSolid[] intersectTypes;
+    private final GenTypeSolid [] intersectTypes;
     
-    private IntersectionType(GenTypeSolid[] types)
+    private IntersectionType(GenTypeSolid [] types)
     {
         if (types.length == 0) {
             throw new IllegalArgumentException();
@@ -49,7 +49,7 @@ public class IntersectionType extends GenTypeSolid
      * @param types   The types to create an intersection of
      * @return        The intersection of the given types
      */
-    public static GenTypeSolid getIntersection(GenTypeSolid[] types)
+    public static GenTypeSolid getIntersection(GenTypeSolid [] types)
     {
         // A quick optimization for a common case.
         if (types.length == 1)
@@ -103,7 +103,7 @@ public class IntersectionType extends GenTypeSolid
      */
     public static GenTypeSolid getIntersection(GenTypeSolid a, GenTypeSolid b)
     {
-        return getIntersection(new GenTypeSolid[] {a, b});
+        return getIntersection(new GenTypeSolid [] {a, b});
     }
     
     /**
@@ -116,14 +116,14 @@ public class IntersectionType extends GenTypeSolid
     {
         // One class must be derived from the other
         //GenTypeParameterizable gtp = classtype.precisify(tclass);
-        GenTypeClass aE = (GenTypeClass) a.getErasedType();
-        GenTypeClass bE = (GenTypeClass) b.getErasedType();
+        GenTypeClass aE = a.getErasedType();
+        GenTypeClass bE = b.getErasedType();
         if (! aE.equals(bE)) {
             if (aE.isAssignableFrom(bE)) {
-                a = (GenTypeClass) a.mapToDerived(bE.reflective);
+                a = a.mapToDerived(bE.reflective);
             }
             else {
-                b = (GenTypeClass) b.mapToDerived(aE.reflective);
+                b = b.mapToDerived(aE.reflective);
             }
         }
         
@@ -189,7 +189,7 @@ public class IntersectionType extends GenTypeSolid
         
     public GenTypeSolid mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams)
     {
-        GenTypeSolid[] newIsect = new GenTypeSolid[intersectTypes.length];
+        GenTypeSolid [] newIsect = new GenTypeSolid[intersectTypes.length];
         for (int i = 0; i < intersectTypes.length; i++) {
             newIsect[i] = (GenTypeSolid) intersectTypes[i].mapTparsToTypes(tparams);
         }
@@ -202,14 +202,14 @@ public class IntersectionType extends GenTypeSolid
             return false;
         
         if (other instanceof JavaType) {
-            JavaType otherJT = (JavaType) other;
+            JavaType otherJT = other;
             return isAssignableFrom(otherJT) && otherJT.isAssignableFrom(this);
         }
         
         return false;
     }
 
-    public void getParamsFromTemplate(Map<String, GenTypeParameter> map, GenTypeParameter template)
+    public void getParamsFromTemplate(Map<String,GenTypeParameter> map, GenTypeParameter template)
     {
         // This won't be needed
         return;
@@ -256,11 +256,11 @@ public class IntersectionType extends GenTypeSolid
         }
     }
     
-    public GenTypeClass[] getReferenceSupertypes()
+    public GenTypeClass [] getReferenceSupertypes()
     {
         ArrayList<GenTypeClass> rsupTypes = new ArrayList<GenTypeClass>();
         for (int i = 0; i < intersectTypes.length; i++) {
-            GenTypeClass[] isTypes = intersectTypes[i].getReferenceSupertypes();
+            GenTypeClass [] isTypes = intersectTypes[i].getReferenceSupertypes();
             for (int j = 0; j < isTypes.length; j++) {
                 rsupTypes.add(isTypes[j]);
             }

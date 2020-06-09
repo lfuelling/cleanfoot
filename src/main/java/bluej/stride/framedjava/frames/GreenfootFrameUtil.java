@@ -21,27 +21,28 @@
  */
 package bluej.stride.framedjava.frames;
 
-import bluej.parser.ParseFailure;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.ast.Parser;
-import bluej.stride.framedjava.convert.ConversionWarning;
-import bluej.stride.framedjava.convert.ConvertResultDialog;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.generic.Frame;
-import bluej.utility.Debug;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.ParsingException;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+
+import bluej.parser.ParseFailure;
+import bluej.stride.framedjava.ast.Parser;
+import bluej.stride.framedjava.convert.ConversionWarning;
+import bluej.stride.framedjava.convert.ConvertResultDialog;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.ParsingException;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.generic.Frame;
+import bluej.utility.Debug;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class GreenfootFrameUtil
 {

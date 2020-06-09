@@ -33,10 +33,10 @@ public interface ValidityListener extends EventListener
     /**
      * Change from invalid to valid.
      */
-    public void changedToValid(ValidityEvent e);
+    void changedToValid(ValidityEvent e);
     
     /**
      * Change from valid to invalid.
      */
-    public void changedToInvalid(ValidityEvent e);
+    void changedToInvalid(ValidityEvent e);
 }

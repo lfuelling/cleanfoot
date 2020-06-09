@@ -22,6 +22,34 @@
 package bluej.debugmgr;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.GenTypeParameter;
@@ -35,22 +63,8 @@ import bluej.utility.javafx.dialog.DialogPaneAnimateError;
 import bluej.views.CallableView;
 import bluej.views.TypeParamView;
 import bluej.views.View;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
-import javafx.scene.Cursor;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
 
 /**
  * Superclass for interactive call dialogs (method calls or free
@@ -533,10 +547,7 @@ public abstract class CallDialog extends Dialog<Void>
         if (parameterList.actualCount() < params.length) {
             return false;
         }
-        if (getArgs().length == 1 && isEmptyArg(getArgs()[0]) ) {
-            return false;
-        }
-        return true;
+        return getArgs().length != 1 || !isEmptyArg(getArgs()[0]);
     }
 
     private boolean isEmptyArg(String value)

@@ -33,11 +33,19 @@ import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.framedjava.frames.ImportFrame;
 import bluej.stride.framedjava.frames.StrideDictionary;
 import bluej.stride.framedjava.frames.TopLevelFrame;
-import bluej.stride.slots.*;
+import bluej.stride.slots.ClassNameDefTextSlot;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.Focus;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotLabel;
+import bluej.stride.slots.SlotTraversalChars;
+import bluej.stride.slots.TextSlot;
+import bluej.stride.slots.TriangleLabel;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.MultiListener;
 import bluej.utility.javafx.SharedTransition;
 import bluej.utility.javafx.binding.DeepListBinding;
+
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleStringProperty;
@@ -52,7 +60,11 @@ import javafx.scene.shape.Rectangle;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 /**
@@ -90,8 +102,8 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
     protected final FrameContentItem endSpacer;
 
     public TopLevelDocumentMultiCanvasFrame(InteractionManager editor, EntityResolver projectResolver, String caption,
-                                            String stylePrefix, String packageName, List<ImportElement> imports,
-                                            JavadocUnit documentation, NameDefSlotFragment topLevelFrameName, boolean enabled)
+                                        String stylePrefix, String packageName, List<ImportElement> imports,
+                                        JavadocUnit documentation, NameDefSlotFragment topLevelFrameName, boolean enabled)
     {
         //Frame frameParent
         super(editor, caption, stylePrefix);
@@ -101,7 +113,7 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
 
         // Spacer to make the class have a bit of space after last canvas;
         endSpacer = new FrameContentItem() {
-            private Rectangle r = new Rectangle(1, 200, Color.TRANSPARENT);
+            private final Rectangle r = new Rectangle(1, 200, Color.TRANSPARENT);
 
             @Override
             public Stream<HeaderItem> getHeaderItemsDeep()
@@ -152,7 +164,7 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
             }
 
             @Override
-            public void setView(Frame.View oldView, Frame.View newView, SharedTransition animation)
+            public void setView(View oldView, View newView, SharedTransition animation)
             {
 
             }
@@ -244,11 +256,8 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
             return true;
         }
 
-        if (canvas.getBlockContents().stream().anyMatch(b -> b.getFocusablesInclContained().anyMatch(s -> s.isFocused()))) {
-            // a slot in a Frame inside 'canvas' is focused
-            return true;
-        }
-        return false;
+        // a slot in a Frame inside 'canvas' is focused
+        return canvas.getBlockContents().stream().anyMatch(b -> b.getFocusablesInclContained().anyMatch(s -> s.isFocused()));
     }
 
     protected SlotLabel makeLabel(String content)
@@ -480,11 +489,11 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animateProgress)
+    public void setView(View oldView, View newView, SharedTransition animateProgress)
     {
         super.setView(oldView, newView, animateProgress);
-        boolean java = newView == Frame.View.JAVA_PREVIEW;
-        if (java || oldView == Frame.View.JAVA_PREVIEW) {
+        boolean java = newView == View.JAVA_PREVIEW;
+        if (java || oldView == View.JAVA_PREVIEW) {
             fieldsCanvas.previewCurly(java, true, false, header.getLeftFirstItem(), null, animateProgress);
             methodsCanvas.previewCurly(java, false, true, header.getLeftFirstItem(), null, animateProgress);
         }
@@ -507,10 +516,10 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
         // TODO if extendsInheritedCanvases is added to Interfaces, use the code of setView in ClassFrame.
     }
 
-    private void animateLabelRows(Frame.View newView, SharedTransition animateProgress)
+    private void animateLabelRows(View newView, SharedTransition animateProgress)
     {
         final List<FrameContentRow> labelRows = getLabelRows();
-        if (newView == Frame.View.NORMAL)
+        if (newView == View.NORMAL)
         {
             animateProgress.addOnStopped(() -> {
                 importTriangleLabel.setVisible(true);
@@ -529,14 +538,14 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
     protected abstract List<FrameContentRow> getLabelRows();
 
 
-    private void animateCanvasLabels(Frame.View oldView, Frame.View newView, SharedTransition animateProgress)
+    private void animateCanvasLabels(View oldView, View newView, SharedTransition animateProgress)
     {
         List<SlotLabel> animateLabels = getCanvasLabels();
-        if (newView == Frame.View.JAVA_PREVIEW)
+        if (newView == View.JAVA_PREVIEW)
         {
             animateLabels.forEach(l -> l.shrinkVertically(animateProgress));
         }
-        else if (oldView == Frame.View.JAVA_PREVIEW)
+        else if (oldView == View.JAVA_PREVIEW)
         {
             animateLabels.forEach(l -> l.growVertically(animateProgress));
         }

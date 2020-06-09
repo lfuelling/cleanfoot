@@ -21,12 +21,12 @@
  */
 package bluej.stride.framedjava.errors;
 
-import bluej.stride.framedjava.ast.JavaFragment;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.Collections;
 import java.util.List;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.stride.framedjava.ast.JavaFragment;
 
 public class JavaCompileError extends CodeError
 {

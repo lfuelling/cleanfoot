@@ -23,24 +23,23 @@ package bluej.utility;
 
 import bluej.BlueJTheme;
 import bluej.Config;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.stage.Modality;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.stage.Modality;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * The dialog manager is a utility class to simplify communication with
@@ -335,7 +334,6 @@ public class DialogManager
             String button3 = message.substring(button3Index+1);
             String button2 = message.substring(button2Index+1, button3Index);
             String button1 = message.substring(button1Index+1, button2Index);
-            System.out.println(button1);
             message = message.substring(0, button1Index);
             message = infoText + message;
 

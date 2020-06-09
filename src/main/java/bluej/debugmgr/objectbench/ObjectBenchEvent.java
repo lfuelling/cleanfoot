@@ -21,9 +21,9 @@
  */
 package bluej.debugmgr.objectbench;
 
-import bluej.debugmgr.NamedValue;
+import java.util.*;
 
-import java.util.EventObject;
+import bluej.debugmgr.NamedValue;
 
 /**
  * The event which occurs when  performing actions with the ObjectBench.

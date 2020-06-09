@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2016,2018  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,15 +21,21 @@
  */
 package bluej.debugmgr;
 
-import bluej.Config;
-import bluej.classmgr.BPClassLoader;
-import bluej.pkgmgr.Package;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.views.*;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import bluej.views.ViewFilter.StaticOrInstance;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
@@ -39,11 +45,18 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
+
+import bluej.Config;
+import bluej.classmgr.BPClassLoader;
+import bluej.pkgmgr.Package;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.views.CallableView;
+import bluej.views.ConstructorView;
+import bluej.views.MethodView;
+import bluej.views.View;
+import bluej.views.ViewFilter;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * This dialog allows selection of classes and their static methods from
@@ -65,7 +78,7 @@ public class LibraryCallDialog extends Dialog<CallableView>
         Config.getString("callLibraryDialog.classNotFound2"),
     };
 
-    private ComboBox classField;
+    private ComboBox<String> classField;
     private ListView<CallableView> methodList;
     private Label textOverlay;
     private Button docButton;
@@ -211,7 +224,7 @@ public class LibraryCallDialog extends Dialog<CallableView>
             Label classLabel = new Label(
                 Config.getString("callLibraryDialog.classLabel"));
 
-            classField = new ComboBox(FXCollections.observableArrayList(history.getHistory()));
+            classField = new ComboBox<>(FXCollections.observableArrayList(history.getHistory()));
             classField.setEditable(true);
             classField.setVisibleRowCount(10);
             TextField textField = classField.getEditor();

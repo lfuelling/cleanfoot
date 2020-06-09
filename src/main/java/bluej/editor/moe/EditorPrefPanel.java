@@ -51,13 +51,12 @@ import java.util.List;
 @OnThread(Tag.FXPlatform)
 public class EditorPrefPanel extends VBox implements PrefPanelListener
 {
-    private TextField editorFontField;
-    private CheckBox highlightingBox;
-    private CheckBox autoIndentBox;
-    private CheckBox lineNumbersBox;
-    private CheckBox makeBackupBox;
-    private CheckBox matchBracketsBox;
-    private ScopeHighlightingPrefDisplay scopeHighlightingPrefDisplay;
+    private final TextField editorFontField;
+    private final CheckBox highlightingBox;
+    private final CheckBox autoIndentBox;
+    private final CheckBox lineNumbersBox;
+    private final CheckBox matchBracketsBox;
+    private final ScopeHighlightingPrefDisplay scopeHighlightingPrefDisplay;
 
     /**
      * Setup the UI for the dialog and event handlers for the buttons.
@@ -82,14 +81,11 @@ public class EditorPrefPanel extends VBox implements PrefPanelListener
             highlightingBox = new CheckBox(Config.getString("prefmgr.edit.usesyntaxhilighting"));
             topPanel.add(highlightingBox, 0, 1);
             
-            makeBackupBox = new CheckBox(Config.getString("prefmgr.edit.makeBackup"));
-            topPanel.add(makeBackupBox, 1, 1);
-
             lineNumbersBox = new CheckBox(Config.getString("prefmgr.edit.displaylinenumbers"));
             topPanel.add(lineNumbersBox, 0, 2);
             
             matchBracketsBox= new CheckBox(Config.getString("prefmgr.edit.matchBrackets"));
-            topPanel.add(matchBracketsBox, 1, 2);
+            topPanel.add(matchBracketsBox, 1, 1);
             
             //colour scope highlighter slider
             Pane bottomPanel = new HBox();
@@ -110,7 +106,6 @@ public class EditorPrefPanel extends VBox implements PrefPanelListener
         highlightingBox.setSelected(PrefMgr.getFlag(PrefMgr.HIGHLIGHTING));
         autoIndentBox.setSelected(PrefMgr.getFlag(PrefMgr.AUTO_INDENT));
         lineNumbersBox.setSelected(PrefMgr.getFlag(PrefMgr.LINENUMBERS));
-        makeBackupBox.setSelected(PrefMgr.getFlag(PrefMgr.MAKE_BACKUP));
         matchBracketsBox.setSelected(PrefMgr.getFlag(PrefMgr.MATCH_BRACKETS));
     }
 
@@ -126,7 +121,6 @@ public class EditorPrefPanel extends VBox implements PrefPanelListener
         PrefMgr.setFlag(PrefMgr.HIGHLIGHTING, highlightingBox.isSelected());
         PrefMgr.setFlag(PrefMgr.AUTO_INDENT, autoIndentBox.isSelected());
         PrefMgr.setFlag(PrefMgr.LINENUMBERS, lineNumbersBox.isSelected());
-        PrefMgr.setFlag(PrefMgr.MAKE_BACKUP, makeBackupBox.isSelected());
         PrefMgr.setFlag(PrefMgr.MATCH_BRACKETS, matchBracketsBox.isSelected());
         int strength = scopeHighlightingPrefDisplay.getStrengthValue();
         try {

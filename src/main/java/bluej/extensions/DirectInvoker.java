@@ -85,7 +85,7 @@ class DirectInvoker
      * @param  args             Arguments to the constructor
      * @return                                  The newly created object
      * @throws  InvocationArgumentException   if the argument list is not consistent with the signature
-     * @throws InvocationErrorException      if there is a system error
+     * @throws  InvocationErrorException      if there is a system error
      */
     DebuggerObject invokeConstructor(ConstructorView callable, Object[] args)
              throws InvocationArgumentException, InvocationErrorException
@@ -153,7 +153,7 @@ class DirectInvoker
      *                                          or the null object (i.e. isNullObject() == true) if the result
      *                                          type is void.
      * @exception  InvocationArgumentException  Thrown if the arglist is not consistent with the signature
-     * @exception InvocationErrorException     Thrown if there is a system error
+     * @exception  InvocationErrorException     Thrown if there is a system error
      */
     DebuggerObject invokeMethod(ObjectWrapper onThisObjectInstance, MethodView callable, Object[] args)
              throws InvocationArgumentException, InvocationErrorException
@@ -168,7 +168,7 @@ class DirectInvoker
             invoker = new Invoker(pkgFrame, callable, watcher);
         }
         else {
-            invoker = new Invoker(pkgFrame, (MethodView) callable, onThisObjectInstance.getName(), onThisObjectInstance.getObject(), watcher);
+            invoker = new Invoker(pkgFrame, callable, onThisObjectInstance.getName(), onThisObjectInstance.getObject(), watcher);
         }
         String [] argStrings = convObjToString(args);
         invoker.invokeDirect(convObjToString(args));
@@ -197,8 +197,8 @@ class DirectInvoker
     /**
      * Raise an appropriate execution event, after a result has been received.
      */
-    private static void raiseEvent(ExecutionEvent event, CallableView callable, String [] argStrings,
-                                   DirectResultWatcher watcher)
+    private static void raiseEvent(ExecutionEvent event, CallableView callable, String [] argStrings, 
+            DirectResultWatcher watcher)
     {
         DebuggerObject result = watcher.getResult();
         String resultType = watcher.getResultType();
@@ -315,12 +315,9 @@ class DirectInvoker
         }
 
         // Now I know that BOTH are NOT empty. They MUST be the same length
-        if (params.length != paramClass.length) {
-            return false;
-        }
+        return params.length == paramClass.length;
 
         // Yes, they are almost the same, the actual type is missing :-)
-        return true;
     }
 
 

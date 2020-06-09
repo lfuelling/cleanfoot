@@ -21,9 +21,11 @@
  */
 package bluej.debugger.gentype;
 
-import bluej.parser.ConstructorOrMethodReflective;
-
+import java.util.ArrayList;
 import java.util.List;
+
+import bluej.parser.ConstructorOrMethodReflective;
+import bluej.utility.JavaReflective;
 
 /**
  * Created by neil on 07/09/15.

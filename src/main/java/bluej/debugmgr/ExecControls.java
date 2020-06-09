@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -23,14 +23,22 @@ package bluej.debugmgr;
 
 import bluej.BlueJTheme;
 import bluej.Config;
-import bluej.debugger.*;
+import bluej.debugger.Debugger;
+import bluej.debugger.DebuggerClass;
+import bluej.debugger.DebuggerField;
+import bluej.debugger.DebuggerObject;
+import bluej.debugger.DebuggerThread;
+import bluej.debugger.SourceLocation;
+import bluej.debugger.VarDisplayInfo;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.Project.DebuggerThreadDetails;
 import bluej.prefmgr.PrefMgr;
 import bluej.utility.JavaNames;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXAbstractAction;
+import bluej.utility.javafx.FXPlatformSupplier;
 import bluej.utility.javafx.JavaFXUtil;
-import com.sun.jdi.VMDisconnectedException;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -47,7 +55,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
@@ -58,8 +70,17 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+
+import com.sun.jdi.VMDisconnectedException;
 
 /**
  * Window for controlling the debugger.
@@ -67,42 +88,44 @@ import java.util.function.Supplier;
  * There are two modes; one which displays a list of all threads (and the user can select a thread
  * to control/inspect) and another where only a single thread is displayed.
  *
- * @author Michael Kolling
+ * @author  Michael Kolling
  */
-public class ExecControls {
+public class ExecControls
+{
     private static final String stackTitle =
-            Config.getString("debugger.execControls.stackTitle");
+        Config.getString("debugger.execControls.stackTitle");
     private static final String staticTitle =
-            Config.getString("debugger.execControls.staticTitle");
+        Config.getString("debugger.execControls.staticTitle");
     private static final String instanceTitle =
-            Config.getString("debugger.execControls.instanceTitle");
+        Config.getString("debugger.execControls.instanceTitle");
     private static final String localTitle =
-            Config.getString("debugger.execControls.localTitle");
+        Config.getString("debugger.execControls.localTitle");
     private static final String threadTitle =
-            Config.getString("debugger.execControls.threadTitle");
+        Config.getString("debugger.execControls.threadTitle");
 
     private static final String haltButtonText =
-            Config.getString("debugger.execControls.haltButtonText");
+        Config.getString("debugger.execControls.haltButtonText");
     private static final String stepButtonText =
-            Config.getString("debugger.execControls.stepButtonText");
+        Config.getString("debugger.execControls.stepButtonText");
     private static final String stepIntoButtonText =
-            Config.getString("debugger.execControls.stepIntoButtonText");
+        Config.getString("debugger.execControls.stepIntoButtonText");
     private static final String continueButtonText =
-            Config.getString("debugger.execControls.continueButtonText");
+        Config.getString("debugger.execControls.continueButtonText");
     private static final String terminateButtonText =
-            Config.getString("debugger.execControls.terminateButtonText");
+        Config.getString("debugger.execControls.terminateButtonText");
 
     // === instance ===
 
     @OnThread(Tag.FX)
-    private Stage window;
+    private final Stage window;
     @OnThread(Tag.FXPlatform)
-    private BorderPane fxContent;
+    private final BorderPane fxContent;
 
     // the display for the list of active threads; may be null if there is no list (i.e. the
     // "single thread" mode is active)
     private ComboBox<DebuggerThreadDetails> threadList;
 
+    @OnThread(Tag.FXPlatform)
     private ListView<SourceLocation> stackList;
     private ListView<VarDisplayInfo> staticList, localList, instanceList;
     private Button stopButton, stepButton, stepIntoButton, continueButton, terminateButton;
@@ -112,20 +135,22 @@ public class ExecControls {
 
     // A flag to keep track of whether a stack frame selection was performed
     // explicitly via the gui or as a result of a debugger event
-    private boolean autoSelectionEvent = false;
-
+    private boolean autoSelectionEvent = false; 
+    
     /**
      * Fields from these classes (key from map) are only shown if they are in the corresponding whitelist
      * of fields (corresponding value from map)
      */
+    @OnThread(Tag.Any) // Rarely modified
     private Map<String, Set<String>> restrictedClasses = Collections.emptyMap();
 
     private final SimpleBooleanProperty showingProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty hideSystemThreads = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty cannotStepOrContinue = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty cannotHalt = new SimpleBooleanProperty(true);
-
+    
     // The currently selected thread
+    @OnThread(value = Tag.Any, requireSynchronized = true)
     private DebuggerThreadDetails selectedThread;
 
 
@@ -133,14 +158,15 @@ public class ExecControls {
      * Create a window to view and interact with a debug VM. The window optionally shows a thread pane
      * from which the user can select a thread to control; otherwise the thread selection is controlled
      * programmatically.
-     *
-     * @param project         the project this window is associated with
-     * @param debugger        the debugger this window is debugging
-     * @param debuggerThreads an observable list of all threads that should be displayed by the debugger,
-     *                        or null if the thread pane should not be displayed.
+     * 
+     * @param project  the project this window is associated with
+     * @param debugger the debugger this window is debugging
+     * @param debuggerThreads  an observable list of all threads that should be displayed by the debugger,
+     *                         or null if the thread pane should not be displayed.
      */
     public ExecControls(Project project, Debugger debugger,
-                        ObservableList<DebuggerThreadDetails> debuggerThreads) {
+            ObservableList<DebuggerThreadDetails> debuggerThreads)
+    {
         if (project == null || debugger == null) {
             throw new NullPointerException("project or debugger null in ExecControls");
         }
@@ -159,17 +185,20 @@ public class ExecControls {
         SplitPane varSplit = new SplitPane(labelled(instanceList, instanceTitle), labelled(localList, localTitle));
         varSplit.setOrientation(Orientation.VERTICAL);
         vars.setCenter(varSplit);
-
+        
         // There are two possible pane layouts: with thread list and without.
         BorderPane lhsPane;
-        if (debuggerThreads != null) {
+        if (debuggerThreads != null)
+        {
             lhsPane = new BorderPane(labelled(stackList, stackTitle), labelled(threadList, threadTitle), null, null, null);
             JavaFXUtil.addStyleClass(threadList, "debugger-thread-combo");
-        } else {
+        }
+        else
+        {
             lhsPane = new BorderPane(labelled(stackList, stackTitle), null, null, null, null);
         }
         JavaFXUtil.addStyleClass(lhsPane, "debugger-thread-and-stack");
-
+        
         fxContent.setTop(makeMenuBar());
         fxContent.setCenter(new SplitPane(lhsPane, vars));
         fxContent.setBottom(buttons);
@@ -186,16 +215,20 @@ public class ExecControls {
         // or internally as an update of the state, so we must be careful
         // not to end up in an infinite loop:
         JavaFXUtil.addChangeListenerPlatform(showingProperty, show -> {
-            if (show && !window.isShowing()) {
+            if (show && !window.isShowing())
+            {
                 window.show();
-            } else if (!show && window.isShowing()) {
+            }
+            else if (!show && window.isShowing())
+            {
                 window.hide();
             }
         });
 
     }
 
-    private static Node labelled(Node content, String title) {
+    private static Node labelled(Node content, String title)
+    {
         Label titleLabel = new Label(title);
         JavaFXUtil.addStyleClass(titleLabel, "debugger-section-title");
         BorderPane borderPane = new BorderPane(content, titleLabel, null, null, null);
@@ -205,16 +238,19 @@ public class ExecControls {
 
     /**
      * Sets the restricted classes - classes for which only some fields should be displayed.
-     *
+     * 
      * @param restrictedClasses a map of class name to a set of white-listed fields.
      */
-    public void setRestrictedClasses(Map<String, Set<String>> restrictedClasses) {
+    public void setRestrictedClasses(Map<String, Set<String>> restrictedClasses)
+    {
         this.restrictedClasses = restrictedClasses;
     }
-
-    public Map<String, Set<String>> getRestrictedClasses() {
+    
+    public Map<String, Set<String>> getRestrictedClasses()
+    {
         HashMap<String, Set<String>> copy = new HashMap<String, Set<String>>();
-        for (Map.Entry<String, Set<String>> e : restrictedClasses.entrySet()) {
+        for (Map.Entry<String, Set<String>> e : restrictedClasses.entrySet())
+        {
             copy.put(e.getKey(), new HashSet<String>(e.getValue()));
         }
         return copy;
@@ -222,72 +258,115 @@ public class ExecControls {
 
     /**
      * Make sure that a particular thread is displayed and the details are up-to-date.
-     * Note that if the controls window is invisible this will not show it.
-     *
-     * @param dt the thread to highlight in the thread
-     *           tree and whose status we want to display.
+     * Note that if the controls window is invisible this will not show it. 
+     * 
+     * @param  dt  the thread to highlight in the thread
+     *             tree and whose status we want to display.
      */
-    public void selectThread(final DebuggerThread dt) {
-        if (threadList != null) {
+    public void selectThread(final DebuggerThread dt)
+    {
+        if (threadList != null)
+        {
+            if (dt.isKnownSystemThread())
+            {
+                hideSystemThreads.set(false);
+            }
+            
             DebuggerThreadDetails details = threadList.getItems().stream()
                     .filter(d -> d.isThread(dt))
                     .findFirst().orElse(null);
-            if (details != null) {
+            if (details != null)
+            {
                 threadList.getSelectionModel().select(details);
             }
-        } else if (selectedThread == null || !dt.sameThread(selectedThread.getThread())) {
-            selectedThreadChanged(new DebuggerThreadDetails(dt));
+        }
+        else if (getSelectedThreadDetails() == null || ! dt.sameThread(getSelectedThreadDetails().getThread()))
+        {
+            project.getDebugger().runOnEventHandler(() -> {
+                DebuggerThreadDetails threadDetails = new DebuggerThreadDetails(dt);
+                Platform.runLater(() -> selectedThreadChanged(threadDetails));
+            });
         }
     }
 
     /**
      * Update the details displayed for the given thread (if they are currently displayed).
      */
-    public void updateThreadDetails(DebuggerThread dt) {
-        if (selectedThread != null && selectedThread.isThread(dt)) {
-            if (threadList == null) {
-                selectedThread.update();
+    @OnThread(Tag.VMEventHandler)
+    public void updateThreadDetails(DebuggerThread dt)
+    {
+        DebuggerThreadDetails sel = getSelectedThreadDetails();
+        if (sel != null && sel.isThread(dt))
+        {
+            if (isSingleThreadMode())
+            {
+                sel.update();
             }
-            setThreadDetails(selectedThread);
+            setThreadDetails(sel);
         }
     }
 
-    private void selectedThreadChanged(DebuggerThreadDetails dt) {
-        if (dt == null) {
-            selectedThread = null;
+    @OnThread(Tag.Any)
+    @SuppressWarnings("threadchecker")
+    private boolean isSingleThreadMode()
+    {
+        return threadList == null;
+    }
+
+    @OnThread(Tag.FXPlatform)
+    private void selectedThreadChanged(DebuggerThreadDetails dt)
+    {
+        if (dt == null)
+        {
+            synchronized (this)
+            {
+                selectedThread = null;
+            }
             cannotHalt.set(true);
             cannotStepOrContinue.set(true);
             stackList.getItems().clear();
-        } else {
-            selectedThread = dt;
-            setThreadDetails(dt);
+        }
+        else
+        {
+            synchronized (this)
+            {
+                selectedThread = dt;
+            }
+            project.getDebugger().runOnEventHandler(() -> setThreadDetails(dt));
         }
     }
 
     /**
      * Display the details for the currently selected thread.
-     * These details include showing the threads stack, and displaying
+     * These details include showing the threads stack, and displaying 
      * the details for the top stack frame.
      */
-    private void setThreadDetails(DebuggerThreadDetails dt) {
+    @OnThread(Tag.VMEventHandler)
+    private void setThreadDetails(DebuggerThreadDetails dt)
+    {
         //Copy the list because we may alter it:
         List<SourceLocation> stack = new ArrayList<>(dt.getThread().getStack());
         List<SourceLocation> filtered = Arrays.asList(getFilteredStack(stack));
 
         boolean isSuspended = dt.isSuspended();
-        cannotHalt.set(isSuspended);
-        cannotStepOrContinue.set(!isSuspended);
+        Platform.runLater(() -> {
+            cannotHalt.set(isSuspended);
+            cannotStepOrContinue.set(!isSuspended);
 
-        stackList.getItems().setAll(filtered);
-        if (filtered.size() > 0) {
-            // show details of top frame
-            autoSelectionEvent = true;
-            stackList.getSelectionModel().select(0);
-            autoSelectionEvent = false;
-        }
+            stackList.getItems().setAll(filtered);
+            if (filtered.size() > 0)
+            {
+                // show details of top frame
+                autoSelectionEvent = true;
+                stackList.getSelectionModel().select(0);
+                autoSelectionEvent = false;
+            }
+        });
     }
-
-    public static SourceLocation[] getFilteredStack(List<SourceLocation> stack) {
+    
+    @OnThread(Tag.Any)
+    public static SourceLocation [] getFilteredStack(List<SourceLocation> stack)
+    {
         int first = -1;
         int i;
         for (i = 0; i < stack.size(); i++) {
@@ -305,33 +384,34 @@ public class ExecControls {
             if (JavaNames.getBase(className).startsWith("__SHELL")) {
                 break;
             }
-
+            
             if (Config.isGreenfoot() && className.startsWith("greenfoot.core.Simulation")) {
                 break;
             }
-
+            
             // Topmost stack location shown will have source available!
             if (first == -1 && loc.getFileName() != null) {
                 first = i;
             }
         }
-
+        
         if (first == -1 || i == 0) {
             return new SourceLocation[0];
         }
-
+        
         SourceLocation[] filtered = new SourceLocation[i - first];
         for (int j = first; j < i; j++) {
             filtered[j - first] = stack.get(j);
         }
-
+        
         return filtered;
     }
-
+    
     /**
      * Clear the display of thread details (stack and variables).
      */
-    private void clearThreadDetails() {
+    private void clearThreadDetails()
+    {
         stackList.getItems().clear();
         staticList.getItems().clear();
         instanceList.getItems().clear();
@@ -343,16 +423,23 @@ public class ExecControls {
      * This will cause this frame's details (local variables, etc.) to be
      * displayed, as well as the current source position being marked.
      */
-    private void stackFrameSelectionChanged(DebuggerThread selectedThread, int index) {
+    @OnThread(Tag.VMEventHandler)
+    private void stackFrameSelectionChanged(DebuggerThread thread, int index, boolean showSource)
+    {
         if (index >= 0) {
-            setStackFrameDetails(selectedThread, index);
-            selectedThread.setSelectedFrame(index);
-
-            if (!autoSelectionEvent) {
-                project.showSource(selectedThread,
-                        selectedThread.getClass(index),
-                        selectedThread.getClassSourceName(index),
-                        selectedThread.getLineNumber(index));
+            setStackFrameDetails(thread, index);
+            thread.setSelectedFrame(index);
+                
+            if (showSource) {
+                String aClass = thread.getClass(index);
+                String classSourceName = thread.getClassSourceName(index);
+                int lineNumber = thread.getLineNumber(index);
+                DebuggerObject currentObject = thread.getCurrentObject(index);
+                Platform.runLater(() -> project.showSource(thread,
+                        aClass,
+                        classSourceName,
+                        lineNumber,
+                        currentObject));
             }
         }
     }
@@ -361,52 +448,65 @@ public class ExecControls {
      * Display the detail information (current object fields and local var's)
      * for a specific stack frame.
      */
-    private void setStackFrameDetails(DebuggerThread selectedThread, int frameNo) {
+    @OnThread(Tag.VMEventHandler)
+    private void setStackFrameDetails(DebuggerThread thread, int frameNo)
+    {
         try {
-            DebuggerClass currentClass = selectedThread.getCurrentClass(frameNo);
-            DebuggerObject currentObject = selectedThread.getCurrentObject(frameNo);
-            if (currentClass != null) {
+            DebuggerClass currentClass = thread.getCurrentClass(frameNo);
+            DebuggerObject currentObject = thread.getCurrentObject(frameNo);
+            List<FXPlatformSupplier<VarDisplayInfo>> staticVars = new ArrayList<>();
+            if(currentClass != null) {
                 List<DebuggerField> fields = currentClass.getStaticFields();
-                List<VarDisplayInfo> listData = new ArrayList<>(fields.size());
+                
                 for (DebuggerField field : fields) {
                     String declaringClass = field.getDeclaringClassName();
                     Set<String> whiteList = restrictedClasses.get(declaringClass);
                     if (whiteList == null || whiteList.contains(field.getName())) {
-                        listData.add(new VarDisplayInfo(field));
+                        staticVars.add(() -> new VarDisplayInfo(field));
                     }
                 }
-                staticList.getItems().setAll(listData);
+                
             }
 
-            if (currentObject != null && !currentObject.isNullObject()) {
+            List<FXPlatformSupplier<VarDisplayInfo>> instanceVars = new ArrayList<>();
+    
+            if(currentObject != null && !currentObject.isNullObject()) {
                 List<DebuggerField> fields = currentObject.getFields();
-                List<VarDisplayInfo> listData = new ArrayList<>(fields.size());
+                
                 for (DebuggerField field : fields) {
-                    if (!Modifier.isStatic(field.getModifiers())) {
+                    if (! Modifier.isStatic(field.getModifiers())) {
                         String declaringClass = field.getDeclaringClassName();
                         Set<String> whiteList = restrictedClasses.get(declaringClass);
                         if (whiteList == null || whiteList.contains(field.getName())) {
-                            listData.add(new VarDisplayInfo(field));
+                            instanceVars.add(() -> new VarDisplayInfo(field));
                         }
                     }
                 }
-                instanceList.getItems().setAll(listData);
-            } else {
-                instanceList.getItems().clear();
+                
             }
-
-            localList.getItems().setAll(selectedThread.getLocalVariables(frameNo));
-        } catch (VMDisconnectedException vmde) {
+            
+            List<FXPlatformSupplier<VarDisplayInfo>> localVariables = thread.getLocalVariables(frameNo);
+            
+            Platform.runLater(() -> {
+                staticList.getItems().setAll(Utility.mapList(staticVars, v -> v.get()));
+                instanceList.getItems().setAll(Utility.mapList(instanceVars, v -> v.get()));
+                localList.getItems().setAll(Utility.mapList(localVariables, v -> v.get()));
+            });
+            
+            
+        }
+        catch (VMDisconnectedException vmde)
+        {
             // Do nothing.
         }
     }
 
     /**
      * Create and arrange the GUI components.
-     *
      * @param debuggerThreads
      */
-    private void createWindowContent(ObservableList<DebuggerThreadDetails> debuggerThreads) {
+    private void createWindowContent(ObservableList<DebuggerThreadDetails> debuggerThreads)
+    {
         stopButton = new StopAction().makeButton();
         stepButton = new StepAction().makeButton();
         stepIntoButton = new StepIntoAction().makeButton();
@@ -437,12 +537,19 @@ public class ExecControls {
         stackList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         JavaFXUtil.addStyleClass(stackList, "debugger-stack");
         stackList.styleProperty().bind(PrefMgr.getEditorFontCSS(false));
-        JavaFXUtil.addChangeListenerPlatform(stackList.getSelectionModel().selectedIndexProperty(), index -> stackFrameSelectionChanged((getSelectedThreadDetails() == null ? null : getSelectedThreadDetails().getThread()), index.intValue()));
+        JavaFXUtil.addChangeListenerPlatform(stackList.getSelectionModel().selectedIndexProperty(), index -> {
+            DebuggerThread thread = getSelectedThreadDetails() == null ? null : getSelectedThreadDetails().getThread();
+            boolean showSource = !autoSelectionEvent;
+            project.getDebugger().runOnEventHandler(() -> {
+                stackFrameSelectionChanged(thread, index.intValue(), showSource);
+            });
+        });
         Label placeholder = new Label(removeHTML(Config.getString("debugger.threadRunning")));
         placeholder.setTextAlignment(TextAlignment.CENTER);
         stackList.setPlaceholder(placeholder);
 
-        if (debuggerThreads != null) {
+        if (debuggerThreads != null)
+        {
             FilteredList<DebuggerThreadDetails> filteredThreads = new FilteredList<>(debuggerThreads, this::showThread);
             threadList = new ComboBox<>(filteredThreads);
             // FilteredList doesn't know to recalculate after property changes, so
@@ -452,24 +559,27 @@ public class ExecControls {
                 filteredThreads.setPredicate(null);
                 filteredThreads.setPredicate(this::showThread);
             });
-            JavaFXUtil.addChangeListenerPlatform(threadList.getSelectionModel().selectedItemProperty(), this::selectedThreadChanged);
+            JavaFXUtil.addChangeListenerPlatform(threadList.getSelectionModel().selectedItemProperty(), t -> selectedThreadChanged(t));
         }
     }
 
     // The label is <html><center>...<br>...</html> (silly, really)
     // so we remove the tags here:
-    private static String removeHTML(String label) {
+    private static String removeHTML(String label)
+    {
         return label.replace("<html>", "").replace("<center>", "").replace("<br>", "\n").replace("</html>", "");
     }
 
-    private boolean showThread(DebuggerThreadDetails thread) {
+    private boolean showThread(DebuggerThreadDetails thread)
+    {
         if (hideSystemThreads.get())
             return !thread.getThread().isKnownSystemThread();
         else
             return true;
     }
 
-    private ListView<VarDisplayInfo> makeVarListView() {
+    private ListView<VarDisplayInfo> makeVarListView()
+    {
         ListView<VarDisplayInfo> listView = new ListView<>();
         listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         listView.setCellFactory(lv -> {
@@ -481,12 +591,13 @@ public class ExecControls {
     /**
      * Create the debugger's menubar, all menus and items.
      */
-    private MenuBar makeMenuBar() {
+    private MenuBar makeMenuBar()
+    {
         MenuBar menubar = new MenuBar();
         menubar.setUseSystemMenuBar(true);
         Menu menu = new Menu(Config.getString("terminal.options"));
 
-
+        
         if (!Config.isGreenfoot()) {
             MenuItem systemThreadItem = JavaFXUtil.makeCheckMenuItem(Config.getString("debugger.hideSystemThreads"), hideSystemThreads, null);
             menu.getItems().add(systemThreadItem);
@@ -498,68 +609,76 @@ public class ExecControls {
         return menubar;
     }
 
-    public void show() {
+    public void show()
+    {
         window.show();
         window.toFront();
     }
 
-    public void hide() {
+    public void hide()
+    {
         window.hide();
     }
 
-    public DebuggerThreadDetails getSelectedThreadDetails() {
-        if (threadList != null) {
-            return threadList.getSelectionModel().getSelectedItem();
-        }
-
+    @OnThread(Tag.Any)
+    public synchronized DebuggerThreadDetails getSelectedThreadDetails()
+    {
         return selectedThread;
     }
 
-    public BooleanProperty showingProperty() {
+    public BooleanProperty showingProperty()
+    {
         return showingProperty;
     }
 
     /**
      * Action to halt the selected thread.
      */
-    private class StopAction extends FXAbstractAction {
-        public StopAction() {
+    private class StopAction extends FXAbstractAction
+    {
+        public StopAction()
+        {
             super(haltButtonText, Config.makeStopIcon(true));
         }
-
-        public void actionPerformed() {
+        
+        public void actionPerformed(boolean viaContextMenu)
+        {
             DebuggerThreadDetails details = getSelectedThreadDetails();
             if (details == null)
                 return;
             clearThreadDetails();
             if (!details.isSuspended()) {
-                details.getThread().halt();
+                project.getDebugger().runOnEventHandler(() -> details.getThread().halt());
             }
         }
     }
-
+        
     /**
      * Action to step through the code.
      */
-    private class StepAction extends FXAbstractAction {
-        public StepAction() {
+    private class StepAction extends FXAbstractAction
+    {
+        public StepAction()
+        {
             super(stepButtonText, makeStepIcon());
         }
-
-        public void actionPerformed() {
+        
+        public void actionPerformed(boolean viaContextMenu)
+        {
             DebuggerThreadDetails details = getSelectedThreadDetails();
             if (details == null)
                 return;
             clearThreadDetails();
             project.removeStepMarks();
             if (details.isSuspended()) {
-                details.getThread().step();
+                project.getDebugger().runOnEventHandler(() -> details.getThread().step());
             }
             project.updateInspectors();
         }
     }
 
-    private static Node makeStepIcon() {
+    private static Node makeStepIcon()
+    {
         Polygon arrowShape = makeScaledUpArrow(false);
         JavaFXUtil.addStyleClass(arrowShape, "step-icon-arrow");
         Rectangle bar = new Rectangle(28, 6);
@@ -569,13 +688,15 @@ public class ExecControls {
         return vBox;
     }
 
-    private static Polygon makeScaledUpArrow(boolean shortTail) {
+    private static Polygon makeScaledUpArrow(boolean shortTail)
+    {
         Polygon arrowShape = Config.makeArrowShape(shortTail);
         JavaFXUtil.scalePolygonPoints(arrowShape, 1.5, true);
         return arrowShape;
     }
 
-    private static Node makeContinueIcon() {
+    private static Node makeContinueIcon()
+    {
         Polygon arrowShape1 = makeScaledUpArrow(true);
         Polygon arrowShape2 = makeScaledUpArrow(true);
         Polygon arrowShape3 = makeScaledUpArrow(true);
@@ -595,24 +716,28 @@ public class ExecControls {
     /**
      * Action to "step into" the code.
      */
-    private class StepIntoAction extends FXAbstractAction {
-        public StepIntoAction() {
+    private class StepIntoAction extends FXAbstractAction
+    {
+        public StepIntoAction()
+        {
             super(stepIntoButtonText, makeStepIntoIcon());
         }
-
-        public void actionPerformed() {
+        
+        public void actionPerformed(boolean viaContextMenu)
+        {
             DebuggerThreadDetails details = getSelectedThreadDetails();
             if (details == null)
                 return;
             clearThreadDetails();
             project.removeStepMarks();
             if (details.isSuspended()) {
-                details.getThread().stepInto();
+                project.getDebugger().runOnEventHandler(() -> details.getThread().stepInto());
             }
         }
     }
 
-    private static Node makeStepIntoIcon() {
+    private static Node makeStepIntoIcon()
+    {
         SVGPath path = new SVGPath();
         // See http://jxnblk.com/paths/?d=M2%2016%20Q24%208%2038%2016%20L40%2010%20L48%2026%20L32%2034%20L34%2028%20Q22%2022%206%2028%20Z
         path.setContent("M2 16 Q24 8 38 16 L40 10 L48 26 L32 34 L34 28 Q22 22 6 28 Z");
@@ -623,21 +748,24 @@ public class ExecControls {
     }
 
     /**
-     * Action to continue a halted thread.
+     * Action to continue a halted thread. 
      */
-    private class ContinueAction extends FXAbstractAction {
-        public ContinueAction() {
+    private class ContinueAction extends FXAbstractAction
+    {
+        public ContinueAction()
+        {
             super(continueButtonText, makeContinueIcon());
         }
-
-        public void actionPerformed() {
+        
+        public void actionPerformed(boolean viaContextMenu)
+        {
             DebuggerThreadDetails details = getSelectedThreadDetails();
             if (details == null)
                 return;
             clearThreadDetails();
             project.removeStepMarks();
             if (details.isSuspended()) {
-                details.getThread().cont();
+                project.getDebugger().runOnEventHandler(() -> details.getThread().cont());
             }
         }
     }
@@ -645,37 +773,42 @@ public class ExecControls {
     /**
      * Action to terminate the program, restart the VM.
      */
-    private class TerminateAction extends FXAbstractAction {
-        public TerminateAction() {
+    private class TerminateAction extends FXAbstractAction
+    {
+        public TerminateAction()
+        {
             super(terminateButtonText, makeTerminateIcon());
         }
-
-        public void actionPerformed() {
+        
+        public void actionPerformed(boolean viaContextMenu)
+        {
             try {
                 clearThreadDetails();
+                
                 // throws an illegal state exception
                 // if we press this whilst we are already
                 // restarting the remote VM
                 project.restartVM();
-            } catch (IllegalStateException ise) {
             }
+            catch (IllegalStateException ise) { }
         }
     }
 
-    private static Node makeTerminateIcon() {
+    private static Node makeTerminateIcon()
+    {
         Polygon s = new Polygon(
-                5, 0,
-                15, 10,
-                25, 0,
-                30, 5,
-                20, 15,
-                30, 25,
-                25, 30,
-                15, 20,
-                5, 30,
-                0, 25,
-                10, 15,
-                0, 5
+            5, 0,
+            15, 10,
+            25, 0,
+            30, 5,
+            20, 15,
+            30, 25,
+            25, 30,
+            15, 20,
+            5, 30,
+            0, 25,
+            10, 15,
+            0, 5
         );
         JavaFXUtil.addStyleClass(s, "terminate-icon");
         return s;
@@ -685,7 +818,8 @@ public class ExecControls {
     /**
      * A cell in a list view which has a variable's type, name and value.  (And optionally, access modifier)
      */
-    private static class VarDisplayCell extends ListCell<VarDisplayInfo> {
+    private static class VarDisplayCell extends javafx.scene.control.ListCell<VarDisplayInfo>
+    {
         private final Label access = new Label();
         private final Label type = new Label();
         private final Label name = new Label();
@@ -696,7 +830,8 @@ public class ExecControls {
         // A property so that we can listen for it changing from null to/from non-null:
         private final SimpleObjectProperty<Supplier<DebuggerObject>> fetchObject = new SimpleObjectProperty<>(null);
 
-        public VarDisplayCell(Project project, Window window) {
+        public VarDisplayCell(Project project, Window window)
+        {
             // Only visible when there is a relevant object reference which can be inspected:
             ImageView objectImageView = new ImageView(objectImage);
             JavaFXUtil.addStyleClass(objectImageView, "debugger-var-object-ref");
@@ -720,31 +855,38 @@ public class ExecControls {
 
             // Double click anywhere on the row does an object inspection, as it used to:
             hBox.setOnMouseClicked(e -> {
-                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2)
+                {
                     inspect(project, window, objectImageView);
                 }
             });
         }
 
         @OnThread(Tag.FXPlatform)
-        private void inspect(Project project, Window window, Node sourceNode) {
-            if (fetchObject.get() != null) {
+        private void inspect(Project project, Window window, Node sourceNode)
+        {
+            if (fetchObject.get() != null)
+            {
                 project.getInspectorInstance(fetchObject.get().get(), null, null, null, window, sourceNode);
             }
         }
 
         @Override
         @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-        protected void updateItem(VarDisplayInfo item, boolean empty) {
+        protected void updateItem(VarDisplayInfo item, boolean empty)
+        {
             super.updateItem(item, empty);
             nonEmpty.set(!empty);
-            if (empty) {
+            if (empty)
+            {
                 access.setText("");
                 type.setText("");
                 name.setText("");
                 value.setText("");
                 fetchObject.set(null);
-            } else {
+            }
+            else
+            {
                 access.setText(item.getAccess());
                 type.setText(item.getType());
                 name.setText(item.getName());

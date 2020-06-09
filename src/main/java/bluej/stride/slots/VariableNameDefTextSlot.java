@@ -21,21 +21,12 @@
  */
 package bluej.stride.slots;
 
-import bluej.editor.stride.CodeOverlayPane;
-import bluej.stride.framedjava.ast.NameDefSlotFragment;
-import bluej.stride.framedjava.ast.links.PossibleLink;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.framedjava.frames.FrameHelper;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.framedjava.slots.StructuredSlot.PlainVarReference;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SuggestedFollowUpDisplay;
-import bluej.utility.Utility;
-import bluej.utility.javafx.FXSupplier;
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
@@ -43,23 +34,33 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
+
+import bluej.stride.framedjava.ast.links.PossibleLink;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.InteractionManager;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
+import bluej.editor.stride.CodeOverlayPane;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.framedjava.frames.FrameHelper;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.framedjava.slots.StructuredSlot.PlainVarReference;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.SuggestedFollowUpDisplay;
+import bluej.utility.Utility;
+import bluej.utility.javafx.FXSupplier;
+import bluej.utility.javafx.JavaFXUtil;
 
 public class VariableNameDefTextSlot extends TextSlot<NameDefSlotFragment>
 {
-    private FXSupplier<Boolean> shouldRename;
+    private final FXSupplier<Boolean> shouldRename;
     private Canvas allUsesCanvas;
     private Button hideAllUsesButton;
 
     // We don't differentiate start and part, as that just gets too fiddly during editing:
-    private SlotValueListener spaceCharactersListener = (slot, oldValue, newValue, parent) -> newValue.chars().noneMatch(Character::isSpaceChar);
+    private final SlotValueListener spaceCharactersListener = (slot, oldValue, newValue, parent) -> newValue.chars().noneMatch(Character::isSpaceChar);
 
     public <T extends Frame & CodeFrame<? extends CodeElement>>
     VariableNameDefTextSlot(InteractionManager editor, T frameParent, FrameContentRow row, String stylePrefix)

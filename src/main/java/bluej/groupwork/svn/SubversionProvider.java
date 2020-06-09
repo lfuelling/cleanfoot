@@ -21,18 +21,26 @@
  */
 package bluej.groupwork.svn;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+
 import bluej.Config;
-import bluej.groupwork.*;
+import bluej.groupwork.Repository;
+import bluej.groupwork.TeamSettings;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.TeamworkCommandUnsupportedSetting;
+import bluej.groupwork.TeamworkProvider;
+import bluej.groupwork.UnsupportedSettingException;
 import bluej.utility.Debug;
+
 import org.tigris.subversion.javahl.*;
 import org.tigris.subversion.javahl.Revision;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.internal.wc2.SvnWcGeneration;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
-
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Teamwork provider for Subversion.
@@ -61,8 +69,8 @@ public class SubversionProvider implements TeamworkProvider
         try {
             Class<?> clientImplClass = Class.forName("org.tmatesoft.svn.core.javahl.SVNClientImpl");
             
-            Method newInstanceMethod = clientImplClass.getMethod("newInstance", new Class[0]);
-            Object svnClient = newInstanceMethod.invoke(null, new Object[0]);
+            Method newInstanceMethod = clientImplClass.getMethod("newInstance");
+            Object svnClient = newInstanceMethod.invoke(null);
             
             if (svnClient instanceof SVNClientInterface) {
                 client = (SVNClientInterface) svnClient;

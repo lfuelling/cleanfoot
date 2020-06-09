@@ -21,9 +21,8 @@
  */
 package bluej.extensions;
 
-import bluej.Config;
-
 import java.net.URL;
+import bluej.Config;
 
 /**
  * Defines the interface between BlueJ and an extension. All extensions must extend this class.

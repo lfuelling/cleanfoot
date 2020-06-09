@@ -21,12 +21,12 @@
  */
 package bluej.editor.moe;
 
+import java.util.Properties;
+
 import bluej.editor.EditorWatcher;
 import bluej.parser.entity.EntityResolver;
 import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.javafx.FXPlatformRunnable;
-
-import java.util.Properties;
 
 /**
  * Parameters for the Moe editor.

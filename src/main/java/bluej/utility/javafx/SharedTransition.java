@@ -21,6 +21,8 @@
  */
 package bluej.utility.javafx;
 
+import java.util.ArrayList;
+import java.util.List;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -28,10 +30,8 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.util.Duration;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A transition that is shared between multiple entities.  For example, you

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2012,2014,2015,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2012,2014,2015,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,15 +21,60 @@
  */
 package bluej.debugger.jdi;
 
-import bluej.debugger.gentype.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import bluej.debugger.gentype.ConstructorReflective;
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.GenTypeExtends;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.GenTypeSuper;
+import bluej.debugger.gentype.GenTypeTpar;
+import bluej.debugger.gentype.GenTypeUnbounded;
+import bluej.debugger.gentype.GenTypeWildcard;
+import bluej.debugger.gentype.IntersectionType;
+import bluej.debugger.gentype.JavaPrimitiveType;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
+import bluej.debugger.gentype.TextType;
 import bluej.utility.Debug;
 import bluej.utility.JavaNames;
-import com.sun.jdi.*;
+
+import com.sun.jdi.ArrayType;
+import com.sun.jdi.BooleanType;
+import com.sun.jdi.ByteType;
+import com.sun.jdi.CharType;
+import com.sun.jdi.ClassLoaderReference;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.DoubleType;
+import com.sun.jdi.Field;
+import com.sun.jdi.FloatType;
+import com.sun.jdi.IntegerType;
+import com.sun.jdi.InterfaceType;
+import com.sun.jdi.LocalVariable;
+import com.sun.jdi.Location;
+import com.sun.jdi.LongType;
+import com.sun.jdi.Method;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortType;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.Type;
+import com.sun.jdi.VirtualMachine;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A Reflective for Jdi classes.
@@ -254,7 +299,7 @@ public class JdiReflective extends Reflective
                 if (s.peek() == ':')
                     s.next();
             }
-            rlist.add(new GenTypeDeclTpar(paramName, bounds.toArray(new GenTypeSolid[0])));
+            rlist.add(new GenTypeDeclTpar(paramName, bounds.toArray(new GenTypeSolid [0])));
             c = s.peek();
         }
         s.next();
@@ -492,7 +537,7 @@ public class JdiReflective extends Reflective
     private static String readClassName(StringIterator i)
     {
         char c = i.next();
-        String r = new String();
+        String r = "";
         while (c != '<' && c != ';' && c != ':') {
             r += (c == '/') ? '.' : c;
             c = i.next();
@@ -515,7 +560,7 @@ public class JdiReflective extends Reflective
      * @return The GenType structure determined from the signature.
      */
     private static GenTypeParameter fromSignature(StringIterator i,
-                                                  Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
+            Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
     {
         char c = i.peek();
         if (c == '*') {
@@ -563,7 +608,7 @@ public class JdiReflective extends Reflective
      * @param parent   The parent type
      */
     public static GenTypeParameter typeFromSignature(StringIterator i,
-                                                     Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
+            Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
     {
         char c = i.next();
         if (c == '[') {
@@ -657,7 +702,7 @@ public class JdiReflective extends Reflective
     }
 
     private static GenTypeClass innerFromSignature(StringIterator i, String outerName, GenTypeClass outer,
-                                                   Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
+            Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
     {
         String basename = readClassName(i);
         String innerName = outerName + '$' + basename;
@@ -665,7 +710,7 @@ public class JdiReflective extends Reflective
             
         char c = i.current();
         if (c == ';')
-            return new GenTypeClass(reflective, (List<GenTypeParameter>) null, outer);
+            return new GenTypeClass(reflective, null, outer);
         
         if (c == '<') {
             List<GenTypeParameter> params = new ArrayList<GenTypeParameter>();
@@ -791,7 +836,7 @@ public class JdiReflective extends Reflective
         
         // Map from containing object type to the type in which the field was
         // declared. Then extract the type parameter mappings.
-        Map<String, GenTypeParameter> tparams = genType.mapToSuper(f.declaringType().name()).getMap();
+        Map<String,GenTypeParameter> tparams = genType.mapToSuper(f.declaringType().name()).getMap();
         if (tparams == null) {
             // raw parent
             Reflective r = new JdiReflective(f.typeName(), parent.obj.referenceType());
@@ -866,7 +911,7 @@ public class JdiReflective extends Reflective
 
         // if the generic signature wasn't null, get the type from it.
         StringIterator iterator = new StringIterator(genericSignature);
-        Map<String, GenTypeParameter> tparams = new HashMap<String, GenTypeParameter>();
+        Map<String,GenTypeParameter> tparams = new HashMap<String,GenTypeParameter>();
         addDefaultParamBases(tparams, new JdiReflective(declaringType));
         return typeFromSignature(iterator, tparams, declaringType).getTparCapture();
     }
@@ -906,7 +951,7 @@ public class JdiReflective extends Reflective
 
         // if the generic signature wasn't null, get the type from it.
         StringIterator iterator = new StringIterator(gensig);
-        Map<String, GenTypeParameter> tparams = new HashMap<String, GenTypeParameter>();
+        Map<String,GenTypeParameter> tparams = new HashMap<String,GenTypeParameter>();
         addDefaultParamBases(tparams, new JdiReflective(declType));
         return typeFromSignature(iterator, tparams, declType).getTparCapture();
     }
@@ -918,7 +963,7 @@ public class JdiReflective extends Reflective
      * @param tparams       The map (String -> GenTypeClass)
      * @param declaringType the type for which to add default mappings
      */
-    private static void addDefaultParamBases(Map<String, GenTypeParameter> tparams,
+    private static void addDefaultParamBases(Map<String,GenTypeParameter> tparams,
             JdiReflective declaringType)
     {
         while (declaringType != null) {
@@ -929,7 +974,7 @@ public class JdiReflective extends Reflective
                 
                 String paramName = tpar.getTparName();
                 
-                GenTypeSolid[] ubounds = tpar.upperBounds();
+                GenTypeSolid [] ubounds = tpar.upperBounds();
                 GenTypeWildcard type = new GenTypeWildcard(IntersectionType.getIntersection(ubounds), null);
                 if( ! tparams.containsKey(paramName)) {
                     tparams.put(paramName, type);
@@ -957,11 +1002,11 @@ public class JdiReflective extends Reflective
     }
     
     @Override
-    public Map<String, FieldReflective> getDeclaredFields()
+    public Map<String,FieldReflective> getDeclaredFields()
     {
         checkLoaded();
         List<Field> fields = rclass.fields();
-        Map<String, FieldReflective> rfields = new HashMap<String, FieldReflective>();
+        Map<String,FieldReflective> rfields = new HashMap<String,FieldReflective>();
         
         for (Field field : fields) {
             String genSig = field.genericSignature();
@@ -1088,6 +1133,19 @@ public class JdiReflective extends Reflective
         }
         
         return null;
+    }
+
+    @Override
+    public String getModuleName()
+    {
+        try
+        {
+            return rclass.module() != null ? rclass.module().name() : null;
+        }
+        catch (UnsupportedOperationException e)
+        {
+            return null;
+        }
     }
 
     @OnThread(Tag.Any)

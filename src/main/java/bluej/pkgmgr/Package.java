@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2010,2011,2012,2013,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2010,2011,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,44 +21,6 @@
  */
 package bluej.pkgmgr;
 
-import bluej.Config;
-import bluej.compiler.*;
-import bluej.debugger.*;
-import bluej.debugmgr.CallHistory;
-import bluej.debugmgr.Invoker;
-import bluej.editor.Editor;
-import bluej.editor.TextEditor;
-import bluej.editor.stride.FrameEditor;
-import bluej.extensions.BPackage;
-import bluej.extensions.ExtensionBridge;
-import bluej.extensions.SourceType;
-import bluej.extensions.event.CompileEvent;
-import bluej.extensions.event.DependencyEvent;
-import bluej.extmgr.ExtensionsManager;
-import bluej.parser.AssistContent;
-import bluej.parser.AssistContent.CompletionKind;
-import bluej.parser.CodeSuggestions;
-import bluej.parser.ParseUtils;
-import bluej.parser.nodes.ParsedCUNode;
-import bluej.parser.symtab.ClassInfo;
-import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.dependency.ExtendsDependency;
-import bluej.pkgmgr.dependency.ImplementsDependency;
-import bluej.pkgmgr.dependency.UsesDependency;
-import bluej.pkgmgr.t4rget.*;
-import bluej.pkgmgr.t4rget.DependentTarget.State;
-import bluej.prefmgr.PrefMgr;
-import bluej.utility.*;
-import bluej.utility.filefilter.FrameSourceFilter;
-import bluej.utility.filefilter.JavaClassFilter;
-import bluej.utility.filefilter.JavaSourceFilter;
-import bluej.utility.filefilter.SubPackageFilter;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.views.CallableView;
-import javafx.application.Platform;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -68,6 +30,71 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+
+import bluej.debugger.DebuggerObject;
+import bluej.extensions.event.DependencyEvent;
+import bluej.views.CallableView;
+import javafx.application.Platform;
+
+import bluej.compiler.CompileInputFile;
+import bluej.compiler.CompileReason;
+import bluej.compiler.CompileType;
+import bluej.pkgmgr.target.CSSTarget;
+import bluej.pkgmgr.target.DependentTarget.State;
+import bluej.pkgmgr.dependency.ExtendsDependency;
+import bluej.pkgmgr.dependency.ImplementsDependency;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.Config;
+import bluej.compiler.CompileObserver;
+import bluej.compiler.Diagnostic;
+import bluej.compiler.FXCompileObserver;
+import bluej.compiler.EventqueueCompileObserverAdapter;
+import bluej.compiler.JobQueue;
+import bluej.debugger.Debugger;
+import bluej.debugger.DebuggerEvent;
+import bluej.debugger.DebuggerListener;
+import bluej.debugger.DebuggerThread;
+import bluej.debugger.ExceptionDescription;
+import bluej.debugger.SourceLocation;
+import bluej.debugmgr.CallHistory;
+import bluej.debugmgr.Invoker;
+import bluej.editor.Editor;
+import bluej.editor.TextEditor;
+import bluej.extensions.BPackage;
+import bluej.extensions.ExtensionBridge;
+import bluej.extensions.SourceType;
+import bluej.extensions.event.CompileEvent;
+import bluej.extmgr.ExtensionsManager;
+import bluej.parser.AssistContent;
+import bluej.parser.AssistContent.CompletionKind;
+import bluej.parser.ExpressionTypeInfo;
+import bluej.parser.ParseUtils;
+import bluej.parser.nodes.ParsedCUNode;
+import bluej.parser.symtab.ClassInfo;
+import bluej.pkgmgr.dependency.Dependency;
+import bluej.pkgmgr.dependency.UsesDependency;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.target.EditableTarget;
+import bluej.pkgmgr.target.PackageTarget;
+import bluej.pkgmgr.target.ParentPackageTarget;
+import bluej.pkgmgr.target.ReadmeTarget;
+import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.target.TargetCollection;
+import bluej.prefmgr.PrefMgr;
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
+import bluej.utility.JavaNames;
+import bluej.utility.SortedProperties;
+import bluej.utility.Utility;
+import bluej.utility.filefilter.FrameSourceFilter;
+import bluej.utility.filefilter.JavaClassFilter;
+import bluej.utility.filefilter.JavaSourceFilter;
+import bluej.utility.filefilter.SubPackageFilter;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A Java package (collection of Java classes).
@@ -111,8 +138,6 @@ public final class Package
     public static final int CREATE_ERROR = 5;
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private final List<Target> targetsToPlace = new ArrayList<>();
-    // Has this package been sent for data recording yet?
-    private boolean recorded = false;
 
     /** Reason code for displaying source line */
     private enum ShowSourceReason
@@ -182,7 +207,7 @@ public final class Package
     private PackageUI ui;
     
     @OnThread(Tag.FXPlatform)    
-    private List<PackageListener> listeners = new ArrayList<>();
+    private final List<PackageListener> listeners = new ArrayList<>();
 
     //package-visible
     List<UsesDependency> getUsesArrows()
@@ -633,9 +658,9 @@ public final class Package
      */
     private Set<String> findTargets(File path)
     {
-        File javaSrcFiles[] = path.listFiles(new JavaSourceFilter());
-        File frameSrcFiles[] = path.listFiles(new FrameSourceFilter());
-        File classFiles[] = path.listFiles(new JavaClassFilter());
+        File[] javaSrcFiles = path.listFiles(new JavaSourceFilter());
+        File[] frameSrcFiles = path.listFiles(new FrameSourceFilter());
+        File[] classFiles = path.listFiles(new JavaClassFilter());
 
         Set<String> interestingSet = new HashSet<String>();
 
@@ -731,7 +756,7 @@ public final class Package
     {
         // read in all the targets contained in this package
         // into this temporary map
-        Map<String, Target> propTargets = new HashMap<String, Target>();
+        Map<String,Target> propTargets = new HashMap<String,Target>();
 
         int numTargets = 0, numDependencies = 0;
 
@@ -776,7 +801,7 @@ public final class Package
         // version so if we have a class target called Foo but we
         // discover a directory call Foo, a PackageTarget will be
         // inserted to replace the ClassTarget
-        File subDirs[] = getPath().listFiles(new SubPackageFilter());
+        File[] subDirs = getPath().listFiles(new SubPackageFilter());
         
         for (int i = 0; i < subDirs.length; i++) {
             // first check if the directory name would be a valid package name
@@ -799,7 +824,7 @@ public final class Package
         // If BlueJ, look for CSS targets:
         if (!Config.isGreenfoot())
         {
-            File cssFiles[] = getPath().listFiles(p -> p.getName().endsWith(".css"));
+            File[] cssFiles = getPath().listFiles(p -> p.getName().endsWith(".css"));
             for (File cssFile : cssFiles)
             {
                 Target target = propTargets.get(cssFile.getName());
@@ -836,6 +861,7 @@ public final class Package
             }
             addTarget(target);
         }
+
 
         List<Target> targetsCopy;
         synchronized (this)
@@ -1014,7 +1040,7 @@ public final class Package
      */
     public void reload()
     {
-        File subDirs[] = getPath().listFiles(new SubPackageFilter());
+        File[] subDirs = getPath().listFiles(new SubPackageFilter());
 
         for (int i = 0; i < subDirs.length; i++) {
             // first check if the directory name would be a valid package name
@@ -1481,7 +1507,7 @@ public final class Package
             }
 
             if (assocTarget != null) {
-                searchCompile(assocTarget, new QuietPackageCompileObserver(null), reason, type);
+                searchCompile(assocTarget, new QuietPackageCompileObserver(Collections.emptyList()), reason, type);
             }
         }
     }
@@ -1624,11 +1650,15 @@ public final class Package
      */
     private void doCompile(Collection<ClassTarget> targetList, FXCompileObserver edtObserver, CompileReason reason, CompileType type)
     {
+        if (targetList.isEmpty()) {
+            return;
+        }
+
         List<CompileInputFile> srcFiles = Utility.mapList(targetList, ClassTarget::getCompileInputFile);
                
         if (srcFiles.size() > 0)
         {
-            JobQueue.getJobQueue().addJob(srcFiles.toArray(new CompileInputFile[0]), project.getClassLoader(), project.getProjectDir(),
+            JobQueue.getJobQueue().addJob(srcFiles.toArray(new CompileInputFile[0]), null, project.getClassLoader(), project.getProjectDir(),
                 ! PrefMgr.getFlag(PrefMgr.SHOW_UNCHECKED), project.getProjectCharset(), reason, type);
         }
     }
@@ -1769,6 +1799,10 @@ public final class Package
         for (ClassTarget target : classTargets)
         {
             target.removeStepMark();
+        }
+        if (getUI() != null)
+        {
+            getUI().highlightObject(null);
         }
     }
 
@@ -2147,17 +2181,26 @@ public final class Package
      * code with the relevant line highlighted.
      *
      * Note: source name is the unqualified name of the file (no path attached)
+     * 
+     * @return true if the debugger display is already taken care of, or
+     * false if you still want to show the ExecControls window afterwards.
      */
-    private boolean showSource(DebuggerThread thread, String sourcename, int lineNo, ShowSourceReason reason, String msg)
+    @OnThread(Tag.FXPlatform)
+    private boolean showSource(DebuggerThread thread, String sourcename, int lineNo, ShowSourceReason reason, String msg, DebuggerObject currentObject)
     {
         boolean bringToFront = !sourcename.equals(lastSourceName);
         lastSourceName = sourcename;
 
         // showEditorMessage:
         Editor targetEditor = editorForTarget(new File(getPath(), sourcename).getAbsolutePath(), bringToFront);
-        if (targetEditor != null) {
-            targetEditor.setStepMark(lineNo, msg, reason.isSuspension(), thread);
-            return targetEditor instanceof FrameEditor;
+        if (targetEditor != null)
+        {
+            if (getUI() != null)
+            {
+                getUI().highlightObject(currentObject);
+            }
+            
+            return targetEditor.setStepMark(lineNo, msg, reason.isSuspension(), thread);
         }
         else if (reason == ShowSourceReason.BREAKPOINT_HIT) {
             showMessageWithText("break-no-source", sourcename);
@@ -2185,7 +2228,7 @@ public final class Package
      * An interface for message "calculators" which can produce enhanced diagnostic messages when
      * given a reference to the editor in which a compilation error occurred.
      */
-    public static interface MessageCalculator
+    public interface MessageCalculator
     {
         /**
          * Produce a diagnostic message for the given editor.
@@ -2193,7 +2236,7 @@ public final class Package
          * 
          * @param e  The editor where the original error occurred (null if it cannot be determined).
          */
-        public String calculateMessage(Editor e);
+        String calculateMessage(Editor e);
     }
     
     /**
@@ -2240,7 +2283,7 @@ public final class Package
         Editor targetEditor = ct.getEditor();
         if (targetEditor != null) {
             if (! targetEditor.isOpen() || bringToFront) {
-                ct.open();;
+                ct.open();
             }
         }
         
@@ -2294,7 +2337,7 @@ public final class Package
      * An enumeration for indicating whether a compilation diagnostic was actually displayed to the
      * user.
      */
-    private static enum ErrorShown
+    private enum ErrorShown
     {
         // Reminds me of http://thedailywtf.com/Articles/What_Is_Truth_0x3f_.aspx :-)
         ERROR_SHOWN, ERROR_NOT_SHOWN, EDITOR_NOT_FOUND
@@ -2345,7 +2388,8 @@ public final class Package
     /**
      * A breakpoint in this package was hit.
      */
-    public void hitBreakpoint(DebuggerThread thread)
+    @OnThread(Tag.FXPlatform)
+    public void hitBreakpoint(DebuggerThread thread, String classSourceName, int lineNumber, DebuggerObject currentObject)
     {
         String msg = null;
         if (PrefMgr.getFlag(PrefMgr.ACCESSIBILITY_SUPPORT)) {
@@ -2353,7 +2397,7 @@ public final class Package
             msg = msg.replace("$", thread.getName());
         }
         
-        if (!showSource(thread, thread.getClassSourceName(0), thread.getLineNumber(0), ShowSourceReason.BREAKPOINT_HIT, msg))
+        if (!showSource(thread, classSourceName, lineNumber, ShowSourceReason.BREAKPOINT_HIT, msg, currentObject))
         {
             getProject().getExecControls().show();
             getProject().getExecControls().selectThread(thread);
@@ -2364,18 +2408,17 @@ public final class Package
      * Execution stopped by someone pressing the "halt" button or we have just
      * done a "step".
      */
-    public void hitHalt(DebuggerThread thread)
+    @OnThread(Tag.FXPlatform)
+    public void hitHalt(DebuggerThread thread, String classSourceName, int lineNumber, DebuggerObject currentObject, boolean breakpoint)
     {
-        boolean breakpoint = thread.isAtBreakpoint();
         String msg = null;
         if (PrefMgr.getFlag(PrefMgr.ACCESSIBILITY_SUPPORT)) {
             msg = breakpoint ? Config.getString("debugger.accessibility.breakpoint") : Config.getString("debugger.accessibility.paused");
             msg = msg.replace("$", thread.getName());
         }
         
-        int frame = thread.getSelectedFrame();
         ShowSourceReason reason = breakpoint ? ShowSourceReason.BREAKPOINT_HIT : ShowSourceReason.STEP_OR_HALT;
-        if (!showSource(thread, thread.getClassSourceName(frame), thread.getLineNumber(frame), reason, msg))
+        if (!showSource(thread, classSourceName, lineNumber, reason, msg, currentObject))
         {
             getProject().getExecControls().show();
             getProject().getExecControls().selectThread(thread);
@@ -2385,9 +2428,10 @@ public final class Package
     /**
      * Display a source file from this package at the specified position.
      */
-    public void showSourcePosition(DebuggerThread thread, String sourceName, int lineNumber)
+    @OnThread(Tag.FXPlatform)
+    public void showSourcePosition(DebuggerThread thread, String sourceName, int lineNumber, DebuggerObject currentObject)
     {
-        showSource(thread, sourceName, lineNumber, ShowSourceReason.FRAME_SELECTED, null);
+        showSource(thread, sourceName, lineNumber, ShowSourceReason.FRAME_SELECTED, null, currentObject);
     }
     
     /**
@@ -2660,6 +2704,8 @@ public final class Package
         @Override
         public void endCompile(CompileInputFile[] sources, boolean successful, CompileType type, int compilationSequence)
         {
+            List<ClassTarget> targetsToAnalyse = new ArrayList<>();
+            List<ClassTarget> readyToCompileList = new ArrayList<>();
             for (int i = 0; i < sources.length; i++) {
                 String filename = sources[i].getJavaCompileInputFile().getPath();
 
@@ -2675,6 +2721,24 @@ public final class Package
                 }
 
                 t.markCompiled(successful, type);
+                if (t.getState() == State.COMPILED)
+                {
+                    targetsToAnalyse.add(t);
+                }
+                else
+                {
+                    // To prevent an issue that may happen when classes are batched in one compile job
+                    // and an error in one may prevent others being compiled even though they could be 
+                    // compiled separately, we check for all the classes that can be compiled and have
+                    // no direct/indirect dependencies with compile errors to be compiled
+                    if (t.getState() == State.NEEDS_COMPILE && type == CompileType.EXPLICIT_USER_COMPILE)
+                    {
+                        if (!checkDependecyCompilationError(t))
+                        {
+                            readyToCompileList.add(t);
+                        }
+                    }
+                }
                 t.setQueued(false);
                 
                 if (t.isCompiled())
@@ -2683,7 +2747,7 @@ public final class Package
                     Class<?> c = loadClass(getQualifiedName(t.getIdentifierName()));
                     if (c!=null){
                         if (! checkClassMatchesFile(c, t.getClassFile())) {
-                            String conflict= Package.getResourcePath(c);
+                            String conflict=Package.getResourcePath(c);
                             String ident = t.getIdentifierName()+":";
                             DialogManager.showMessageWithPrefixTextFX(null, "compile-class-library-conflict", ident, conflict);
                         }
@@ -2706,6 +2770,13 @@ public final class Package
                         ex.printStackTrace();
                     }
                 }
+            }
+            // Compile the classes that have no direct/indirect dependencies that have compile errors
+            doCompile(readyToCompileList, this, CompileReason.USER, CompileType.EXPLICIT_USER_COMPILE);
+
+            for (ClassTarget classTarget : targetsToAnalyse)
+            {
+                classTarget.analyseAfterCompile();
             }
             
             if (type.keepClasses())
@@ -2730,9 +2801,9 @@ public final class Package
     {
         private static final int MAX_EDIT_DISTANCE = 2;
         private final String message;
-        private int lineNumber;
-        private int column;
-        private Project project;
+        private final int lineNumber;
+        private final int column;
+        private final Project project;
 
         public MisspeltMethodChecker(String message, int column, int lineNumber, Project project)
         {
@@ -2783,7 +2854,7 @@ public final class Package
             int pos = convertColumn(getLine(e), column) + getLineStart(e);
 
             TreeSet<String> maybeTheyMeant = new TreeSet<>();
-            CodeSuggestions suggests = pcuNode.getExpressionType(pos, e.getSourceDocument());
+            ExpressionTypeInfo suggests = pcuNode.getExpressionType(pos, e.getSourceDocument());
             AssistContent[] values = ParseUtils.getPossibleCompletions(suggests, project.getJavadocResolver(), null);
             if (values != null) {
                 for (AssistContent a : values) {
@@ -3067,5 +3138,48 @@ public final class Package
     public void addCompileObserver(FXCompileObserver fxCompileObserver)
     {
         compileObservers.add(fxCompileObserver);
+    }
+
+    /**
+     * Checks if the class target has dependencies that have compilation errors
+     * @param  classTarget the class target whom direct/indirect dependencies will be checked
+     * @return true if any of the dependencies or their ancestors have a compilation error
+     *         otherwise it returns false
+     */
+    public boolean checkDependecyCompilationError(ClassTarget classTarget)
+    {
+        boolean dependencyError = false;
+        outerloop:
+        for (Dependency d : classTarget.dependencies())
+        {
+            ClassTarget dependent = (ClassTarget) d.getTo();
+            if (dependent.getState() == State.HAS_ERROR && dependent.hasSourceCode())
+            {
+                dependencyError = true;
+                break outerloop;
+            }
+            else
+            {
+                List<Dependency> dependencyParents = dependent.getParents();
+                dependencyError = dependencyParents.stream()
+                        .filter(pv -> pv.getTo().getState() == State.HAS_ERROR)
+                        .findFirst().isPresent();
+                if (dependencyError)
+                {
+                    break outerloop;
+                }
+                //check if the dependant has parents compilation errors
+                for (Dependency parentDependency : dependencyParents)
+                {
+                    ClassTarget dependencyParent = (ClassTarget) parentDependency.getTo();
+                    dependencyError = checkDependecyCompilationError(dependencyParent);
+                    if (dependencyError)
+                    {
+                        break outerloop;
+                    }
+                }
+            }
+        }
+        return dependencyError;
     }
 }

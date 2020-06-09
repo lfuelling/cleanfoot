@@ -41,7 +41,7 @@ public class ExportedProjectProperties implements ReadOnlyProjectProperties
     public static final String GREENFOOT_PKG_NAME = "project.greenfoot";
 
     /** Holds the actual properties */
-    private Properties properties;
+    private final Properties properties;
 
     /**
      * Creates a new properties instance with the file loaded from the root of this class loader.
@@ -74,9 +74,7 @@ public class ExportedProjectProperties implements ReadOnlyProjectProperties
                 try {
                     is.close();
                 }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
+                catch (IOException e) {}
             }
         }
     }

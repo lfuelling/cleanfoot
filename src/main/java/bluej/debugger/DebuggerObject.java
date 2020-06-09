@@ -21,11 +21,11 @@
  */
 package bluej.debugger;
 
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.JavaType;
-
 import java.lang.reflect.Modifier;
 import java.util.List;
+
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.JavaType;
 
 /**
  * A class representing an object, and its type, in the debugged VM. The "null" value
@@ -132,4 +132,14 @@ public abstract class DebuggerObject
      * @return    The ObjectReference value
      */
     public abstract com.sun.jdi.ObjectReference getObjectReference();
+
+    /**
+     * Subclasses should implement equals and hashCode.
+     */
+    public abstract int hashCode();
+
+    /**
+     * Subclasses should implement equals and hashCode.
+     */
+    public abstract boolean equals(Object obj);
 }

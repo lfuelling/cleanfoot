@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2012,2013,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,22 +21,28 @@
  */
 package bluej.prefmgr;
 
-import bluej.Config;
-import bluej.editor.EditorManager;
-import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanExpression;
-import javafx.beans.binding.StringExpression;
-import javafx.beans.property.*;
-import javafx.beans.value.ObservableIntegerValue;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.awt.*;
+import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import bluej.utility.javafx.JavaFXUtil;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.binding.StringExpression;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableIntegerValue;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.Config;
+import bluej.editor.EditorManager;
 
 /**
  * A class to manage the user editable preferences
@@ -54,7 +60,6 @@ public class PrefMgr
     public static final String HIGHLIGHTING = "bluej.editor.syntaxHilighting";
     public static final String AUTO_INDENT = "bluej.editor.autoIndent";
     public static final String LINENUMBERS = "bluej.editor.displayLineNumbers";
-    public static final String MAKE_BACKUP = "bluej.editor.makeBackup";
     public static final String MATCH_BRACKETS = "bluej.editor.matchBrackets";
     public static final String LINK_LIB = "doctool.linkToStandardLib";
     public static final String SHOW_TEST_TOOLS = "bluej.testing.showtools";
@@ -64,6 +69,7 @@ public class PrefMgr
     public static final String SCOPE_HIGHLIGHTING_STRENGTH = "bluej.editor.scopeHilightingStrength";
     public static final String NAVIVIEW_EXPANDED="bluej.naviviewExpanded.default";
     public static final String ACCESSIBILITY_SUPPORT = "bluej.accessibility.support";
+    public static final String NEWS_TESTING = "bluej.news.testing";
     public static final String START_WITH_SUDO = "bluej.startWithSudo";
     public static final String STRIDE_SIDEBAR_SHOWING = "bluej.editor.stride.sidebarShowing";
     public static final String PACKAGE_PRINT_SOURCE = "bluej.packagePrint.source";
@@ -87,13 +93,14 @@ public class PrefMgr
     private static final int NUM_RECENT_PROJECTS = Config.getPropInteger("bluej.numberOfRecentProjects", 12);
     // initialised by a call to setMenuFontSize()
     @OnThread(Tag.Swing)
-    private static Font popupMenuFont;
+    private static final Font popupMenuFont;
     @OnThread(Tag.Swing)
-    private static Font italicMenuFont;
+    private static final Font italicMenuFont;
     // initialised by a call to setEditorFontSize()
     @OnThread(Tag.FX)
     private static final IntegerProperty editorFontSize = new SimpleIntegerProperty(DEFAULT_JAVA_FONT_SIZE);
     private static final StringProperty editorStandardFont = new SimpleStringProperty("Roboto Mono");
+    private static final StringProperty editorFallbackFont = new SimpleStringProperty("monospace");
     @OnThread(Tag.FX)
     private static IntegerProperty strideFontSize = null; // Setup in call to strideFontSizeProperty
 
@@ -114,15 +121,15 @@ public class PrefMgr
 
     // list of recently used projects
     @OnThread(value = Tag.Any, requireSynchronized = true)
-    private static List<String> recentProjects;
+    private static final List<String> recentProjects;
     
     // flags are all boolean preferences
     @OnThread(value = Tag.Any, requireSynchronized = true)
-    private static HashMap<String,String> flags = new HashMap<String,String>();
+    private static final HashMap<String,String> flags = new HashMap<String,String>();
     // Flags have 0 or 1 properties.  Once requested for a flag, it
     // is shared between all uses of that property flag.
     @OnThread(Tag.FXPlatform)
-    private static HashMap<String, BooleanProperty> flagProperties = new HashMap<>();
+    private static final HashMap<String, BooleanProperty> flagProperties = new HashMap<>();
     // The CSS style needed to apply the editor font styling
     @OnThread(Tag.FX)
     private static StringExpression editorFontCSS;
@@ -142,15 +149,6 @@ public class PrefMgr
         
     }
 
-    /**
-     * Check if BlueJ is runnung on a ARM processor (Raspberry Pi). If so, sets hides the code preview.
-     * @return false if ARM processor. true otherwise.
-     */
-    public static boolean initializeisNavivewExpanded()
-    {
-        return Boolean.parseBoolean(Config.getPropString(NAVIVIEW_EXPANDED, String.valueOf(!Config.isRaspberryPi())));
-    }
-    
     @OnThread(Tag.Any)
     public static File getProjectDirectory()
     {
@@ -337,7 +335,7 @@ public class PrefMgr
      */
     public static String getEditorFontFamilyCSS()
     {
-        return "-fx-font-family: \"" + editorStandardFont.get() + "\";";
+        return "-fx-font-family: \"" + editorStandardFont.get() + "\", " + editorFallbackFont.get() + ";";
     }
 
     @OnThread(Tag.FXPlatform)
@@ -423,7 +421,6 @@ public class PrefMgr
 
         // preferences other than fonts:
         highlightStrength.set(Config.getPropInteger(SCOPE_HIGHLIGHTING_STRENGTH, 20));
-        isNaviviewExpanded=initializeisNavivewExpanded();
         
         projectDirectory = Config.getPropString("bluej.projectPath", System.getProperty("user.home"));
         recentProjects = readRecentProjects();
@@ -431,7 +428,6 @@ public class PrefMgr
         flags.put(HIGHLIGHTING, Config.getPropString(HIGHLIGHTING, "true"));
         flags.put(AUTO_INDENT, Config.getPropString(AUTO_INDENT, "false"));
         flags.put(LINENUMBERS, Config.getPropString(LINENUMBERS, "false"));
-        flags.put(MAKE_BACKUP, Config.getPropString(MAKE_BACKUP, "false"));
         flags.put(MATCH_BRACKETS, Config.getPropString(MATCH_BRACKETS, "true"));
         flags.put(LINK_LIB, Config.getPropString(LINK_LIB, "true"));
         flags.put(SHOW_TEST_TOOLS, Config.getPropString(SHOW_TEST_TOOLS, "false"));
@@ -441,6 +437,7 @@ public class PrefMgr
         flags.put(ACCESSIBILITY_SUPPORT, Config.getPropString(ACCESSIBILITY_SUPPORT, "false"));
         flags.put(START_WITH_SUDO, Config.getPropString(START_WITH_SUDO, "true"));
         flags.put(STRIDE_SIDEBAR_SHOWING, Config.getPropString(STRIDE_SIDEBAR_SHOWING, "true"));
+        flags.put(NEWS_TESTING, Config.getPropString(NEWS_TESTING, "false"));
 
         flags.put(PRINT_LINE_NUMBERS, Config.getPropString(PRINT_LINE_NUMBERS, "false"));
         flags.put(PRINT_SCOPE_HIGHLIGHTING, Config.getPropString(PRINT_SCOPE_HIGHLIGHTING, "true"));
@@ -500,7 +497,7 @@ public class PrefMgr
         }
     }
 
-    public static enum PrintSize
+    public enum PrintSize
     {
         SMALL, STANDARD, LARGE;
 

@@ -21,28 +21,20 @@
  */
 package bluej.stride.framedjava.frames;
 
-import bluej.parser.AssistContent.ParamInfo;
-import bluej.stride.framedjava.ast.AccessPermission;
-import bluej.stride.framedjava.ast.AccessPermissionFragment;
-import bluej.stride.framedjava.ast.NameDefSlotFragment;
-import bluej.stride.framedjava.ast.TypeSlotFragment;
-import bluej.stride.framedjava.ast.links.PossibleKnownMethodLink;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import bluej.stride.framedjava.ast.links.PossibleLink;
-import bluej.stride.framedjava.slots.TextOverlayPosition;
+import bluej.stride.framedjava.ast.links.PossibleKnownMethodLink;
 import bluej.stride.framedjava.slots.UnderlineContainer;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SingleLineFrame;
-import bluej.stride.operations.AbstractOperation.Combine;
-import bluej.stride.operations.CustomFrameOperation;
-import bluej.stride.operations.FrameOperation;
-import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.slots.EditableSlot.SortedMenuItem;
 import bluej.stride.slots.HeaderItem;
 import bluej.stride.slots.WrappableSlotLabel;
-import bluej.utility.Utility;
-import bluej.utility.javafx.*;
+import bluej.utility.javafx.ErrorUnderlineCanvas;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -50,14 +42,27 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
+import bluej.parser.AssistContent.ParamInfo;
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.slots.TextOverlayPosition;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.operations.AbstractOperation.Combine;
+import bluej.stride.operations.CustomFrameOperation;
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.slots.EditableSlot;
+import bluej.utility.Utility;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A frame to show the details of an inherited method in the inherited canvas
@@ -132,7 +137,7 @@ public class InheritedMethodFrame extends SingleLineFrame
         operations.add(new FrameOperation(getEditor(), "GO TO " + originatingClass + "." + methodName, Combine.ONE) {
 
             // Spaces make sure menu is wide enough:
-            private StringProperty text = new SimpleStringProperty("Scanning...                   ");
+            private final StringProperty text = new SimpleStringProperty("Scanning...                   ");
             
             @Override
             public List<ItemLabel> getLabels()

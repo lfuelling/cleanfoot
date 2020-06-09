@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2012,2013,2014,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 2012,2013,2014,2016,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,21 +21,22 @@
  */
 package bluej.prefmgr;
 
-import bluej.Config;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.pkgmgr.Project;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+
+import bluej.Config;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * "Interface" preference panel. Settings for what to show (teamwork, testing tools etc)
@@ -47,10 +48,12 @@ import java.util.List;
 public class InterfacePanel extends VBox
         implements PrefPanelListener
 {
-    private ArrayList<String> allLangsInternal;
-    private ComboBox langDropdown;
+    private final ArrayList<String> allLangsInternal;
+    private final ComboBox langDropdown;
     
-    private CheckBox accessibility;
+    private final CheckBox accessibility;
+    
+    private final CheckBox toggleTestNewsMode;
     
     public InterfacePanel()
     {
@@ -109,12 +112,23 @@ public class InterfacePanel extends VBox
         
         accessibility = new CheckBox(Config.getString("prefmgr.accessibility.support"));
         getChildren().add(PrefMgrDialog.headedVBox("prefmgr.accessibility.title", Arrays.asList(accessibility)));
+        
+        // Hide this checkbox so that it is only revealed if you mouse-over while holding shift:
+        toggleTestNewsMode = new CheckBox("Switch to testing mode for news display (after restart)");
+        toggleTestNewsMode.setOpacity(0);
+        toggleTestNewsMode.setOnMouseMoved(e -> {
+            if (e.isShiftDown())
+            {
+                toggleTestNewsMode.setOpacity(1.0);
+            }
+        });
+        getChildren().add(toggleTestNewsMode);
     }
     
     @Override
     public void beginEditing(Project project)
     {
-        String currentLang = Config.getPropString("bluej.language", "labels/english");
+        String currentLang = Config.getPropString("bluej.language", "english");
         int curLangIndex = allLangsInternal.indexOf(currentLang);
         if (curLangIndex == -1) {
             curLangIndex = 0;
@@ -122,6 +136,13 @@ public class InterfacePanel extends VBox
         langDropdown.getSelectionModel().select(curLangIndex);
         
         accessibility.setSelected(PrefMgr.getFlag(PrefMgr.ACCESSIBILITY_SUPPORT));
+        
+        toggleTestNewsMode.setSelected(PrefMgr.getFlag(PrefMgr.NEWS_TESTING));
+        if (toggleTestNewsMode.isSelected())
+        {
+            // Show it to begin with:
+            toggleTestNewsMode.setOpacity(1.0);
+        }
     }
 
     @Override
@@ -130,6 +151,15 @@ public class InterfacePanel extends VBox
         Config.putPropString("bluej.language", allLangsInternal.get(langDropdown.getSelectionModel().getSelectedIndex()));
         
         PrefMgr.setFlag(PrefMgr.ACCESSIBILITY_SUPPORT, accessibility.isSelected());
+
+        // Only counts as selected if selected and visible:
+        boolean testNewsMode = toggleTestNewsMode.isSelected() && toggleTestNewsMode.getOpacity() == 1.0;
+        if (testNewsMode && !PrefMgr.getFlag(PrefMgr.NEWS_TESTING))
+        {
+            // Also blank last-seen date so they see the latest testing news:
+            Config.putPropString(Config.MESSAGE_LATEST_SEEN, "");
+        }
+        PrefMgr.setFlag(PrefMgr.NEWS_TESTING, testNewsMode);
     }
     
     @Override

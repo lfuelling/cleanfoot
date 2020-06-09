@@ -21,11 +21,17 @@
  */
 package greenfoot.sound;
 
-import bluej.utility.Debug;
-
-import javax.sound.sampled.*;
-import javax.sound.sampled.DataLine.Info;
 import java.io.IOException;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.DataLine.Info;
+
+import bluej.utility.Debug;
 
 /**
  * Plays sound from a URL. To avoid loading the entire sound clip into memory,
@@ -92,7 +98,7 @@ public class SoundStream implements Sound, Runnable
             // Preparing the line here, speeds up the first playback of the
             // sound.
             format = inputStream.getFormat();
-            info = new Info(SourceDataLine.class, format);
+            info = new DataLine.Info(SourceDataLine.class, format);
             line = initialiseLine(info, format);
         }
         catch (IllegalArgumentException e) {
@@ -228,7 +234,7 @@ public class SoundStream implements Sound, Runnable
                         // If we don't have a line or the format has changed we
                         // need a new line.
                         format = inputStream.getFormat();
-                        info = new Info(SourceDataLine.class, format);
+                        info = new DataLine.Info(SourceDataLine.class, format);
                         line = initialiseLine(info, format);
                     }
                     line.open();
@@ -411,7 +417,7 @@ public class SoundStream implements Sound, Runnable
 
     /**
      * Initialise the line by creating it and setting up listeners.
-     *
+     * 
      * @param info
      * @throws LineUnavailableException
      *             if a matching line is not available due to resource
@@ -423,7 +429,7 @@ public class SoundStream implements Sound, Runnable
      *             if the system does not support at least one line matching the
      *             specified
      */
-    private AudioLine initialiseLine(Info info, AudioFormat format)
+    private AudioLine initialiseLine(DataLine.Info info, AudioFormat format)
             throws LineUnavailableException, IllegalArgumentException
     {
         //Throws IllegalArgumentException if it can't find a line

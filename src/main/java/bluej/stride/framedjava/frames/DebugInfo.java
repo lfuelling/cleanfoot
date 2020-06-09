@@ -22,12 +22,14 @@
 package bluej.stride.framedjava.frames;
 
 
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.generic.CanvasParent;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameCursor;
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import javafx.animation.ScaleTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -42,11 +44,18 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.utility.javafx.FXPlatformSupplier;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.Map.Entry;
 
 public class DebugInfo
 {
@@ -185,7 +194,7 @@ public class DebugInfo
             disp.setHgap(20);
             JavaFXUtil.addStyleClass(disp, "debug-info-rows");
             int index = 0;
-            for (Entry<String, DebugVarInfo> var : vars.entrySet())
+            for (Map.Entry<String, DebugVarInfo> var : vars.entrySet())
             {
                 DebugVarInfo prev = prevVars == null ? null : prevVars.get(var.getKey());
                 HBox row = new HBox();
@@ -315,8 +324,7 @@ public class DebugInfo
                 if (varIndexes.get(curDisplay.get()) == index && (children.isEmpty() || isLatest()))
                     return true;
                 // Trying to show an arrow arriving at the next display and we are a parent:
-                if (curDisplay.get() + 1 < varIndexes.size() && varIndexes.get(curDisplay.get() + 1) == index && !children.isEmpty())
-                    return true;
+                return curDisplay.get() + 1 < varIndexes.size() && varIndexes.get(curDisplay.get() + 1) == index && !children.isEmpty();
             }
             return false;
             /*

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,8 +21,14 @@
  */
 package bluej.groupwork.actions;
 
+import java.io.File;
+
 import bluej.Config;
-import bluej.groupwork.*;
+import bluej.groupwork.Repository;
+import bluej.groupwork.TeamSettingsController;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
 import bluej.groupwork.ui.ModuleSelectDialog;
 import bluej.pkgmgr.Import;
 import bluej.pkgmgr.Package;
@@ -30,13 +36,12 @@ import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
-import bluej.utility.FXWorker;
 import bluej.utility.FileUtility;
+import bluej.utility.FXWorker;
 import bluej.utility.javafx.FXPlatformConsumer;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * An action to perform a checkout of a module in CVS. The module is checked
@@ -91,7 +96,8 @@ public class CheckoutAction extends TeamAction
                 if (moduleName == null)
                     return; //null module.
 
-                File parentDir = FileUtility.getSaveProjectFX(oldFrame.getFXWindow(), Config.getString("team.checkout.filechooser.title"));
+                File parentDir = FileUtility.getSaveProjectFX(oldFrame.getProject(), oldFrame.getFXWindow(),
+                        Config.getString("team.checkout.filechooser.title"));
                 if (parentDir == null)
                     return; // User cancelled
 
@@ -107,7 +113,8 @@ public class CheckoutAction extends TeamAction
                 //it is a DVCS project.
                 //there is no module selection in a DVCS project. Therefore,
                 //the selected file is the project dir.
-                File projectDir = FileUtility.getSaveProjectFX(oldFrame.getFXWindow(), Config.getString("team.checkout.DVCS.filechooser.title"));
+                File projectDir = FileUtility.getSaveProjectFX(oldFrame.getProject(),oldFrame.getFXWindow(),
+                        Config.getString("team.checkout.DVCS.filechooser.title"));
                 if (projectDir == null)
                     return;//no project dir. nothing to do.
 
@@ -129,10 +136,10 @@ public class CheckoutAction extends TeamAction
      */
     private class CheckoutWorker extends FXWorker
     {
-        private Repository repository;
-        private PkgMgrFrame newFrame;
-        private File projDir;
-        private TeamSettingsController tsc;
+        private final Repository repository;
+        private final PkgMgrFrame newFrame;
+        private final File projDir;
+        private final TeamSettingsController tsc;
 
         private TeamworkCommandResult response;
         private boolean failed = true;

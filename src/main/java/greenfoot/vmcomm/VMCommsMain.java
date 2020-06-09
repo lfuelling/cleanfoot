@@ -21,13 +21,6 @@
  */
 package greenfoot.vmcomm;
 
-import bluej.pkgmgr.Project;
-import bluej.utility.Debug;
-import greenfoot.guifx.GreenfootStage;
-import javafx.scene.input.KeyCode;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -35,11 +28,18 @@ import java.io.RandomAccessFile;
 import java.nio.IntBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.FileLock;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import bluej.pkgmgr.Project;
+import bluej.utility.Debug;
+import greenfoot.guifx.GreenfootStage;
+import javafx.scene.input.KeyCode;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 import static greenfoot.vmcomm.Command.*;
 
@@ -431,14 +431,7 @@ public class VMCommsMain implements Closeable
                     }
 
                     int delayLoopStatus = sharedMemory.get();
-                    if (delayLoopStatus == 1)
-                    {
-                        delayLoop = true;
-                    }
-                    else
-                    {
-                        delayLoop = false;
-                    }
+                    delayLoop = delayLoopStatus == 1;
                 }
             }
         }

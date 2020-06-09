@@ -21,6 +21,7 @@
  */
 package bluej.editor.moe;
 
+import bluej.Config;
 import bluej.prefmgr.PrefMgr;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.JavaFXUtil;
@@ -39,9 +40,9 @@ import threadchecker.Tag;
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
 public class ReparseRunner implements FXPlatformRunnable
 {
-    private MoeEditor editor;
+    private final MoeEditor editor;
     
-    private int procTime; //the time allowed for the incremental parsing before re-queueing
+    private final int procTime; //the time allowed for the incremental parsing before re-queueing
     
     public ReparseRunner(MoeEditor editor)
     {

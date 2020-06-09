@@ -21,18 +21,18 @@
  */
 package bluej.stride.slots;
 
+import javafx.scene.control.TextField;
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.slots.SuggestionList.SuggestionListListener;
 import bluej.utility.javafx.FXPlatformConsumer;
-import javafx.scene.control.TextField;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
 public interface CompletionCalculator
 {
-    public void withCalculatedSuggestionList(PosInSourceDoc pos, CodeElement codeEl, SuggestionListListener clickListener, FXPlatformConsumer<SuggestionList> handler);
+    void withCalculatedSuggestionList(PosInSourceDoc pos, CodeElement codeEl, SuggestionListListener clickListener, FXPlatformConsumer<SuggestionList> handler);
     
-    public boolean execute(TextField field, int highlighted, int startOfCurWord);
+    boolean execute(TextField field, int highlighted, int startOfCurWord);
 }

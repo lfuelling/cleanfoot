@@ -21,17 +21,16 @@
  */
 package bluej.stride.operations;
 
+import java.util.Arrays;
+import java.util.List;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import bluej.Config;
 import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class CopyFrameAsImageOperation extends FrameOperation
 {

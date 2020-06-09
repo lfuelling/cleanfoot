@@ -26,7 +26,6 @@ import bluej.groupwork.TeamStatusInfo;
 import bluej.pkgmgr.Project;
 
 import java.util.Arrays;
-
 /**
  * Given a list of StatusEntry(s) returns a table model which allows them to
  * be edited in a JTable.

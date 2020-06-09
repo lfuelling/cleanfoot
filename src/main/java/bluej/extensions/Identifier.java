@@ -22,19 +22,19 @@
 package bluej.extensions;
 
 
+import java.awt.EventQueue;
+import java.io.File;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.Target;
 import bluej.views.View;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.awt.*;
-import java.io.File;
 
 /**
  * The problem I am trying to solve is to have a uniform and simple way to deal with
@@ -59,9 +59,9 @@ import java.io.File;
  */
 class Identifier
 {
-    private File projectId;
+    private final File projectId;
     private String packageId;
-    private String qualifiedClassName;
+    private final String qualifiedClassName;
 
 
     /**
@@ -147,7 +147,7 @@ class Identifier
      * This gets rid of one possible exception regarding a packageFrame not open...
      *
      * @return                               The packageFrame value
-     * @exception ProjectNotOpenException
+     * @exception  ProjectNotOpenException
      * @exception  PackageNotFoundException
      */
     PkgMgrFrame getPackageFrame()
@@ -172,7 +172,7 @@ class Identifier
      *
      * @return      The java Class object
      * 
-     * @exception ProjectNotOpenException
+     * @exception  ProjectNotOpenException
      * @exception  ClassNotFoundException
      */
     Class<?> getJavaClass() throws ProjectNotOpenException, ClassNotFoundException
@@ -192,7 +192,7 @@ class Identifier
      *
      * @return      The classTarget value
      * 
-     * @exception ProjectNotOpenException
+     * @exception  ProjectNotOpenException
      * @exception  PackageNotFoundException
      */
     ClassTarget getClassTarget()
@@ -256,7 +256,7 @@ class Identifier
      * Returns the view associated with this Class
      *
      * @return        The bluejView value
-     * @exception ProjectNotOpenException
+     * @exception  ProjectNotOpenException
      * @exception  ClassNotFoundException
      */
     View getBluejView()
@@ -298,13 +298,9 @@ class Identifier
         }
         
         Identifier other = (Identifier) obj;
-        if (equalsIgnoreClass(other)
-                && !(qualifiedClassName != null ? qualifiedClassName.equals(other.qualifiedClassName)
-                : other.qualifiedClassName == null)) {
-            return false;
-        }
-        
-        return true;
+        return !equalsIgnoreClass(other)
+                || (qualifiedClassName != null ? qualifiedClassName.equals(other.qualifiedClassName)
+                : other.qualifiedClassName == null);
     }
 
     /**
@@ -323,10 +319,6 @@ class Identifier
             return false;
         }
 
-        if (!(packageId != null ? packageId.equals(other.packageId) : other.packageId == null)) {
-            return false;
-        }
-
-        return true;
+        return packageId != null ? packageId.equals(other.packageId) : other.packageId == null;
     }
 }

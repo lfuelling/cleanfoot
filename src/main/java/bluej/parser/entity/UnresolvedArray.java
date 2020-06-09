@@ -21,10 +21,10 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
-
-import java.util.List;
 
 /**
  * An array entity, where the element type hasn't yet been resolved.
@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class UnresolvedArray extends JavaEntity
 {
-    private JavaEntity baseType;
+    private final JavaEntity baseType;
     
     public UnresolvedArray(JavaEntity baseType)
     {

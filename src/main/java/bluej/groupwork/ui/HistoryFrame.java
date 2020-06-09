@@ -21,28 +21,45 @@
  */
 package bluej.groupwork.ui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
 import bluej.Config;
-import bluej.groupwork.*;
+import bluej.groupwork.HistoryInfo;
+import bluej.groupwork.LogHistoryListener;
+import bluej.groupwork.Repository;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
 
 /**
  * A frame to display the commit history, including dates, users, revisions
@@ -54,16 +71,16 @@ import java.util.*;
 @OnThread(Tag.FXPlatform)
 public class HistoryFrame extends FXCustomizedDialog<Void>
 {
-    private Project project;
+    private final Project project;
     private HistoryWorker worker;
 
     private List<HistoryInfo> historyInfoList;
-    private ObservableList<HistoryInfo> listModel = FXCollections.observableArrayList();
+    private final ObservableList<HistoryInfo> listModel = FXCollections.observableArrayList();
 
-    private ListView<HistoryInfo> historyList = new ListView<>(listModel);
-    private ComboBox<String> fileFilterCombo = new ComboBox<>();
-    private ComboBox<String> userFilterCombo = new ComboBox<>();
-    private ActivityIndicator activityBar = new ActivityIndicator();
+    private final ListView<HistoryInfo> historyList = new ListView<>(listModel);
+    private final ComboBox<String> fileFilterCombo = new ComboBox<>();
+    private final ComboBox<String> userFilterCombo = new ComboBox<>();
+    private final ActivityIndicator activityBar = new ActivityIndicator();
 
     /**
      * Create a new HistoryFrame.
@@ -216,8 +233,8 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
      */
     private class HistoryWorker extends FXWorker implements LogHistoryListener
     {
-        private List<HistoryInfo> responseList;
-        private Repository repository;
+        private final List<HistoryInfo> responseList;
+        private final Repository repository;
         private TeamworkCommand command;
         private TeamworkCommandResult response;
 

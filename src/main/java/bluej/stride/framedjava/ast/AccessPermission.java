@@ -21,20 +21,21 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.parser.AssistContent;
-import bluej.parser.AssistContent.Access;
-
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
+
+import bluej.parser.AssistContent;
+import bluej.parser.AssistContent.Access;
 
 public enum AccessPermission
 {
     PRIVATE("private"), PROTECTED("protected"), PUBLIC("public"), EMPTY("");
     // EMPTY is not a valid state in the language, but it arises in the case that the slot is empty
     
-    private String displayName;
+    private final String displayName;
     
-    private AccessPermission(String displayName)
+    AccessPermission(String displayName)
     {
         this.displayName = displayName;
     }

@@ -24,9 +24,16 @@ package greenfoot.collision;
 import greenfoot.Actor;
 import greenfoot.ActorVisitor;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.*;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Very good when objects only span one cell. <br>
@@ -43,8 +50,8 @@ public class GridCollisionChecker
 {
     class Cell
     {
-        private HashMap<Class<?>,List<Actor>> classMap = new HashMap<Class<?>,List<Actor>>();
-        private List<Actor> objects = new ArrayList<Actor>();
+        private final HashMap<Class<?>,List<Actor>> classMap = new HashMap<Class<?>,List<Actor>>();
+        private final List<Actor> objects = new ArrayList<Actor>();
 
         public void add(Actor thing)
         {
@@ -197,25 +204,21 @@ public class GridCollisionChecker
         }
         
         public String toString() {
-            return String.format(format, new Object[] {
-                    Long.valueOf(startTime),
+            return String.format(format, Long.valueOf(startTime),
                     Long.valueOf(objectsAt),
                     Long.valueOf(intersectionObjects),
                     Long.valueOf(objectsInRange),
                     Long.valueOf(neighbours),
-                    Long.valueOf(objectsInDirection)
-                    });
+                    Long.valueOf(objectsInDirection));
         }
         
         public static String headerString() {
-            return String.format(format, new Object[] {
-                    "startTime",
+            return String.format(format, "startTime",
                     "objectsAt",
                     "intersection",
                     "oinRange",
                     "neighbours",
-                    "inDirection"
-                    });
+                    "inDirection");
         }
     }
     
@@ -228,8 +231,8 @@ public class GridCollisionChecker
     private int cellSize;
     
     private Statistics currentStats = new Statistics();
-    private List<Statistics> allStats = new ArrayList<Statistics>();
-    private static boolean PRINT_STATS = false;  
+    private final List<Statistics> allStats = new ArrayList<Statistics>();
+    private static final boolean PRINT_STATS = false;
     
 
     public void initialize(int width, int height, int cellSize, boolean wrap)

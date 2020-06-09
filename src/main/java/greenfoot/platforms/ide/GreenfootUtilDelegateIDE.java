@@ -21,24 +21,36 @@
  */
 package greenfoot.platforms.ide;
 
-import bluej.Config;
-import bluej.runtime.ExecServer;
-import bluej.utility.Debug;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
 import greenfoot.GreenfootImage;
 import greenfoot.UserInfo;
 import greenfoot.UserInfoVisitor;
 import greenfoot.core.GreenfootMain;
 import greenfoot.platforms.GreenfootUtilDelegate;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
+import bluej.Config;
+import bluej.runtime.ExecServer;
+import bluej.utility.Debug;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * GreenfootUtilDelegate implementation for the Greenfoot IDE.
@@ -47,7 +59,7 @@ import java.util.*;
 public class GreenfootUtilDelegateIDE implements GreenfootUtilDelegate
 {
     @OnThread(Tag.Any)
-    private static GreenfootUtilDelegateIDE instance;
+    private static final GreenfootUtilDelegateIDE instance;
     
     static {
         instance = new GreenfootUtilDelegateIDE();
@@ -259,7 +271,7 @@ public class GreenfootUtilDelegateIDE implements GreenfootUtilDelegate
         {
             ArrayList<UserInfo> ret = new ArrayList<>();
             
-            CSVReader csv = new CSVReader(new InputStreamReader(new FileInputStream("storage.csv"), "UTF-8"));
+            CSVReader csv = new CSVReader(new InputStreamReader(new FileInputStream("storage.csv"), StandardCharsets.UTF_8));
             
             List<String[]> all = csv.readAll();
             

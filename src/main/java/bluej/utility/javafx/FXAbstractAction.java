@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program.
- Copyright (C) 1999-2009,2015,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2015,2016,2017,2019  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -81,7 +82,7 @@ public abstract class FXAbstractAction
         this(name, new ImageView(buttonImage));
     }
 
-    public abstract void actionPerformed();
+    public abstract void actionPerformed(boolean viaContextMenu);
 
     public void bindEnabled(BooleanExpression enabled)
     {
@@ -127,7 +128,7 @@ public abstract class FXAbstractAction
     {
         Button button = new Button(name);
         button.disableProperty().bind(disabled.or(unavailable));
-        button.setOnAction(e -> actionPerformed());
+        button.setOnAction(e -> actionPerformed(false));
         if (buttonGraphic != null)
             button.setGraphic(buttonGraphic);
         return button;
@@ -148,7 +149,7 @@ public abstract class FXAbstractAction
 
     private void prepareMenuItem(MenuItem menuItem)
     {
-        prepareContextMenuItem(menuItem);
+        setMenuActionAndDisable(menuItem, false);
         boolean cmdPlusMinusOnMac = Config.isMacOS() && accelerator.get() != null &&
                 (accelerator.get().equals(new KeyCodeCombination(KeyCode.EQUALS, KeyCombination.SHORTCUT_DOWN))
                     || accelerator.get().equals(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN))
@@ -170,14 +171,14 @@ public abstract class FXAbstractAction
     public MenuItem makeContextMenuItem()
     {
         MenuItem menuItem = new MenuItem(name);
-        prepareContextMenuItem(menuItem);
+        setMenuActionAndDisable(menuItem, true);
         return menuItem;
     }
 
-    private void prepareContextMenuItem(MenuItem menuItem)
+    private void setMenuActionAndDisable(MenuItem menuItem, boolean contextMenu)
     {
         menuItem.disableProperty().bind(disabled.or(unavailable));
-        menuItem.setOnAction(e -> actionPerformed());
+        menuItem.setOnAction(e -> actionPerformed(true));
     }
 
     public String toString()

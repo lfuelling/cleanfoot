@@ -21,6 +21,14 @@
  */
 package bluej.debugmgr;
 
+import java.util.Map;
+
+import javax.swing.SwingUtilities;
+
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugmgr.objectbench.ObjectBenchInterface;
@@ -28,11 +36,8 @@ import bluej.utility.JavaNames;
 import bluej.utility.javafx.FXFormattedPrintWriter;
 import bluej.views.CallableView;
 import bluej.views.MethodView;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Map;
 
 
 /**
@@ -50,12 +55,12 @@ public class MethodDialog extends CallDialog
     private final boolean rawObject;
 
     // Window Titles
-    private static final String appName = Config.getApplicationName();
+    private static final String appName = Config.getApplicationName(); 
     static final String wCallRoutineTitle = appName + ":  " + Config.getString("pkgmgr.methodCall.titleCall");
 
     private final String methodName;
     private final MethodView method;
-    private final Map<String, GenTypeParameter> typeParameterMap;
+    private final Map<String,GenTypeParameter> typeParameterMap;
     private final Invoker invoker;
 
     /**
@@ -71,7 +76,7 @@ public class MethodDialog extends CallDialog
      *                     (a Map of String -> GenType).
      */
     public MethodDialog(Window parentFrame, ObjectBenchInterface ob, CallHistory callHistory,
-                        String instanceName, MethodView method, Map<String, GenTypeParameter> typeMap, Invoker invoker)
+                        String instanceName, MethodView method, Map<String,GenTypeParameter> typeMap, Invoker invoker)
     {
         super(parentFrame, ob, "");
         this.invoker = invoker;

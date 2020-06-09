@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,19 +21,41 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.parser.entity.EntityResolver;
-import bluej.stride.framedjava.elements.*;
-import bluej.utility.Debug;
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.ParsingException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
+
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.ParsingException;
+import bluej.parser.entity.EntityResolver;
+import bluej.stride.framedjava.elements.AssignElement;
+import bluej.stride.framedjava.elements.BlankElement;
+import bluej.stride.framedjava.elements.BreakElement;
+import bluej.stride.framedjava.elements.BreakpointElement;
+import bluej.stride.framedjava.elements.CallElement;
+import bluej.stride.framedjava.elements.CaseElement;
+import bluej.stride.framedjava.elements.ClassElement;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.elements.CommentElement;
+import bluej.stride.framedjava.elements.ConstructorElement;
+import bluej.stride.framedjava.elements.ForeachElement;
+import bluej.stride.framedjava.elements.IfElement;
+import bluej.stride.framedjava.elements.ImportElement;
+import bluej.stride.framedjava.elements.InterfaceElement;
+import bluej.stride.framedjava.elements.MethodProtoElement;
+import bluej.stride.framedjava.elements.NormalMethodElement;
+import bluej.stride.framedjava.elements.ReturnElement;
+import bluej.stride.framedjava.elements.SwitchElement;
+import bluej.stride.framedjava.elements.ThrowElement;
+import bluej.stride.framedjava.elements.TopLevelCodeElement;
+import bluej.stride.framedjava.elements.TryElement;
+import bluej.stride.framedjava.elements.VarElement;
+import bluej.stride.framedjava.elements.WhileElement;
+import bluej.utility.Debug;
 
 public class Loader
 {
@@ -68,46 +90,62 @@ public class Loader
 
     public static CodeElement loadElement(String elementString)
     {
-
-        try {
+        try
+        {
             return loadElement(new Element( 
-                    new Builder().build(new StringReader(elementString)).getRootElement()
-                    ));
+                        new Builder().build(new StringReader(elementString)).getRootElement())
+                    );
         }
-        catch (ParsingException | IOException e) {
+        catch (ParsingException | IOException e)
+        {
             Debug.reportError(e);
         }
         return null;
     }
     
-    public static TopLevelCodeElement loadTopLevelElement(File file, EntityResolver resolver)
+    public static TopLevelCodeElement loadTopLevelElement(File file, EntityResolver resolver,
+            String packageName)
     {
-        try {
+        try
+        {
             Document xml = new Builder().build(file);
-            return Loader.loadTopLevelElement(xml.getRootElement(), resolver);
+            return Loader.loadTopLevelElement(xml.getRootElement(), resolver, packageName);
         }
-        catch (ParsingException | IOException e) {
+        catch (ParsingException | IOException e)
+        {
             Debug.reportError(e);
         }
         return null;
     }
 
-    public static TopLevelCodeElement loadTopLevelElement(Element el, EntityResolver resolver)
+    public static TopLevelCodeElement loadTopLevelElement(Element el, EntityResolver resolver,
+            String packageName)
     {
-        switch (el.getLocalName()) {
-            case ClassElement.ELEMENT: return new ClassElement(el, resolver);
-            case InterfaceElement.ELEMENT: return new InterfaceElement(el, resolver);
-            default: throw new IllegalArgumentException("Unknown top level element: " + el.getLocalName());
+        switch (el.getLocalName())
+        {
+            case ClassElement.ELEMENT:
+                return new ClassElement(el, resolver, packageName);
+            case InterfaceElement.ELEMENT:
+                return new InterfaceElement(el, resolver, packageName);
+            default:
+                throw new IllegalArgumentException("Unknown top level element: " + el.getLocalName());
         }
     }
 
-    public static TopLevelCodeElement buildTopLevelElement(String template, EntityResolver resolver, String topLevelName, String packageName)
+    public static TopLevelCodeElement buildTopLevelElement(String template, EntityResolver resolver,
+            String topLevelName, String packageName)
     {
         switch (template) {
-            case "stdclass": return  new ClassElement(resolver, false, topLevelName, packageName, Arrays.asList(new ConstructorElement("Constructor for objects of class " + topLevelName)));
-            case "abstract": return new ClassElement(resolver, true, topLevelName, packageName, Collections.emptyList());
-            case "interface": return new InterfaceElement(resolver, topLevelName, packageName);
-            default: throw new IllegalArgumentException("Unknown template: " + template);
+            case "stdclass":
+                return new ClassElement(resolver, false, topLevelName, packageName,
+                        Arrays.asList(new ConstructorElement("Constructor for objects of class "
+                                + topLevelName)));
+            case "abstract":
+                return new ClassElement(resolver, true, topLevelName, packageName, Collections.emptyList());
+            case "interface":
+                return new InterfaceElement(resolver, topLevelName, packageName);
+            default:
+                throw new IllegalArgumentException("Unknown template: " + template);
         }
     }
 }

@@ -21,17 +21,21 @@
  */
 package greenfoot.export;
 
-import bluej.Boot;
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.pkgmgr.Project;
-import bluej.utility.BlueJFileReader;
-import bluej.utility.Debug;
-import bluej.utility.FileUtility;
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +47,14 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
+
+import bluej.Boot;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.pkgmgr.Project;
+import bluej.utility.BlueJFileReader;
+import bluej.utility.Debug;
+import bluej.utility.FileUtility;
 
 /**
  * Utility class to create jar or zip files from a Greenfoot project.
@@ -60,37 +72,37 @@ public class JarCreator
     private String mainClass;
     
     /** Directory where the jar is exported to. */
-    private File exportDir;
+    private final File exportDir;
     
     /** Directory to be exported. */
     private File projectDir;
     
     /** Name of the jar file that will be created. */
-    private String jarName;
+    private final String jarName;
     
     /** List of extra jars that should be put in the same dir as the created jar (the exportDir)*/
-    private List<File> extraJars = new LinkedList<>();
+    private final List<File> extraJars = new LinkedList<>();
     
     /** List of extra jars whose contents should be put into the created jar */
-    private List<File> extraJarsInJar = new LinkedList<>();
+    private final List<File> extraJarsInJar = new LinkedList<>();
 
     /** List of paths to external jars that should be included in the manifest's classpath. */
-    private List<String> extraExternalJars = new LinkedList<>();
+    private final List<String> extraExternalJars = new LinkedList<>();
     
-    private List<File> dirs = new LinkedList<>();
-    private List<PrefixedFile> prefixDirs = new LinkedList<>();
+    private final List<File> dirs = new LinkedList<>();
+    private final List<PrefixedFile> prefixDirs = new LinkedList<>();
 
     /** array of directory names not to be included in jar file * */
-    private List<String> skipDirs = new LinkedList<>();
+    private final List<String> skipDirs = new LinkedList<>();
 
     /** array of file names not to be included in jar file * */
-    private List<String> skipFiles = new LinkedList<>();
+    private final List<String> skipFiles = new LinkedList<>();
     
     /** The maninfest */ 
-    private Manifest manifest = new Manifest();
+    private final Manifest manifest = new Manifest();
     
     /** Properties that contains information read by the GreenfootScnearioViewer */
-    private Properties properties;
+    private final Properties properties;
  
     private boolean isZip = false;
 
@@ -314,9 +326,7 @@ public class JarCreator
                 if (jStream != null)
                     jStream.close();
             }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+            catch (IOException e) {}
             if(propertiesFile != null) {
                 propertiesFile.delete();
             }
@@ -352,10 +362,16 @@ public class JarCreator
             file.createNewFile();
             os = new BufferedOutputStream(new FileOutputStream(file));
             properties.store(os, "Properties for running Greenfoot scenarios alone.");
-        } catch (IOException e) {
+        }
+        catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
+        }
+        catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        finally {
             try {
                 if (os != null) {
                     os.close();
@@ -708,29 +724,25 @@ public class JarCreator
         }
         catch (MalformedURLException e) {}*/
 
-        try {
-            translations.put("ARCHIVE", URLEncoder.encode(jarName, "UTF-8"));
-        }
-        catch (UnsupportedEncodingException uee) {
-            // This can't happen; Java always supports UTF-8.
-        }
+        translations.put("ARCHIVE", URLEncoder.encode(jarName, StandardCharsets.UTF_8));
 
 
         String baseName = "greenfoot/templates/html.tmpl";
         File template = Config.getLanguageFile(baseName);
         
         try {
-            Charset utf8 = Charset.forName("UTF-8");
+            Charset utf8 = StandardCharsets.UTF_8;
             BlueJFileReader.translateFile(template, outputFile, translations, utf8, utf8);
         }
         catch (IOException e) {
             Debug.reportError("Exception during file translation from " + template + " to " + outputFile);
+            e.printStackTrace();
         }
     }
     
     static class PrefixedFile 
     {
-        private File file;
+        private final File file;
         public File getFile()
         {
             return file;
@@ -741,7 +753,7 @@ public class JarCreator
             return prefix;
         }
 
-        private String prefix;
+        private final String prefix;
 
         public PrefixedFile(String prefix, File file) 
         {

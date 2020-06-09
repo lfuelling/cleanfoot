@@ -21,6 +21,6 @@
  */
 @OnThread(Tag.FX)
 package bluej.stride.operations;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+

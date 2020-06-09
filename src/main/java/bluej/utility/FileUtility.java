@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2014,2016,2018  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2014,2016,2018,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,22 +21,31 @@
  */
 package bluej.utility;
 
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.pkgmgr.Package;
-import bluej.prefmgr.PrefMgr;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import bluej.pkgmgr.Package;
+import bluej.pkgmgr.Project;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Window;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.prefmgr.PrefMgr;
 
 /**
  * A file utility for various file related actions.
@@ -116,10 +125,10 @@ public class FileUtility
     }
 
     @OnThread(Tag.FXPlatform)
-    public static File getSaveProjectFX(Window parent, String title)
+    public static File getSaveProjectFX(Project project, Window parent, String title)
     {
         // JavaFX only has a directory-open dialog, so we use that:
-        File chosen = new ProjectLocationDialog(parent, title).showAndWait();
+        File chosen = new ProjectLocationDialog(project, parent, title).showAndWait();
 
         // If they cancelled, just stop:
         if (chosen == null)
@@ -145,14 +154,14 @@ public class FileUtility
 
     @OnThread(Tag.FXPlatform)
     public static List<File> getOpenFilesFX(Window parent, String title,
-                                            List<ExtensionFilter> filters,
+                                            List<FileChooser.ExtensionFilter> filters,
                                             boolean rememberDir)
     {
         FileChooser newChooser = new FileChooser();
         newChooser.getExtensionFilters().setAll(filters);
         newChooser.setTitle(title);
         newChooser.setInitialDirectory(PrefMgr.getProjectDirectory());
-
+        
         List<File> chosen = newChooser.showOpenMultipleDialog(parent);
 
         if (chosen != null && chosen.size() > 0 && chosen.get(0).getParentFile() != null && rememberDir)
@@ -164,7 +173,7 @@ public class FileUtility
 
     @OnThread(Tag.FXPlatform)
     public static File getSaveFileFX(Window parent, String title,
-                                            List<ExtensionFilter> filters,
+                                            List<FileChooser.ExtensionFilter> filters,
                                             boolean rememberDir)
     {
         FileChooser newChooser = new FileChooser();

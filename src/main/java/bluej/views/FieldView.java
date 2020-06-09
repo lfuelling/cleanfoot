@@ -24,7 +24,7 @@ package bluej.views;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 
 /**
  ** @version $Id: FieldView.java 15114 2015-12-02 22:08:41Z mik $

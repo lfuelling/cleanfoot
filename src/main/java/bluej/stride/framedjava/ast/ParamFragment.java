@@ -21,12 +21,14 @@
  */
 package bluej.stride.framedjava.ast;
 
+import java.util.List;
+
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.LocatableElement;
-import bluej.stride.generic.Frame;
+import bluej.utility.Debug;
+import nu.xom.Attribute;
 import nu.xom.Element;
-
-import java.util.List;
+import bluej.stride.generic.Frame;
 
 public class ParamFragment
 {

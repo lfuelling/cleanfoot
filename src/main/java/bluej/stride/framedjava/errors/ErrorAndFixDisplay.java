@@ -21,9 +21,11 @@
  */
 package bluej.stride.framedjava.errors;
 
+import bluej.editor.EditorWatcher;
 import bluej.editor.stride.CodeOverlayPane;
 import bluej.editor.stride.CodeOverlayPane.WidthLimit;
 import bluej.stride.generic.InteractionManager;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.scene.control.Label;
@@ -58,9 +60,8 @@ public class ErrorAndFixDisplay {
         return showing;
     }
 
-    public static interface ErrorFixListener {
-        @OnThread(Tag.FXPlatform)
-        public void fixedError(CodeError err);
+    public interface ErrorFixListener {
+        @OnThread(Tag.FXPlatform) void fixedError(CodeError err);
     }
 
     public ErrorAndFixDisplay(InteractionManager editor, CodeError err, ErrorFixListener slot) {
@@ -82,8 +83,7 @@ public class ErrorAndFixDisplay {
 
         for (FixSuggestion fix : err.getFixSuggestions()) {
             FixDisplay l = new FixDisplay("  Fix: " + fix.getDescription());
-            l.onMouseClickedProperty().set(e ->
-            {
+            l.onMouseClickedProperty().set(e -> {
                 fix.execute();
                 ErrorAndFixDisplay.this.hide();
                 slot.fixedError(error);

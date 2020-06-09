@@ -53,7 +53,7 @@ public class InnerNode extends JavaParentNode
     
     @Override
     public PackageOrClass resolvePackageOrClass(String name,
-                                                Reflective querySource, int fromPosition)
+            Reflective querySource, int fromPosition)
     {
         ParsedNode cnode = classNodes.get(name);
         if (cnode != null && cnode.getOffsetFromParent() <= fromPosition) {

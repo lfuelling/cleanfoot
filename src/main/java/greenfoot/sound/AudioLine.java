@@ -118,8 +118,8 @@ public class AudioLine
      * because it has methods that only makes sense in a multi-threaded
      * environment (drain()).
      */
-    private volatile SourceDataLine line;
-    private AudioFormat format;
+    private final SourceDataLine line;
+    private final AudioFormat format;
     /** Total bytes written since playback started. */
     private long totalWritten;
     /** Whether the line is open. */
@@ -138,7 +138,7 @@ public class AudioLine
      */
     private boolean reset;
     /** Keeps track of how much time have been spend on active playback. */
-    private TimeTracker timeTracker;
+    private final TimeTracker timeTracker;
 
     public AudioLine(SourceDataLine line, AudioFormat format)
     {
@@ -310,12 +310,7 @@ public class AudioLine
         }
 
         printDebug("Draining end: " + timeLeft);
-        if (timeLeft > 0) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return timeLeft <= 0;
     }
 
     public synchronized boolean isOpen()

@@ -23,6 +23,9 @@ package bluej.debugmgr;
 
 import java.util.Iterator;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 
 /**
  * A collection of named values (NameValue interface), which may be references
@@ -36,7 +39,7 @@ public interface ValueCollection
     /**
      * Get an iterator through the values in this collection.
      */
-    public Iterator<? extends NamedValue> getValueIterator();
+    Iterator<? extends NamedValue> getValueIterator();
     
     /**
      * Get a value by name, in this collection or in a parent scope. This may delegate to
@@ -46,5 +49,5 @@ public interface ValueCollection
      * @param name   The name of the value to retrieve
      * @return       The value, or null if it does not exist.
      */
-    public NamedValue getNamedValue(String name);
+    NamedValue getNamedValue(String name);
 }

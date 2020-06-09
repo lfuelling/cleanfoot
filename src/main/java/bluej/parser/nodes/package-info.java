@@ -4,6 +4,5 @@
 @OnThread(Tag.FXPlatform)
 package bluej.parser.nodes;
 
-
 import threadchecker.OnThread;
 import threadchecker.Tag;

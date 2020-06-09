@@ -22,6 +22,11 @@
 package bluej.stride.framedjava.frames;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
 import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
@@ -30,17 +35,25 @@ import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.SandwichCanvasesElement;
 import bluej.stride.framedjava.elements.TryElement;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
-import bluej.stride.slots.*;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameContentItem;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SandwichCanvasesFrame;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.FocusParent;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotLabel;
+import bluej.stride.slots.SlotTraversalChars;
+import bluej.stride.slots.SlotValueListener;
+import bluej.stride.slots.TypeCompletionCalculator;
+import bluej.stride.slots.VariableNameDefTextSlot;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Container-block representing a try-catch statement.
@@ -189,7 +202,7 @@ public class TryFrame extends SandwichCanvasesFrame
 
     @Override
     protected SandwichCanvasesElement regenerateCodeElement(List<CodeElement> firstCanvasContents,
-                                                            List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled)
+             List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled)
     {
         return new TryElement(this, firstCanvasContents, Utility.mapList(catchTypes, TypeSlot::getSlotElement),
                 Utility.mapList(catchVars, VariableNameDefTextSlot::getSlotElement), intermediateCanvasesContents,

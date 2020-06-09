@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2010,2011,2014,2015,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 2010,2011,2014,2015,2016,2017,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -37,9 +37,21 @@ import bluej.views.CallableView;
 import bluej.views.Comment;
 import bluej.views.View;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -52,8 +64,8 @@ import java.util.zip.ZipFile;
  */
 public class ProjectJavadocResolver implements JavadocResolver
 {
-    private Project project;
-    private CommentCache commentCache = new CommentCache();
+    private final Project project;
+    private final CommentCache commentCache = new CommentCache();
     
     public ProjectJavadocResolver(Project project)
     {
@@ -67,7 +79,7 @@ public class ProjectJavadocResolver implements JavadocResolver
      */
     @Override
     public void getJavadoc(Reflective declaring,
-                           Collection<? extends ConstructorOrMethodReflective> targetMethods)
+            Collection<? extends ConstructorOrMethodReflective> targetMethods)
     {
         if (targetMethods.isEmpty()) {
             return; // Nothing to do
@@ -116,7 +128,7 @@ public class ProjectJavadocResolver implements JavadocResolver
         
         Properties comments = commentCache.get(declName);
         if (comments == null) {
-            ClassInfo classInfo = getClassInfoFromSource(declName);
+            ClassInfo classInfo = getClassInfoFromSource(declaring.getModuleName(), declName);
             if (classInfo != null)
                 comments = classInfo.getComments(); 
             if (comments == null) {
@@ -231,7 +243,7 @@ public class ProjectJavadocResolver implements JavadocResolver
      * @param postOnQueue  Whether to notify the callback
      */
     private void findMethodComment(final Properties comments, final AsyncCallback callback,
-                                   final ConstructorOrMethodReflective method, String methodSig, boolean postOnQueue)
+            final ConstructorOrMethodReflective method, String methodSig, boolean postOnQueue)
     {
         // Find the comment for the particular method we want
         for (int i = 0; ; i++) {
@@ -263,8 +275,12 @@ public class ProjectJavadocResolver implements JavadocResolver
      * Find the javadoc for a given class (target) by searching the project source path.
      * In particular, this normally includes the JDK source. When source for the required
      * class is found, it is parsed to extract comments.
+     * 
+     * @param moduleName The module name if known and applicable.  May be null.
+     * @param target The fully-qualified class name.
+     * @return The discovered class info, or null if not found.
      */
-    private ClassInfo getClassInfoFromSource(String target)
+    private ClassInfo getClassInfoFromSource(String moduleName, String target)
     {
         List<DocPathEntry> sourcePath = project.getSourcePath();
         String pkg = JavaNames.getPrefix(target);
@@ -282,15 +298,22 @@ public class ProjectJavadocResolver implements JavadocResolver
                 fullEntryName += entName;
                 Reader r = null;
                 try (ZipFile zipFile = new ZipFile(jarFile)) {
-                    ZipEntry zipEnt = zipFile.getEntry(fullEntryName);
-                    if (zipEnt != null) {
-                        InputStream zeis = zipFile.getInputStream(zipEnt);
-                        r = new InputStreamReader(zeis, project.getProjectCharset());
-                        ClassInfo info = JavadocParser.parse(r, resolver, null);
-                        if (info == null) {
-                            return null;
+                    List<String> possibleEntries = new ArrayList<>();
+                    possibleEntries.add(fullEntryName);
+                    if (moduleName != null)
+                    {
+                        possibleEntries.add(moduleName + "/" + fullEntryName);
+                    }
+                    for (String entryName : possibleEntries)
+                    {
+                        ZipEntry zipEnt = zipFile.getEntry(entryName);
+                        if (zipEnt != null)
+                        {
+                            InputStream zeis = zipFile.getInputStream(zipEnt);
+                            r = new InputStreamReader(zeis, project.getProjectCharset());
+                            ClassInfo info = JavadocParser.parse(r, resolver, null);
+                            return info;
                         }
-                        return info;
                     }
                 }
                 catch (IOException ioe) {}
@@ -318,9 +341,6 @@ public class ProjectJavadocResolver implements JavadocResolver
                         Reader r = new InputStreamReader(fis, project.getProjectCharset());
                         ClassInfo info = JavadocParser.parse(r, resolver, null);
                         r.close();
-                        if (info == null) {
-                            return null;
-                        }
                         return info;
                     }
                 }
@@ -489,9 +509,9 @@ public class ProjectJavadocResolver implements JavadocResolver
     }
     
     @Override
-    public String getJavadoc(String className)
+    public String getJavadoc(String moduleName, String className)
     {
-        ClassInfo ci = getClassInfoFromSource(className);
+        ClassInfo ci = getClassInfoFromSource(moduleName, className);
         
         if (ci == null)
             return null;

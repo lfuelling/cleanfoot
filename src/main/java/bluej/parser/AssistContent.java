@@ -21,13 +21,18 @@
  */
 package bluej.parser;
 
-import bluej.stride.generic.InteractionManager.Kind;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+import bluej.stride.generic.InteractionManager.Kind;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -39,12 +44,12 @@ import java.util.function.Supplier;
 public abstract class AssistContent
 {
     @OnThread(Tag.Any)
-    public static enum Access
+    public enum Access
     {
-        PRIVATE, PROTECTED, PACKAGE, PUBLIC;
+        PRIVATE, PROTECTED, PACKAGE, PUBLIC
     }
     @OnThread(Tag.Any)
-    public static enum CompletionKind
+    public enum CompletionKind
     {
         METHOD, CONSTRUCTOR, FIELD, LOCAL_VAR, FORMAL_PARAM, TYPE;
         
@@ -101,7 +106,7 @@ public abstract class AssistContent
                     else if (!Character.isJavaIdentifierPart(c))
                     {
                         // Identifier ends, but in something other than a dot; keep it:
-                        r.append(fullType.substring(beginCurIdent, i + 1));
+                        r.append(fullType, beginCurIdent, i + 1);
                         beginCurIdent = -1;
                     }
                     // Otherwise the identifier continues, so nothing to do
@@ -114,7 +119,7 @@ public abstract class AssistContent
             }
             
             if (beginCurIdent != -1)
-                r.append(fullType.substring(beginCurIdent, fullType.length()));
+                r.append(fullType.substring(beginCurIdent));
             
             return r.toString();
         }

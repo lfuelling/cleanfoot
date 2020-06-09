@@ -36,7 +36,7 @@ import bluej.debugmgr.ValueCollection;
  */
 public class TestValueCollection implements ValueCollection
 {
-    private Map<String,NamedValue> namedValues = new HashMap<String,NamedValue>();
+    private final Map<String,NamedValue> namedValues = new HashMap<String,NamedValue>();
     
     final class TestVar implements NamedValue
     {

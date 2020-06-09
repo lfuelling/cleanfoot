@@ -21,10 +21,10 @@
  */
 package bluej.pkgmgr.dependency;
 
-import bluej.extensions.BDependency;
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.DependentTarget;
+import bluej.pkgmgr.PackageEditor;
+import bluej.pkgmgr.target.*;
 import bluej.utility.Utility;
 import javafx.geometry.Point2D;
 import threadchecker.OnThread;
@@ -208,7 +208,7 @@ public class UsesDependency extends Dependency
 
     @Override
     @OnThread(Tag.Any)
-    public BDependency.Type getType()
+    public Type getType()
     {
         return Type.USES;
     }

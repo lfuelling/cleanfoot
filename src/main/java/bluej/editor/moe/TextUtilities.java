@@ -30,7 +30,7 @@ package bluej.editor.moe;
  * remains intact in all source distributions of this package.
  */
 
-import javax.swing.text.BadLocationException;
+import javax.swing.text.*;
 
 /**
  * Class with several utility functions used by the text area component.

@@ -1,8 +1,4 @@
-import greenfoot.Actor;
-import greenfoot.Color;
-import greenfoot.GreenfootImage;
-import greenfoot.UserInfo;
-
+import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 import java.util.List;
 
 /**
@@ -42,14 +38,14 @@ public class ScoreBoard extends Actor
      */
     public ScoreBoard(int width, int height)
     {    
-        setImage(new GreenfootImage(Math.max(600, width), height));
+        setImage(new GreenfootImage(Math.max(600, width), height)); 
         
         drawScores();
     }
     
     private void drawString(String text, int x, int y, Color color, int height)
     {
-        getImage().drawImage(new GreenfootImage(text, height, color, new Color(0,0,0,0)), x, y);
+        getImage().drawImage(new GreenfootImage(text, height, color, new Color (0,0,0,0)), x, y);
     }
     
     private void drawScores()
@@ -82,7 +78,7 @@ public class ScoreBoard extends Actor
         int y = top + GAP;
         for (Object obj : users)
         {
-            UserInfo playerData = (UserInfo)obj;
+            UserInfo playerData = (UserInfo)obj;            
             Color c;
             
             if (me != null && playerData.getUserName().equals(me.getUserName()))

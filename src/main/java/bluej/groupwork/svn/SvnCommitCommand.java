@@ -21,22 +21,23 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamworkCommandAborted;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.utility.Debug;
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Depth;
-import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.SVNClientInterface;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Depth;
+import org.tigris.subversion.javahl.Revision;
+import org.tigris.subversion.javahl.SVNClientInterface;
+
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.utility.Debug;
 
 /**
  * Implementation of Subversion commit command, handling forced commits.
@@ -45,12 +46,12 @@ import java.util.Set;
  */
 public class SvnCommitCommand extends SvnCommitAllCommand
 {
-    private Set<File> forceFiles;
-    private long revision;
+    private final Set<File> forceFiles;
+    private final long revision;
     
     public SvnCommitCommand(SvnRepository repository, Set<File> newFiles,
-                            Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files,
-                            Set<File> forceFiles, long revision, String commitComment)
+            Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files,
+            Set<File> forceFiles, long revision, String commitComment)
     {
         super(repository, newFiles, binaryNewFiles, deletedFiles, files, commitComment);
         this.forceFiles = forceFiles;

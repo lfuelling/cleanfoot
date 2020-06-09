@@ -23,6 +23,9 @@ package bluej.editor.stride;
 
 
 import bluej.utility.javafx.JavaFXUtil;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.DoubleExpression;
 import javafx.scene.Node;
@@ -31,8 +34,6 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * A CodeOverlayPane is an overlay that sits on top of the entire code.  The
@@ -59,7 +60,7 @@ public class CodeOverlayPane
         pane.setMouseTransparent(false);
     }
 
-    public static enum WidthLimit
+    public enum WidthLimit
     {
         NO_WIDTH_LIMIT,
         /***

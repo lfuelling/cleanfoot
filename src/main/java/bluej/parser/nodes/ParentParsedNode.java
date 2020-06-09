@@ -21,10 +21,10 @@
  */
 package bluej.parser.nodes;
 
-import bluej.editor.moe.MoeSyntaxDocument;
-import bluej.parser.nodes.NodeTree.NodeAndPosition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+import bluej.editor.moe.MoeSyntaxDocument;
+import bluej.parser.nodes.NodeTree.NodeAndPosition;
 
 /**
  * An abstract ParsedNode which delegates to child nodes.
@@ -91,7 +91,7 @@ public abstract class ParentParsedNode extends ParsedNode
     protected int handleInsertion(MoeSyntaxDocument document, int nodePos, int insPos, int length,
             NodeStructureListener listener)
     {
-        ((MoeSyntaxDocument) document).scheduleReparse(insPos, length);
+        document.scheduleReparse(insPos, length);
         return ALL_OK;
     }
     
@@ -197,7 +197,7 @@ public abstract class ParentParsedNode extends ParsedNode
             complete = false;
         }
         
-        ((MoeSyntaxDocument)document).scheduleReparse(dpos, 0);
+        document.scheduleReparse(dpos, 0);
         return ALL_OK;
     }
     

@@ -21,12 +21,15 @@
  */
 package bluej.parser;
 
+import java.io.Reader;
+
+import javax.swing.text.Document;
+import javax.swing.text.Segment;
+
 import bluej.editor.moe.MoeSyntaxDocument;
+import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.text.Segment;
-import java.io.Reader;
 
 /**
  * An efficient reader which reads directly from the supplied Document.
@@ -35,11 +38,11 @@ import java.io.Reader;
  */
 public class DocumentReader extends Reader
 {
-    private Segment buffer;
-    private MoeSyntaxDocument document;
+    private final Segment buffer;
+    private final MoeSyntaxDocument document;
     private int bufpos;
     private int docPosition;
-    private int docLength;
+    private final int docLength;
     
     /**
      * Construct a DocumentReader to read an entire document.

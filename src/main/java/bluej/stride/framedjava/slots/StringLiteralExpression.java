@@ -21,6 +21,14 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.List;
+import java.util.stream.Stream;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
 import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
 import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
 import bluej.stride.generic.Frame.View;
@@ -29,14 +37,6 @@ import bluej.utility.Utility;
 import bluej.utility.javafx.HangingFlowPane;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * A component in an expression slot which is a string literal, i.e.

@@ -21,8 +21,8 @@
  */
 package bluej.utility;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  ** A multi-line Label-like Swing component. This class is similar to a
@@ -88,7 +88,7 @@ public class FixedMultiLineLabel extends MultiLineLabel
         int lines = 0;
 
         if(text != null) {
-            String strs[] = Utility.splitLines(text);
+            String[] strs = Utility.splitLines(text);
             lines = (strs.length < rows ? strs.length : rows);
             Font font = new Font("SansSerif", fontAttributes, 12);
 

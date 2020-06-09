@@ -36,10 +36,10 @@ public interface FrameTypeCheck
     /**
      * Checks if the given category can be inserted as new.
      */
-    public boolean canInsert(StrideCategory category);
+    boolean canInsert(StrideCategory category);
 
     /**
      * Checks if the given frame class can be moved here.
      */
-    public boolean canPlace(Class<? extends Frame> type);
+    boolean canPlace(Class<? extends Frame> type);
 }

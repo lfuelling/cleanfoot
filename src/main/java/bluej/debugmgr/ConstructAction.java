@@ -21,14 +21,15 @@
  */
 package bluej.debugmgr;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+
 import bluej.debugmgr.objectbench.InvokeListener;
 import bluej.views.ConstructorView;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 
 /**
  * Simple action to construct an object.

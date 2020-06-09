@@ -30,7 +30,7 @@ import threadchecker.Tag;
 @OnThread(Tag.Any)
 public class TeamworkCommandUnsupportedSetting extends TeamworkCommandResult
 {
-    private String message;
+    private final String message;
 
     public TeamworkCommandUnsupportedSetting(String message)
     {

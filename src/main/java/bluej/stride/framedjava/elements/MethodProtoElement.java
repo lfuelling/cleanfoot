@@ -21,18 +21,26 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.MethodProtoFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
-import nu.xom.Element;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Utility;
+import nu.xom.Attribute;
+import nu.xom.Element;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.ParamFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.ThrowsTypeFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.frames.MethodProtoFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
 
 public class MethodProtoElement extends DocumentContainerCodeElement
 {
@@ -44,7 +52,7 @@ public class MethodProtoElement extends DocumentContainerCodeElement
     private MethodProtoFrame frame;
     
     public MethodProtoElement(MethodProtoFrame frame, TypeSlotFragment returnType,
-                              NameDefSlotFragment name, List<ParamFragment> params, List<ThrowsTypeFragment> throwsTypes, JavadocUnit documentation, boolean enabled)
+            NameDefSlotFragment name, List<ParamFragment> params, List<ThrowsTypeFragment> throwsTypes, JavadocUnit documentation, boolean enabled)
     {
         this.frame = frame;
         this.returnType = returnType;

@@ -33,7 +33,7 @@ public class OptionalExpressionSlot extends ExpressionSlot<OptionalExpressionSlo
 {
 
     public OptionalExpressionSlot(InteractionManager editor,
-                                  Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
+            Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
                                   String stylePrefix)
     {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, Collections.emptyList());

@@ -21,14 +21,14 @@
  */
 package bluej.parser.nodes;
 
-import bluej.parser.lexer.JavaTokenTypes;
-import bluej.parser.lexer.LocatableToken;
-import bluej.parser.nodes.NodeTree.NodeAndPosition;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import bluej.parser.lexer.JavaTokenTypes;
+import bluej.parser.lexer.LocatableToken;
+import bluej.parser.nodes.NodeTree.NodeAndPosition;
 
 /**
  * Node for the inner part of a type definition. This contains the declarations inside
@@ -38,7 +38,7 @@ import java.util.Set;
  */
 public class TypeInnerNode extends IncrementalParsingNode
 {
-    private Map<String,Set<MethodNode>> methods = new HashMap<String,Set<MethodNode>>();
+    private final Map<String,Set<MethodNode>> methods = new HashMap<String,Set<MethodNode>>();
 
     public TypeInnerNode(JavaParentNode parent)
     {
@@ -79,7 +79,7 @@ public class TypeInnerNode extends IncrementalParsingNode
     
     @Override
     protected void childRemoved(NodeAndPosition<ParsedNode> child,
-                                NodeStructureListener listener)
+            NodeStructureListener listener)
     {
         super.childRemoved(child, listener);
         if (child.getNode().getNodeType() == NODETYPE_METHODDEF) {
@@ -151,7 +151,7 @@ public class TypeInnerNode extends IncrementalParsingNode
     /**
      * Get a reference to the map of inner classes of this node (live; should not be mutated).
      */
-    public Map<String, ParsedNode> getContainedClasses()
+    public Map<String,ParsedNode> getContainedClasses()
     {
         return classNodes;
     }

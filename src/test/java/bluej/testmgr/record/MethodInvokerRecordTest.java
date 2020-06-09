@@ -42,7 +42,7 @@ public class MethodInvokerRecordTest extends junit.framework.TestCase
     @Override
     protected void setUp()
     {
-        JavaType mathType = JavaUtils.genTypeFromClass(Math.class);
+        JavaType mathType = JavaUtils.genTypeFromClass(java.lang.Math.class);
         lotsOfAssertions = new MethodInvokerRecord(mathType,
                 "Math.pow(4,3)", new String [] {"3", "4"});
         lotsOfAssertions.addAssertion(

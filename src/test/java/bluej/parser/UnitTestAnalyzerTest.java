@@ -28,7 +28,7 @@ package bluej.parser;
  */
 public class UnitTestAnalyzerTest extends junit.framework.TestCase
 {
-	private String testSrc =
+	private final String testSrc =
 "class IgnoreMe extends junit.framework.TestCase {"             + "\n" + // 1
 "    protected void testYYY() { }"                              + "\n" + // 2
 "}"                                                             + "\n" + // 3
@@ -91,19 +91,19 @@ public class UnitTestAnalyzerTest extends junit.framework.TestCase
     {
        java.util.List<SourceSpan> variables = uta.getFieldSpans();
 
-       SourceSpan xSpan = (SourceSpan) variables.get(0);
+       SourceSpan xSpan = variables.get(0);
        assertEquals(5, xSpan.getStartLine());
        assertEquals(5, xSpan.getStartColumn());
        assertEquals(5, xSpan.getEndLine());
        assertEquals(24, xSpan.getEndColumn());
 
-       SourceSpan hashmapSpan = (SourceSpan) variables.get(1);
+       SourceSpan hashmapSpan = variables.get(1);
        assertEquals(6, hashmapSpan.getStartLine());
        assertEquals(5, hashmapSpan.getStartColumn());
        assertEquals(8, hashmapSpan.getEndLine());
        assertEquals(32, hashmapSpan.getEndColumn());
 
-       SourceSpan testXXXSpan = (SourceSpan) variables.get(2);
+       SourceSpan testXXXSpan = variables.get(2);
        assertEquals(24, testXXXSpan.getStartLine());
        assertEquals(5, testXXXSpan.getStartColumn());
        assertEquals(24, testXXXSpan.getEndLine());

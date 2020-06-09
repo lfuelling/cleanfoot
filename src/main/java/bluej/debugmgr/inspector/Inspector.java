@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2010,2011,2012,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2010,2011,2012,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,17 +21,11 @@
  */
 package bluej.debugmgr.inspector;
 
-import bluej.Config;
-import bluej.debugger.DebuggerField;
-import bluej.debugger.DebuggerObject;
-import bluej.pkgmgr.Package;
-import bluej.pkgmgr.PackageEditor;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.testmgr.record.GetInvokerRecord;
-import bluej.testmgr.record.InvokerRecord;
-import bluej.testmgr.record.ObjectInspectInvokerRecord;
-import bluej.utility.DialogManager;
-import bluej.utility.javafx.JavaFXUtil;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.EventHandler;
@@ -50,15 +44,22 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+
+import bluej.Config;
+import bluej.debugger.DebuggerField;
+import bluej.debugger.DebuggerObject;
+import bluej.pkgmgr.Package;
+import bluej.pkgmgr.PackageEditor;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.testmgr.record.GetInvokerRecord;
+import bluej.testmgr.record.InvokerRecord;
+import bluej.testmgr.record.ObjectInspectInvokerRecord;
+import bluej.utility.DialogManager;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -104,7 +105,7 @@ public abstract class Inspector extends Stage
     
     // Each inspector is uniquely numbered in a session, for the purposes
     // of data collection:
-    private static AtomicInteger nextUniqueId = new AtomicInteger(1);
+    private static final AtomicInteger nextUniqueId = new AtomicInteger(1);
     private final int uniqueId;
 
     //The width of the list of fields
@@ -166,7 +167,7 @@ public abstract class Inspector extends Stage
 
         // We want to be able to veto a close
         setOnCloseRequest(e -> { e.consume(); doClose(true); });
-        addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+        addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.ESCAPE)
                 doClose(true);
         });
@@ -215,7 +216,7 @@ public abstract class Inspector extends Stage
     private void initFieldList()
     {
         fieldList = new FieldList();
-        JavaFXUtil.addChangeListenerPlatform(fieldList.getSelectionModel().selectedIndexProperty(), index -> listElementSelected(index.intValue()));
+        JavaFXUtil.addChangeListenerPlatform(fieldList.selectedIndexProperty(), index -> listElementSelected(index.intValue()));
         
         // add mouse listener to monitor for double clicks to inspect list
         // objects. assumption is made that valueChanged will have selected
@@ -230,11 +231,29 @@ public abstract class Inspector extends Stage
         // To make it possible to close dialogs with the keyboard (ENTER), we
         // grab the key event from the fieldlist which otherwise consumes it
         // as part of the edit action (even though it's not editable)
-        fieldList.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+        addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             // Enter or escape?
-            if (e.getCode() == KeyCode.ENTER) {
+            if (e.getCode() == KeyCode.ESCAPE || e.getCode() == KeyCode.ENTER)
+            {
                 doClose(true);
+                e.consume();
+            }
+            else if (e.getCode() == KeyCode.SPACE && fieldList.isFocused())
+            {
+                doInspect();
                 e.consume();    
+            }
+            else if (e.getCode() == KeyCode.UP)
+            {
+                fieldList.requestFocus();
+                fieldList.up();
+                e.consume();
+            }
+            else if (e.getCode() == KeyCode.DOWN)
+            {
+                fieldList.requestFocus();
+                fieldList.down();
+                e.consume();
             }
         });
     }
@@ -288,14 +307,14 @@ public abstract class Inspector extends Stage
     {
         final List<FieldInfo> listData = getListData();
 
-        int prevSelection = fieldList.getSelectionModel().getSelectedIndex();
+        int prevSelection = fieldList.selectedIndexProperty().get();
         
         fieldList.setData(listData);
         //fieldList.setTableHeader(null);
 
         // Ensures that an element (if any exist) is always selected, preferably previously selected item:
         if (!listData.isEmpty())
-            fieldList.getSelectionModel().select(prevSelection == -1 || prevSelection >= listData.size() ? 0 : prevSelection);
+            fieldList.select(prevSelection == -1 || prevSelection >= listData.size() ? 0 : prevSelection);
     }
 
     /**
@@ -393,7 +412,6 @@ public abstract class Inspector extends Stage
             }
             
             ir.addAssertion(assertPanel.getAssertStatement());
-
         }
         return true;
     }
@@ -509,9 +527,9 @@ public abstract class Inspector extends Stage
      */
     static class ResizeListener implements EventHandler<MouseEvent>
     {
-        private Stage stage;
+        private final Stage stage;
         private Cursor cursorEvent = Cursor.DEFAULT;
-        private int border = 4;
+        private final int border = 4;
         private double startX = 0;
         private double startY = 0;
         private double curvedCornersMargin;

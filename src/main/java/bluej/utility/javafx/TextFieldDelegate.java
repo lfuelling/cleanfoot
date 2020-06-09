@@ -52,7 +52,7 @@ public interface TextFieldDelegate<IDENTIFIER>
     boolean cut();
 
     void delete(IDENTIFIER id,
-                int start, int end);
+            int start, int end);
 
     boolean selectBackward(IDENTIFIER id, int caretPosition);
 

@@ -27,16 +27,24 @@ import greenfoot.GreenfootImage;
 import greenfoot.UserInfo;
 import greenfoot.core.ImageCache;
 import greenfoot.platforms.GreenfootUtilDelegate;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * General utility methods for Greenfoot.
@@ -163,7 +171,6 @@ public class GreenfootUtil
                 url = null;
             }
             catch (IOException e) {
-                e.printStackTrace();
                 url = null;
             } finally {
                 if(s != null) {
@@ -171,7 +178,6 @@ public class GreenfootUtil
                         s.close();
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -201,7 +207,7 @@ public class GreenfootUtil
                 String givenName = f.getName();
                 String realName = f.getCanonicalFile().getName();
                 if (!realName.equals(givenName) && realName.equalsIgnoreCase(givenName)) {
-                    errMsg = "Filename \'" + givenName + "\' has the wrong case. It should be: \'" + realName + "\'";
+                    errMsg = "Filename '" + givenName + "' has the wrong case. It should be: '" + realName + "'";
                 }
 
             }
@@ -461,7 +467,7 @@ public class GreenfootUtil
             if (userName == null)
                 userName = "";
             for (int i = 0 ;i < userName.length(); i += CHARS_PER_LINE)
-                wrappedName.append(userName.substring(i, Math.min(userName.length(), i + CHARS_PER_LINE))).append("\n");
+                wrappedName.append(userName, i, Math.min(userName.length(), i + CHARS_PER_LINE)).append("\n");
                     
             GreenfootImage textImage = new GreenfootImage(wrappedName.toString(), 15, greenfoot.Color.WHITE, greenfoot.Color.DARK_GRAY);
             r.drawImage(textImage, Math.max(0, (50 - textImage.getWidth()) / 2), Math.max(0, (50 - textImage.getHeight()) / 2));

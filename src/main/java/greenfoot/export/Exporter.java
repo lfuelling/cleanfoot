@@ -25,20 +25,15 @@ import bluej.Boot;
 import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.Utility;
+
 import greenfoot.event.PublishEvent;
 import greenfoot.event.PublishListener;
-import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.MyGameClient;
+import greenfoot.export.mygame.ExportInfo;
 import greenfoot.guifx.export.ExportDialog;
 import greenfoot.guifx.export.ProxyAuthDialog;
 import greenfoot.util.GreenfootUtil;
-import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Dimension2D;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +42,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Dimension2D;
+
+import javax.imageio.ImageIO;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Class Exporter manages the various possible export functions, such as writing 

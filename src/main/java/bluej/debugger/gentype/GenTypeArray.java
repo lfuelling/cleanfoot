@@ -21,11 +21,11 @@
  */
 package bluej.debugger.gentype;
 
-import bluej.utility.JavaReflective;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import bluej.utility.JavaReflective;
 
 /**
  * A specialization of GenTypeClass for arrays.

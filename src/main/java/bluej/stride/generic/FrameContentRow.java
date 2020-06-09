@@ -21,16 +21,14 @@
  */
 package bluej.stride.generic;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.slots.*;
 import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.ErrorUnderlineCanvas;
-import bluej.utility.javafx.HangingFlowPane;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
-import bluej.utility.javafx.binding.ConcatListBinding;
-import bluej.utility.javafx.binding.ConcatMapListBinding;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -46,14 +44,21 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+
+import bluej.stride.slots.CopyableHeaderItem;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.Focus;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotParent;
+import bluej.utility.Utility;
+import bluej.utility.javafx.ErrorUnderlineCanvas;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
+import bluej.utility.javafx.binding.ConcatListBinding;
+import bluej.utility.javafx.binding.ConcatMapListBinding;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A frame content item with a stack pane containing an overlay and a flow pane.

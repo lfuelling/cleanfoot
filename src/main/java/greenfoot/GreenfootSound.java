@@ -36,11 +36,11 @@ import greenfoot.sound.SoundFactory;
 public class GreenfootSound
 {
 
-    private Sound sound;
+    private final Sound sound;
     /**
      * The name of the file where the sound is loaded from.
      */
-    private String filename;
+    private final String filename;
 
     /**
      * Creates a new sound from the given file. 

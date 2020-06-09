@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2018 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,24 +22,30 @@
 package bluej.stride.framedjava.canvases;
 
 
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
 import bluej.stride.framedjava.frames.BreakpointFrame;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.DebugInfo.Display;
-import bluej.stride.generic.*;
+import bluej.stride.generic.InteractionManager;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.scene.layout.VBox;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+import javafx.scene.layout.VBox;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.DebugInfo.Display;
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.SingleCanvasFrame;
+import bluej.utility.Debug;
 
 @OnThread(Tag.FX)
 public class JavaCanvas extends FrameCanvas
 {
     @SuppressWarnings("unused")
-    private boolean methodCanvas;
+    private final boolean methodCanvas;
 
     public JavaCanvas(InteractionManager editor,
-                      CanvasParent parent, String stylePrefix, boolean methodCanvas)
+            CanvasParent parent, String stylePrefix, boolean methodCanvas)
     {
         super(editor, parent, stylePrefix);
         this.methodCanvas = methodCanvas;
@@ -66,6 +72,9 @@ public class JavaCanvas extends FrameCanvas
         if (special.getChildren().contains(disp) == false) {
             special.getChildren().add(disp);
         }
+        
+        editorFrm.ensureNodeVisible(special);
+        
         return disp;
 
     }

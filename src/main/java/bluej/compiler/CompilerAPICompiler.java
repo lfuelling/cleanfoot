@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2018  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,11 +21,6 @@
  */
 package bluej.compiler;
 
-import bluej.Config;
-import bluej.compiler.Diagnostic.DiagnosticOrigin;
-
-import javax.tools.Diagnostic;
-import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -36,6 +31,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
+
+import bluej.Config;
+import bluej.compiler.Diagnostic.DiagnosticOrigin;
 
 /**
  * A compiler implementation using the Compiler API introduced in Java 6.
@@ -149,7 +155,6 @@ public class CompilerAPICompiler extends Compiler
                         // Japanese version of above
                         return;
                     }
-                    System.out.println(message); 
                     diagType = bluej.compiler.Diagnostic.WARNING;
                     long beginCol = diag.getColumnNumber();
                     long endCol = diag.getEndPosition() - diag.getPosition() + beginCol;
@@ -183,7 +188,7 @@ public class CompilerAPICompiler extends Compiler
             List<File> pathList = new ArrayList<File>();
             List<File> outputList = new ArrayList<File>();
             outputList.add(getDestDir());
-            Collections.addAll(pathList, getClassPath());
+            pathList.addAll(getClassPath());
             
             // In BlueJ, the destination directory and the source path are
             // always the same
@@ -286,16 +291,16 @@ public class CompilerAPICompiler extends Compiler
             //required: java.lang.String
             if (line2.startsWith("found") && line2.indexOf(':') != -1) 
             {
-                message = message +" - found " + line2.substring(line2.indexOf(':') + 2, line2.length());
+                message = message +" - found " + line2.substring(line2.indexOf(':') + 2);
             }
             if (line3.startsWith("required") && line3.indexOf(':') != -1) {
-                message = message +" but expected " + line3.substring(line3.indexOf(':') + 2, line3.length());
+                message = message +" but expected " + line3.substring(line3.indexOf(':') + 2);
             }
             //e.g cannot find symbol
             //symbol: class Persons
             if (line2.startsWith("symbol") && line2.indexOf(':') != -1) 
             {
-                message = message + " - " + line2.substring(line2.indexOf(':') + 2, line2.length());
+                message = message + " - " + line2.substring(line2.indexOf(':') + 2);
             }
         }
         return message;

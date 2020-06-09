@@ -26,6 +26,7 @@ import bluej.Config;
 import greenfoot.export.Exporter;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.CheckBox;
@@ -33,10 +34,9 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Objects;
 
 /**
  * ExportTab is a superclass for all changing tabs that can appear
@@ -64,8 +64,7 @@ public abstract class ExportTab extends Tab
     {
         setClosable(false);
         this.scenarioInfo = scenarioInfo;
-        ImageView imageView = new ImageView(new Image(Objects.requireNonNull(getClass().getClassLoader()
-                .getResourceAsStream("images/" + iconName))));
+        ImageView imageView = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(iconName)));
         imageView.setPreserveRatio(true);
         setGraphic(imageView);
 

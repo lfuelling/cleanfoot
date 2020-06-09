@@ -30,17 +30,26 @@ package greenfoot.util;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.Shape;
+import java.awt.Transparency;
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import javax.imageio.ImageIO;
 
 /**
  * <p><code>GraphicsUtilities</code> contains a set of tools to perform
@@ -60,7 +69,7 @@ import java.net.URL;
  * <p>All these methodes are both faster than
  * {@link java.awt.Image#getScaledInstance(int, int, int)} and produce
  * better-looking results than the various <code>drawImage()</code> methods
- * in {@link Graphics}, which can be used for image scaling.</p>
+ * in {@link java.awt.Graphics}, which can be used for image scaling.</p>
  * <h2>Image Manipulation</h2>
  * <p>This class provides two methods to get and set pixels in a buffered image.
  * These methods try to avoid unmanaging the image in order to keep good
@@ -102,12 +111,12 @@ public class GraphicsUtilities {
      * <p>Returns a new compatible image with the same width, height and
      * transparency as the image specified as a parameter.</p>
      *
-     * @see Transparency
+     * @see java.awt.Transparency
      * @see #createCompatibleImage(int, int)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #loadCompatibleImage(URL)
-     * @see #toCompatibleImage(BufferedImage)
+     * @see #loadCompatibleImage(java.net.URL)
+     * @see #toCompatibleImage(java.awt.image.BufferedImage)
      * @param image the reference image from which the dimension and the
      *   transparency of the new image are obtained
      * @return a new compatible <code>BufferedImage</code> with the same
@@ -121,12 +130,12 @@ public class GraphicsUtilities {
      * <p>Returns a new compatible image of the specified width and height, and
      * the same transparency setting as the image specified as a parameter.</p>
      *
-     * @see Transparency
-     * @see #createCompatibleImage(BufferedImage)
+     * @see java.awt.Transparency
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
      * @see #createCompatibleImage(int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #loadCompatibleImage(URL)
-     * @see #toCompatibleImage(BufferedImage)
+     * @see #loadCompatibleImage(java.net.URL)
+     * @see #toCompatibleImage(java.awt.image.BufferedImage)
      * @param width the width of the new image
      * @param height the height of the new image
      * @param image the reference image from which the transparency of the new
@@ -144,11 +153,11 @@ public class GraphicsUtilities {
      * <p>Returns a new opaque compatible image of the specified width and
      * height.</p>
      *
-     * @see #createCompatibleImage(BufferedImage)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #loadCompatibleImage(URL)
-     * @see #toCompatibleImage(BufferedImage)
+     * @see #loadCompatibleImage(java.net.URL)
+     * @see #toCompatibleImage(java.awt.image.BufferedImage)
      * @param width the width of the new image
      * @param height the height of the new image
      * @return a new opaque compatible <code>BufferedImage</code> of the
@@ -162,11 +171,11 @@ public class GraphicsUtilities {
      * <p>Returns a new translucent compatible image of the specified width
      * and height.</p>
      *
-     * @see #createCompatibleImage(BufferedImage)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
-     * @see #loadCompatibleImage(URL)
-     * @see #toCompatibleImage(BufferedImage)
+     * @see #loadCompatibleImage(java.net.URL)
+     * @see #toCompatibleImage(java.awt.image.BufferedImage)
      * @param width the width of the new image
      * @param height the height of the new image
      * @return a new translucent compatible <code>BufferedImage</code> of the
@@ -183,15 +192,15 @@ public class GraphicsUtilities {
      * specified location and then turned, if necessary into a compatible
      * image.</p>
      *
-     * @see #createCompatibleImage(BufferedImage)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #toCompatibleImage(BufferedImage)
+     * @see #toCompatibleImage(java.awt.image.BufferedImage)
      * @param resource the URL of the picture to load as a compatible image
      * @return a new translucent compatible <code>BufferedImage</code> of the
      *   specified width and height
-     * @throws IOException if the image cannot be read or loaded
+     * @throws java.io.IOException if the image cannot be read or loaded
      */
     public static BufferedImage loadCompatibleImage(URL resource)
             throws IOException {
@@ -201,21 +210,21 @@ public class GraphicsUtilities {
         }
         return toCompatibleImage(image);
     }
-
+    
     /**
      * <p>Returns a new compatible image from a URL. The image is loaded from the
      * specified location and then turned, if necessary into a translucent compatible
      * image.</p>
      *
-     * @see #createCompatibleImage(BufferedImage)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #toCompatibleImage(BufferedImage)
+     * @see #toCompatibleImage(java.awt.image.BufferedImage)
      * @param resource the URL of the picture to load as a compatible image
      * @return a new translucent compatible <code>BufferedImage</code> of the
      *   specified width and height
-     * @throws IOException if the image cannot be read or loaded
+     * @throws java.io.IOException if the image cannot be read or loaded
      */
     public static BufferedImage loadCompatibleTranslucentImage(URL resource)
             throws IOException {
@@ -225,7 +234,7 @@ public class GraphicsUtilities {
         }
         return toCompatibleTranslucentImage(image);
     }
-
+    
     // As above, but uses given file contents rather than path
     public static BufferedImage loadCompatibleTranslucentImage(byte[] imageData)
         throws IOException
@@ -242,11 +251,11 @@ public class GraphicsUtilities {
      * image. This method ensures an image is compatible with the hardware,
      * and therefore optimized for fast blitting operations.</p>
      *
-     * @see #createCompatibleImage(BufferedImage)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #loadCompatibleImage(URL)
+     * @see #loadCompatibleImage(java.net.URL)
      * @param image the image to copy into a new compatible image
      * @return a new compatible copy, with the
      *   same width and height and transparency and content, of <code>image</code>
@@ -267,7 +276,7 @@ public class GraphicsUtilities {
 
         return compatibleImage;
     }
-
+    
     /**
      * <p>
      * Return a new compatible image that contains a copy of the specified
@@ -275,12 +284,12 @@ public class GraphicsUtilities {
      * therefore optimized for fast blitting operations. It also ensures that
      * the image is translucent.
      * </p>
-     *
-     * @see #createCompatibleImage(BufferedImage)
-     * @see #createCompatibleImage(BufferedImage, int, int)
+     * 
+     * @see #createCompatibleImage(java.awt.image.BufferedImage)
+     * @see #createCompatibleImage(java.awt.image.BufferedImage, int, int)
      * @see #createCompatibleImage(int, int)
      * @see #createCompatibleTranslucentImage(int, int)
-     * @see #loadCompatibleImage(URL)
+     * @see #loadCompatibleImage(java.net.URL)
      * @param image the image to copy into a new compatible image
      * @return a new compatible copy, with the same width and height and
      *         transparency and content, of <code>image</code>
@@ -415,7 +424,7 @@ public class GraphicsUtilities {
     
     public static class MultiLineStringDimensions
     {
-        private Shape[] lineShapes;
+        private final Shape[] lineShapes;
         private Dimension overallBounds;
         
         public MultiLineStringDimensions(int length)

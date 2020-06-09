@@ -21,9 +21,9 @@
  */
 package bluej.extensions.painter;
 
-import bluej.extensions.BClassTarget;
+import java.awt.Graphics2D;
 
-import java.awt.*;
+import bluej.extensions.BClassTarget;
 
 /**
  * <p>

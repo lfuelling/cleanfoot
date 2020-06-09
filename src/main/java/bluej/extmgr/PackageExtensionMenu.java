@@ -21,12 +21,12 @@
  */
 package bluej.extmgr;
 
+import javax.swing.JMenuItem;
+
 import bluej.extensions.BPackage;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
 import bluej.pkgmgr.Package;
-
-import javax.swing.*;
 
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Package
@@ -36,7 +36,7 @@ import javax.swing.*;
  */
 public class PackageExtensionMenu implements ExtensionMenu
 {
-    private Package bluejPackage;
+    private final Package bluejPackage;
 
     /**
      * Constructor. Creates a new {@link PackageExtensionMenu}.

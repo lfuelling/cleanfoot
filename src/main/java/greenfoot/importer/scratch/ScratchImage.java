@@ -21,7 +21,7 @@
  */
 package greenfoot.importer.scratch;
 
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -36,16 +36,16 @@ public class ScratchImage extends ScratchObject
 {
     // The ScratchObject representing the bits.  Almost certainly an object reference
     // When it is resolved, the actual image will be stored in the "img" field
-    private ScratchObject bitsRef;
-    private int w;
-    private int h;
-    private int d;
-    private int offset;
+    private final ScratchObject bitsRef;
+    private final int w;
+    private final int h;
+    private final int d;
+    private final int offset;
     // The image, only valid after resolve is called
     private BufferedImage img;
     // The ScratchObject representing the palette.  Almost certainly an object reference
     // When it is resolved, the actual image will be stored in the "palette" field
-    private ScratchObject paletteRef;
+    private final ScratchObject paletteRef;
     private Color[] palette;
     
     private boolean isResolved = false;

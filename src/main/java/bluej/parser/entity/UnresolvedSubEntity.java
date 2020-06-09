@@ -21,12 +21,12 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * An unresolved subentity (an entity of form xxx.yyy, where yyy is the subentity name).
@@ -35,9 +35,9 @@ import java.util.List;
  */
 public class UnresolvedSubEntity extends JavaEntity
 {
-    private JavaEntity parent;
-    private String name;
-    private Reflective accessSource;
+    private final JavaEntity parent;
+    private final String name;
+    private final Reflective accessSource;
     private List<TypeArgumentEntity> typeArgs;
     
     /**

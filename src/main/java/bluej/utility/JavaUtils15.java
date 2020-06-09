@@ -21,12 +21,12 @@
  */
 package bluej.utility;
 
+import java.lang.reflect.*;
+import java.util.*;
+
 import bluej.debugger.gentype.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.*;
-import java.util.*;
 
 /**
  * Java 1.5+ version of JavaUtils.
@@ -49,7 +49,7 @@ public class JavaUtils15 extends JavaUtils
      * the supplied map. 
      */
     public String getDescription(Method method, String [] paramnames,
-                                 Map<String,? extends GenTypeParameter> tparams, boolean longDesc)
+            Map<String,? extends GenTypeParameter> tparams, boolean longDesc)
         throws ClassNotFoundException
     {
         // If tparams is null, the parent object is raw.
@@ -61,7 +61,7 @@ public class JavaUtils15 extends JavaUtils
         }
         
         // Don't want to modify the map which was passed in, so make a copy:
-        Map<String, GenTypeParameter> newMap = new HashMap<String, GenTypeParameter>(tparams);
+        Map<String,GenTypeParameter> newMap = new HashMap<String,GenTypeParameter>(tparams);
 
         // add any method type parameters into the map, replacing existing
         // map entries.
@@ -85,14 +85,14 @@ public class JavaUtils15 extends JavaUtils
     }
 
     @Override
-    public String getShortDesc(Method method, String [] paramnames, Map<String, GenTypeParameter> tparams)
+    public String getShortDesc(Method method, String [] paramnames, Map<String,GenTypeParameter> tparams)
         throws ClassNotFoundException
     {
         return getDescription(method, paramnames, tparams, false);
     }
 
     @Override
-    public String getLongDesc(Method method, String [] paramnames, Map<String, GenTypeParameter> tparams)
+    public String getLongDesc(Method method, String [] paramnames, Map<String,GenTypeParameter> tparams)
         throws ClassNotFoundException
     {
         return getDescription(method, paramnames, tparams, true);
@@ -147,7 +147,7 @@ public class JavaUtils15 extends JavaUtils
         throws ClassNotFoundException
     {
         String name = getTypeParameters(constructor);
-        name += constructor.getName();        
+        name += constructor.getDeclaringClass().getSimpleName();
         name += typeParamsToString(constructor.getDeclaringClass().getTypeParameters(), false); 
 
         // Get the names without introducing ellipsis for varargs
@@ -271,11 +271,11 @@ public class JavaUtils15 extends JavaUtils
     }
     
     @Override
-    public GenTypeClass[] getInterfaces(Class<?> cl) throws ClassNotFoundException
+    public GenTypeClass [] getInterfaces(Class<?> cl) throws ClassNotFoundException
     {
         try {
             Type [] classes = cl.getGenericInterfaces();
-            GenTypeClass[] gentypes = new GenTypeClass[classes.length];
+            GenTypeClass [] gentypes = new GenTypeClass[classes.length];
 
             for( int i = 0; i < classes.length; i++ ) {
                 gentypes[i] = (GenTypeClass)genTypeFromType(classes[i]);
@@ -312,7 +312,7 @@ public class JavaUtils15 extends JavaUtils
             else {
                 params = method.getGenericParameterTypes();
             }
-            JavaType[] gentypes = new JavaType[params.length];
+            JavaType [] gentypes = new JavaType[params.length];
             for(int i = 0; i < params.length; i++) {
                 gentypes[i] = genTypeFromType(params[i]);
             }
@@ -342,7 +342,7 @@ public class JavaUtils15 extends JavaUtils
     {
         try {
             Type [] params = constructor.getGenericParameterTypes();
-            JavaType[] gentypes = new JavaType[params.length];
+            JavaType [] gentypes = new JavaType[params.length];
             for(int i = 0; i < params.length; i++) {
                 gentypes[i] = genTypeFromType(params[i]);
             }
@@ -364,7 +364,7 @@ public class JavaUtils15 extends JavaUtils
         List<GenTypeDeclTpar> rlist = new ArrayList<GenTypeDeclTpar>();
         TypeVariable<?> [] tvars = decl.getTypeParameters();
 
-        Map<String, GenTypeDeclTpar> tvarMap = new HashMap<String, GenTypeDeclTpar>();
+        Map<String,GenTypeDeclTpar> tvarMap = new HashMap<String,GenTypeDeclTpar>();
 
         for (TypeVariable<?> tvar : tvars) {
             tvarMap.put(tvar.getName(), new GenTypeDeclTpar(tvar.getName()));
@@ -373,7 +373,7 @@ public class JavaUtils15 extends JavaUtils
         for( int i = 0; i < tvars.length; i++ ) {
             // find the bounds.
             Type [] bounds = tvars[i].getBounds();
-            GenTypeSolid[] upperBounds = new GenTypeSolid[bounds.length];
+            GenTypeSolid [] upperBounds = new GenTypeSolid[bounds.length];
             for (int j = 0; j < bounds.length; j++) {
                 upperBounds[j] = (GenTypeSolid) genTypeFromType(bounds[j], tvarMap);
             }
@@ -585,7 +585,7 @@ public class JavaUtils15 extends JavaUtils
      */
     private static JavaType genTypeFromType(Type t)
     {
-        return (JavaType) genTypeFromType(t, new HashMap<String, GenTypeParameter>());
+        return (JavaType) genTypeFromType(t, new HashMap<String,GenTypeParameter>());
     }
     
     /**

@@ -22,10 +22,10 @@
 package bluej.extensions;
 
 
-import bluej.debugger.DebuggerObject;
-import bluej.debugmgr.objectbench.ObjectWrapper;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.views.ConstructorView;
+import bluej.debugger.*;
+import bluej.debugmgr.objectbench.*;
+import bluej.pkgmgr.*;
+import bluej.views.*;
 
 /**
  * A wrapper for a constructor of a BlueJ class.
@@ -44,8 +44,8 @@ public class BConstructor
     // In any case, it it goes wrong we will get an invoker exception !
     
     
-    private Identifier parentId;
-    private ConstructorView bluej_view;
+    private final Identifier parentId;
+    private final ConstructorView bluej_view;
 
 
     /**
@@ -143,10 +143,10 @@ public class BConstructor
      *
      * @param  initargs                      Description of the Parameter
      * @return                               Description of the Return Value
-     * @throws ProjectNotOpenException      if the project to which this constructor belongs has been closed by the user.
-     * @throws PackageNotFoundException     if the package to which this constructor belongs has been deleted by the user.
-     * @throws InvocationArgumentException  if the <code>initargs</code> don't match the constructor's arguments.
-     * @throws InvocationErrorException     if an error occurs during the invocation.
+     * @throws  ProjectNotOpenException      if the project to which this constructor belongs has been closed by the user.
+     * @throws  PackageNotFoundException     if the package to which this constructor belongs has been deleted by the user.
+     * @throws  InvocationArgumentException  if the <code>initargs</code> don't match the constructor's arguments.
+     * @throws  InvocationErrorException     if an error occurs during the invocation.
      */
     public BObject newInstance(Object[] initargs)
              throws ProjectNotOpenException, PackageNotFoundException,

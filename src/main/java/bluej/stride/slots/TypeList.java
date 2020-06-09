@@ -21,12 +21,15 @@
  */
 package bluej.stride.slots;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
 import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.binding.DeepListBinding;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -34,11 +37,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import bluej.stride.generic.Frame;
+import bluej.utility.Utility;
+import bluej.utility.javafx.binding.DeepListBinding;
 
 /**
  * A class which manages a list of comma-separated type slots, e.g. an implements
@@ -77,7 +78,7 @@ public class TypeList
     /**
      * A reference to the editor, used to trigger recompile when the list changes.
      */
-    private InteractionManager editor;
+    private final InteractionManager editor;
     /**
      * A property keeping track of whether any of the slots in this type list are currently focused.
      */
@@ -188,7 +189,7 @@ public class TypeList
     {
         int index = typeSlots.indexOf(slot);
         // Delete our slot:
-        String remainder = delete((TypeSlot)slot);
+        String remainder = delete(slot);
         if (index - 1 >= 0 && index - 1 < typeSlots.size())
         {
             TypeSlot prev = typeSlots.get(index - 1);
@@ -218,7 +219,7 @@ public class TypeList
         }
         // If we are, delete us!
         else {
-            delete((TypeSlot) slot);
+            delete(slot);
             focusOnNext.run();
             return true;
         }

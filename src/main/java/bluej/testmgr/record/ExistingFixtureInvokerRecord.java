@@ -21,11 +21,11 @@
  */
 package bluej.testmgr.record;
 
-import bluej.pkgmgr.PkgMgrFrame;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+
+import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * From an existing unit test we create an invoker record
@@ -36,7 +36,7 @@ import java.util.ListIterator;
  */
 public class ExistingFixtureInvokerRecord extends InvokerRecord
 {
-    private List<String> fieldsSrc;
+    private final List<String> fieldsSrc;
     private String setUpSrc;
     
     /**
@@ -81,7 +81,7 @@ public class ExistingFixtureInvokerRecord extends InvokerRecord
         ListIterator<String> it = fieldsSrc.listIterator();
                 
         while(it.hasNext()) {
-            String fieldDecl = (String) it.next();
+            String fieldDecl = it.next();
                     
             sb.append(firstIndent);
             sb.append(fieldDecl);

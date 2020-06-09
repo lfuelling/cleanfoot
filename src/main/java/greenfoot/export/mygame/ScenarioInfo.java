@@ -21,10 +21,14 @@
  */
 package greenfoot.export.mygame;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
 
 /**
  * Holds various information about a scenario that is persisted when the scenario is saved.

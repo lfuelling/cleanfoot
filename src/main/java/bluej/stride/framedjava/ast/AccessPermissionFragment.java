@@ -21,14 +21,19 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.slots.ExpressionSlot;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
+
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.generic.Frame;
-import bluej.stride.slots.ChoiceSlot;
+import bluej.stride.generic.InteractionManager;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.stream.Stream;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.slots.ChoiceSlot;
 
 /**
  * Construct the class using the static helper methods

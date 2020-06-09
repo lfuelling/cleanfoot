@@ -21,16 +21,23 @@
  */
 package bluej.stride.framedjava.frames;
 
-import bluej.Config;
-import bluej.stride.generic.*;
-import bluej.stride.slots.SlotLabel;
-import bluej.stride.slots.TriangleLabel;
-import bluej.utility.javafx.SharedTransition;
-import javafx.beans.property.SimpleBooleanProperty;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javafx.beans.property.SimpleBooleanProperty;
+
+import bluej.Config;
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.FrameTypeCheck;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.SlotLabel;
+import bluej.stride.slots.TriangleLabel;
+import bluej.utility.javafx.SharedTransition;
 
 /**
  * A class to manage each canvas in the inherited items.

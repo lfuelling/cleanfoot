@@ -21,14 +21,14 @@
  */
 package bluej.groupwork.ui;
 
+import java.util.List;
+import javafx.collections.ObservableList;
+
 import bluej.Config;
 import bluej.groupwork.TeamStatusInfo;
 import bluej.pkgmgr.Project;
-import javafx.collections.ObservableList;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * Given a list of StatusEntry(s) returns a table model which allows them to

@@ -21,19 +21,19 @@
  */
 package bluej.stride.operations;
 
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.Config;
-import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.InteractionManager;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 
 public class DeleteFrameOperation extends FrameOperation
 {
@@ -81,7 +81,7 @@ public class DeleteFrameOperation extends FrameOperation
             frames.forEach(frame -> frame.getParentCanvas().removeBlock(frame));
             // Clear selection first to prevent problem in frame cursor focus looking at selection for menu items:
             editor.getSelection().clear();
-            Objects.requireNonNull(focusAfter).requestFocus();
+            focusAfter.requestFocus();
         }
         else
         {

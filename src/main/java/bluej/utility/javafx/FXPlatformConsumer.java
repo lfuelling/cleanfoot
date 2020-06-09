@@ -31,5 +31,5 @@ import threadchecker.Tag;
 @OnThread(Tag.FXPlatform)
 public interface FXPlatformConsumer<T>
 {
-    public void accept(T t);
+    void accept(T t);
 }

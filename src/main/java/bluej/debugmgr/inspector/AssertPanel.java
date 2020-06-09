@@ -69,13 +69,13 @@ public class AssertPanel extends VBox
     /**
      * The panels and UI elements of this panel.
      */
-    private Pane standardPanel;
-    private Label assertLabel;
-    private Label deltaLabel;
-    private TextField assertData;
+    private final Pane standardPanel;
+    private final Label assertLabel;
+    private final Label deltaLabel;
+    private final TextField assertData;
     // used for delta in float and double comparison
-    private TextField deltaData; 
-    private ComboBox<AssertInfo> assertCombo;
+    private final TextField deltaData;
+    private final ComboBox<AssertInfo> assertCombo;
     protected CheckBox assertCheckbox;
     
     private static class AssertInfo
@@ -172,11 +172,11 @@ public class AssertPanel extends VBox
             assertCheckbox.selectedProperty()
                 // And the given assert selection needs a first field
                 .and(ofB(assertCombo.getSelectionModel().selectedItemProperty(),
-                    ai -> ai == null ? false : ai.needsFirstField()))
+                    ai -> ai != null && ai.needsFirstField()))
                 // Now flip the enable calculation to disable:
                 .not());
         BooleanBinding secondFieldExp = ofB(assertCombo.getSelectionModel().selectedItemProperty(),
-            ai -> ai == null ? false : ai.needsSecondField());
+            ai -> ai != null && ai.needsSecondField());
         deltaData.disableProperty().bind(
             // We calculate enabled.  This is if assertCheckBox is selected
             assertCheckbox.selectedProperty()
@@ -213,7 +213,7 @@ public class AssertPanel extends VBox
      */
     public boolean isAssertEnabled()
     {
-        return assertCheckbox != null ? assertCheckbox.isSelected() : false;
+        return assertCheckbox != null && assertCheckbox.isSelected();
     }
     
     /**
@@ -231,9 +231,7 @@ public class AssertPanel extends VBox
         }
         
         if (info.needsFirstField()) {
-            if (assertData.getText().trim().length() == 0) {
-                return false;
-            }
+            return assertData.getText().trim().length() != 0;
         }
         
         return true;

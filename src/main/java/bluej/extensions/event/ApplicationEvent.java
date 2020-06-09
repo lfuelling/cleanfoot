@@ -44,7 +44,7 @@ public class ApplicationEvent implements ExtensionEvent
    */
   public static final int DATA_SUBMISSION_FAILED_EVENT=2;
 
-  private int eventId;
+  private final int eventId;
 
   /**
    * Constructs an ApplicationEvent

@@ -21,11 +21,8 @@
  */
 package bluej.stride.slots;
 
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.FXConsumer;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import java.util.List;
+
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -40,10 +37,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * A class for rotatable triangle to be used with hideable canvases.

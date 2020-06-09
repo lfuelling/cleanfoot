@@ -21,14 +21,15 @@
  */
 package bluej.utility.javafx;
 
-import bluej.utility.Utility;
-
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import bluej.utility.Utility;
 
 /**
  * A class that allows you to attach a listener to each item in a stream.
@@ -40,11 +41,11 @@ import java.util.stream.Stream;
  */
 public class MultiListener<T>
 {
-    public static interface RemoveAndUpdate
+    public interface RemoveAndUpdate
     {
-        public void removeListener();
+        void removeListener();
         // By making the update default to nothing, we can use a lambda for remove:
-        public default void updateListener() { }
+        default void updateListener() { }
     }
     
     private static class BooleanAndRemoveAndUpdate

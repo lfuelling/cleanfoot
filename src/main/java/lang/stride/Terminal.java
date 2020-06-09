@@ -14,7 +14,7 @@ import java.io.InputStreamReader;
  */
 public class Terminal
 {
-    private static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
     /**
      * Writes the given message to the terminal.

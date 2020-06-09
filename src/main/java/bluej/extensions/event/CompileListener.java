@@ -40,32 +40,32 @@ public interface CompileListener
      * This method will be called when a compilation starts.
      * If a long operation must be performed you should start a Thread.
      */
-    public void compileStarted (CompileEvent event);
+    void compileStarted(CompileEvent event);
     
     /**
      * This method will be called when there is a report of a compile error.
      * If a long operation must be performed you should start a Thread.
      */
-    public void compileError (CompileEvent event);
+    void compileError(CompileEvent event);
 
     /**
      * This method will be called when there is a report of a compile warning.
      * If a long operation must be performed you should start a Thread.
      */
-    public void compileWarning (CompileEvent event);
+    void compileWarning(CompileEvent event);
 
     /**
      * This method will be called when the compile ends successfully.
      * If a long operation must be performed you should start a Thread.
      */
-    public void compileSucceeded (CompileEvent event);
+    void compileSucceeded(CompileEvent event);
 
 
     /**
      * This method will be called when the compile fails.
      * If a long operation must be performed you should start a Thread.
      */
-    public void compileFailed (CompileEvent event);
+    void compileFailed(CompileEvent event);
 
 
 }

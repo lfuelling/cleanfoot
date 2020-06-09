@@ -21,21 +21,25 @@
  */
 package bluej.pkgmgr.dependency;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Properties;
+
+import javax.swing.*;
+
 import bluej.Config;
 import bluej.extensions.BDependency;
+import bluej.extensions.BDependency.Type;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.event.DependencyEvent;
 import bluej.extmgr.ExtensionsManager;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.DependentTarget;
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.PackageEditor;
+import bluej.pkgmgr.target.*;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.util.Properties;
 
 /**
  * A dependency between two targets in a package.
@@ -123,7 +127,7 @@ public abstract class Dependency
      * @return The type of this dependency;
      */
     @OnThread(Tag.Any)
-    public abstract BDependency.Type getType();
+    public abstract Type getType();
 
     /**
      * Determine the dependency's "to" and "from" nodes by loading their names from the
@@ -157,8 +161,8 @@ public abstract class Dependency
     @OnThread(Tag.FXPlatform)
     public void save(Properties props, String prefix)
     {
-        props.put(prefix + ".from", ((DependentTarget) from).getIdentifierName());
-        props.put(prefix + ".to", ((DependentTarget) to).getIdentifierName());
+        props.put(prefix + ".from", from.getIdentifierName());
+        props.put(prefix + ".to", to.getIdentifierName());
     }
 
     /**

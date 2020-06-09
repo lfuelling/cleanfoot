@@ -21,7 +21,6 @@
  */
 package bluej.editor.moe;
 
-import bluej.Config;
 import bluej.pkgmgr.Package;
 import bluej.prefmgr.PrefMgr;
 import bluej.prefmgr.PrefMgr.PrintSize;
@@ -30,11 +29,16 @@ import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
+import bluej.Config;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -162,9 +166,9 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
                 PrefMgr.setPrintFontSize(comboSize.getValue());
                 
                 return new PrintChoices(
-                    checkDiagram == null ? false : checkDiagram.isSelected(),
-                    checkReadme == null ? false : checkReadme.isSelected(),
-                    checkSource == null ? false : checkSource.isSelected(),
+                        checkDiagram != null && checkDiagram.isSelected(),
+                        checkReadme != null && checkReadme.isSelected(),
+                        checkSource != null && checkSource.isSelected(),
                     comboSize.getValue(),
                     checkLineNumbers.isSelected(),
                     checkHighlighting.isSelected());

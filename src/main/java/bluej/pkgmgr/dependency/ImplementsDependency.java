@@ -21,13 +21,13 @@
  */
 package bluej.pkgmgr.dependency;
 
+import java.util.Properties;
+
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.DependentTarget;
+import bluej.pkgmgr.target.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Properties;
 
 /**
  * An "implements" dependency between two (class) targets in a package

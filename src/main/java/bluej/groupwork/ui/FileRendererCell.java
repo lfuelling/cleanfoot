@@ -34,7 +34,7 @@ import threadchecker.Tag;
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
 public class FileRendererCell extends ListCell<UpdateStatus>
 {
-    private Project project;
+    private final Project project;
     private boolean remote;
 
     public FileRendererCell(Project proj)

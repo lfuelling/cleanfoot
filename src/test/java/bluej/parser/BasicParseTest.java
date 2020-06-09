@@ -61,7 +61,7 @@ public class BasicParseTest
      */
     private File getFile(String name)
     {
-        URL url = getClass().getResource("/" + name);
+        URL url = getClass().getResource("/bluej/parser/ast/data/" + name);
         
         if (url == null || url.getFile().equals(""))
             return null;
@@ -239,42 +239,42 @@ public class BasicParseTest
         Iterator<Selection> i = interfaceSels.iterator();
         
         // "implements"
-        Selection interfaceSel = (Selection) i.next();
+        Selection interfaceSel = i.next();
         assertEquals(1, interfaceSel.getLine());
         assertEquals(11, interfaceSel.getColumn());
         assertEquals(1, interfaceSel.getEndLine());
         assertEquals(21, interfaceSel.getEndColumn());
         
         // "AA"
-        interfaceSel = (Selection) i.next();
+        interfaceSel = i.next();
         assertEquals(1, interfaceSel.getLine());
         assertEquals(22, interfaceSel.getColumn());
         assertEquals(1, interfaceSel.getEndLine());
         assertEquals(24, interfaceSel.getEndColumn());
 
         // ", "
-        interfaceSel = (Selection) i.next();
+        interfaceSel = i.next();
         assertEquals(1, interfaceSel.getLine());
         assertEquals(24, interfaceSel.getColumn());
         assertEquals(1, interfaceSel.getEndLine());
         assertEquals(26, interfaceSel.getEndColumn());
 
         // "BB"
-        interfaceSel = (Selection) i.next();
+        interfaceSel = i.next();
         assertEquals(1, interfaceSel.getLine());
         assertEquals(26, interfaceSel.getColumn());
         assertEquals(1, interfaceSel.getEndLine());
         assertEquals(28, interfaceSel.getEndColumn());
 
         // ", "
-        interfaceSel = (Selection) i.next();
+        interfaceSel = i.next();
         assertEquals(1, interfaceSel.getLine());
         assertEquals(28, interfaceSel.getColumn());
         assertEquals(1, interfaceSel.getEndLine());
         assertEquals(30, interfaceSel.getEndColumn());
 
         // "CC"
-        interfaceSel = (Selection) i.next();
+        interfaceSel = i.next();
         assertEquals(1, interfaceSel.getLine());
         assertEquals(30, interfaceSel.getColumn());
         assertEquals(1, interfaceSel.getEndLine());

@@ -25,10 +25,11 @@ import bluej.Config;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.CustomMenuItem;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.CustomMenuItem;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +41,8 @@ import java.util.List;
  */
 public class ToggleBooleanProperty extends FrameOperation
 {
-    private String name;
-    private SimpleStringProperty label;
+    private final String name;
+    private final SimpleStringProperty label;
     private final char key;
 
     public ToggleBooleanProperty(InteractionManager editor, String identifier, String name, char key)

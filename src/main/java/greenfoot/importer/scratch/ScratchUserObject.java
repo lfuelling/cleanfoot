@@ -38,8 +38,8 @@ class ScratchUserObject extends ScratchObject
     protected static final int IMAGE_MEDIA = 162;
     protected static final int SOUND_MEDIA = 164;
     
-    private int id;
-    private int version;
+    private final int id;
+    private final int version;
     protected List<ScratchObject> scratchObjects;
     public ScratchUserObject(int id, int version, List<ScratchObject> scratchObjects)
     {

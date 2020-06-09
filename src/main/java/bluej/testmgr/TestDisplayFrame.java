@@ -38,7 +38,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -64,7 +71,7 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     @OnThread(Tag.FXPlatform)
     private static TestDisplayFrame singleton = null;
     @OnThread(Tag.FXPlatform)
-    private static BooleanProperty frameShowing = new SimpleBooleanProperty(false);
+    private static final BooleanProperty frameShowing = new SimpleBooleanProperty(false);
     
     @OnThread(Tag.FXPlatform)
     public static TestDisplayFrame getTestDisplay()
@@ -417,8 +424,18 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
                     imageView.setImage(failureIcon);
                 else
                     imageView.setImage(errorIcon);
-
-                setText(item.getName() + " (" + item.getRunTimeMs() + "ms)");
+                
+                // This checks if the JUnit executes all tests at the same time,
+                // We have used zero execution time for individual test as there is no way so
+                // far to extract the runtime of individual test.
+                if (item.getRunTimeMs() == 0)
+                {
+                    setText(item.getName());
+                }
+                else
+                {
+                    setText(item.getName() + " (" + item.getRunTimeMs() + "ms)");
+                }
             }
         }
     }
@@ -436,6 +453,16 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
             exceptionMessageField.setText("");
             showSourceButton.setDisable(true);
         }
+    }
+    
+    /**
+     * Set the total execution time of tests.
+     * @param value the value to which the totalTimeMs variable will be set to
+     */
+    @OnThread(Tag.FXPlatform)
+    public void setTotalTimeMs(int value)
+    {
+        totalTimeMs.set(value);
     }
 
     private void showSource(DebuggerTestResult dtr)

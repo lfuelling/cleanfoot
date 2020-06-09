@@ -22,7 +22,7 @@
 package bluej.parser;
 
 import java.io.Reader;
-import java.util.List;
+import java.util.*;
 
 //import bluej.parser.ast.*;
 //import bluej.parser.ast.gen.*;

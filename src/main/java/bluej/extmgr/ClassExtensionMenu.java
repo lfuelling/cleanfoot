@@ -21,14 +21,14 @@
  */
 package bluej.extmgr;
 
+import javax.swing.JMenuItem;
+
 import bluej.extensions.BClass;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
-import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.target.ClassTarget;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
 
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Class

@@ -30,7 +30,7 @@ import bluej.debugger.gentype.JavaPrimitiveType;
  */
 public class ConstantBoolValue extends ValueEntity
 {
-    private boolean value;
+    private final boolean value;
     
     public ConstantBoolValue(boolean value)
     {

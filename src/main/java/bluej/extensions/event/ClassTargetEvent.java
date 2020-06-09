@@ -21,16 +21,16 @@
  */
 package bluej.extensions.event;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import bluej.extensions.BClassTarget;
 import bluej.extensions.BDependency;
 import bluej.extensions.BPackage;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.DependentTarget;
-
-import java.util.ArrayList;
-import java.util.List;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget;
 
 /**
  * This class encapsulates events which occur on class targets of the class
@@ -52,12 +52,12 @@ public class ClassTargetEvent implements ExtensionEvent
         CLASS_TARGET_HIDDEN,
 
         /** This event occurs when a class target was set to visible. */
-        CLASS_TARGET_SHOWN;
+        CLASS_TARGET_SHOWN
     }
 
-    private Type eventType;
-    private ClassTarget classTarget;
-    private Package bluejPackage;
+    private final Type eventType;
+    private final ClassTarget classTarget;
+    private final Package bluejPackage;
 
     /**
      * Constructor. Creates a new {@link ClassTargetEvent}.

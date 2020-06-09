@@ -34,7 +34,7 @@ import java.util.Iterator;
  */
 public class ActorSet extends AbstractSet<Actor>
 {
-    private ListNode listHeadTail = new ListNode();
+    private final ListNode listHeadTail = new ListNode();
     
     private ListNode [] hashMap = new ListNode[0];
     

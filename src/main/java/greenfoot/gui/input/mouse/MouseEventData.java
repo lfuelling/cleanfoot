@@ -136,7 +136,7 @@ class MouseEventData
         init();       
         mousePressedInfo = tempPressedInfo;
         
-        mouseClickedInfo = MouseInfoVisitor.newMouseInfo();;
+        mouseClickedInfo = MouseInfoVisitor.newMouseInfo();
         mouseInfo = mouseClickedInfo;
         MouseInfoVisitor.setButton(mouseInfo, button);
         MouseInfoVisitor.setLoc(mouseInfo, x, y, px, py);
@@ -200,7 +200,7 @@ class MouseEventData
         init();
         mousePressedInfo = tempPressedInfo;
         mouseClickedInfo = tempClickedInfo;
-        mouseDragEndedInfo = MouseInfoVisitor.newMouseInfo();;
+        mouseDragEndedInfo = MouseInfoVisitor.newMouseInfo();
         mouseInfo = mouseDragEndedInfo;
         MouseInfoVisitor.setButton(mouseInfo, button);
         MouseInfoVisitor.setLoc(mouseInfo, x, y, px, py);
@@ -235,7 +235,7 @@ class MouseEventData
     public void mouseMoved(int x, int y, int px, int py)
     {
         init();
-        mouseMovedInfo = MouseInfoVisitor.newMouseInfo();;
+        mouseMovedInfo = MouseInfoVisitor.newMouseInfo();
         mouseInfo = mouseMovedInfo;
         MouseInfoVisitor.setLoc(mouseInfo, x, y, px, py);
     }

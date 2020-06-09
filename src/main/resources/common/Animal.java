@@ -1,4 +1,7 @@
-import greenfoot.Actor;
+import greenfoot.*;
+
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Animal. This is the base class for all animals. In addition to the standard Actor

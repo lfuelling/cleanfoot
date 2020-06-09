@@ -21,6 +21,9 @@
  */
 package bluej.utility.javafx;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Pos;
@@ -31,9 +34,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
+import bluej.extensions.SourceType;
 
 /**
  * A set of controls which look like toggleable push buttons, of which

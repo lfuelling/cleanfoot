@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2011,2013,2014,2015,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 2011,2013,2014,2015,2016,2018  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -24,6 +24,7 @@ package bluej.editor.moe;
 import bluej.editor.moe.BlueJSyntaxView.ParagraphAttribute;
 import bluej.parser.SourceLocation;
 import bluej.utility.Utility;
+import bluej.utility.javafx.FXConsumer;
 import bluej.utility.javafx.FXPlatformConsumer;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -32,6 +33,7 @@ import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -44,8 +46,8 @@ import java.util.function.Consumer;
 public class MoeErrorManager
 {
     private final ObservableList<ErrorDetails> errorInfos = FXCollections.observableArrayList();
-    private MoeEditor editor;
-    private Consumer<Boolean> setNextErrorEnabled;
+    private final MoeEditor editor;
+    private final Consumer<Boolean> setNextErrorEnabled;
     /**
      * Construct a new MoeErrorManager to manage error display for the specified editor instance.
      * The new manager should be set as the document listener so that it receives notification
@@ -131,12 +133,14 @@ public class MoeErrorManager
 
     /**
      * Get the error code (or message) at a particular document position.
+     * If there are multiple errors at the same position it will return the 
+     * right most error at that position.
      */
     public ErrorDetails getErrorAtPosition(int pos)
     {
         return errorInfos.stream()
                 .filter(e -> e.containsPosition(pos))
-                .findFirst()
+                .reduce((first, second) -> second)
                 .orElse(null);
     }
     

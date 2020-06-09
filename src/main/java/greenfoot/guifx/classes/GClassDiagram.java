@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2017,2018  Poul Henriksen and Michael Kolling 
+ Copyright (C) 2017,2018,2019  Poul Henriksen and Michael Kolling 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -23,27 +23,40 @@ package greenfoot.guifx.classes;
 
 import bluej.Config;
 import bluej.debugger.gentype.Reflective;
+import bluej.extensions.ClassNotFoundException;
 import bluej.extensions.PackageNotFoundException;
 import bluej.extensions.ProjectNotOpenException;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.Target;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
+import bluej.views.ConstructorView;
 import bluej.views.View;
 import bluej.views.ViewFilter;
 import bluej.views.ViewFilter.StaticOrInstance;
 import greenfoot.guifx.GreenfootStage;
+import javafx.beans.binding.ObjectExpression;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
 
 /**
  * The class diagram on the right-hand side of the Greenfoot window.
@@ -68,12 +81,12 @@ public class GClassDiagram extends BorderPane
 
     /**
      * Is there a World subclass that we could instantiate using a package-visible
-     * no-args constructor?
+     * no-args constructor?  If so, return its name.  If not, return null.
      */
-    public boolean hasInstantiatableWorld()
+    public String getInstantiatableWorld()
     {
         // We don't need to bother explicitly excluding World as it is abstract:
-        return worldClasses.streamAllClasses().anyMatch(c -> {
+        return worldClasses.streamAllClasses().map(c -> {
             Target t = project.getTarget(c.getQualifiedName());
             if (t instanceof ClassTarget)
             {
@@ -81,7 +94,7 @@ public class GClassDiagram extends BorderPane
                 if (cl == null)
                 {
                     // Can't load class, so rule it out:
-                    return false;
+                    return null;
                 }
                 View view = View.getView(cl);
 
@@ -90,16 +103,21 @@ public class GClassDiagram extends BorderPane
                 {
                     ViewFilter filter = new ViewFilter(StaticOrInstance.INSTANCE, "");
                     // Look for a visible constructor with no parameters:
-                    return Arrays.stream(view.getConstructors())
+                    ConstructorView constructorView = Arrays.stream(view.getConstructors())
                             .filter(filter)
-                            .anyMatch(cv -> !cv.hasParameters());
+                            .filter(cv -> !cv.hasParameters())
+                            .findFirst().orElse(null);
+                    if (constructorView != null)
+                    {
+                        return cl.getName();
+                    }
                 }
             }
-            return false;
-        });
+            return null;
+        }).filter(w -> w != null).findFirst().orElse(null);
     }
 
-    public static enum GClassType { ACTOR, WORLD, OTHER }
+    public enum GClassType { ACTOR, WORLD, OTHER }
     
     private final ClassDisplaySelectionManager selectionManager = new ClassDisplaySelectionManager();
     // The three groups of classes in the display: World+subclasses, Actor+subclasses, Other
@@ -140,7 +158,7 @@ public class GClassDiagram extends BorderPane
                 () -> greenfootStage.newNonImageClass(project.getUnnamedPackage(), null), null));
         contextMenu.getItems().add(JavaFXUtil.makeMenuItem(
                 Config.getString("import.action"),
-                greenfootStage::doImportClass, null));
+                () -> greenfootStage.doImportClass(), null));
         
         setOnContextMenuRequested(e -> {
             hideContextMenu();
@@ -254,7 +272,7 @@ public class GClassDiagram extends BorderPane
                         }
                     }
                 }
-                catch (ProjectNotOpenException | bluej.extensions.ClassNotFoundException | PackageNotFoundException e) {
+                catch (ProjectNotOpenException | ClassNotFoundException | PackageNotFoundException e) {
                     e.printStackTrace();
                 }
             }

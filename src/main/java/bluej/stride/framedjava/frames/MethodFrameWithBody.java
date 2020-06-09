@@ -34,12 +34,28 @@ import bluej.stride.framedjava.canvases.JavaCanvas;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.MethodWithBodyElement;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
+import bluej.stride.generic.DocumentedSingleCanvasFrame;
+import bluej.stride.generic.ExtensionDescription;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.slots.*;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.AccessPermissionSlot;
+import bluej.stride.slots.ChoiceSlot;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.FormalParameters;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.Throws;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -54,12 +70,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Container-block representing a method.
@@ -192,7 +205,7 @@ public abstract class MethodFrameWithBody<T extends MethodWithBodyElement>
                 dropShadowDummy.effectProperty().bind(new ObjectBinding<Effect>()
                 {
 
-                    DropShadow dropShadow = new DropShadow();
+                    final DropShadow dropShadow = new DropShadow();
 
                     @Override
                     protected Effect computeValue()
@@ -217,7 +230,7 @@ public abstract class MethodFrameWithBody<T extends MethodWithBodyElement>
             {
                 private Pane imageView;
                 private boolean addingImageView = false;
-                private SimpleDoubleProperty imageViewY = new SimpleDoubleProperty(0.0);
+                private final SimpleDoubleProperty imageViewY = new SimpleDoubleProperty(0.0);
 
                 @Override
                 public void changed(ObservableValue<? extends Number> arg0, Number oldVal, Number newVal)
@@ -232,7 +245,7 @@ public abstract class MethodFrameWithBody<T extends MethodWithBodyElement>
                         return; // Don't pin header for disabled frames or frames not in a canvas (e.g. the catalogue)
                     }
 
-                    if (editor.viewProperty().get() != Frame.View.NORMAL)
+                    if (editor.viewProperty().get() != View.NORMAL)
                     {
                         return; // Don't pin header if we are showing Java preview or bird's eye view
                     }
@@ -298,13 +311,13 @@ public abstract class MethodFrameWithBody<T extends MethodWithBodyElement>
 
                 {
                     JavaFXUtil.addChangeListener(editor.viewProperty(), v -> {
-                        if (v != Frame.View.NORMAL && imageView != null)
+                        if (v != View.NORMAL && imageView != null)
                         {
                             editor.getWindowOverlayPane().removeOverlay(imageView);
                             editor.getWindowOverlayPane().removeOverlay(dropShadowDummy);
                             imageView = null;
                         }
-                        else if (v == Frame.View.NORMAL && imageView == null)
+                        else if (v == View.NORMAL && imageView == null)
                         {
                             changed(offset, offset.get(), offset.get());
                         }
@@ -401,7 +414,7 @@ public abstract class MethodFrameWithBody<T extends MethodWithBodyElement>
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animate)
+    public void setView(View oldView, View newView, SharedTransition animate)
     {
         super.setView(oldView, newView, animate);
         paramsPane.setView(newView, animate);
@@ -425,13 +438,13 @@ public abstract class MethodFrameWithBody<T extends MethodWithBodyElement>
             if (Math.round(oldVal.doubleValue()) != Math.round(newVal.doubleValue()))
             {
                 JavaFXUtil.setPseudoclass("bj-birdseye", newView.isBirdseye(), getNode(), canvas.getNode());
-                JavaFXUtil.setPseudoclass("bj-birdseye-nodoc", newView == Frame.View.BIRDSEYE_NODOC, getNode(), canvas.getNode());
-                JavaFXUtil.setPseudoclass("bj-birdseye-doc", newView == Frame.View.BIRDSEYE_DOC, getNode(), canvas.getNode());
+                JavaFXUtil.setPseudoclass("bj-birdseye-nodoc", newView == View.BIRDSEYE_NODOC, getNode(), canvas.getNode());
+                JavaFXUtil.setPseudoclass("bj-birdseye-doc", newView == View.BIRDSEYE_DOC, getNode(), canvas.getNode());
             }
         });
 
-        if (isFrameEnabled()  && (oldView == Frame.View.JAVA_PREVIEW || newView == Frame.View.JAVA_PREVIEW))
-            canvas.previewCurly(newView == Frame.View.JAVA_PREVIEW, header.getLeftFirstItem() + tweakCurlyX(), tweakOpeningCurlyY(), animate);
+        if (isFrameEnabled()  && (oldView == View.JAVA_PREVIEW || newView == View.JAVA_PREVIEW))
+            canvas.previewCurly(newView == View.JAVA_PREVIEW, header.getLeftFirstItem() + tweakCurlyX(), tweakOpeningCurlyY(), animate);
     }
 
     protected void restoreDetails(MethodWithBodyElement nme)

@@ -21,10 +21,13 @@
  */
 package bluej.pkgmgr;
 
+import javafx.stage.Window;
+
+import bluej.*;
 import bluej.Config;
 import bluej.utility.JavaNames;
+import bluej.utility.DialogManager;
 import bluej.utility.javafx.dialog.InputDialog;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

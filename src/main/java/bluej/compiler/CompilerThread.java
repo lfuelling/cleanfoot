@@ -21,10 +21,10 @@
  */
 package bluej.compiler;
 
-import bluej.Config;
-import bluej.utility.Queue;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+import bluej.Config;
+import bluej.utility.Queue;
 
 /**
  * The compiler thread. BlueJ uses exactly one thread for compilation. Jobs are
@@ -36,7 +36,7 @@ import threadchecker.Tag;
  */
 class CompilerThread extends Thread
 {
-    private Queue jobs;
+    private final Queue jobs;
     private boolean busy = true;
 
     /**

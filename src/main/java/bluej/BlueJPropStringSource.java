@@ -29,7 +29,7 @@ package bluej;
  */
 public interface BlueJPropStringSource
 {
-    public String getBlueJPropertyString(String property, String def);
+    String getBlueJPropertyString(String property, String def);
 
-    public String getLabel(String key);
+    String getLabel(String key);
 }

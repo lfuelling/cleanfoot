@@ -38,5 +38,5 @@ public interface ClassListener
      * changed so that the class is now uncompiled, or the class was
      * compiled, or the class was renamed.
      */
-    public void classStateChanged(ClassEvent event);
+    void classStateChanged(ClassEvent event);
 }

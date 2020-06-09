@@ -27,20 +27,20 @@ package bluej.stride.framedjava.frames;
 
 
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
+import bluej.stride.generic.FrameContentItem;
+import bluej.utility.javafx.JavaFXUtil;
+import javafx.application.Platform;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.elements.AssignElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
-import bluej.stride.generic.FrameContentItem;
 import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
 import bluej.stride.slots.Focus;
 import bluej.stride.slots.HeaderItem;
 import bluej.stride.slots.SlotLabel;
-import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
-import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -56,7 +56,7 @@ public class AssignFrame extends SingleLineFrame
     private final ExpressionSlot<FilledExpressionSlotFragment> slotLHS;
     private final ExpressionSlot<FilledExpressionSlotFragment> slotRHS;
     private AssignElement element;
-    private SlotLabel assignLabel;
+    private final SlotLabel assignLabel;
 
     /**
      * Default constructor.

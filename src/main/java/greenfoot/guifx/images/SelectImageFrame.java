@@ -25,11 +25,11 @@ import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXCustomizedDialog;
 import greenfoot.guifx.classes.LocalGClassNode;
+
+import java.io.File;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
-import java.io.File;
 
 /**
  * A (modal) dialog for selecting a class image. The image can be selected from either the

@@ -16,12 +16,12 @@ public interface ReadOnlyProjectProperties
     /**
      * Gets a property as in Java's Properties class. Thread-safe.
      */
-    public String getString(String key, String defaultValue);
+    String getString(String key, String defaultValue);
 
     /**
      * Gets a String property.  Returns null if property not present.
      */
-    public default String getString(String key)
+    default String getString(String key)
     {
         return getString(key, null);
     }
@@ -29,7 +29,7 @@ public interface ReadOnlyProjectProperties
     /**
      * Gets an integer property with the given key.
      */
-    public default int getInt(String key) throws NumberFormatException
+    default int getInt(String key) throws NumberFormatException
     {
         String number = getString(key);
         return Integer.parseInt(number);
@@ -39,7 +39,7 @@ public interface ReadOnlyProjectProperties
      * Gets a boolean property as in Java's Properties class. 
      * Allows the specification of a default value. Thread-safe.
      */
-    public default boolean getBoolean(String key, boolean defaultValue)
+    default boolean getBoolean(String key, boolean defaultValue)
     {
         String bool = getString(key, Boolean.toString(defaultValue));
         return Boolean.parseBoolean(bool);
@@ -55,7 +55,7 @@ public interface ReadOnlyProjectProperties
      * @return The image.
      */
     @OnThread(Tag.Simulation)
-    public default GreenfootImage getImage(String className)
+    default GreenfootImage getImage(String className)
     {
         return GreenfootUtil.getGreenfootImage(className, getString("class." + className + ".image"));
     }

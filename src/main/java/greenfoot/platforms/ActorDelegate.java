@@ -36,6 +36,5 @@ public interface ActorDelegate
     /**
      * Get the default image for objects of this class. May return null.
      */
-    @OnThread(Tag.Simulation)
-    public GreenfootImage getImage(String name);
+    @OnThread(Tag.Simulation) GreenfootImage getImage(String name);
 }

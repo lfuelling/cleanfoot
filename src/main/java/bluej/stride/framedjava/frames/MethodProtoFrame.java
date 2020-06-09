@@ -21,27 +21,44 @@
  */
 package bluej.stride.framedjava.frames;
 
-import bluej.Config;
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.elements.MethodProtoElement;
-import bluej.stride.framedjava.elements.NormalMethodElement;
-import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
-import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.operations.CustomFrameOperation;
-import bluej.stride.operations.FrameOperation;
-import bluej.stride.slots.*;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+
+import bluej.Config;
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.ParamFragment;
+import bluej.stride.framedjava.ast.ThrowsTypeFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.elements.MethodProtoElement;
+import bluej.stride.framedjava.elements.NormalMethodElement;
+import bluej.stride.framedjava.slots.TypeSlot;
+import bluej.stride.generic.DocumentedSingleLineFrame;
+import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.operations.CustomFrameOperation;
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import bluej.stride.slots.FormalParameters;
+import bluej.stride.slots.MethodNameDefTextSlot;
+import bluej.stride.slots.SlotLabel;
+import bluej.stride.slots.SlotTraversalChars;
+import bluej.stride.slots.Throws;
+import bluej.utility.javafx.JavaFXUtil;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class MethodProtoFrame extends DocumentedSingleLineFrame implements CodeFrame<MethodProtoElement>
 {
@@ -51,7 +68,7 @@ public class MethodProtoFrame extends DocumentedSingleLineFrame implements CodeF
     private final MethodNameDefTextSlot methodName;
     private final FormalParameters paramsPane;
     private final Throws throwsPane;
-    private MethodProtoElement element;
+    private MethodProtoElement element;    
 
     public MethodProtoFrame(final InteractionManager editor)
     {
@@ -80,7 +97,7 @@ public class MethodProtoFrame extends DocumentedSingleLineFrame implements CodeF
     }
     
     public MethodProtoFrame(final InteractionManager editor, TypeSlotFragment returnType,
-                            NameDefSlotFragment methodName, List<ParamFragment> params, List<ThrowsTypeFragment> throwsTypes, String documentation, boolean enabled)
+            NameDefSlotFragment methodName, List<ParamFragment> params, List<ThrowsTypeFragment> throwsTypes, String documentation, boolean enabled)
     {
         this(editor);
         this.returnType.setText(returnType);

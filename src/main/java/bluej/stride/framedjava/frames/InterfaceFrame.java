@@ -27,25 +27,42 @@ import bluej.parser.entity.EntityResolver;
 import bluej.stride.framedjava.ast.JavadocUnit;
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
-import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.ImportElement;
+import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.InterfaceElement;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
-import bluej.stride.operations.*;
-import bluej.stride.slots.*;
+import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.FrameTypeCheck;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.TopLevelDocumentMultiCanvasFrame;
+import bluej.stride.operations.CopyFrameAsImageOperation;
+import bluej.stride.operations.CopyFrameAsJavaOperation;
+import bluej.stride.operations.CopyFrameAsStrideOperation;
+import bluej.stride.operations.CustomFrameOperation;
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.ExtendsList;
+import bluej.stride.slots.Focus;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotLabel;
 import bluej.utility.Utility;
 import bluej.utility.javafx.SharedTransition;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceElement>
 {
@@ -71,7 +88,7 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
                 extendsList.clearIfSingleEmpty();
         });
 
-        getHeaderRow().bindContentsConcat(FXCollections.<ObservableList<? extends HeaderItem>>observableArrayList(
+        getHeaderRow().bindContentsConcat(FXCollections.observableArrayList(
                 FXCollections.observableArrayList(headerCaptionLabel),
                 FXCollections.observableArrayList(paramName),
                 extendsList.getHeaderItems()
@@ -231,14 +248,14 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    public CanvasParent.CanvasKind getChildKind(FrameCanvas c)
+    public CanvasKind getChildKind(FrameCanvas c)
     {
         if (c == fieldsCanvas)
-            return CanvasParent.CanvasKind.FIELDS;
+            return CanvasKind.FIELDS;
         else if (c == methodsCanvas)
-            return CanvasParent.CanvasKind.METHODS;
+            return CanvasKind.METHODS;
         else
-            return CanvasParent.CanvasKind.STATEMENTS; // Not true, but it's our default for now
+            return CanvasKind.STATEMENTS; // Not true, but it's our default for now
     }
 
     @Override

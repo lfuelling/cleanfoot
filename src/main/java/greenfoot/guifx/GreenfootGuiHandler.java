@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2018  Poul Henriksen and Michael Kolling
+ Copyright (C) 2018,2019  Poul Henriksen and Michael Kolling
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,58 +21,74 @@
  */
 package greenfoot.guifx;
 
+import java.io.File;
+
 import bluej.GuiHandler;
 import bluej.Main;
 import bluej.pkgmgr.Project;
 import greenfoot.core.ProjectManager;
+import javafx.stage.Stage;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.io.File;
-
 /**
  * A GUI handler for Greenfoot.
- *
+ * 
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class GreenfootGuiHandler implements GuiHandler {
+public class GreenfootGuiHandler implements GuiHandler
+{
     @Override
-    public boolean tryOpen(File path, boolean displayError) {
+    public boolean tryOpen(File path, boolean displayError)
+    {
         Project project = Project.openProject(path.toString());
         if (project != null) {
             ProjectManager.instance().launchProject(project);
             return true;
-        } else {
+        }
+        else
+        {
             return GreenfootStage.openArchive(path, null);
             // TODO: display error dialog if displayError == true
         }
     }
 
     @Override
-    public void handleAbout() {
+    public void handleAbout()
+    {
         GreenfootStage.aboutGreenfoot(null);
     }
 
     @Override
-    public void handlePreferences() {
+    public void handlePreferences()
+    {
         GreenfootStage.showPreferences();
     }
 
     @Override
-    public void handleQuit() {
+    public void handleQuit()
+    {
         Main.wantToQuit();
     }
 
     @Override
-    public void initialOpenComplete(boolean projectOpen) {
-        if (!projectOpen) {
-            GreenfootStage.makeStage(null, null).show();
+    public Stage initialOpenComplete(boolean projectOpen)
+    {
+        if (! projectOpen) {
+            GreenfootStage stage = GreenfootStage.makeStage(null, null);
+            stage.show();
+            return stage;
+        }
+        else
+        {
+            return GreenfootStage.getOpenStage();
         }
     }
-
+    
     @Override
-    public void doExitCleanup() {
+    public void doExitCleanup()
+    {
         GreenfootStage.closeAll();
     }
 }

@@ -24,17 +24,22 @@ package bluej.groupwork.ui;
 import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXCustomizedDialog;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.util.Iterator;
 import java.util.List;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A dialog which presents conflicts after an update.
@@ -45,9 +50,9 @@ import java.util.List;
 @OnThread(Tag.FXPlatform)
 public class ConflictsDialog extends FXCustomizedDialog<Void>
 {
-    private List<String> bluejConflicts;
-    private List<String> nonBluejConflicts;
-    private Project project;
+    private final List<String> bluejConflicts;
+    private final List<String> nonBluejConflicts;
+    private final Project project;
 
     /**
      * Constructor for ConflictsDialog.

@@ -1,6 +1,6 @@
 /*
 This file is part of the BlueJ program. 
-Copyright (C) 1999-2010,2011,2014  Michael Kolling and John Rosenberg 
+Copyright (C) 1999-2010,2011,2014,2019  Michael Kolling and John Rosenberg 
 
 This program is free software; you can redistribute it and/or 
 modify it under the terms of the GNU General Public License 
@@ -29,6 +29,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -124,6 +125,7 @@ public class FindPanel extends GridPane
 
         previousButton = new Button();
         previousButton.setOnAction(e -> {
+            updateFindResult();
             if (currentNavigator != null && currentNavigator.validProperty().get())
             {
                 currentNavigator.selectPrev();
@@ -136,6 +138,7 @@ public class FindPanel extends GridPane
 
         nextButton = new Button();
         nextButton.setOnAction(e -> {
+            updateFindResult();
             if (currentNavigator != null && currentNavigator.validProperty().get())
             {
                 currentNavigator.selectNext(false);
@@ -192,12 +195,14 @@ public class FindPanel extends GridPane
         Button replaceAll = new Button(Config.getString("editor.replacePanel.replaceAll"));
 
         replaceOne.setOnAction(e -> {
+            updateFindResult();
             if (currentNavigator.validProperty().get())
             {
                 setCurrentNavigator(currentNavigator.replaceCurrent(replaceField.getText()));
             }
         });
         replaceAll.setOnAction(e -> {
+            updateFindResult();
             if (currentNavigator.validProperty().get())
             {
                 currentNavigator.replaceAll(replaceField.getText());
@@ -211,13 +216,13 @@ public class FindPanel extends GridPane
 
         add(findLabelPane, 0, 0);
         add(findField, 1, 0);
+        add(replaceField, 1, 1);
         add(previousButton, 2, 0);
         add(nextButton, 3, 0);
         add(mcBody, 4, 0);
         add(closeBody, 5, 0);
 
         add(replaceLabel, 0, 1);
-        add(replaceField, 1, 1);
         add(replaceOne, 2, 1);
         add(replaceAll, 3, 1);
 
@@ -305,8 +310,8 @@ public class FindPanel extends GridPane
             JavaFXUtil.setPseudoclass("bj-no-find-result", false, findField);
             currentNavigator.highlightAll();
             currentNavigator.selectNext(true);
-            previousButton.disableProperty().bind(currentNavigator.validProperty().not());
-            nextButton.disableProperty().bind(currentNavigator.validProperty().not());
+            previousButton.disableProperty().bind(findResultsFound.not());
+            nextButton.disableProperty().bind(findResultsFound.not());
             findResultsFound.set(true);
         }
     }

@@ -21,17 +21,27 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.*;
-import bluej.utility.Debug;
-import org.tigris.subversion.javahl.*;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Depth;
+import org.tigris.subversion.javahl.SVNClientInterface;
+import org.tigris.subversion.javahl.Status;
+import org.tigris.subversion.javahl.StatusCallback;
+
+import bluej.groupwork.LogHistoryListener;
+import bluej.groupwork.Repository;
+import bluej.groupwork.StatusListener;
+import bluej.groupwork.TeamSettings;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.utility.Debug;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A subversion repository implementation.
@@ -41,12 +51,12 @@ import java.util.Set;
 public class SvnRepository
     implements Repository
 {
-    private File projectPath;
-    private String protocol; // Only for data collection
-    private String reposUrl;
+    private final File projectPath;
+    private final String protocol; // Only for data collection
+    private final String reposUrl;
     
-    private SVNClientInterface client;
-    private Object clientLock = new Object();
+    private final SVNClientInterface client;
+    private final Object clientLock = new Object();
     
     public SvnRepository(File projectPath, String protocol, String reposUrl, SVNClientInterface client)
     {
@@ -84,7 +94,7 @@ public class SvnRepository
      * @see bluej.groupwork.Repository#commitAll(java.util.Set, java.util.Set, java.util.Set, java.util.Set, java.lang.String)
      */
     public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
-                                     Set<File> deletedFiles, Set<File> files, String commitComment)
+            Set<File> deletedFiles, Set<File> files, String commitComment)
     {
         return new SvnCommitAllCommand(this, newFiles, binaryNewFiles, deletedFiles,
                 files, commitComment);

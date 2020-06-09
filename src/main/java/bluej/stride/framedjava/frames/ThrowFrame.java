@@ -26,15 +26,20 @@
 package bluej.stride.framedjava.frames;
 
 
+import java.util.List;
+
+import javafx.beans.property.SimpleIntegerProperty;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.canvases.JavaCanvas;
 import bluej.stride.framedjava.elements.ThrowElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
 import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
-import javafx.beans.property.SimpleIntegerProperty;
+import bluej.stride.operations.FrameOperation;
 
 /**
  * A Throw statement
@@ -42,9 +47,9 @@ import javafx.beans.property.SimpleIntegerProperty;
 public class ThrowFrame extends SingleLineFrame
   implements CodeFrame<ThrowElement>, DebuggableFrame
 {
-    private ExpressionSlot<FilledExpressionSlotFragment> param1;
+    private final ExpressionSlot<FilledExpressionSlotFragment> param1;
     private ThrowElement element;
-    private SimpleIntegerProperty codeVersion;
+    private final SimpleIntegerProperty codeVersion;
     
     /**
      * Default constructor.

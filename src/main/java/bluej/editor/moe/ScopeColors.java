@@ -1,5 +1,6 @@
 package bluej.editor.moe;
 
+import bluej.utility.javafx.FXPlatformRunnable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectExpression;
 import javafx.beans.value.ObservableIntegerValue;
@@ -13,26 +14,26 @@ import threadchecker.Tag;
 @OnThread(Tag.FX)
 public interface ScopeColors
 {
-    public ObjectExpression<Color> scopeClassColorProperty();
-    public ObjectExpression<Color> scopeClassInnerColorProperty();
-    public ObjectExpression<Color> scopeClassOuterColorProperty();
-    public ObjectExpression<Color> scopeMethodColorProperty();
-    public ObjectExpression<Color> scopeMethodOuterColorProperty();
-    public ObjectExpression<Color> scopeSelectionColorProperty();
-    public ObjectExpression<Color> scopeSelectionOuterColorProperty();
-    public ObjectExpression<Color> scopeIterationColorProperty();
-    public ObjectExpression<Color> scopeIterationOuterColorProperty();
-    public ObjectExpression<Color> scopeBackgroundColorProperty();
+    ObjectExpression<Color> scopeClassColorProperty();
+    ObjectExpression<Color> scopeClassInnerColorProperty();
+    ObjectExpression<Color> scopeClassOuterColorProperty();
+    ObjectExpression<Color> scopeMethodColorProperty();
+    ObjectExpression<Color> scopeMethodOuterColorProperty();
+    ObjectExpression<Color> scopeSelectionColorProperty();
+    ObjectExpression<Color> scopeSelectionOuterColorProperty();
+    ObjectExpression<Color> scopeIterationColorProperty();
+    ObjectExpression<Color> scopeIterationOuterColorProperty();
+    ObjectExpression<Color> scopeBackgroundColorProperty();
 
-    public ObjectExpression<Color> breakpointOverlayColorProperty();
-    public ObjectExpression<Color> stepMarkOverlayColorProperty();
+    ObjectExpression<Color> breakpointOverlayColorProperty();
+    ObjectExpression<Color> stepMarkOverlayColorProperty();
 
     /**
      * Get a colour which has been faded toward the background according to the
      * given strength value. The higher the strength value, the less the colour
      * is faded.
      */
-    public default ObjectExpression<Color> getReducedColor(ObjectExpression<Color> original, ObservableIntegerValue colorStrength)
+    default ObjectExpression<Color> getReducedColor(ObjectExpression<Color> original, ObservableIntegerValue colorStrength)
     {
         return Bindings.createObjectBinding(() ->
         {
@@ -42,7 +43,7 @@ public interface ScopeColors
     }
 
     // Used for testing:
-    public static ScopeColors dummy()
+    static ScopeColors dummy()
     {
         // Simplest thing to do is make an off-screen ScopeColorsBorderPane:
         return new ScopeColorsBorderPane();

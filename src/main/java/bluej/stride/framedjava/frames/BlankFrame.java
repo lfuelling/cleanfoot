@@ -21,8 +21,16 @@
  */
 package bluej.stride.framedjava.frames;
 
+import java.util.List;
+
 import bluej.stride.framedjava.elements.BlankElement;
-import bluej.stride.generic.*;
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.DefaultFrameFactory;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.operations.FrameOperation;
 
 public class BlankFrame extends SingleLineFrame implements CodeFrame<BlankElement>
 {

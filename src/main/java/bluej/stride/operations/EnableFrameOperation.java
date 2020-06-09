@@ -21,16 +21,17 @@
  */
 package bluej.stride.operations;
 
-import bluej.Config;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import javafx.scene.control.CustomMenuItem;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.Arrays;
 import java.util.List;
+import javafx.scene.control.CustomMenuItem;
+
+import bluej.Config;
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.InteractionManager;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class EnableFrameOperation extends FrameOperation
 {

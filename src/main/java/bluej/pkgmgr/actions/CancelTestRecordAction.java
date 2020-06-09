@@ -21,6 +21,8 @@
  */
 package bluej.pkgmgr.actions;
 
+import javax.swing.SwingUtilities;
+
 import bluej.Config;
 import bluej.pkgmgr.PkgMgrFrame;
 import threadchecker.OnThread;

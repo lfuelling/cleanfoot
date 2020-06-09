@@ -4,6 +4,5 @@
 @OnThread(Tag.FXPlatform)
 package bluej.stride.framedjava.convert;
 
-
 import threadchecker.OnThread;
 import threadchecker.Tag;

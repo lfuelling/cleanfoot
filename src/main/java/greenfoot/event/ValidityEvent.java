@@ -30,7 +30,7 @@ import java.util.EventObject;
  */
 public class ValidityEvent extends EventObject
 {
-    private String reason;
+    private final String reason;
 
     /**
      * Create a new event.

@@ -21,6 +21,12 @@
  */
 package bluej.parser;
 
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugmgr.codepad.DeclaredVar;
 import bluej.parser.entity.EntityResolver;
@@ -30,12 +36,6 @@ import bluej.parser.lexer.LocatableToken;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Parse variable declarations/initializations (for the codepad).
  * 
@@ -44,13 +44,13 @@ import java.util.List;
 @OnThread(Tag.FXPlatform)
 public class CodepadVarParser extends JavaParser
 {
-    private EntityResolver resolver;
+    private final EntityResolver resolver;
     
     private int arrayCount = 0;
     private int modifiers = 0;
     private boolean gotFirstVar = false;
     private JavaType baseType;
-    private List<DeclaredVar> variables = new ArrayList<DeclaredVar>();
+    private final List<DeclaredVar> variables = new ArrayList<DeclaredVar>();
     
     
     public CodepadVarParser(EntityResolver resolver, Reader reader)

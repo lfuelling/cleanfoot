@@ -21,8 +21,15 @@
  */
 package bluej.extensions;
 
+import java.awt.Frame;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
+import threadchecker.OnThread;
 import bluej.compiler.JobQueue;
 import bluej.debugmgr.objectbench.ObjectBench;
 import bluej.debugmgr.objectbench.ObjectWrapper;
@@ -31,17 +38,10 @@ import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.PackageTarget;
-import bluej.pkgmgr.t4rget.Target;
-import threadchecker.OnThread;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.PackageTarget;
+import bluej.pkgmgr.target.Target;
 import threadchecker.Tag;
-
-import java.awt.*;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -53,7 +53,7 @@ import java.util.List;
  */
 public class BPackage
 {
-    private Identifier packageId;
+    private final Identifier packageId;
 
     /**
      * Constructor for a BPackage.
@@ -148,7 +148,7 @@ public class BPackage
 
         File classJavaFile = new File (bluejPkg.getPath(), className + "." + sourceType.getExtension());
         if ( ! classJavaFile.canWrite() ) 
-            throw new MissingJavaFileException(classJavaFile.toString());
+            throw new MissingJavaFileException (classJavaFile.toString());
 
         bluejFrame.createNewClass(className,null,sourceType,true,-1,-1);
         return getBClass ( className );
@@ -177,7 +177,7 @@ public class BPackage
      * @throws ProjectNotOpenException if the project this package is part of has been closed by the user.
      * @throws PackageNotFoundException if the package has been deleted by the user.
      */
-    public BClass getBClass (String name)
+    public BClass getBClass (String name)   
     throws ProjectNotOpenException, PackageNotFoundException
     {
         packageId.getBluejProject();
@@ -202,7 +202,7 @@ public class BPackage
      * @throws ProjectNotOpenException if the project this package is part of has been closed by the user.
      * @throws PackageNotFoundException if the package has been deleted by the user.
      */
-    public BClass[] getClasses()
+    public BClass[] getClasses() 
     throws ProjectNotOpenException, PackageNotFoundException
     {
         packageId.getBluejProject();
@@ -210,7 +210,7 @@ public class BPackage
 
         ArrayList<ClassTarget> classTargets = bluejPkg.getClassTargets();
 
-        BClass[] classes = new BClass[classTargets.size()];
+        BClass[] classes = new BClass [classTargets.size()];
         for (int index=0; index<classTargets.size(); index++) {
             ClassTarget target = classTargets.get(index);
             classes [index] = target.getBClass();
@@ -324,7 +324,7 @@ public class BPackage
      * @throws ProjectNotOpenException if the project this package is part of has been closed by the user.
      * @throws PackageNotFoundException if the package has been deleted by the user.
      */
-    public BClass[] getCurrentClasses ()
+    public BClass [] getCurrentClasses ()
         throws ProjectNotOpenException, PackageNotFoundException
     {
         Package bluejPkg = packageId.getBluejPackage();    
@@ -333,7 +333,7 @@ public class BPackage
         
         for (Target t : targets) 
         {
-            if ( !(t instanceof ClassTarget)) continue;
+            if ( !(t instanceof ClassTarget )) continue; 
 
             ClassTarget target = (ClassTarget)t;
             aList.add(target.getBClass());

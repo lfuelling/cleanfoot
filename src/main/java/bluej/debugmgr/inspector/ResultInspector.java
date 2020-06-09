@@ -54,7 +54,12 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * A window that displays a method return value.
@@ -75,7 +80,7 @@ public class ResultInspector extends Inspector
     protected DebuggerObject obj;
     protected String objName; // name on the object bench
 
-    private ExpressionInformation expressionInformation;
+    private final ExpressionInformation expressionInformation;
     private JavaType resultType; // static result type
     private VBox contentPane;
 
@@ -99,7 +104,7 @@ public class ResultInspector extends Inspector
      *            The parent frame of this frame
      */
     public ResultInspector(DebuggerObject obj, InspectorManager inspectorManager, String name,
-                           Package pkg, InvokerRecord ir, ExpressionInformation info)
+            Package pkg, InvokerRecord ir, ExpressionInformation info)
     {
         super(inspectorManager, pkg, ir, StageStyle.DECORATED);
 
@@ -134,11 +139,11 @@ public class ResultInspector extends Inspector
             
             // The return type may contain type parameters. First, get the
             // type parameters of the object:
-            Map<String, GenTypeParameter> tparmap;
+            Map<String,GenTypeParameter> tparmap;
             if (instanceType != null)
                 tparmap = instanceType.mapToSuper(m.getDeclaringClass().getName()).getMap();
             else
-                tparmap = new HashMap<String, GenTypeParameter>();
+                tparmap = new HashMap<String,GenTypeParameter>();
             
             // It's possible the mapping result is a raw type.
             if (tparmap == null) {

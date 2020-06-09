@@ -23,6 +23,8 @@ package bluej.stride.generic;
 
 import javafx.scene.Node;
 
+import bluej.utility.javafx.SharedTransition;
+
 public abstract class DocumentedSingleCanvasFrame extends SingleCanvasFrame
 {
     protected DocumentationTextArea documentationPane;

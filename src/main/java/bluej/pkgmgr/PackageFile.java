@@ -21,11 +21,11 @@
  */
 package bluej.pkgmgr;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.IOException;
 import java.util.Properties;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Interface to a package file.
@@ -43,7 +43,7 @@ public interface PackageFile
      * @throws IOException If the package file(s) could not be created.
      * 
      */
-    public boolean create()
+    boolean create()
         throws IOException;
 
     /**
@@ -51,7 +51,7 @@ public interface PackageFile
      * 
      * @throws IOException
      */
-    public void load(Properties p)
+    void load(Properties p)
         throws IOException;
 
     /**
@@ -61,6 +61,6 @@ public interface PackageFile
      * @throws IOException
      * 
      */
-    public void save(Properties p)
+    void save(Properties p)
         throws IOException;
 }

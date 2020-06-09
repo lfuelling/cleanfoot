@@ -41,7 +41,7 @@ public enum SourceType
             return NONE;
         }
         String lowerCase = s.toLowerCase();
-        if(lowerCase.equals("lang/stride")){
+        if(lowerCase.equals("stride")){
             return Stride;
         }
         if(lowerCase.equals("java")){
@@ -55,7 +55,7 @@ public enum SourceType
         switch (this)
         {
             case Java: return "java";
-            case Stride: return "lang/stride";
+            case Stride: return "stride";
             default: return "";
         }
     }

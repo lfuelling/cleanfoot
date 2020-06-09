@@ -28,8 +28,8 @@ package bluej.parser;
  */
 public class SourceSpan
 {
-    private SourceLocation start;
-    private SourceLocation end;
+    private final SourceLocation start;
+    private final SourceLocation end;
     
     /**
      * @param start  the line/column location where the span starts

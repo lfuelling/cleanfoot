@@ -21,13 +21,14 @@
  */
 package bluej.debugmgr.objectbench;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+
 import bluej.views.MethodView;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 
 /**
  * Simple action representing an interactive method invocation.

@@ -22,6 +22,7 @@
 package bluej.pkgmgr.actions;
 
 import bluej.pkgmgr.PkgMgrFrame;
+import javafx.application.Platform;
 
 /**
  * User chooses "close project". Save & close the current project. If the command

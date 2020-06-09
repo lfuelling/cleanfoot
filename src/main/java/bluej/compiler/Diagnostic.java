@@ -34,13 +34,13 @@ public class Diagnostic implements Serializable
     public static int WARNING = 1;
     public static int NOTE = 2;
 
-    public static enum DiagnosticOrigin
+    public enum DiagnosticOrigin
     {
         JAVAC("javac"), STRIDE_EARLY("stride_early"), STRIDE_LATE("stride_late"), UNKNOWN("unknown");
 
-        private String serverOrigin;
+        private final String serverOrigin;
 
-        private DiagnosticOrigin(String serverOrigin)
+        DiagnosticOrigin(String serverOrigin)
         {
             this.serverOrigin = serverOrigin;
         }

@@ -32,8 +32,8 @@ import bluej.parser.nodes.JavaParentNode;
  */
 public class PositionedResolver implements EntityResolver
 {
-    private JavaParentNode parentNode;
-    private int fromPosition;
+    private final JavaParentNode parentNode;
+    private final int fromPosition;
     
     /**
      * Construct a new PositionedResolver, resolving against the given parent node at the given position.

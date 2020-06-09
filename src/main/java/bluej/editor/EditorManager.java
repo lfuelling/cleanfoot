@@ -21,14 +21,15 @@
  */
 package bluej.editor;
 
+import java.nio.charset.Charset;
+import java.util.function.Supplier;
+
 import bluej.editor.moe.MoeEditorManager;
 import bluej.editor.stride.FXTabbedEditor;
 import bluej.parser.entity.EntityResolver;
 import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.FXSupplier;
-
-import java.nio.charset.Charset;
 
 /**
  * Interface between the editor manager and the rest of BlueJ.
@@ -40,7 +41,7 @@ import java.nio.charset.Charset;
 public abstract class EditorManager
 {
 
-    private static EditorManager theEditorManager = new MoeEditorManager();
+    private static final EditorManager theEditorManager = new MoeEditorManager();
 
     /**
      * Singleton factory method to return an EditorManager instance;
@@ -69,15 +70,15 @@ public abstract class EditorManager
      * 
      * @return          the new editor, or null if there was a problem
      */
-    public abstract Editor openClass(String filename,
-                                     String docFilename,
-                                     Charset charset,
-                                     String windowTitle,
-                                     FXSupplier<FXTabbedEditor> fxTabbedEditor,
-                                     EditorWatcher watcher,
-                                     boolean compiled,
-                                     EntityResolver projectResolver,
-                                     JavadocResolver javadocResolver, FXPlatformRunnable callbackOnOpen);
+    public abstract Editor openClass(String filename, 
+        String docFilename,
+        Charset charset,
+        String windowTitle,
+        FXSupplier<FXTabbedEditor> fxTabbedEditor,
+        EditorWatcher watcher, 
+        boolean compiled,
+        EntityResolver projectResolver,
+        JavadocResolver javadocResolver, FXPlatformRunnable callbackOnOpen);
 
 
     /**

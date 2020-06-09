@@ -23,14 +23,15 @@ package bluej.stride.slots;
 
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import javafx.application.Platform;
 
 public class SlotTraversalChars implements SlotValueListener
 {
     private final char[] endings;
-    private FXRunnable callback;
+    private final FXRunnable callback;
     
     public SlotTraversalChars(char... endings)
     {

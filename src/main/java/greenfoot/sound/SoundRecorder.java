@@ -21,9 +21,6 @@
  */
 package greenfoot.sound;
 
-import bluej.utility.Debug;
-
-import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +32,16 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.TargetDataLine;
+
+import bluej.utility.Debug;
+
 /**
  * A class that handles recording sound from the user's microphone.
  * 
@@ -42,10 +49,10 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SoundRecorder
 {
-    private AudioFormat format;
-    private AtomicBoolean keepRecording = new AtomicBoolean();
+    private final AudioFormat format;
+    private final AtomicBoolean keepRecording = new AtomicBoolean();
     private TargetDataLine line;
-    private BlockingQueue<byte []> recordedResultQueue = new ArrayBlockingQueue<>(1);
+    private final BlockingQueue<byte []> recordedResultQueue = new ArrayBlockingQueue<>(1);
     private byte[] recorded;
     
     public SoundRecorder()
@@ -91,7 +98,7 @@ public class SoundRecorder
                 LinkedList<byte[]> frames = new LinkedList<>();
 
                 while (keepRecording.get()) {
-                    byte buffer[] = new byte[bufferSize];
+                    byte[] buffer = new byte[bufferSize];
 
                     int bytesRead = line.read(buffer, 0, bufferSize);
 

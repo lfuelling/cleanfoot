@@ -21,16 +21,16 @@
  */
 package bluej.extensions;
 
-import bluej.editor.stride.FXTabbedEditor;
-import bluej.pkgmgr.Package;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.pkgmgr.Project;
-import javafx.application.Platform;
-
 import java.io.File;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.ListIterator;
+
+import javafx.application.Platform;
+import bluej.editor.stride.FXTabbedEditor;
+import bluej.pkgmgr.Package;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.pkgmgr.Project;
 
 /**
  * A wrapper for a BlueJ project.
@@ -40,7 +40,7 @@ import java.util.ListIterator;
  */
 public class BProject
 {
-    private Identifier projectId;
+    private final Identifier projectId;
   
     /**
      * Constructor for a BProject.

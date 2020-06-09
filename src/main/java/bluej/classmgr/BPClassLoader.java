@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2015,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2015,2016,2018  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,11 +21,13 @@
  */
 package bluej.classmgr;
 
-import bluej.utility.Utility;
-
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+
+import bluej.utility.Utility;
 
 /**
  * A BlueJ Project ClassLoader that can be used to load or obtain information about classes loadable in a bluej project.
@@ -93,7 +95,7 @@ public final class BPClassLoader extends URLClassLoader
      * current BlueJ.
      * @return a non null array of Files, may be empty if no library at all is defined.
      */
-    public final File[] getClassPathAsFiles()
+    public final List<File> getClassPathAsFiles()
     {
         return Utility.urlsToFiles(getURLs());
     }

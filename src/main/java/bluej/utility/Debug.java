@@ -21,11 +21,11 @@
  */
 package bluej.utility;
 
-import bluej.Config;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+
+import bluej.Config;
 
 /**
  * Class to handle debugging messages.
@@ -144,7 +144,6 @@ public class Debug
      */
     public static void reportError(Throwable error)
     {
-        error.printStackTrace();
         synchronized (debugStream) {
             message("An unexpected exception occurred:");
             PrintWriter pwriter = new PrintWriter(debugStream);

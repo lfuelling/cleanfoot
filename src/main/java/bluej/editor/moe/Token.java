@@ -41,7 +41,7 @@ public class Token
     public Token next;  // Next token in the chain
 
     @OnThread(Tag.Any)
-    public static enum TokenType
+    public enum TokenType
     {
         DEFAULT, COMMENT_NORMAL, COMMENT_JAVADOC, COMMENT_SPECIAL, KEYWORD1, KEYWORD2, KEYWORD3, PRIMITIVE, STRING_LITERAL, CHAR_LITERAL, LABEL, OPERATOR, INVALID, END;
 

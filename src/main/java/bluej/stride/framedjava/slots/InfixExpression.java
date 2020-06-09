@@ -21,6 +21,17 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javafx.application.Platform;
+
+import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.JavaFragment;
 import bluej.stride.framedjava.ast.Parser;
 import bluej.stride.framedjava.ast.links.PossibleLink;
@@ -31,13 +42,8 @@ import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.generic.InteractionManager;
 import bluej.utility.javafx.FXConsumer;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by neil on 22/05/2016.

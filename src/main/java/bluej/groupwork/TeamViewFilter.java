@@ -39,9 +39,6 @@ public class TeamViewFilter
      */
     public boolean accept(TeamStatusInfo statusInfo)
     {
-        if(BlueJPackageFile.isOldPackageFileName(statusInfo.getFile().getName())) {
-            return false;
-        }
-        return true;
+        return !BlueJPackageFile.isOldPackageFileName(statusInfo.getFile().getName());
     }
 }

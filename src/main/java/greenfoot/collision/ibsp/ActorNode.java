@@ -32,8 +32,8 @@ import greenfoot.Actor;
  */
 public final class ActorNode
 {
-    private Actor actor;
-    private BSPNode node;
+    private final Actor actor;
+    private final BSPNode node;
     private ActorNode next;
     private ActorNode prev;
     private boolean mark;

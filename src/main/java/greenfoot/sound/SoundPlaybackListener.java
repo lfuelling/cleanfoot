@@ -28,8 +28,8 @@ package greenfoot.sound;
  */
 public interface SoundPlaybackListener
 {
-    public void playbackStarted(Sound sound);
-    public void playbackPaused(Sound sound);
-    public void playbackStopped(Sound sound);
-    public void soundClosed(Sound sound);
+    void playbackStarted(Sound sound);
+    void playbackPaused(Sound sound);
+    void playbackStopped(Sound sound);
+    void soundClosed(Sound sound);
 }

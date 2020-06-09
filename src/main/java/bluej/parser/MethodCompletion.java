@@ -21,18 +21,22 @@
  */
 package bluej.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.MethodReflective;
 import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.JavaUtils;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Possible code completion for a method.
@@ -43,8 +47,8 @@ import java.util.stream.Collectors;
 public class MethodCompletion extends AssistContent
 {
     @OnThread(Tag.Any) private final MethodReflective method;
-    private JavadocResolver javadocResolver;
-    private Map<String, GenTypeParameter> typeArgs;
+    private final JavadocResolver javadocResolver;
+    private Map<String,GenTypeParameter> typeArgs;
     
     /**
      * Construct a new method completion
@@ -54,15 +58,15 @@ public class MethodCompletion extends AssistContent
      * @param javadocResolver  The javadoc resolver to use
      */
     public MethodCompletion(MethodReflective method,
-                            Map<String, GenTypeParameter> typeArgs,
-                            JavadocResolver javadocResolver)
+            Map<String,GenTypeParameter> typeArgs,
+            JavadocResolver javadocResolver)
     {
         this.method = method;
         if (typeArgs != null) {
             List<GenTypeDeclTpar> mtpars = method.getTparTypes();
             if (! mtpars.isEmpty()) {
                 // The method has its own type parameters - these override the class parameters.
-                Map<String, GenTypeParameter> fullArgMap = new HashMap<String, GenTypeParameter>();
+                Map<String,GenTypeParameter> fullArgMap = new HashMap<String,GenTypeParameter>();
                 fullArgMap.putAll(typeArgs);
                 for (GenTypeDeclTpar mtpar : mtpars) {
                     fullArgMap.put(mtpar.getTparName(), mtpar);

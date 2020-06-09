@@ -21,9 +21,6 @@
  */
 package greenfoot.importer.scratch;
 
-import bluej.extensions.SourceType;
-import bluej.utility.Debug;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,6 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import bluej.extensions.SourceType;
+import bluej.utility.Debug;
 
 public abstract class ScriptableScratchMorph extends Morph
 {
@@ -214,7 +214,7 @@ public abstract class ScriptableScratchMorph extends Morph
             method.append("}\n");
         }
         else if ("doPlaySoundAndWait".equals(blockContents[0].getValue())) {
-            String soundName = ScratchImport.mungeUnique("snd" + (String)blockContents[1].getValue());
+            String soundName = ScratchImport.mungeUnique("snd" + blockContents[1].getValue());
             decl.append("GreenfootSound ").append(soundName).append(";\n");
             method.append("if (" + soundName + " == null || !" + soundName + ".isPlaying()) {\n")
                   .append(soundName).append(" = new GreenfootSound(\"")
@@ -245,7 +245,7 @@ public abstract class ScriptableScratchMorph extends Morph
         }
         else if ("lookLike:".equals(blockContents[0].getValue())) {
             if (blockContents[1].getValue() instanceof String) {
-                String costumeRoot = getObjNameJava() + "_" + (String)blockContents[1].getValue();
+                String costumeRoot = getObjNameJava() + "_" + blockContents[1].getValue();
                 
                 int costumeFile = findCostume(costumeRoot + ".png");
                 if (costumeFile >= 0) {

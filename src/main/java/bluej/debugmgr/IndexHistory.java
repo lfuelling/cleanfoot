@@ -66,7 +66,7 @@ public class IndexHistory extends History {
     {
         if(currentIndex+1 < history.size()) {
             currentIndex++;
-            return (String) history.get(currentIndex);
+            return history.get(currentIndex);
         }
         else {
             return null;
@@ -83,7 +83,7 @@ public class IndexHistory extends History {
     {
         if(currentIndex > 0) {
             currentIndex--;
-            return (String) history.get(currentIndex);
+            return history.get(currentIndex);
         }
         else {
             return null;

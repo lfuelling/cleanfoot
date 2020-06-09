@@ -21,20 +21,20 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.JavaSource;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.ast.Parser;
 import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+import bluej.stride.framedjava.ast.JavaSource;
 import bluej.stride.framedjava.ast.TextSlotFragment;
 import bluej.stride.framedjava.errors.SyntaxCodeError;
 import bluej.stride.framedjava.frames.ImportFrame;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.TextSlot;
-import nu.xom.Element;
-
-import java.util.stream.Stream;
 
 public class ImportElement extends CodeElement
 {

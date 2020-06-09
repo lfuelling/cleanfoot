@@ -21,10 +21,8 @@
  */
 package bluej.parser;
 
-import bluej.parser.lexer.JavaLexer;
-import bluej.parser.lexer.JavaTokenFilter;
-import bluej.parser.lexer.JavaTokenTypes;
-import bluej.parser.lexer.LocatableToken;
+import static bluej.parser.JavaErrorCodes.*;
+import static bluej.parser.lexer.JavaTokenTypes.*;
 
 import java.io.Reader;
 import java.util.Collections;
@@ -32,9 +30,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import static bluej.parser.JavaErrorCodes.*;
-import static bluej.parser.lexer.JavaTokenTypes.LCURLY;
-import static bluej.parser.lexer.JavaTokenTypes.LPAREN;
+import bluej.parser.lexer.JavaLexer;
+import bluej.parser.lexer.JavaTokenFilter;
+import bluej.parser.lexer.JavaTokenTypes;
+import bluej.parser.lexer.LocatableToken;
 
 
 /**
@@ -1367,7 +1366,7 @@ public class JavaParser
         parseStatement(nextToken(), false);
     }
 
-    private static int [] statementTokenIndexes = new int[JavaTokenTypes.INVALID + 1];
+    private static final int [] statementTokenIndexes = new int[JavaTokenTypes.INVALID + 1];
     
     static {
         statementTokenIndexes[JavaTokenTypes.SEMI] = 1;
@@ -2619,10 +2618,7 @@ public class JavaParser
             token = nextToken();
             if (token.getType() == JavaTokenTypes.DOT && tokenStream.LA(1).getType() == JavaTokenTypes.IDENT) {
                 ttokens.add(token);
-                if (!parseTargType(speculative, ttokens, dr)) {
-                    return false;
-                }
-                return true;
+                return parseTargType(speculative, ttokens, dr);
             }
         }
         else {
@@ -2792,7 +2788,7 @@ public class JavaParser
 
     }
 
-    private static int [] expressionTokenIndexes = new int[JavaTokenTypes.INVALID+1];
+    private static final int [] expressionTokenIndexes = new int[JavaTokenTypes.INVALID+1];
     
     static {
         expressionTokenIndexes[JavaTokenTypes.LITERAL_new] = 1;
@@ -2831,7 +2827,7 @@ public class JavaParser
         expressionTokenIndexes[JavaTokenTypes.DEC] = 30;
     }
     
-    private static int [] expressionOpIndexes = new int[JavaTokenTypes.INVALID+1];
+    private static final int [] expressionOpIndexes = new int[JavaTokenTypes.INVALID+1];
     
     static {
         expressionOpIndexes[JavaTokenTypes.RPAREN] = 1;
@@ -3287,7 +3283,7 @@ public class JavaParser
                     else if (token.getType() == JavaTokenTypes.IDENT) {
                         if (tokenStream.LA(1).getType() == JavaTokenTypes.LPAREN) {
                             // Method call
-                            gotMemberCall(token, Collections.<LocatableToken>emptyList());
+                            gotMemberCall(token, Collections.emptyList());
                             parseArgumentList(nextToken());
                         }
                         else {

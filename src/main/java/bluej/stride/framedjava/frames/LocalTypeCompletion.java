@@ -21,13 +21,13 @@
  */
 package bluej.stride.framedjava.frames;
 
-import bluej.parser.AssistContent;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.stride.framedjava.ast.Parser;
+import java.util.List;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
+import bluej.parser.AssistContent;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.stride.framedjava.ast.Parser;
 
 @OnThread(Tag.FXPlatform)
 public class LocalTypeCompletion extends AssistContent

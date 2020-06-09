@@ -21,11 +21,11 @@
  */
 package bluej.parser.lexer;
 
-import bluej.parser.JavaParser;
-import bluej.parser.TokenStream;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import bluej.parser.JavaParser;
+import bluej.parser.TokenStream;
 
 
 /**
@@ -36,11 +36,11 @@ import java.util.List;
  */
 public final class JavaTokenFilter implements TokenStream
 {
-    private TokenStream sourceStream;
+    private final TokenStream sourceStream;
     private LocatableToken lastComment;
     private LocatableToken cachedToken;
-    private List<LocatableToken> buffer = new LinkedList<LocatableToken>();
-    private LinkedList<LocatableToken> recent = new LinkedList<>();
+    private final List<LocatableToken> buffer = new LinkedList<LocatableToken>();
+    private final LinkedList<LocatableToken> recent = new LinkedList<>();
     private JavaParser parser;
     
     public JavaTokenFilter(TokenStream source)
@@ -120,7 +120,7 @@ public final class JavaTokenFilter implements TokenStream
     public LocatableToken LA(int distance)
     {
         if (cachedToken != null) {
-           buffer.add(0, (LocatableToken) cachedToken);
+           buffer.add(0, cachedToken);
            cachedToken = null;
         }
         
@@ -139,7 +139,7 @@ public final class JavaTokenFilter implements TokenStream
         
         // Repeatedly read tokens until we find a non-comment, non-whitespace token.
         while (true) {
-            t = (LocatableToken) sourceStream.nextToken();
+            t = sourceStream.nextToken();
             
             int ttype = t.getType();
             if (ttype == JavaTokenTypes.ML_COMMENT) {

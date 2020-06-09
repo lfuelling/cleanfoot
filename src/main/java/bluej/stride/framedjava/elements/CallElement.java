@@ -22,15 +22,19 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.stride.framedjava.ast.*;
+import java.util.stream.Stream;
+
+import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.frames.CallFrame;
 import bluej.stride.framedjava.frames.DebugInfo;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-
-import java.util.stream.Stream;
 
 public class CallElement extends CodeElement implements JavaSingleLineDebugHandler
 {

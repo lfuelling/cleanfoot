@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -56,8 +56,7 @@ import java.io.File;
 import java.util.*;
 
 @OnThread(Tag.FX)
-public interface InteractionManager extends SuggestionListParent
-{
+public interface InteractionManager extends SuggestionListParent {
     /**
      * Gets completions at that point in the file
      */
@@ -87,10 +86,10 @@ public interface InteractionManager extends SuggestionListParent
     /**
      * Gets a list of classes that are commonly imported in Java programs,
      * e.g. classes from java.util, java.io, and so on.
-     *
+     * <p>
      * This list will not feature any class that is already imported in the program.
      */
-    @OnThread(Tag.Any)
+    @OnThread(Tag.Worker)
     Map<SuggestionList.SuggestionShown, Collection<AssistContentThreadSafe>> getImportSuggestions();
 
     /**
@@ -110,9 +109,8 @@ public interface InteractionManager extends SuggestionListParent
     ObservableStringValue nameProperty();
 
     FrameDictionary<StrideCategory> getDictionary();
-    
-    @OnThread(Tag.FXPlatform)
-    public void searchLink(PossibleLink link, FXPlatformConsumer<Optional<LinkedIdentifier>> callback);
+
+    @OnThread(Tag.FXPlatform) void searchLink(PossibleLink link, FXPlatformConsumer<Optional<LinkedIdentifier>> callback);
 
     @OnThread(Tag.FXPlatform)
     Pane getDragTargetCursorPane();
@@ -144,123 +142,135 @@ public interface InteractionManager extends SuggestionListParent
     @OnThread(Tag.FX)
     ImageView makeClassImageView();
 
-    public static enum ShortcutKey
-    {
+    enum ShortcutKey {
         YES_ANYWHERE,
-        NO_ANYWHERE;
+        NO_ANYWHERE
     }
-    
+
     /**
      * Adds mouse-drag handlers to the given Frame, so that if a drag starts on that
      * frame, it will be handled properly.  Also adds click listeners for showing
      * popup menu, and any other listeners needed.
      */
-    public void setupFrame(Frame f);
-    
+    void setupFrame(Frame f);
+
     /**
      * Adds mouse-drag handlers to the given FrameCursor, so that if a drag starts on that
      * cursor, it will be handled properly, and any other listeners needed
      */
-    public void setupFrameCursor(FrameCursor c);
-    
+    void setupFrameCursor(FrameCursor c);
+
     /**
      * Adds any necessary listeners to the given Node that will be a focusable part of the given EditableSlot,
      * for example making sure that the node is always in the visible viewport when focused.  If not (sufficiently) visible, it will be scrolled to.
      */
-    public void setupFocusableSlotComponent(EditableSlot parent, Node focusableComponent, boolean canCodeComplete, FXSupplier<List<ExtensionDescription>> getExtensions, List<FrameCatalogue.Hint> hints);
+    void setupFocusableSlotComponent(EditableSlot parent, Node focusableComponent, boolean canCodeComplete, FXSupplier<List<ExtensionDescription>> getExtensions, List<FrameCatalogue.Hint> hints);
 
     /**
      * Focuses the nearest frame cursor to the given point, because a click event
      * was processed at that point.
      */
-    @OnThread(Tag.FXPlatform)
-    public void clickNearestCursor(double sceneX, double sceneY, boolean shiftDown);
-    
+    @OnThread(Tag.FXPlatform) void clickNearestCursor(double sceneX, double sceneY, boolean shiftDown);
+
     /**
      * Creates a new cursor
      */
-    public FrameCursor createCursor(FrameCanvas parent);
+    FrameCursor createCursor(FrameCanvas parent);
 
     /**
      * Gets an observable value which will change when the window is scrolled
      */
-    public Observable getObservableScroll();
+    Observable getObservableScroll();
 
     /**
      * Gets an observable double which represents the height of the editor viewport
+     *
      * @return
      */
-    public DoubleExpression getObservableViewportHeight();
-    
+    DoubleExpression getObservableViewportHeight();
+
     // OverlayPane may return null in some cases, such as while dragging, so check it.
-    public WindowOverlayPane getWindowOverlayPane();
-    public CodeOverlayPane getCodeOverlayPane();
+    WindowOverlayPane getWindowOverlayPane();
+
+    CodeOverlayPane getCodeOverlayPane();
 
     /**
      * Register a Frame as modified to trigger/allow some operations needed after edits.
-     * @param f the modified frame
+     *
+     * @param f     the modified frame
      * @param force a boolean flag, which is only true when we need the modification to be registered,
      *              even if the editor tab is loading or with no window (hidden).
      */
-    public void modifiedFrame(Frame f, boolean force);
+    void modifiedFrame(Frame f, boolean force);
 
     /**
      * Once loading is complete, generates the Java code, parses it, then runs the given action if not-null
      */
-    @OnThread(Tag.FXPlatform)
-    public void afterRegenerateAndReparse(FXPlatformRunnable action);
-    
+    @OnThread(Tag.FXPlatform) void afterRegenerateAndReparse(FXPlatformRunnable action);
+
     /**
      * Starts recording of the Frame state for Undo / Redo operations
      */
-    public void beginRecordingState(RecallableFocus f);
-    
+    void beginRecordingState(RecallableFocus f);
+
     /**
      * Ends recording of the Frame state for Undo / Redo operations
      */
-    public void endRecordingState(RecallableFocus f);
-    
+    void endRecordingState(RecallableFocus f);
+
+    /**
+     * If the node is not visible, scrolls the view so that it is visible.
+     * If it is already visible somewhere, does not scroll (unlike scrollTo,
+     * which would still scroll to the given position).
+     */
+    void ensureNodeVisible(Node node);
+
 
     /**
      * Scrolls the view to the top of the given node, plus yOffsetFromTop pixels.
      * Takes duration time to do it, or instant if duration is null.
      */
-    public void scrollTo(Node n, double yOffsetFromTop, Duration duration);
-    
-    default public void scrollTo(Node n, double yOffsetFromTop) { scrollTo(n, yOffsetFromTop, null); }
-    
-    public FrameSelection getSelection();
+    void scrollTo(Node n, double yOffsetFromTop, Duration duration);
 
-    public void registerStackHighlight(Frame frame);
+    default void scrollTo(Node n, double yOffsetFromTop) {
+        scrollTo(n, yOffsetFromTop, null);
+    }
+
+    FrameSelection getSelection();
+
+    void registerStackHighlight(Frame frame);
 
     /**
      * Returns true while frame is initially being loaded, used to mask off
      * unnecessary modification notifications
+     *
      * @return
      */
-    @OnThread(Tag.FX)
-    public boolean isLoading();
+    @OnThread(Tag.FX) boolean isLoading();
 
-    public StringExpression getFontCSS();
+    StringExpression getFontCSS();
 
-    public ReadOnlyObjectProperty<Frame.View> viewProperty();
+    ReadOnlyObjectProperty<Frame.View> viewProperty();
 
-    public void showUndoDeleteBanner(int totalEffort);
+    void showUndoDeleteBanner(int totalEffort);
 
-    @OnThread(Tag.Any)
-    public static enum Kind
-    {
+    @OnThread(Tag.Any) enum Kind {
         CLASS_NON_FINAL, CLASS_FINAL, INTERFACE, ENUM, PRIMITIVE;
-        private final static Set<Kind> all = new HashSet<>(Arrays.asList(values()));
+        private final static Set<InteractionManager.Kind> all = new HashSet<>(Arrays.asList(values()));
+
         @OnThread(Tag.Any)
-        public static Set<Kind> all() { return all; }
+        public static Set<InteractionManager.Kind> all() {
+            return all;
+        }
     }
 
-    public static interface FileCompletion
-    {
-        public File getFile();
-        public String getType(); // e.g. "Image" or "Sound"
-        public Node getPreview(double maxWidth, double maxHeight);
+    interface FileCompletion {
+        File getFile();
+
+        String getType(); // e.g. "Image" or "Sound"
+
+        Node getPreview(double maxWidth, double maxHeight);
+
         Map<KeyCode, Runnable> getShortcuts();
     }
 }

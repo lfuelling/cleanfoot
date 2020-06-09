@@ -30,7 +30,7 @@ package greenfoot.importer.scratch;
  */
 class ScratchPrimitive extends ScratchObject
 {
-    private Object value;
+    private final Object value;
 
     public ScratchPrimitive(Object value)
     {

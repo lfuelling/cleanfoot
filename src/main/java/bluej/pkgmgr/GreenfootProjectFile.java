@@ -21,14 +21,14 @@
  */
 package bluej.pkgmgr;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Reference to the Greenfoot project file(s). A Greenfoot project file is
@@ -41,8 +41,8 @@ public class GreenfootProjectFile
     implements PackageFile
 {
     private static final String pkgfileName = "project.greenfoot";
-    private File dir;
-    private File pkgFile;
+    private final File dir;
+    private final File pkgFile;
 
     /**
      * @see PackageFileFactory

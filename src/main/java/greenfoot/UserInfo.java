@@ -75,9 +75,9 @@ public class UserInfo
     public static final int STRING_LENGTH_LIMIT = 50;
     // NB the above limit matches the database schema in the gallery storage
     // so don't alter it!
-    private int[] ints;
-    private String[] strings;
-    private String userName;
+    private final int[] ints;
+    private final String[] strings;
+    private final String userName;
     private int score;
     private int rank;
     

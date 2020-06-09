@@ -27,6 +27,7 @@ import bluej.groupwork.ui.CheckConnectionDialog;
 import bluej.groupwork.ui.TeamSettingsPanel;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXPlatformSupplier;
+
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
@@ -39,8 +40,8 @@ import threadchecker.Tag;
 @OnThread(Tag.FXPlatform)
 public class ValidateConnectionAction extends TeamAction
 {
-    private TeamSettingsPanel teamSettingsPanel;
-    private FXPlatformSupplier<Window> owner;
+    private final TeamSettingsPanel teamSettingsPanel;
+    private final FXPlatformSupplier<Window> owner;
     
     public ValidateConnectionAction(TeamSettingsPanel teamSettingsPanel, FXPlatformSupplier<Window> owner)
     {

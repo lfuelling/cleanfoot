@@ -26,19 +26,33 @@
 package bluej.stride.framedjava.frames;
 
 
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.DocumentationTextArea;
 import bluej.stride.framedjava.elements.CommentElement;
-import bluej.stride.generic.*;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.RecallableFocus;
+import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.operations.FrameOperation;
 import bluej.stride.slots.EditableSlot;
+import bluej.utility.Debug;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.Arrays;
 
 /**
  * A statement with // for comments
@@ -47,7 +61,7 @@ import java.util.Arrays;
 public class CommentFrame extends SingleLineFrame implements CodeFrame<CommentElement>
 {
     private static final String COMMENT_STYLE_PREFIX = "comment-";
-    private DocumentationTextArea comment;
+    private final DocumentationTextArea comment;
     private CommentElement element;
     private Canvas diagonalLinesCanvas;
 

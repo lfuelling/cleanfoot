@@ -21,11 +21,11 @@
  */
 package bluej.stride.slots;
 
-import bluej.stride.generic.Frame;
+import java.util.List;
+import java.util.stream.Stream;
+
 import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.ScalableHeightLabel;
-import bluej.utility.javafx.SharedTransition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -46,8 +46,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 
-import java.util.List;
-import java.util.stream.Stream;
+import bluej.stride.generic.Frame;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 
 /**
  * A SlotLabel is a wrapper class for a ScalableHeightLabel (i.e. our subclass

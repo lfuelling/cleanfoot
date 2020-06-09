@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2010,2011,2012,2013,2014,2016,2017  Michael Kolling and John Rosenberg 
+ Copyright (C) 2010,2011,2012,2013,2014,2016,2017,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -24,7 +24,14 @@ package bluej.parser;
 import bluej.debugger.gentype.Reflective;
 import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.editor.moe.MoeSyntaxDocument.Element;
-import bluej.parser.entity.*;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.IntersectionTypeEntity;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.ParsedReflective;
+import bluej.parser.entity.PositionedResolver;
+import bluej.parser.entity.TparEntity;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.UnresolvedArray;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.parser.nodes.*;
@@ -35,7 +42,12 @@ import threadchecker.Tag;
 
 import java.io.Reader;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Stack;
 
 /**
  * Parser which builds parse node tree.
@@ -49,7 +61,7 @@ public class EditorParser extends JavaParser
     
     private LocatableToken pcuStmtBegin;
     private ParsedCUNode pcuNode;
-    private List<LocatableToken> commentQueue = new LinkedList<LocatableToken>();
+    private final List<LocatableToken> commentQueue = new LinkedList<LocatableToken>();
     private List<LocatableToken> lastTypeSpec;
     private FieldNode lastField;
     private int arrayDecls;
@@ -83,7 +95,7 @@ public class EditorParser extends JavaParser
         // assuming we're in such an expression. (If false, we have seen new, but not the type).
     
     /** Stack of types instantiated via "new ...()" expression */
-    private Stack<List<LocatableToken>> newTypes = new Stack<List<LocatableToken>>();
+    private final Stack<List<LocatableToken>> newTypes = new Stack<List<LocatableToken>>();
     
     private int currentModifiers = 0;
     
@@ -130,17 +142,13 @@ public class EditorParser extends JavaParser
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
     protected void error(String msg, int beginLine, int beginColumn, int endLine, int endColumn)
     {
-        // TODO make a proper listener interface
-        if (document instanceof MoeSyntaxDocument) {
-            MoeSyntaxDocument mdocument = (MoeSyntaxDocument) document;
-            Element lineEl = mdocument.getDefaultRootElement().getElement(beginLine - 1);
-            int position = lineEl.getStartOffset() + beginColumn - 1;
-            if (endLine != beginLine) {
-                lineEl = mdocument.getDefaultRootElement().getElement(endLine - 1);
-            }
-            int endPos = lineEl.getStartOffset() + endColumn - 1;
-            mdocument.parseError(position, endPos - position, msg);
+        Element lineEl = document.getDefaultRootElement().getElement(beginLine - 1);
+        int position = lineEl.getStartOffset() + beginColumn - 1;
+        if (endLine != beginLine) {
+            lineEl = document.getDefaultRootElement().getElement(endLine - 1);
         }
+        int endPos = lineEl.getStartOffset() + endColumn - 1;
+        document.parseError(position, endPos - position, msg);
     }
     
     @Override
@@ -188,6 +196,19 @@ public class EditorParser extends JavaParser
         scopeStack.peek().childResized(null, topPos - top.getOffsetFromParent(), child);
         
         completedNode(top, topPos, endPos - topPos);
+    }
+    
+    /**
+     * Check whether a type specification (list of tokens) is "var", the magical non-keyword used
+     * to enable type inference.
+     */
+    private boolean typeSpecIsVar(List<LocatableToken> typeSpec)
+    {
+        if (typeSpec.size() == 1)
+        {
+            return typeSpec.get(0).getText().equals("var");
+        }
+        return false;
     }
 
     /**
@@ -1065,29 +1086,50 @@ public class EditorParser extends JavaParser
         endDecl(first); // remove placeholder
     }
     
-    @Override
-    protected void gotField(LocatableToken first, LocatableToken idToken, boolean initExpressionFollows)
+    /**
+     * Saw a field or a variable declaration. This may be part of multiple declarations
+     * (eg  "int a, b, c = 3;") and an initialisation expression may follow.
+     * 
+     * @param first       First token of the declaration (part of the type).
+     * @param idToken     The token with the identifier (field/variable name)
+     * @param initExpressionFollows   Whether an initialisation is present
+     * @param isVariable  Whether this is a variable rather than a field.
+     */
+    private void gotFieldOrVar(LocatableToken first, LocatableToken idToken,
+            boolean initExpressionFollows, boolean isVariable)
     {
         int curOffset = getTopNodeOffset();
         int insPos = lineColToPosition(first.getLine(), first.getColumn());
         EntityResolver resolver = new PositionedResolver(scopeStack.peek(), insPos - curOffset);
-        JavaEntity fieldType = ParseUtils.getTypeEntity(resolver,
-                currentQuerySource(), lastTypeSpec);
         
-        lastField = new FieldNode(scopeStack.peek(), idToken.getText(), fieldType,
-                arrayDecls, currentModifiers);
+        boolean declaredVar = isVariable && initExpressionFollows && typeSpecIsVar(lastTypeSpec);
+        
+        JavaEntity fieldType;
+        if (declaredVar)
+        {
+            fieldType = null; // we will infer the type from the expression
+            lastField = new FieldNode(scopeStack.peek(), idToken.getText(), arrayDecls,
+                    currentModifiers, document);
+        }
+        else
+        {
+            fieldType = ParseUtils.getTypeEntity(resolver, currentQuerySource(), lastTypeSpec);
+            lastField = new FieldNode(scopeStack.peek(), idToken.getText(), fieldType,
+                    arrayDecls, currentModifiers);
+        }
+        
         arrayDecls = 0;
         beginNode(insPos);
         
-        if (fieldType != null) {
-            JavaParentNode top = scopeStack.peek();
-            top.insertField(lastField, insPos - curOffset, 0);
-        }
-        else {
-            scopeStack.peek().insertNode(lastField, insPos - curOffset, 0);
-        }
-        
+        JavaParentNode top = scopeStack.peek();
+        top.insertField(lastField, insPos - curOffset, 0);
         scopeStack.push(lastField);
+    }
+    
+    @Override
+    protected void gotField(LocatableToken first, LocatableToken idToken, boolean initExpressionFollows)
+    {
+        gotFieldOrVar(first, idToken, initExpressionFollows, false);
     }
     
     @Override
@@ -1128,7 +1170,7 @@ public class EditorParser extends JavaParser
     @Override
     protected void gotVariableDecl(LocatableToken first, LocatableToken idToken, boolean inited)
     {
-        gotField(first, idToken, inited);
+        gotFieldOrVar(first, idToken, inited, true);
     }
     
     @Override
@@ -1154,20 +1196,20 @@ public class EditorParser extends JavaParser
     @Override
     protected void gotForInit(LocatableToken first, LocatableToken idToken)
     {
-        gotField(first, idToken, true);
+        gotVariableDecl(first, idToken, true);
     }
     
     @Override
     protected void gotSubsequentForInit(LocatableToken first,
                                         LocatableToken idToken, boolean initFollows)
     {
-        gotSubsequentField(first, idToken, true);
+        gotSubsequentVar(first, idToken, true);
     }
     
     @Override
     protected void endForInit(LocatableToken token, boolean included)
     {
-        endField(token, included);
+        endVariable(token, included);
     }
     
     @Override

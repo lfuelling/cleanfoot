@@ -25,7 +25,7 @@ import greenfoot.core.TextLabel;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.util.Collection;
 import java.util.List;
 

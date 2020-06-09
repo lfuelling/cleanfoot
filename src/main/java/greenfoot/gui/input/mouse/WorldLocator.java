@@ -39,15 +39,14 @@ public interface WorldLocator
      * @param worldPixelPositionY The Y pixel position in the world (not cell position)
      * @return The top most actor, or null if no actor.
      */
-    @OnThread(Tag.Simulation)
-    public Actor getTopMostActorAt(int worldPixelPositionX, int worldPixelPositionY);
+    @OnThread(Tag.Simulation) Actor getTopMostActorAt(int worldPixelPositionX, int worldPixelPositionY);
 
     /**
      * Translates the coordinates from the given source component into some other coordinate system.
      * @param worldPixelPositionX The X pixel position in the world (not cell position)
      * @return The new x-coordinate
      */
-    public int getTranslatedX(int worldPixelPositionX);
+    int getTranslatedX(int worldPixelPositionX);
     
 
     /**
@@ -55,6 +54,6 @@ public interface WorldLocator
      * @param worldPixelPositionY The Y pixel position in the world (not cell position)
      * @return The new y-coordinate
      */
-    public int getTranslatedY(int worldPixelPositionY);
+    int getTranslatedY(int worldPixelPositionY);
 
 }

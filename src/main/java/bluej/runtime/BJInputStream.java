@@ -21,10 +21,10 @@
  */
 package bluej.runtime;
 
-import bluej.terminal.InputBuffer;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import bluej.terminal.InputBuffer;
 
 /**
  * BlueJ input stream. An input stream filter to process "End of file"
@@ -35,7 +35,7 @@ import java.io.InputStream;
  */
 public class BJInputStream extends InputStream
 {
-    private InputStream source;
+    private final InputStream source;
     int buffoffset = 0;
     
     boolean endOfLine = false;

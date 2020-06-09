@@ -20,15 +20,15 @@
  */
 package bluej.parser.entity;
 
+import java.util.Iterator;
+import java.util.List;
+
 import bluej.debugger.gentype.GenTypeSolid;
 import bluej.debugger.gentype.IntersectionType;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * An entity representing intersection types (such as the bounds for type parameters).
@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class IntersectionTypeEntity extends JavaEntity
 {
-    private List<JavaEntity> types;
+    private final List<JavaEntity> types;
     
     /**
      * Get an entity representing an intersection of the given types. If there are no types,

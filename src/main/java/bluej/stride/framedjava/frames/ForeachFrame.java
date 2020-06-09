@@ -21,6 +21,17 @@
  */
 package bluej.stride.framedjava.frames;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import bluej.stride.framedjava.slots.TypeSlot;
+import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.generic.FrameContentItem;
+import bluej.stride.generic.FrameCursor;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.JavaFXUtil;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.HighlightedBreakpoint;
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
@@ -30,26 +41,22 @@ import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.ForeachElement;
 import bluej.stride.framedjava.frames.BreakFrame.BreakEncloser;
 import bluej.stride.framedjava.slots.EachExpressionSlot;
-import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
-import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleCanvasFrame;
 import bluej.stride.operations.FrameOperation;
-import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.HeaderItem;
 import bluej.stride.slots.SlotLabel;
 import bluej.stride.slots.SlotTraversalChars;
 import bluej.stride.slots.VariableNameDefTextSlot;
+import bluej.stride.operations.PullUpContentsOperation;
 import bluej.utility.Utility;
-import bluej.utility.javafx.FXConsumer;
-import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class ForeachFrame extends SingleCanvasFrame
   implements CodeFrame<ForeachElement>, DebuggableParentFrame

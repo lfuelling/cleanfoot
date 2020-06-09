@@ -22,8 +22,7 @@
 package greenfoot.core;
 
 import bluej.BlueJPropStringSource;
-import bluej.Config;
-import bluej.utility.Debug;
+import bluej.extensions.SourceType;
 import greenfoot.platforms.ide.GreenfootUtilDelegateIDE;
 import greenfoot.util.GreenfootUtil;
 
@@ -31,7 +30,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
+import java.rmi.RemoteException;
 import java.util.Properties;
+
+import bluej.Config;
+import bluej.utility.Debug;
 
 /**
  * An object of GreenfootLauncherDebugVM is the first object that is created in the

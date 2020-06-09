@@ -24,6 +24,7 @@ package bluej.stride.slots;
 import bluej.stride.framedjava.ast.links.PossibleLink;
 import bluej.stride.generic.Frame;
 import bluej.utility.javafx.SharedTransition;
+
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 
@@ -44,12 +45,12 @@ import java.util.List;
  */
 public interface HeaderItem
 {
-    public ObservableList<? extends Node> getComponents();
+    ObservableList<? extends Node> getComponents();
     
     // Returns null if not editable
-    public EditableSlot asEditable();
+    EditableSlot asEditable();
 
-    default public List<? extends PossibleLink> findLinks() {return Collections.emptyList();};
+    default List<? extends PossibleLink> findLinks() {return Collections.emptyList();}
 
     /**
      * Notifies the slot to change to the current view (normal, Java preview, bird's eye)

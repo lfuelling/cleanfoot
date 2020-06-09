@@ -6,7 +6,7 @@ jobs:
       MAVEN_OPTS: -Xmx2g
 
     docker:
-      - image: lerk/corretto-8-ant-maven
+      - image: lerk/lerk/liberica-11-maven
 
     steps:
       - checkout
@@ -24,4 +24,4 @@ jobs:
           path: target/surefire-reports
 
       - store_artifacts:
-          path: target/cleanfoot-3.5.6-jar-with-dependencies.jar
+          path: target/cleanfoot-3.6.1-jar-with-dependencies.jar

@@ -21,16 +21,17 @@
  */
 package greenfoot.util;
 
+import java.io.IOException;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import java.awt.Desktop;
+
 import bluej.Config;
 import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * A class containing static methods for the purposes of launching external
@@ -42,7 +43,7 @@ import java.io.OutputStream;
  */
 public class ExternalAppLauncher
 {
-    private static String imageEditor = Config.getPropString("greenfoot.editor.image", null);
+    private static final String imageEditor = Config.getPropString("greenfoot.editor.image", null);
 
     /**
      * Opens a file using the OS default program for that file type.
@@ -181,8 +182,8 @@ public class ExternalAppLauncher
      */
     private static class StreamRedirector extends Thread
     {
-        private OutputStream target;
-        private InputStream source;
+        private final OutputStream target;
+        private final InputStream source;
 
         public StreamRedirector(InputStream source, OutputStream target)
         {

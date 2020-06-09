@@ -21,11 +21,12 @@
  */
 package bluej.extmgr;
 
-import bluej.pkgmgr.Project;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+import java.util.ArrayList;
+import java.util.List;
+
 import bluej.utility.javafx.FXBiConsumer;
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.FXPlatformSupplier;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -33,12 +34,16 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.stage.WindowEvent;
+
+import bluej.pkgmgr.Project;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXPlatformSupplier;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.FXSupplier;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**

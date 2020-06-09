@@ -21,11 +21,8 @@
  */
 package bluej.utility;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 /**
  * Some generally useful utility methods to do with dealing with
@@ -35,7 +32,7 @@ import java.util.StringTokenizer;
  */
 public class JavaNames
 {
-    private static Set<String> javaKeywords;
+    private static final Set<String> javaKeywords;
     
     static {
         javaKeywords = new HashSet<String>();
@@ -71,12 +68,8 @@ public class JavaNames
                 return false;
             }
         }
-        
-        if (isJavaKeyword(str)) {
-            return false;
-        }
 
-        return true;
+        return !isJavaKeyword(str);
     }
 
     /**

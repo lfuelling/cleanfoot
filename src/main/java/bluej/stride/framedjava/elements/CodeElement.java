@@ -22,26 +22,29 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.stride.framedjava.ast.FrameFragment;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.SlotFragment;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.elements.LocatableElement.LocationMap;
 import bluej.stride.framedjava.errors.DirectSlotError;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
 import bluej.stride.generic.InteractionManager;
 import nu.xom.Attribute;
 import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import bluej.stride.framedjava.ast.FrameFragment;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
 
 public abstract class CodeElement
 {

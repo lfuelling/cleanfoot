@@ -21,19 +21,20 @@
  */
 package bluej.extensions;
 
-import bluej.pkgmgr.Package;
-import bluej.pkgmgr.PackageEditor;
-import bluej.pkgmgr.Project;
-import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.DependentTarget;
-import bluej.utility.Utility;
-import javafx.application.Platform;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import javafx.application.Platform;
+
+import bluej.pkgmgr.Package;
+import bluej.pkgmgr.PackageEditor;
+import bluej.pkgmgr.Project;
+import bluej.pkgmgr.dependency.Dependency;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget;
+import bluej.utility.Utility;
 
 /**
  * A wrapper for a class target (vertex) in the class diagram of BlueJ.
@@ -139,7 +140,7 @@ public class BClassTarget
     /**
      * Returns the class of this class target. Similar to Reflection API. Note
      * the naming inconsistency, which avoids a clash with
-     * {@link Object#getClass()}. May return <code>null</code> if this
+     * {@link java.lang.Object#getClass()}. May return <code>null</code> if this
      * class target is no longer valid.
      * 
      * @return The class of this class target or <code>null</code> if there is
@@ -172,7 +173,7 @@ public class BClassTarget
     public boolean isInterface() throws ProjectNotOpenException, PackageNotFoundException
     {
         ClassTarget classTarget = getClassTarget();
-        return (classTarget != null) ? classTarget.isInterface() : false;
+        return (classTarget != null) && classTarget.isInterface();
     }
 
     /**
@@ -190,7 +191,7 @@ public class BClassTarget
     public boolean isUnitTest() throws ProjectNotOpenException, PackageNotFoundException
     {
         ClassTarget classTarget = getClassTarget();
-        return (classTarget != null) ? classTarget.isUnitTest() : false;
+        return (classTarget != null) && classTarget.isUnitTest();
     }
 
     /**
@@ -208,7 +209,7 @@ public class BClassTarget
     public boolean isVisible() throws ProjectNotOpenException, PackageNotFoundException
     {
         ClassTarget classTarget = getClassTarget();
-        return (classTarget != null) ? classTarget.isVisible() : false;
+        return (classTarget != null) && classTarget.isVisible();
     }
 
     /**

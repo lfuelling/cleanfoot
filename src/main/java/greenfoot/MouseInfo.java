@@ -42,8 +42,8 @@ public class MouseInfo
     // px and py are pixel coordinates (x and y are world cell coordinates):
     private int px;
     private int py;
-    private int clickCount;;
-    
+    private int clickCount;
+
     /**
      * Do not create your own MouseInfo objects. Use
      * {@link Greenfoot#getMouseInfo() getMouseInfo()}.

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2014,2015,2016,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2014,2015,2016,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,15 +21,33 @@
  */
 package bluej.parser.entity;
 
-import bluej.debugger.gentype.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import bluej.debugger.gentype.ConstructorReflective;
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
 import bluej.parser.JavaParser;
-import bluej.parser.nodes.*;
+import bluej.parser.nodes.FieldNode;
+import bluej.parser.nodes.MethodNode;
+import bluej.parser.nodes.ParsedNode;
+import bluej.parser.nodes.ParsedTypeNode;
+import bluej.parser.nodes.TypeInnerNode;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Modifier;
-import java.util.*;
 
 /**
  * A Reflective implementation for classes which are parsed, but not necessarily compiled.
@@ -39,7 +57,7 @@ import java.util.*;
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
 public class ParsedReflective extends Reflective
 {
-    private ParsedTypeNode pnode;
+    private final ParsedTypeNode pnode;
     
     public ParsedReflective(ParsedTypeNode pnode)
     {
@@ -220,7 +238,7 @@ public class ParsedReflective extends Reflective
     }
     
     @Override
-    public Map<String, FieldReflective> getDeclaredFields()
+    public Map<String,FieldReflective> getDeclaredFields()
     {
         Map<String,Set<FieldNode>> allfields = pnode.getInner().getFields();
         
@@ -230,7 +248,7 @@ public class ParsedReflective extends Reflective
             fields.put(name, allfields.get(name).iterator().next());
         }
         
-        Map<String, FieldReflective> rmap = new HashMap<String, FieldReflective>();
+        Map<String,FieldReflective> rmap = new HashMap<String,FieldReflective>();
         for (Iterator<String> i = fields.keySet().iterator(); i.hasNext(); ) {
             String fieldName = i.next();
             FieldNode fieldNode = fields.get(fieldName);
@@ -309,14 +327,20 @@ public class ParsedReflective extends Reflective
     @Override
     public ParsedReflective getInnerClass(String name)
     {
-        Map<String, ParsedNode> contained = pnode.getInner().getContainedClasses();
+        Map<String,ParsedNode> contained = pnode.getInner().getContainedClasses();
         ParsedNode innerParsedNode = contained.get(name);
         if (innerParsedNode instanceof ParsedTypeNode) {
             return new ParsedReflective((ParsedTypeNode) innerParsedNode);
         }
         return null;
     }
-    
+
+    @Override
+    public String getModuleName()
+    {
+        return null;
+    }
+
     @Override
     public boolean equals(Object obj)
     {

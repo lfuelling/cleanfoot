@@ -22,19 +22,38 @@
 package bluej.groupwork.ui;
 
 import bluej.Config;
-import bluej.groupwork.*;
-import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.groupwork.actions.CommitAction;
 import bluej.groupwork.actions.PushAction;
+import bluej.groupwork.Repository;
+import bluej.groupwork.StatusHandle;
+import bluej.groupwork.StatusListener;
+import bluej.groupwork.TeamStatusInfo;
+import bluej.groupwork.TeamStatusInfo.Status;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
 import bluej.pkgmgr.BlueJPackageFile;
 import bluej.pkgmgr.Project;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
-import bluej.utility.Utility;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.NoMultipleSelectionModel;
+import bluej.utility.Utility;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -42,19 +61,21 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A user interface to commit and push. Used by DCVS systems, like Git.
@@ -68,9 +89,9 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
     private final Project project;
     private Repository repository;
 
-    private Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>();
-    private ObservableList<TeamStatusInfo> commitListModel = FXCollections.observableArrayList();
-    private ObservableList<TeamStatusInfo> pushListModel = FXCollections.observableArrayList();
+    private final Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>();
+    private final ObservableList<TeamStatusInfo> commitListModel = FXCollections.observableArrayList();
+    private final ObservableList<TeamStatusInfo> pushListModel = FXCollections.observableArrayList();
 
     private final CheckBox includeLayout = new CheckBox(Config.getString("team.commit.includelayout"));
     private final TextArea commitText = new TextArea();

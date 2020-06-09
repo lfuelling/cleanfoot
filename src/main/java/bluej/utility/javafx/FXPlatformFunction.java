@@ -31,5 +31,5 @@ import threadchecker.Tag;
 @OnThread(Tag.FXPlatform)
 public interface FXPlatformFunction<T, R>
 {
-    public R apply(T t);
+    R apply(T t);
 }

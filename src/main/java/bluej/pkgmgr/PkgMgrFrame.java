@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2010,2011,2012,2013,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2010,2011,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,6 +22,7 @@
 package bluej.pkgmgr;
 
 import bluej.*;
+import bluej.pkgmgr.AboutDialogTemplate;
 import bluej.classmgr.BPClassLoader;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
@@ -44,54 +45,95 @@ import bluej.extmgr.ExtensionsManager;
 import bluej.extmgr.FXMenuManager;
 import bluej.extmgr.ToolsExtensionMenu;
 import bluej.extmgr.ViewExtensionMenu;
-import bluej.groupwork.actions.*;
+import bluej.groupwork.actions.CheckoutAction;
+import bluej.groupwork.actions.CommitCommentAction;
+import bluej.groupwork.actions.ShareAction;
+import bluej.groupwork.actions.StatusAction;
+import bluej.groupwork.actions.TeamAction;
+import bluej.groupwork.actions.TeamActionGroup;
+import bluej.groupwork.actions.UpdateDialogAction;
 import bluej.groupwork.ui.ActivityIndicator;
 import bluej.pkgmgr.actions.*;
 import bluej.pkgmgr.print.PackagePrintManager;
-import bluej.pkgmgr.t4rget.CSSTarget;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.PackageTarget;
-import bluej.pkgmgr.t4rget.Target;
-import bluej.pkgmgr.t4rget.role.UnitTestClassRole;
+import bluej.pkgmgr.target.CSSTarget;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.PackageTarget;
+import bluej.pkgmgr.target.Target;
+import bluej.pkgmgr.target.role.UnitTestClassRole;
 import bluej.prefmgr.PrefMgr;
 import bluej.prefmgr.PrefMgrDialog;
+import bluej.terminal.Terminal;
 import bluej.testmgr.TestDisplayFrame;
 import bluej.testmgr.record.InvokerRecord;
-import bluej.utility.*;
-import bluej.utility.javafx.*;
+import bluej.utility.BlueJFileReader;
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
+import bluej.utility.JavaNames;
+import bluej.utility.Utility;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXPlatformSupplier;
+import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.JavaFXUtil.FXOnlyMenu;
+import bluej.utility.javafx.TriangleArrow;
+import bluej.utility.javafx.UnfocusableScrollPane;
+import bluej.utility.javafx.UntitledCollapsiblePane;
 import bluej.utility.javafx.UntitledCollapsiblePane.ArrowLocation;
 import bluej.views.CallableView;
 import bluej.views.ConstructorView;
 import bluej.views.MethodView;
-import javafx.animation.*;
+import javafx.animation.Animation;
+import javafx.animation.FillTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanExpression;
-import javafx.beans.property.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.embed.swing.SwingNode;
 import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
-import javafx.geometry.*;
+import javafx.geometry.Orientation;
+import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.print.PrinterJob;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.SVGPath;
@@ -105,11 +147,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * The main user interface frame which allows editing of packages
@@ -211,7 +254,7 @@ public class PkgMgrFrame
     private PackageEditor editor = null;
     @OnThread(Tag.Any)
     // Effectively final, but can't mark it as such because initialised on other thread
-    private ObjectBench objbench;
+    private final ObjectBench objbench;
     @OnThread(Tag.FXPlatform)
     private CodePad codePad;
     @OnThread(Tag.FXPlatform)
@@ -230,23 +273,23 @@ public class PkgMgrFrame
     private ExportManager exporter;
 
     @OnThread(Tag.FX)
-    private Property<Stage> stageProperty;
+    private final Property<Stage> stageProperty;
     @OnThread(Tag.FX)
-    private Property<BorderPane> paneProperty;
+    private final Property<BorderPane> paneProperty;
     @OnThread(Tag.FXPlatform)
     private FXPlatformRunnable cancelWiggle;
     @OnThread(Tag.FXPlatform)
     private VBox toolPanel;
     @OnThread(Tag.FXPlatform)
-    private EventHandler<MouseEvent> editorMousePressed;
+    private EventHandler<javafx.scene.input.MouseEvent> editorMousePressed;
     @OnThread(Tag.FXPlatform)
     private ScrollPane pkgEditorScrollPane;
     // We keep these properties here because we need them for creating
     // the menu, but the menu may get created before a project (and PackageEditor) has been opened:
     @OnThread(Tag.Any)
-    private SimpleBooleanProperty showUsesProperty;
+    private final SimpleBooleanProperty showUsesProperty;
     @OnThread(Tag.Any)
-    private SimpleBooleanProperty showInheritsProperty;
+    private final SimpleBooleanProperty showInheritsProperty;
     // The horizontal split pane containing the object bench and (sometimes) codepad.
     @OnThread(Tag.FX)
     private SplitPane bottomPane;
@@ -269,6 +312,7 @@ public class PkgMgrFrame
     private UntitledCollapsiblePane teamAndTestFoldout;
     @OnThread(Tag.FX)
     private BooleanExpression teamShowSharedButtons;
+    private AboutDialogTemplate aboutDialog = null;
 
     /**
      * Create a new PkgMgrFrame which does not show a package.
@@ -543,17 +587,8 @@ public class PkgMgrFrame
 
         JavaFXUtil.onceNotNull(frame.stageProperty, stage ->
                 JavaFXUtil.addChangeListener(stage.focusedProperty(), focused -> {
-                    if (focused) {
+                    if (focused.booleanValue()) {
                         recentFrame = frame;
-                    } else {
-                        if (Config.isWinOS()) {
-                            // We need to fire ESCAPE key-press and ESCAPE key-release events
-                            // because alt-tab triggers the menu and menu cannot be cancelled programmatically
-                            frame.getFXWindow().getScene().getRoot().fireEvent(
-                                    new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE, false, false, false, false));
-                            frame.getFXWindow().getScene().getRoot().fireEvent(
-                                    new KeyEvent(KeyEvent.KEY_RELEASED, "", "", KeyCode.ESCAPE, false, false, false, false));
-                        }
                     }
                 })
         );
@@ -778,7 +813,7 @@ public class PkgMgrFrame
      * @param message    The messahe to show
      */
     public static void displayMessage(Project sourceProj, String message) {
-        PkgMgrFrame pmf[] = getAllProjectFrames(sourceProj);
+        PkgMgrFrame[] pmf = getAllProjectFrames(sourceProj);
 
         if (pmf != null) {
             for (PkgMgrFrame pmf1 : pmf) {
@@ -923,7 +958,7 @@ public class PkgMgrFrame
                 event.consume();
             });
             editorMousePressed = e -> clearStatus();
-            editor.addEventFilter(MouseEvent.MOUSE_PRESSED, editorMousePressed);  // This mouse listener MUST be before
+            editor.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, editorMousePressed);  // This mouse listener MUST be before
             editor.startMouseListening();   //  the editor's listener itself!
             addCtrlTabShortcut(editor);
             aPkg.setEditor(this.editor);
@@ -1086,7 +1121,7 @@ public class PkgMgrFrame
 
             // Take a copy because we're about to null it:
             PackageEditor oldEd = editor;
-            oldEd.removeEventFilter(MouseEvent.MOUSE_PRESSED, editorMousePressed);
+            oldEd.removeEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, editorMousePressed);
             pkgEditorScrollPane.setContent(null);
 
             // Disassociate from the project team actions, so that we don't inadvertently disable the
@@ -1323,7 +1358,7 @@ public class PkgMgrFrame
         if (Project.createNewProject(dirName)) {
             Project proj = Project.openProject(dirName);
 
-            Package unNamedPkg = Objects.requireNonNull(proj).getPackage("");
+            Package unNamedPkg = proj.getPackage("");
 
             if (isEmptyFrame()) {
                 openPackage(unNamedPkg, this);
@@ -1396,7 +1431,7 @@ public class PkgMgrFrame
             return false;
         }
 
-        //check if there already exists a class in a library with that name
+        //check if there already exists a class in a library with that name 
         String[] conflict = new String[1];
         Class<?> c = thePkg.loadClass(thePkg.getQualifiedName(name));
         if (c != null) {
@@ -1459,7 +1494,6 @@ public class PkgMgrFrame
                 JavaFXUtil.scrollTo(pkgEditorScrollPane, target.getNode());
             }
             target.analyseSource();
-
         } catch (IOException e) {
             Debug.reportError("Error in duplicating a class: ", e);
         }
@@ -1471,7 +1505,7 @@ public class PkgMgrFrame
     public void doNewProject() {
         String title = Config.getString("pkgmgr.newPkg.title");
 
-        File newnameFile = FileUtility.getSaveProjectFX(getFXWindow(), title);
+        File newnameFile = FileUtility.getSaveProjectFX(getProject(), getFXWindow(), title);
         if (newnameFile == null)
             return;
         if (!newProject(newnameFile.getAbsolutePath())) {
@@ -1584,7 +1618,15 @@ public class PkgMgrFrame
 
         if (oPath == null)
             return false;
-
+        for (File file : oPath.listFiles()) {
+            if (file.isDirectory()) {
+                // When opening a zip file that is made on the Mac
+                // some extra directories that could be included need to be ignored 
+                if (!file.getName().equals("__MACOSX") && Project.isProject(file.getPath())) {
+                    return openProject(file.getPath());
+                }
+            }
+        }
         if (Project.isProject(oPath.getPath())) {
             return openProject(oPath.getPath());
         } else {
@@ -1667,7 +1709,7 @@ public class PkgMgrFrame
         if (!Config.isGreenfoot()) {
             // When we were using Swing, we stored the package editor width and height
             // and set them on load.  We don't do that any more in FX, but in case
-            // this project is saved in BlueJ 4 and loaded in BlueJ 3, we don't want to
+            // this project is saved in BlueJ 4 and loaded in BlueJ 3, we don't want to 
             // have the position go wild, so we still store them even though we never use them:
             p.put("package.editor.width", Integer.toString((int) pkgEditorScrollPane.getViewportBounds().getWidth()));
             p.put("package.editor.height", Integer.toString((int) pkgEditorScrollPane.getViewportBounds().getHeight()));
@@ -1722,8 +1764,7 @@ public class PkgMgrFrame
      */
     public void doAddFromFile() {
         // multi selection file dialog that shows .java and .class files
-        List<File> classes = FileUtility.getMultipleFilesFX(getFXWindow(),
-                Config.getString("pkgmgr.addClass.title"), FileUtility.getJavaStrideSourceFilterFX());
+        List<File> classes = FileUtility.getMultipleFilesFX(getFXWindow(), Config.getString("pkgmgr.addClass.title"), FileUtility.getJavaStrideSourceFilterFX());
 
         if (classes == null || classes.isEmpty())
             return;
@@ -1780,7 +1821,7 @@ public class PkgMgrFrame
         if (!choices.isPresent())
             return;
 
-        PrinterJob job = JavaFXUtil.createPrinterJob();
+        javafx.print.PrinterJob job = JavaFXUtil.createPrinterJob();
         if (job == null) {
             DialogManager.showErrorFX(getFXWindow(), "print-no-printers");
             return;
@@ -1840,10 +1881,14 @@ public class PkgMgrFrame
                 "Marion Zalk",
         };
 
-        Image image = new Image(Objects.requireNonNull(Boot.class.getClassLoader()
-                .getResource("images/bluej-splash.png")).toString());
-        new AboutDialogTemplate(getFXWindow(), Boot.BLUEJ_VERSION,
-                "http://www.bluej.org/", image, translatorNames, previousTeamMembers).showAndWait();
+        Image image = new Image(Boot.class.getResource("gen-bluej-splash.png").toString());
+        if (aboutDialog == null) {
+            aboutDialog = new AboutDialogTemplate(getFXWindow().getOwner(), Boot.BLUEJ_VERSION,
+                    "http://www.bluej.org/", image, translatorNames, previousTeamMembers);
+            aboutDialog.showAndWait();
+        } else if (!aboutDialog.isShowing()) {
+            aboutDialog.showAndWait();
+        }
     }
 
     /**
@@ -2194,17 +2239,14 @@ public class PkgMgrFrame
     }
 
     /**
-     * The user function to remove an arrow from the dagram was invoked.
-     *
-     * public void doRemoveArrow() { pkg.setState(Package.S_DELARROW);
-     * setStatus(Config.getString("pkgmgr.chooseArrow")); }
-     */
-
-    /**
      * The user function to test all classes in a package
      */
     public void doTest() {
         runTestsAction.setAvailable(false);
+        Terminal terminal = this.getPackage().getProject().getTerminal();
+        if (terminal.clearOnMethodCall()) {
+            terminal.clear();
+        }
 
         List<ClassTarget> l = getPackage().getTestTargets();
 
@@ -2363,7 +2405,9 @@ public class PkgMgrFrame
         libraryCallDialog.setResult(null);
         libraryCallDialog.requestfocus();
         Optional<CallableView> result = libraryCallDialog.showAndWait();
-        result.ifPresent(pkgRef::callStaticMethodOrConstructor);
+        result.ifPresent(viewToCall -> {
+            pkgRef.callStaticMethodOrConstructor(viewToCall);
+        });
     }
 
     /**
@@ -2457,7 +2501,7 @@ public class PkgMgrFrame
      * in.
      */
     @Override
-    public void blueJEvent(int eventId, Object arg) {
+    public void blueJEvent(int eventId, Object arg, Project prj) {
         switch (eventId) {
             case BlueJEvent.CREATE_VM:
                 setStatus(Config.getString("pkgmgr.creatingVM"));
@@ -3050,7 +3094,6 @@ public class PkgMgrFrame
         for (PkgMgrAction action : actionsToDisable) {
             action.setEnabled(enable);
         }
-        ;
     }
 
     /**
@@ -3211,9 +3254,9 @@ public class PkgMgrFrame
     }
 
     // Used as a way to tag the three main panes in the PkgMgrFrame window
-    public static interface PkgMgrPane {
+    public interface PkgMgrPane {
         @OnThread(Tag.FX)
-        public default Node asNode() {
+        default Node asNode() {
             return (Node) this;
         }
     }

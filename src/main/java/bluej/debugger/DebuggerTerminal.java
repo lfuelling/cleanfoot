@@ -24,8 +24,7 @@ package bluej.debugger;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 
 /**
  *

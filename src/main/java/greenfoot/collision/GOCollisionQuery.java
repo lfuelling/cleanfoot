@@ -60,9 +60,6 @@ public class GOCollisionQuery implements CollisionQuery
         if(compareObject == null) {
             return true;
         }
-        else if(ActorVisitor.intersects(compareObject, other)) {
-            return true;
-        } 
-        return false;
+        else return ActorVisitor.intersects(compareObject, other);
     }     
 }

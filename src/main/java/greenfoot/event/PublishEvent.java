@@ -49,7 +49,7 @@ public class PublishEvent
     private String msg;
     private int bytes;
 
-    private int type;
+    private final int type;
 
     /**
      * Construct a PublishEvent for an "upload complete" event.

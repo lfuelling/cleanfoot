@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2014,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2014,2016,2017,2018  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,15 +21,17 @@
  */
 package bluej.classmgr;
 
-import bluej.Config;
-import bluej.pkgmgr.Project;
-import bluej.prefmgr.PrefMgrDialog;
-import bluej.prefmgr.PrefPanelListener;
-import bluej.utility.DialogManager;
-import bluej.utility.FileUtility;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.NoMultipleSelectionModel;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -41,14 +43,18 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
+
+import bluej.prefmgr.PrefMgrDialog;
+import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.NoMultipleSelectionModel;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
-import java.util.stream.Collectors;
+import bluej.Config;
+import bluej.pkgmgr.Project;
+import bluej.prefmgr.PrefPanelListener;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
 
 /**
  * A PrefPanel subclass to allow the user to interactively add a new library
@@ -72,7 +78,7 @@ implements PrefPanelListener
     private static List<ClassPathEntry> savedUserLibraries = null;
     
     private ListView<ClassPathEntry> userLibrariesListView = null;
-    private ObservableList<ClassPathEntry> editingUserLibraries;
+    private final ObservableList<ClassPathEntry> editingUserLibraries;
     private boolean classPathModified = false;
 
     /**
@@ -118,14 +124,11 @@ implements PrefPanelListener
                 Button addFileButton = new Button(Config.getString("classmgr.addFile"));
                 addFileButton.setOnAction(e -> addUserLibraryFile());
 
-                Button addDirButton = new Button(Config.getString("classmgr.addDir"));
-                addDirButton.setOnAction(e -> addUserLibraryDir());
-                
                 Button deleteButton = new Button(Config.getString("classmgr.delete"));
                 deleteButton.setOnAction(e -> deleteUserLibrary());
                 deleteButton.disableProperty().bind(userLibrariesListView.getSelectionModel().selectedItemProperty().isNull());
 
-                buttonPane.getChildren().addAll(addFileButton, addDirButton, deleteButton);
+                buttonPane.getChildren().addAll(addFileButton, deleteButton);
             }
             userLibPane.setCenter(userLibrariesListView);
             userLibPane.setRight(buttonPane);
@@ -307,20 +310,6 @@ implements PrefPanelListener
             {
                 editingUserLibraries.add(new ClassPathEntry(file.getAbsolutePath(), "", true));
             }
-            classPathModified = true;
-        }
-    }
-
-    /**
-     * Pop up a dialog to allow the user to add a library
-     * to their user library classpath.
-     **/
-    private void addUserLibraryDir()
-    {
-        File dir = FileUtility.getOpenDirFX(getScene().getWindow(), Config.getString("prefmgr.misc.addLibTitle"), false);
-
-        if (dir != null) {
-            editingUserLibraries.add(new ClassPathEntry(dir.getAbsolutePath(), "", true));
             classPathModified = true;
         }
     }

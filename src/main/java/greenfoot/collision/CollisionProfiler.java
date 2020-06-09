@@ -23,7 +23,7 @@ package greenfoot.collision;
 
 import greenfoot.Actor;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,16 +33,16 @@ import java.util.List;
 public class CollisionProfiler implements CollisionChecker
 {
     // Set this to true for output to console
-    private static boolean to_console = true;
+    private static final boolean to_console = true;
     
     // Set this to true for more complete output
-    private static boolean verbose = true;
+    private static final boolean verbose = true;
     
     // Set this to the number of sequences to collect times for,
     // before outputting the results and resetting the times
     private static final int MAX_SEQ_COUNT = 100;
 
-    private CollisionChecker checker;
+    private final CollisionChecker checker;
     
     private long addObjectTime;
     private long removeObjectTime;

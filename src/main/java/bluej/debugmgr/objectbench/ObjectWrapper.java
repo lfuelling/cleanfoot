@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -20,6 +20,40 @@
  LICENSE.txt file that accompanied this code.
  */
 package bluej.debugmgr.objectbench;
+
+import java.awt.Color;
+import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import bluej.views.ViewFilter.StaticOrInstance;
+import javafx.animation.Animation;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
+import javafx.beans.binding.When;
+import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
+import javafx.geometry.Side;
+import javafx.scene.Cursor;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
 import bluej.Config;
 import bluej.debugger.DebuggerObject;
@@ -49,33 +83,8 @@ import bluej.views.ConstructorView;
 import bluej.views.MethodView;
 import bluej.views.View;
 import bluej.views.ViewFilter;
-import bluej.views.ViewFilter.StaticOrInstance;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
-import javafx.beans.binding.When;
-import javafx.collections.ObservableList;
-import javafx.geometry.Point2D;
-import javafx.geometry.Side;
-import javafx.scene.Cursor;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
-import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.awt.*;
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A wrapper around a Java object that handles calling methods, inspecting, etc.
@@ -114,8 +123,8 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
 
     // wild guess until we find out.
     // It was 19 but with higher resolution screens, it became insufficient.
-    private static int itemHeight = 28;
-    private static boolean itemHeightKnown = false;
+    private static final int itemHeight = 28;
+    private static final boolean itemHeightKnown = false;
     @OnThread(Tag.Any)
     private static int itemsOnScreen;
 
@@ -133,6 +142,9 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
     private String objInstanceName;
     protected String displayClassName;
     protected ContextMenu menu;
+    
+    protected final Rectangle highlight = new ResizableRectangle();
+            
 
     // back references to the containers that we live in
     private final Package pkg;
@@ -154,9 +166,9 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
      */
     @OnThread(Tag.FXPlatform)
     static public ObjectWrapper getWrapper(PkgMgrFrame pmf, ObjectBench ob,
-                                           DebuggerObject obj,
-                                           GenTypeClass iType,
-                                           String instanceName)
+                                            DebuggerObject obj,
+                                            GenTypeClass iType,
+                                            String instanceName)
     {
         if (obj.isArray()) {
             return new ArrayWrapper(pmf, ob, obj, instanceName);
@@ -171,7 +183,7 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
     {
         // first one we construct will give us more info about the size of the screen
         if(!itemHeightKnown) {
-            itemsOnScreen = (int) Config.screenBounds.getHeight() / itemHeight;
+            itemsOnScreen = (int)Config.screenBounds.getHeight() / itemHeight;
         }
 
         this.pmf = pmf;
@@ -222,11 +234,16 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
         Label label = new Label(getName() + ":\n" + displayClassName);
         JavaFXUtil.addStyleClass(label, "object-wrapper-text");
         createComponent(label);
+        highlight.setMouseTransparent(true);
+        highlight.setVisible(false);
+        highlight.getStyleClass().add("object-debug-highlight");
     }
 
     protected void createComponent(Label label)
     {
-        getChildren().addAll(new ObjectBackground(CORNER_SIZE, new When(focusedProperty()).then(FOCUSED_BORDER).otherwise(UNFOCUSED_BORDER)), label);
+        getChildren().addAll(new ObjectBackground(CORNER_SIZE, 
+            new When(focusedProperty()).then(FOCUSED_BORDER).otherwise(UNFOCUSED_BORDER)), 
+            label, highlight);
         setBackground(null);
         setEffect(new DropShadow(SHADOW_RADIUS, SHADOW_RADIUS/2.0, SHADOW_RADIUS/2.0, javafx.scene.paint.Color.GRAY));
     }
@@ -341,7 +358,30 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
     {
         String className = obj.getClassName();
         Class<?> cl = pkg.loadClass(className);
-        
+        if (cl == null && obj.isArray() && className.endsWith("[]"))
+        {
+            String memberType = className.substring(0, className.length() - 2);
+            switch (memberType)
+            {
+                case "boolean":
+                    return boolean[].class;
+                case "byte":
+                    return byte[].class;
+                case "short":
+                    return short[].class;
+                case "int":
+                    return int[].class;
+                case "long":
+                    return long[].class;
+                case "float":
+                    return float[].class;
+                case "double":
+                    return double[].class;
+                case "char":
+                    return char[].class;
+            }
+            cl = Array.newInstance(pkg.loadClass(memberType), 0).getClass();
+        }
         // If the class is inaccessible, use the invocation type.
         if (cl != null) {
             if (! classIsAccessible(cl)) {
@@ -461,7 +501,7 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
                 
                 // Determine visibility of package private / protected members
                 filter = new ViewFilter(StaticOrInstance.INSTANCE, currentPackageName);
-                
+
                 // map generic type paramaters to the current superclass
                 curType = curType.mapToSuper(currentClass.getName());
                 
@@ -751,6 +791,48 @@ public class ObjectWrapper extends StackPane implements InvokeListener, NamedVal
         });
         t.play();
     }
+
+    /**
+     * Sets the highlight (for current object while debugging) on or off
+     * @param highlightOn True to highlight this object, false to turn it off
+     */
+    public void setHighlight(boolean highlightOn)
+    {
+        highlight.setVisible(highlightOn);
+    }
+
+    /**
+     * A Rectangle subclass that can be resized to any size during layout.
+     */
+    @OnThread(Tag.FX)
+    private static class ResizableRectangle extends Rectangle
+    {
+        @Override
+        public boolean isResizable()
+        {
+            return true;
+        }
+
+        @Override
+        public void resize(double width, double height)
+        {
+            setWidth(width);
+            setHeight(height);
+        }
+
+        @Override
+        public double maxWidth(double height)
+        {
+            return Double.MAX_VALUE;
+        }
+
+        @Override
+        public double maxHeight(double width)
+        {
+            return Double.MAX_VALUE;
+        }
+    }
+    
     /*
     @Override
     public AccessibleContext getAccessibleContext()

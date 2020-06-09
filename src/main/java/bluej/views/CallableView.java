@@ -21,8 +21,8 @@
  */
 package bluej.views;
 
-import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.GenTypeDeclTpar;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

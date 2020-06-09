@@ -25,6 +25,7 @@ import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.JavaType;
+
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
@@ -42,7 +43,7 @@ public class JdiField extends DebuggerField
     private final Field field;
     @OnThread(Tag.Any)
     private final JdiObject object;
-    private boolean hidden;
+    private final boolean hidden;
     
     @OnThread(Tag.Any)
     public JdiField(Field field, JdiObject object, boolean hidden)

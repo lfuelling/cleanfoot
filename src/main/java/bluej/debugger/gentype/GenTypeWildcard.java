@@ -83,7 +83,7 @@ public class GenTypeWildcard extends GenTypeParameter
         // Find new upper bounds
         if (upperBound != null) {
             ArrayList<GenTypeSolid> newUppers = new ArrayList<GenTypeSolid>();
-            GenTypeSolid[] upperBounds = upperBound.getUpperBounds();
+            GenTypeSolid [] upperBounds = upperBound.getUpperBounds();
             
             // find the new upper bounds
             for (int i = 0; i < upperBounds.length; i++) {
@@ -96,7 +96,7 @@ public class GenTypeWildcard extends GenTypeParameter
                     newUppers.add((GenTypeSolid) newBound);
                 }
             }
-            GenTypeSolid[] newUppersA = (GenTypeSolid[]) newUppers.toArray(new GenTypeSolid[newUppers.size()]);
+            GenTypeSolid [] newUppersA = newUppers.toArray(new GenTypeSolid[newUppers.size()]);
             newUpper = IntersectionType.getIntersection(newUppersA);
         }
         
@@ -133,11 +133,7 @@ public class GenTypeWildcard extends GenTypeParameter
         if (lowerBound != null && ! lowerBound.equals(otherLower)) {
             return false;
         }
-        if (lowerBound == null && otherLower != null) {
-            return false;
-        }
-        
-        return true;
+        return lowerBound != null || otherLower == null;
     }
     
     @Override

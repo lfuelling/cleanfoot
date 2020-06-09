@@ -26,8 +26,8 @@ import bluej.extensions.BDependency;
 import bluej.extensions.BPackage;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.DependentTarget;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget;
 
 /**
  * This class encapsulates events which occur on dependencies of the class
@@ -55,12 +55,12 @@ public class DependencyEvent implements ExtensionEvent
         DEPENDENCY_SHOWN,
 
         /** This event occurs when a dependency was removed from the package. */
-        DEPENDENCY_REMOVED;
+        DEPENDENCY_REMOVED
     }
 
-    private Type eventType;
-    private Dependency dependency;
-    private Package bluejPackage;
+    private final Type eventType;
+    private final Dependency dependency;
+    private final Package bluejPackage;
 
     /**
      * Constructor. Creates a new {@link DependencyEvent}. The type of the event

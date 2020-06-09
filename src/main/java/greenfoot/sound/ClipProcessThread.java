@@ -33,7 +33,7 @@ public class ClipProcessThread implements Runnable
 {
     private Thread thread;
     
-    private LinkedList<SoundClip> queue = new LinkedList<SoundClip>();
+    private final LinkedList<SoundClip> queue = new LinkedList<SoundClip>();
     
     public ClipProcessThread()
     {

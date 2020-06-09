@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2010,2011,2014,2015,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 2010,2011,2014,2015,2018,2019  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,13 +21,25 @@
  */
 package bluej.parser.entity;
 
-import bluej.debugger.gentype.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+
+import bluej.debugger.gentype.ConstructorReflective;
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.JavaPrimitiveType;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
 import bluej.utility.JavaReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Modifier;
-import java.util.*;
 
 /**
  * A Reflective implementation for arrays (which defers most functionality to the component reflective)
@@ -37,8 +49,8 @@ import java.util.*;
 @OnThread(Tag.Any)
 public class ParsedArrayReflective extends Reflective
 {
-    private Reflective component;
-    private String className;
+    private final Reflective component;
+    private final String className;
     
     /**
      * Construct a new ParsedArrayReflective with the given component type.
@@ -71,9 +83,9 @@ public class ParsedArrayReflective extends Reflective
     
     // See JLS section 10.7: arrays have a "public final int length" field
     @Override
-    public Map<String, FieldReflective> getDeclaredFields()
+    public Map<String,FieldReflective> getDeclaredFields()
     {
-        return Collections.singletonMap("length", new FieldReflective("length", JavaPrimitiveType.getInt(), Modifier.PUBLIC | Modifier.FINAL, this));
+        return Collections.singletonMap("length", new FieldReflective("length", JavaPrimitiveType.getInt(), Modifier.PUBLIC | Modifier.FINAL, this)); 
     }
     
     // See JLS section 10.7: arrays have a "public Object clone()" method
@@ -154,5 +166,11 @@ public class ParsedArrayReflective extends Reflective
     public Reflective getInnerClass(String name)
     {
         return null;
+    }
+
+    @Override
+    public String getModuleName()
+    {
+        return component.getModuleName();
     }
 }

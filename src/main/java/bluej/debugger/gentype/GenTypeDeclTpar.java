@@ -21,6 +21,9 @@
  */
 package bluej.debugger.gentype;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +36,7 @@ import java.util.Set;
  */
 public class GenTypeDeclTpar extends GenTypeTpar
 {
-    protected GenTypeSolid[] upperBounds;
+    protected GenTypeSolid [] upperBounds;
     
     /**
      * Construct a GenTypeDeclTpar without specifying bounds. The bounds should then be
@@ -48,7 +51,7 @@ public class GenTypeDeclTpar extends GenTypeTpar
     public GenTypeDeclTpar(String parname, GenTypeSolid bound)
     {
         super(parname);
-        upperBounds = new GenTypeSolid[] { bound };
+        upperBounds = new GenTypeSolid [] { bound };
     }
     
     /**
@@ -58,7 +61,7 @@ public class GenTypeDeclTpar extends GenTypeTpar
      * @param parname  The name of this type parameter
      * @param bounds   The declared upper bounds for this type parameter
      */
-    public GenTypeDeclTpar(String parname, GenTypeSolid[] bounds)
+    public GenTypeDeclTpar(String parname, GenTypeSolid [] bounds)
     {
         super(parname);
         upperBounds = bounds;
@@ -68,7 +71,7 @@ public class GenTypeDeclTpar extends GenTypeTpar
      * Constructor for a type parameter with a lower bound (as well as upper bounds).
      * This can occur from capture conversion of a "? super XX" wildcard.
      */
-    public GenTypeDeclTpar(String parname, GenTypeSolid[] ubounds, GenTypeSolid lbound)
+    public GenTypeDeclTpar(String parname, GenTypeSolid [] ubounds, GenTypeSolid lbound)
     {
         super(parname);
         upperBounds = ubounds;
@@ -78,7 +81,7 @@ public class GenTypeDeclTpar extends GenTypeTpar
      * Set the bounds. This should only be done when first creating the instance; otherwise,
      * GenTypeDeclTpar instances should be immutable (as with other JavaTypes).
      */
-    public void setBounds(GenTypeSolid[] ubounds)
+    public void setBounds(GenTypeSolid [] ubounds)
     {
         upperBounds = ubounds;
     }
@@ -94,9 +97,9 @@ public class GenTypeDeclTpar extends GenTypeTpar
     /**
      * Get the bounds of this type parameter, as an array of GenTypeSolid.
      */
-    public GenTypeSolid[] upperBounds()
+    public GenTypeSolid [] upperBounds()
     {
-        GenTypeSolid[] r = new GenTypeSolid[upperBounds.length];
+        GenTypeSolid [] r = new GenTypeSolid [upperBounds.length];
         System.arraycopy(upperBounds, 0, r, 0, upperBounds.length);
         return r;
     }
@@ -108,14 +111,14 @@ public class GenTypeDeclTpar extends GenTypeTpar
     {
         if (tparams == null) {
             // Map each bound also:
-            GenTypeSolid[] mappedBounds = new GenTypeSolid[upperBounds.length];
+            GenTypeSolid [] mappedBounds = new GenTypeSolid[upperBounds.length];
             for (int i = 0; i < upperBounds.length; i++) {
                 mappedBounds[i] = upperBounds[i].mapTparsToTypes(null).getUpperBound().asSolid();
             }
             return IntersectionType.getIntersection(mappedBounds);
         }
         
-        GenTypeParameter newType = (GenTypeParameter)tparams.get(getTparName());
+        GenTypeParameter newType = tparams.get(getTparName());
         if( newType == null )
             return this;
         else
@@ -158,25 +161,21 @@ public class GenTypeDeclTpar extends GenTypeTpar
         }
     }
     
-    public GenTypeClass[] getReferenceSupertypes()
+    public GenTypeClass [] getReferenceSupertypes()
     {
         ArrayList<GenTypeClass> al = new ArrayList<GenTypeClass>();
         for (int i = 0; i < upperBounds.length; i++) {
-            GenTypeClass[] brs = upperBounds[i].getReferenceSupertypes();
+            GenTypeClass [] brs = upperBounds[i].getReferenceSupertypes();
             for (int j = 0; j < brs.length; j++) {
                 al.add(brs[j]);
             }
         }
-        return (GenTypeClass[]) al.toArray(new GenTypeClass[0]);
+        return al.toArray(new GenTypeClass[0]);
     }
 
     public boolean isAssignableFrom(JavaType t)
     {
-        if (super.isAssignableFrom(t)) {
-            return true;
-        }
-        
-        return false;
+        return super.isAssignableFrom(t);
     }
 
 }

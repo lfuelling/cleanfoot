@@ -21,8 +21,7 @@
  */
 package bluej.utility.filefilter;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.*;
 
 /**
  * A FileFilter that only accepts Java class files.

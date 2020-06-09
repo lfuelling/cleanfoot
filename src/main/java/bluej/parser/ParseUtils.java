@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2013,2014,2015,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2013,2014,2015,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -19,19 +19,37 @@
  This file is subject to the Classpath exception as provided in the  
  LICENSE.txt file that accompanied this code.
  */
-package bluej.parser;
+package bluej.parser; 
 
-import bluej.debugger.gentype.*;
-import bluej.parser.entity.*;
+import java.util.*;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeArrayClass;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.JavaPrimitiveType;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.ImportedEntity;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.ParsedArrayReflective;
+import bluej.parser.entity.SolidTargEntity;
+import bluej.parser.entity.TypeArgumentEntity;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.UnboundedWildcardEntity;
+import bluej.parser.entity.UnresolvedArray;
+import bluej.parser.entity.UnresolvedEntity;
+import bluej.parser.entity.WildcardExtendsEntity;
+import bluej.parser.entity.WildcardSuperEntity;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.JavaReflective;
 import bluej.utility.JavaUtils;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.*;
 
 /**
  * Utilities for parsers.
@@ -50,7 +68,7 @@ public class ParseUtils
      */
     public interface AssistContentConsumer
     {
-        public void consume(AssistContent ac, boolean overridden);
+        void consume(AssistContent ac, boolean overridden);
     }
     
     
@@ -59,8 +77,8 @@ public class ParseUtils
      * If there are can be no valid completions in the given context, returns null.
      */
     @OnThread(Tag.FXPlatform)
-    public static AssistContent[] getPossibleCompletions(CodeSuggestions suggests,
-                                                         JavadocResolver javadocResolver, AssistContentConsumer consumer)
+    public static AssistContent[] getPossibleCompletions(ExpressionTypeInfo suggests, 
+            JavadocResolver javadocResolver, AssistContentConsumer consumer)
     {
         GenTypeClass exprType = initGetPossibleCompletions(suggests);
         if (exprType != null){
@@ -79,7 +97,7 @@ public class ParseUtils
      * @return  A suitable GenTypeClass representing the target type for completion
      *           purposes, or null if there is no such suitable type.
      */
-    public static GenTypeClass initGetPossibleCompletions(CodeSuggestions suggests)
+    public static GenTypeClass initGetPossibleCompletions(ExpressionTypeInfo suggests)
     {
         if (suggests != null) {
             GenTypeClass exprType = suggests.getSuggestionType().asClass();
@@ -118,8 +136,8 @@ public class ParseUtils
      * @return The list of found completions.
      */
     @OnThread(Tag.FXPlatform)
-    private static List<AssistContent> getCompletionsForTarget(GenTypeClass exprType, CodeSuggestions suggests,
-                                                               JavadocResolver javadocResolver, AssistContentConsumer consumer)
+    private static List<AssistContent> getCompletionsForTarget(GenTypeClass exprType, ExpressionTypeInfo suggests,
+            JavadocResolver javadocResolver, AssistContentConsumer consumer)
     {
         GenTypeClass accessType = suggests.getAccessType();
         Reflective accessReflective = (accessType != null) ? accessType.getReflective() : null;
@@ -221,9 +239,9 @@ public class ParseUtils
      */
     @OnThread(Tag.FXPlatform)
     private static Collection<AssistContent> discoverElements(GenTypeClass gclass,
-                                                              JavadocResolver javadocResolver, Set<String> contentSigs,
-                                                              Map<String, GenTypeParameter> typeArgs,
-                                                              Collection<MethodReflective> methods, AssistContentConsumer consumer)
+            JavadocResolver javadocResolver, Set<String> contentSigs,
+            Map<String, GenTypeParameter> typeArgs,
+            Collection<MethodReflective> methods, AssistContentConsumer consumer)
     {
         boolean resolveJavadoc = false;
         Set<MethodCompletion> completions = new HashSet<>();
@@ -270,7 +288,7 @@ public class ParseUtils
      */
     @OnThread(Tag.FXPlatform)
     public static JavaEntity getImportEntity(EntityResolver resolver,
-                                             Reflective querySource, List<LocatableToken> tokens)
+            Reflective querySource, List<LocatableToken> tokens)
     {
         if (tokens.isEmpty()) {
             return null;
@@ -310,7 +328,7 @@ public class ParseUtils
      */
     @OnThread(Tag.FXPlatform)
     public static JavaEntity getTypeEntity(EntityResolver resolver,
-                                           Reflective querySource, List<LocatableToken> tokens)
+            Reflective querySource, List<LocatableToken> tokens)
     {
         DepthRef dr = new DepthRef();
         return getTypeEntity(resolver, querySource, tokens.listIterator(), dr);
@@ -322,7 +340,7 @@ public class ParseUtils
      */
     @OnThread(Tag.FXPlatform)
     private static JavaEntity getTypeEntity(EntityResolver resolver, Reflective querySource,
-                                            ListIterator<LocatableToken> i, DepthRef depthRef)
+            ListIterator<LocatableToken> i, DepthRef depthRef)
     {
         LocatableToken token = i.next();
         if (JavaParser.isPrimitiveType(token)) {
@@ -419,8 +437,8 @@ public class ParseUtils
      * @return   A JavaEntity representing the type with type arguments applied (or null)
      */
     @OnThread(Tag.FXPlatform)
-    private static JavaEntity processTypeArgs(EntityResolver resolver, Reflective querySource,
-                                              JavaEntity base, ListIterator<LocatableToken> i, DepthRef depthRef)
+    private static JavaEntity processTypeArgs(EntityResolver resolver, Reflective querySource, 
+            JavaEntity base, ListIterator<LocatableToken> i, DepthRef depthRef)
     {
         int startDepth = depthRef.depth;
         List<TypeArgumentEntity> taList = new LinkedList<TypeArgumentEntity>();

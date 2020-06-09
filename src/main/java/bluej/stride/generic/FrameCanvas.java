@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2018 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -26,14 +26,21 @@
 package bluej.stride.generic;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.ast.Parser;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.frames.BlankFrame;
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.slots.HeaderItem;
-import bluej.utility.javafx.JavaFXUtil;
+
 import bluej.utility.javafx.ScalableHeightLabel;
-import bluej.utility.javafx.SharedTransition;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -50,12 +57,13 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.slots.HeaderItem;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A canvas: an area that contain several frames in a vertical array.
@@ -403,7 +411,7 @@ public class FrameCanvas implements FrameContentItem
     {
         int index = blockContents.indexOf(block);
         if (index < 0)
-            throw new IllegalArgumentException("getCursorBefore: canvas does not contain specified block");
+            throw new IllegalArgumentException("getCursorAfter: canvas does not contain specified block");
         else
             return cursors.get(index + 1);
     }

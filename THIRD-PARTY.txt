@@ -1,5 +1,6 @@
 
-Lists of 66 third-party dependencies.
+Lists of 76 third-party dependencies.
+     (Unknown license) A Simple CSV Parser for Java under a commercial-friendly Apache 2.0 license (au.com.bytecode.opencsv:opencsv:1.8 - no url defined)
      (The Apache Software License, Version 2.0) FindBugs-jsr305 (com.google.code.findbugs:jsr305:3.0.2 - http://findbugs.sourceforge.net/)
      (Apache 2.0) error-prone annotations (com.google.errorprone:error_prone_annotations:2.3.2 - http://nexus.sonatype.org/oss-repository-hosting.html/error_prone_parent/error_prone_annotations)
      (The Apache Software License, Version 2.0) Guava InternalFutureFailureAccess and InternalFutures (com.google.guava:failureaccess:1.0.1 - https://github.com/google/guava/failureaccess)
@@ -26,6 +27,7 @@ Lists of 66 third-party dependencies.
      (The Apache Software License, Version 2.0) Apache Commons Logging (commons-logging:commons-logging:1.2 - http://commons.apache.org/proper/commons-logging/)
      (BSD 3-Clause) CenterDevice NSMenuFX (de.codecentric.centerdevice:centerdevice-nsmenufx:2.1.6 - https://github.com/codecentric/NSMenuFX)
      (Sequence Library License (BSD-like)) Sequence Library (de.regnis.q.sequence:sequence-library:1.0.4 - https://svn.tmatesoft.com/repos/3rdparty/de.regnigs.q.sequence)
+     (The MIT License (MIT)) ClassGraph (io.github.classgraph:classgraph:4.6.32 - https://github.com/classgraph/classgraph)
      (GNU Lesser General Public License) MP3 decoder/player/converter (javazoom:jlayer:1.0.1 - http://www.javazoom.net/javalayer/javalayer.html)
      (Eclipse Public License 1.0) JUnit (junit:junit:4.12 - http://junit.org)
      (CC0 1.0 Universal) EdDSA-Java (net.i2p.crypto:eddsa:0.3.0 - https://github.com/str4d/ed25519-java)
@@ -57,6 +59,14 @@ Lists of 66 third-party dependencies.
      (Apache License 2.0) (LGPL 2.1) (MPL 1.1) Javassist (org.javassist:javassist:3.25.0-GA - http://www.javassist.org/)
      (The Apache Software License, Version 2.0) LZ4 and xxHash (org.lz4:lz4-java:1.4.1 - https://github.com/lz4/lz4-java)
      (ISC) jBCrypt (org.mindrot:jbcrypt:0.4 - https://github.com/djmdjm/jBCrypt)
+     (GPLv2+CE) openjfx (org.openjfx:javafx:11 - http://openjdk.java.net/projects/openjfx/)
+     (GPLv2+CE) javafx-base (org.openjfx:javafx-base:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-base/)
+     (GPLv2+CE) javafx-controls (org.openjfx:javafx-controls:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-controls/)
+     (GPLv2+CE) javafx-fxml (org.openjfx:javafx-fxml:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-fxml/)
+     (GPLv2+CE) javafx-graphics (org.openjfx:javafx-graphics:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-graphics/)
+     (GPLv2+CE) javafx-media (org.openjfx:javafx-media:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-media/)
+     (GPLv2+CE) javafx-swing (org.openjfx:javafx-swing:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-swing/)
+     (GPLv2+CE) javafx-web (org.openjfx:javafx-web:11.0.2 - https://openjdk.java.net/projects/openjfx/javafx-web/)
      (The BSD 2-Clause License) ReactFX (org.reactfx:reactfx:2.0-M5 - http://www.reactfx.org/)
      (The New BSD License) (WTFPL) Reflections (org.reflections:reflections:0.9.11 - http://github.com/ronmamo/reflections)
      (MIT License) SLF4J API Module (org.slf4j:slf4j-api:1.7.26 - http://www.slf4j.org)

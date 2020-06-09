@@ -22,13 +22,18 @@
 package bluej.debugmgr.objectbench;
 
 
-import bluej.debugger.DebuggerObject;
-import bluej.debugmgr.inspector.ObjectBackground;
-import bluej.pkgmgr.PkgMgrFrame;
+import javax.swing.SwingUtilities;
 import javafx.beans.binding.When;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.AnchorPane;
+
+import bluej.debugger.*;
+import bluej.debugmgr.inspector.ObjectBackground;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.prefmgr.PrefMgr;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

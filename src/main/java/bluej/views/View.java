@@ -21,17 +21,17 @@
  */
 package bluej.views;
 
-import bluej.debugger.gentype.GenTypeDeclTpar;
-import bluej.utility.JavaNames;
-import bluej.utility.JavaUtils;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.utility.JavaNames;
+import bluej.utility.JavaUtils;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 
 /**
@@ -56,7 +56,7 @@ public class View
 
     protected Comment comment;
 
-    private static Map<Class<?>, View> views = new HashMap<Class<?>, View>();
+    private static final Map<Class<?>,View> views = new HashMap<Class<?>,View>();
 
     /**
      * Return a view of a class.
@@ -176,10 +176,10 @@ public class View
      */
     public  TypeParamView[] getTypeParams() {
         if(typeParams == null) {            
-            List<GenTypeDeclTpar> genTypeParams = JavaUtils.getJavaUtils().getTypeParams(this.cl);
+            List<GenTypeDeclTpar> genTypeParams = JavaUtils.getJavaUtils().getTypeParams(this.cl);            
             typeParams = new TypeParamView[genTypeParams.size()];
                 for (int i = 0; i < typeParams.length; i++) {
-                typeParams[i] = new TypeParamView(this, genTypeParams.get(i));
+                typeParams[i] = new TypeParamView(this, genTypeParams.get(i));                
             }            
         }
         return typeParams;
@@ -204,7 +204,7 @@ public class View
             int numMethods = methods.size();
             allMethods = new MethodView[numMethods];
             for(int i = 0; i < numMethods; i++) {
-                MemberElement elem = (MemberElement)methods.get(i);
+                MemberElement elem = methods.get(i);
                 allMethods[i] = (MethodView)elem.member;
             }
         }
@@ -228,7 +228,7 @@ public class View
             int numFields = fields.size();
             allFields = new FieldView[numFields];
             for(int i = 0; i < numFields; i++) {
-                MemberElement elem = (MemberElement)fields.get(i);
+                MemberElement elem = fields.get(i);
                 allFields[i] = (FieldView)elem.member;
             }
         }

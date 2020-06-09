@@ -45,6 +45,6 @@ public interface CursorFinder
      * @param canDescend If true, can go into subframes to find a closest cursor.  If false, only look
      *                   at cursors at the top level.
      */
-    public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend);
+    FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend);
 
 }

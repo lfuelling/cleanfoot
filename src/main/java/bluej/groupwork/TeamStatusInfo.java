@@ -50,9 +50,9 @@ public class TeamStatusInfo
     private final static Color NEEDSCOMMIT_COLOR = Color.rgb(10,85,15);  // green
     private final static Color DELETED_COLOR = Color.rgb(122,143,123);   // grey-green
     
-    private File file;
-    private String localVersion;
-    private String remoteVersion;
+    private final File file;
+    private final String localVersion;
+    private final String remoteVersion;
     private Status status;
     private Status remoteStatus;
 

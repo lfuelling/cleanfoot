@@ -21,12 +21,12 @@
  */
 package bluej.stride.generic;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public interface CanvasParent extends CursorFinder
 {
@@ -105,7 +105,7 @@ public interface CanvasParent extends CursorFinder
 
     enum CanvasKind
     {
-        FIELDS, CONSTRUCTORS, METHODS, STATEMENTS, IMPORTS;
+        FIELDS, CONSTRUCTORS, METHODS, STATEMENTS, IMPORTS
     }
     
     default CanvasKind getChildKind(FrameCanvas c) { return CanvasKind.STATEMENTS; }

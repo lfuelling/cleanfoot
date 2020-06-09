@@ -23,7 +23,7 @@ package greenfoot.collision;
 
 import greenfoot.Actor;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.util.List;
 
 /**
@@ -41,17 +41,17 @@ public interface CollisionChecker
      * @param cellSize size of one cell
      * @param wrap Whether the world wraps around the edges
      */
-    public void initialize(int width, int height, int cellSize, boolean wrap);
+    void initialize(int width, int height, int cellSize, boolean wrap);
 
     /**
      * Called when an object is added into the world
      */
-    public void addObject(Actor actor);
+    void addObject(Actor actor);
 
     /**
      * Called when an object is removed from the world
      */
-    public void removeObject(Actor object);
+    void removeObject(Actor object);
 
     /**
      * Called when an object has changed its location in the world.
@@ -61,12 +61,12 @@ public interface CollisionChecker
      * @param oldY
      *            Old location
      */
-    public void updateObjectLocation(Actor object, int oldX, int oldY);
+    void updateObjectLocation(Actor object, int oldX, int oldY);
 
     /**
      * Called when an object has changed its size in the world.
      */
-    public void updateObjectSize(Actor object);
+    void updateObjectSize(Actor object);
 
     /**
      * Returns all objects that intersects the given location.
@@ -77,7 +77,7 @@ public interface CollisionChecker
      *            Class of objects to look for (null or Object.class will find
      *            all classes)
      */
-    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls);
+    <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls);
 
     /**
      * Returns all the objects that intersects the given object. This takes the
@@ -89,7 +89,7 @@ public interface CollisionChecker
      *            Class of objects to look for (null or Object.class will find
      *            all classes)
      */
-    public <T extends Actor> List<T> getIntersectingObjects(Actor actor, Class<T> cls);
+    <T extends Actor> List<T> getIntersectingObjects(Actor actor, Class<T> cls);
 
     /**
      * Returns all objects with the logical location within the specified
@@ -106,7 +106,7 @@ public interface CollisionChecker
      *            Class of objects to look for (null or Object.class will find
      *            all classes)
      */
-    public <T extends Actor> List<T> getObjectsInRange(int x, int y, int r, Class<T> cls);
+    <T extends Actor> List<T> getObjectsInRange(int x, int y, int r, Class<T> cls);
 
     /**
      * Returns the neighbours to the given location. This method only looks at
@@ -126,7 +126,7 @@ public interface CollisionChecker
      *            all classes)
      * @return A collection of all neighbours found
      */
-    public <T extends Actor> List<T> getNeighbours(Actor actor, int distance, boolean diag, Class<T> cls);
+    <T extends Actor> List<T> getNeighbours(Actor actor, int distance, boolean diag, Class<T> cls);
 
     /**
      * Return all objects that intersect a straight line from this object at
@@ -141,7 +141,7 @@ public interface CollisionChecker
      * @param length How far we want to look (in cells)
      * @param cls Class of objects to look for (passing 'null' will find all objects).
      */
-    public <T extends Actor> List<T> getObjectsInDirection(int x, int y, int angle, int length, Class<T> cls);
+    <T extends Actor> List<T> getObjectsInDirection(int x, int y, int angle, int length, Class<T> cls);
     
     /**
      * Get all the objects in the world, or all the objects of a particular class.
@@ -154,14 +154,14 @@ public interface CollisionChecker
      * 
      * @return A list of objects.
      */
-    public <T extends Actor> List<T> getObjects(Class<T> cls);
+    <T extends Actor> List<T> getObjects(Class<T> cls);
     
     /**
      * Returns the list of all objects. The returned list may be live (updated
      * when objects are added/removed from the collision checker) and should not
      * be directly modified.
      */
-    public List<Actor> getObjectsList();
+    List<Actor> getObjectsList();
     
     /**
      * Methods that marks that a new sequence is started. A sequence in
@@ -175,7 +175,7 @@ public interface CollisionChecker
      * collision detection algorithms might also take advantage of this
      * information - especially if we will implement an all-at-once algortihm.
      */
-    public void startSequence();
+    void startSequence();
 
     /**
      * Find a single object which intersects the center point of the given cell.
@@ -189,11 +189,11 @@ public interface CollisionChecker
      * @return An actor intersecting the cell center, or null if no actor of the specified
      *         type (other than the querying actor) intersects the cell center. 
      */
-    public <T extends Actor> T getOneObjectAt(Actor object, int dx, int dy, Class<T> cls);
+    <T extends Actor> T getOneObjectAt(Actor object, int dx, int dy, Class<T> cls);
 
-    public <T extends Actor> T  getOneIntersectingObject(Actor object, Class<T> cls);
+    <T extends Actor> T  getOneIntersectingObject(Actor object, Class<T> cls);
 
-    public void paintDebug(Graphics g);
+    void paintDebug(Graphics g);
 
 
 }

@@ -26,6 +26,7 @@ import bluej.debugger.DebuggerObject;
 import bluej.debugmgr.ExpressionInformation;
 import bluej.pkgmgr.Package;
 import bluej.testmgr.record.InvokerRecord;
+
 import javafx.scene.Node;
 import javafx.stage.Window;
 
@@ -44,7 +45,7 @@ public interface InspectorManager
      * 
      * @param obj Object that the inspector inspects
      */
-    public void removeInspector(DebuggerObject obj);
+    void removeInspector(DebuggerObject obj);
     
     /**
      * 
@@ -52,7 +53,7 @@ public interface InspectorManager
      * 
      * @param cls Class that the inspector inspects
      */
-    public void removeInspector(DebuggerClass cls);
+    void removeInspector(DebuggerClass cls);
     
     /**
      * Return an ObjectInspector for an object. The inspector is visible.
@@ -73,8 +74,8 @@ public interface InspectorManager
      * @param animateFromCentre
      * @return The Viewer value
      */
-    public ObjectInspector getInspectorInstance(DebuggerObject obj,
-                                                String name, Package pkg, InvokerRecord ir, Window parent, Node animateFromCentre);
+    ObjectInspector getInspectorInstance(DebuggerObject obj,
+                                         String name, Package pkg, InvokerRecord ir, Window parent, Node animateFromCentre);
     
     /**
      * Return a ClassInspector for a class. The inspector is visible.
@@ -93,8 +94,8 @@ public interface InspectorManager
      * @param animateFromCentre
      * @return The Viewer value
      */
-    public ClassInspector getClassInspectorInstance(DebuggerClass clss,
-                                                    Package pkg, Window parent, Node animateFromCentre);
+    ClassInspector getClassInspectorInstance(DebuggerClass clss,
+                                             Package pkg, Window parent, Node animateFromCentre);
 
     /**
      * Return an ObjectInspector for an object. The inspector is visible.
@@ -109,13 +110,13 @@ public interface InspectorManager
      * @param parent The parent frame of this frame
      * @return The Viewer value
      */
-    public ResultInspector getResultInspectorInstance(DebuggerObject obj,
-                                                      String name, Package pkg, InvokerRecord ir, ExpressionInformation info,
-                                                      Window parent);
+    ResultInspector getResultInspectorInstance(DebuggerObject obj,
+                                               String name, Package pkg, InvokerRecord ir, ExpressionInformation info,
+                                               Window parent);
     
     /**
      * Whether we are in testing mode. If true, the inspectors should show testing stuff.
      * 
      */
-    public boolean inTestMode();
+    boolean inTestMode();
 }

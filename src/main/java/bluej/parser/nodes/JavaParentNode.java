@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2012,2014,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2011,2012,2014,2016,2017,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,17 +21,29 @@
  */
 package bluej.parser.nodes;
 
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.Reflective;
 import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.editor.moe.MoeSyntaxDocument.Element;
 import bluej.editor.moe.Token;
 import bluej.editor.moe.Token.TokenType;
-import bluej.parser.CodeSuggestions;
+import bluej.parser.ExpressionTypeInfo;
 import bluej.parser.DocumentReader;
 import bluej.parser.JavaParser;
 import bluej.parser.TokenStream;
-import bluej.parser.entity.*;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.PackageOrClass;
+import bluej.parser.entity.ParsedReflective;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.ValueEntity;
 import bluej.parser.lexer.JavaLexer;
 import bluej.parser.lexer.JavaTokenFilter;
 import bluej.parser.lexer.JavaTokenTypes;
@@ -40,9 +52,6 @@ import bluej.parser.nodes.NodeTree.NodeAndPosition;
 import bluej.utility.GeneralCache;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.Reader;
-import java.util.*;
 
 /**
  * A ParentParsedNode extension with Java specific functionality.
@@ -54,10 +63,10 @@ import java.util.*;
 public abstract class JavaParentNode extends ParentParsedNode
     implements EntityResolver
 {
-    protected GeneralCache<String, JavaEntity> valueEntityCache =
-        new GeneralCache<String, JavaEntity>(10);
-    protected GeneralCache<String, PackageOrClass> pocEntityCache =
-        new GeneralCache<String, PackageOrClass>(10);
+    protected GeneralCache<String,JavaEntity> valueEntityCache =
+        new GeneralCache<String,JavaEntity>(10);
+    protected GeneralCache<String,PackageOrClass> pocEntityCache =
+        new GeneralCache<String,PackageOrClass>(10);
 
     protected JavaParentNode parentNode;
     
@@ -297,7 +306,7 @@ public abstract class JavaParentNode extends ParentParsedNode
     
     @Override
     @OnThread(Tag.FXPlatform)
-    protected CodeSuggestions getExpressionType(int pos, int nodePos, JavaEntity defaultType, MoeSyntaxDocument document)
+    protected ExpressionTypeInfo getExpressionType(int pos, int nodePos, JavaEntity defaultType, MoeSyntaxDocument document)
     {
         // Clear the caches now to remove any entries which have become invalid due
         // to editing.
@@ -348,7 +357,7 @@ public abstract class JavaParentNode extends ParentParsedNode
                 child = parentNode.getNodeTree().findNodeAtOrBefore(nodePos - 1, ppos);
                 if (child != null && child.getNode().getNodeType() == ParsedNode.NODETYPE_EXPRESSION
                         && child.getEnd() == nodePos) {
-                    CodeSuggestions suggests = ExpressionNode.suggestAsExpression(pos, child.getPosition(),
+                    ExpressionTypeInfo suggests = ExpressionNode.suggestAsExpression(pos, child.getPosition(),
                             this, defaultType, document);
                     if (suggests != null) {
                         return suggests;
@@ -367,7 +376,7 @@ public abstract class JavaParentNode extends ParentParsedNode
         if (prevToken != null && ! Character.isJavaIdentifierPart(prevToken.getText().codePointAt(0))) {
             prevToken = null;
         }
-        return new CodeSuggestions(atype, atype, prevToken, isStaticCtxt, true);
+        return new ExpressionTypeInfo(atype, atype, prevToken, isStaticCtxt, true);
     }
 
     @Override
@@ -428,7 +437,7 @@ public abstract class JavaParentNode extends ParentParsedNode
         boolean lastWasWildcard = false;
         int curcol = 1;
         while (length > 0) {
-            LocatableToken lt = (LocatableToken) tokenStream.nextToken();
+            LocatableToken lt = tokenStream.nextToken();
 
             if (lt.getLine() > 1 || lt.getColumn() - curcol >= length) {
                 token.next = new Token(length, TokenType.DEFAULT);

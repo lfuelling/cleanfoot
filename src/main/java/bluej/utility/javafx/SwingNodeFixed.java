@@ -21,14 +21,14 @@
  */
 package bluej.utility.javafx;
 
+import java.util.function.BiConsumer;
+
 import javafx.embed.swing.SwingNode;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.scene.input.KeyEvent;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.function.BiConsumer;
 
 /**
  * In SwingNode, there is a SwingKeyEventHandler class which translates
@@ -50,7 +50,7 @@ public class SwingNodeFixed extends SwingNode
     public SwingNodeFixed()
     {
         // Defeat thread checker:
-        ((BiConsumer<EventType<KeyEvent>, EventHandler<KeyEvent>>)(this::setEventHandler)).accept(KeyEvent.ANY, new SwingKeyEventHandlerFixed(this));
+        ((BiConsumer<EventType<KeyEvent>, EventHandler<KeyEvent>>)(this::setEventHandler)).accept(javafx.scene.input.KeyEvent.ANY, new SwingKeyEventHandlerFixed(this));
         // Above is effectively:
         //
     	//     setEventHandler(javafx.scene.input.KeyEvent.ANY, new SwingKeyEventHandlerFixed(this));

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2012  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2011,2012,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,17 +21,17 @@
  */
 package bluej.parser.nodes;
 
+import java.io.Reader;
+
 import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.editor.moe.MoeSyntaxDocument.Element;
 import bluej.editor.moe.Token;
 import bluej.editor.moe.Token.TokenType;
-import bluej.parser.CodeSuggestions;
+import bluej.parser.ExpressionTypeInfo;
 import bluej.parser.DocumentReader;
 import bluej.parser.lexer.JavaLexer;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
-
-import java.io.Reader;
 
 /**
  * A node type for representing comments in the code.
@@ -40,7 +40,7 @@ import java.io.Reader;
  */
 public class CommentNode extends ParsedNode
 {
-    private static enum Type
+    private enum Type
     {
         SL_NORMAL(true, TokenType.COMMENT_NORMAL),
         SL_SPECIAL(true, TokenType.COMMENT_SPECIAL),
@@ -51,12 +51,12 @@ public class CommentNode extends ParsedNode
         private final boolean singleLine;
         private final TokenType tokenType;
 
-        private Type(boolean singleLine, TokenType tokenType)
+        Type(boolean singleLine, TokenType tokenType)
         {
             this.singleLine = singleLine;
             this.tokenType = tokenType;
         }
-    };
+    }
 
     private Type type;
     
@@ -124,7 +124,7 @@ public class CommentNode extends ParsedNode
     
     @Override
     public int textInserted(MoeSyntaxDocument document, int nodePos, int insPos, int length,
-                            NodeStructureListener listener)
+            NodeStructureListener listener)
     {
         // grow ourself:
         int newSize = getSize() + length;
@@ -135,7 +135,7 @@ public class CommentNode extends ParsedNode
 
     @Override
     public int textRemoved(MoeSyntaxDocument document, int nodePos, int delPos, int length,
-                           NodeStructureListener listener)
+            NodeStructureListener listener)
     {
         // shrink ourself:
         int newSize = getSize() - length;
@@ -146,7 +146,7 @@ public class CommentNode extends ParsedNode
 
     @Override
     protected int reparseNode(MoeSyntaxDocument document, int nodePos, int offset, int maxParse,
-                              NodeStructureListener listener)
+            NodeStructureListener listener)
     {
         // Make a reader and parser
         int pline = document.getDefaultRootElement().getElementIndex(nodePos) + 1;
@@ -177,7 +177,7 @@ public class CommentNode extends ParsedNode
         int newEnd = lineColToPos(document, commentToken.getEndLine(),
                 commentToken.getEndColumn());
         int newSize = newEnd - nodePos;
-        ((MoeSyntaxDocument)document).markSectionParsed(nodePos, newSize);
+        document.markSectionParsed(nodePos, newSize);
         if (getSize() != newSize) {
             setSize(newSize);
             return NODE_SHRUNK;
@@ -195,7 +195,7 @@ public class CommentNode extends ParsedNode
     }
     
     @Override
-    public CodeSuggestions getExpressionType(int pos, MoeSyntaxDocument document)
+    public ExpressionTypeInfo getExpressionType(int pos, MoeSyntaxDocument document)
     {
         return null;
     }

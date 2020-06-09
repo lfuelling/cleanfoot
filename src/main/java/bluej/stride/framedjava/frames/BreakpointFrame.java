@@ -22,12 +22,17 @@
 package bluej.stride.framedjava.frames;
 
 
+import java.util.List;
+
 import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.canvases.JavaCanvas;
 import bluej.stride.framedjava.elements.BreakpointElement;
 import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.operations.FrameOperation;
 import javafx.scene.Node;
+import threadchecker.OnThread;
 
 public class BreakpointFrame extends SingleLineFrame implements CodeFrame<BreakpointElement>, DebuggableFrame
 {

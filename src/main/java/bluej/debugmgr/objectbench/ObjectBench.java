@@ -21,6 +21,17 @@
  */
 package bluej.debugmgr.objectbench;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javafx.geometry.Point2D;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.TilePane;
+
 import bluej.Config;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.GenTypeClass;
@@ -30,13 +41,8 @@ import bluej.pkgmgr.PkgMgrFrame;
 import bluej.testmgr.record.InvokerRecord;
 import bluej.utility.JavaNames;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.geometry.Point2D;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.TilePane;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
 
 /**
  * The class responsible for the panel that displays objects
@@ -47,7 +53,7 @@ import java.util.*;
  */
 @OnThread(Tag.FXPlatform)
 public class ObjectBench extends javafx.scene.control.ScrollPane implements ValueCollection,
-        ObjectBenchInterface, PkgMgrFrame.PkgMgrPane
+    ObjectBenchInterface, PkgMgrFrame.PkgMgrPane
 {
     @OnThread(Tag.Any)
     private final List<ObjectBenchListener> listenerList = new ArrayList<>();
@@ -251,7 +257,7 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         if(wrapper == selectedObject) {
             setSelectedObject(null);
         }
-
+        
         wrapper.prepareRemove();
         wrapper.getPackage().getDebugger().removeObject(scopeId, wrapper.getName());
         objects.remove(wrapper);
@@ -428,7 +434,7 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      */
     private synchronized void setSelectedObjectByIndex(int i)
     {
-        ((ObjectWrapper) objects.get(i)).requestFocus();
+        objects.get(i).requestFocus();
     }
 
 
@@ -542,7 +548,6 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         setOnKeyPressed(this::keyPressed);
     }
 
-    
     // ------------- nested class ObjectBenchPanel --------------
 
     /**
@@ -601,5 +606,21 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
     public synchronized boolean objectHasFocus()
     {
         return objects.stream().anyMatch(w -> w.isFocused());
+    }
+
+    /**
+     * Highlights the given object, and clears highlights on all
+     * other objects.
+     *
+     * @param currentObject The object to highlight (may be null,
+     *                      to just clear all existing highlights)
+     */
+    public void highlightObject(DebuggerObject currentObject)
+    {
+        // Clear highlights on other objects:
+        for (ObjectWrapper wrapper : objects)
+        {
+            wrapper.setHighlight(currentObject != null && Objects.equals(wrapper.obj, currentObject));
+        }
     }
 }

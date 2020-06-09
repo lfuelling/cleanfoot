@@ -25,8 +25,8 @@ import greenfoot.Actor;
 import greenfoot.ActorVisitor;
 import greenfoot.collision.*;
 
-import java.awt.*;
-import java.util.List;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.*;
 
 /**
@@ -49,10 +49,10 @@ public class IBSPColChecker implements CollisionChecker
     
     public static final int REBALANCE_THRESHOLD = 20;
     
-    private GOCollisionQuery actorQuery = new GOCollisionQuery();
-    private NeighbourCollisionQuery neighbourQuery = new NeighbourCollisionQuery();
-    private PointCollisionQuery pointQuery = new PointCollisionQuery();
-    private InRangeQuery inRangeQuery = new InRangeQuery();
+    private final GOCollisionQuery actorQuery = new GOCollisionQuery();
+    private final NeighbourCollisionQuery neighbourQuery = new NeighbourCollisionQuery();
+    private final PointCollisionQuery pointQuery = new PointCollisionQuery();
+    private final InRangeQuery inRangeQuery = new InRangeQuery();
     
     private int cellSize;
     
@@ -282,7 +282,7 @@ public class IBSPColChecker implements CollisionChecker
     
     public final Rect getActorBounds(Actor actor)
     {
-        Rect r = ActorVisitor.getBoundingRect(actor);
+        Rect r = ActorVisitor.getBoundingRect(actor);      
         return r;
     }
     
@@ -392,7 +392,7 @@ public class IBSPColChecker implements CollisionChecker
         return node;
     }
     
-    private static int dbgCounter = 0;
+    private static final int dbgCounter = 0;
     
     private static void println(String s)
     {
@@ -560,9 +560,7 @@ public class IBSPColChecker implements CollisionChecker
                 while (i.hasNext()) {
                     Actor actor = i.next();
                     if (query.checkCollision(actor)) {
-                        if (! resultSet.contains(actor)) {
-                            resultSet.add(actor);
-                        }
+                        resultSet.add(actor);
                     }
                 }
                 

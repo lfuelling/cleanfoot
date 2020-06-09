@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2012  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2012,2018  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,7 +21,7 @@
  */
 package bluej.extensions;
 
-import javax.swing.*;
+import javax.swing.JMenuItem;
 
 /**
  * Extensions which wish to add a menu item to BlueJ's menus should register an
@@ -141,6 +141,7 @@ public class MenuGenerator
      * Extensions should not retain references to the menu items created.
      * @deprecated As of BlueJ 1.3.5, replaced by {@link #getToolsMenuItem(BPackage bp)}
      */
+    @Deprecated
     public JMenuItem getMenuItem( )
     {
         return null;

@@ -22,7 +22,11 @@
 
 package bluej.groupwork.git;
 
-import bluej.groupwork.*;
+import bluej.groupwork.Repository;
+import bluej.groupwork.StatusHandle;
+import bluej.groupwork.TeamStatusInfo;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.UpdateListener;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

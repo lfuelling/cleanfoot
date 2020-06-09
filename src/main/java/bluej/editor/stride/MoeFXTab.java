@@ -23,6 +23,7 @@ package bluej.editor.stride;
 
 import bluej.editor.moe.MoeEditor;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.beans.binding.ObjectExpression;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -141,7 +142,7 @@ public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
         tabHeader.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             if (e.getButton() == MouseButton.MIDDLE)
             {
-                moeEditor.setEditorVisible(false);
+                moeEditor.setEditorVisible(false, false);
             }
         });
         setGraphic(tabHeader);

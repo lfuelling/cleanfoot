@@ -21,6 +21,8 @@
  */
 package bluej.stride.framedjava.ast;
 
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.ErrorShower;
 import bluej.stride.framedjava.errors.JavaCompileError;
@@ -28,8 +30,6 @@ import bluej.stride.framedjava.errors.SyntaxCodeError;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.stream.Stream;
 
 /**
  * A JavaFragment is a small piece of content in a Java class.  It never spans more than one line,
@@ -42,7 +42,7 @@ public abstract class JavaFragment
     private int columnNumber;
     private int len;
 
-    public static enum Destination
+    public enum Destination
     {
         /** Source will be as-is, with no substitutions */
         JAVA_FILE_TO_COMPILE,
@@ -61,7 +61,7 @@ public abstract class JavaFragment
             // successful compilation in the presence of errors: 
             return true;
         }
-    };
+    }
 
     @OnThread(Tag.FXPlatform)
     protected abstract String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator);
@@ -87,7 +87,7 @@ public abstract class JavaFragment
      * we include the left and right edges of the fragment, so an error exactly on the boundary of
      * two fragments will cause them both to say overlap.
      */
-    static enum ErrorRelation
+    enum ErrorRelation
     {
         /**
          * The error location lies before this fragment.
@@ -110,7 +110,7 @@ public abstract class JavaFragment
         /**
          * CANNOT_SHOW means that the fragment can never show errors (e.g. boilerplate)
          */
-        CANNOT_SHOW;
+        CANNOT_SHOW
     }
     
     public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn)

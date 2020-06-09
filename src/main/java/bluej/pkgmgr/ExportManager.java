@@ -21,29 +21,41 @@
  */
 package bluej.pkgmgr;
 
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.utility.Debug;
-import bluej.utility.DialogManager;
-import bluej.utility.FileUtility;
-import bluej.utility.Utility;
-import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+
+import bluej.pkgmgr.target.ClassTarget;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Window;
+
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
+import bluej.utility.Utility;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Component to manage storing projects to jar file format.
@@ -113,7 +125,7 @@ final class ExportManager
 
         String sourceDir = proj.getProjectDir().getPath();
 
-        createJar(proj, fileName.getAbsolutePath().toString(), sourceDir, info.mainClassName, info.selectedFiles,
+        createJar(proj, fileName.getAbsolutePath(), sourceDir, info.mainClassName, info.selectedFiles,
             info.includeSource, info.includePkgFiles, hasStride);
     }
 

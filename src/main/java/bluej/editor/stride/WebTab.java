@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program.
- Copyright (C) 2015,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 2015,2016,2018  Michael Kolling and John Rosenberg
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ package bluej.editor.stride;
 
 import bluej.Config;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.t4rget.EditableTarget;
+import bluej.pkgmgr.target.EditableTarget;
 import bluej.testmgr.TestDisplayFrame;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
@@ -210,7 +210,9 @@ public class WebTab extends FXTab
                     {
                         ((EventTarget) anchorItem).addEventListener("click", e ->
                         {
-                            ((EditableTarget) parent.getProject().getTarget(anchorHref.getNodeValue().substring("class:".length()).trim())).getEditor().setEditorVisible(true);
+                            ((EditableTarget) parent.getProject().getTarget(anchorHref.getNodeValue().
+                                    substring("class:".length()).trim())).getEditor().
+                                    setEditorVisible(true, false);
                             e.stopPropagation();
                         }, true);
                     }

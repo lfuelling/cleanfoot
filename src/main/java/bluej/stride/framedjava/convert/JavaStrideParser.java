@@ -21,22 +21,55 @@
  */
 package bluej.stride.framedjava.convert;
 
-import bluej.parser.JavaParser;
-import bluej.parser.ParseFailure;
-import bluej.parser.lexer.JavaTokenTypes;
-import bluej.parser.lexer.LocatableToken;
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.convert.ConversionWarning.UnsupportedFeature;
-import bluej.stride.framedjava.elements.*;
-import bluej.utility.JavaUtils;
-import bluej.utility.Utility;
-
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import bluej.parser.JavaParser;
+import bluej.parser.ParseFailure;
+import bluej.parser.lexer.JavaTokenTypes;
+import bluej.parser.lexer.LocatableToken;
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.ParamFragment;
+import bluej.stride.framedjava.ast.SuperThis;
+import bluej.stride.framedjava.ast.SuperThisFragment;
+import bluej.stride.framedjava.ast.ThrowsTypeFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.convert.ConversionWarning.UnsupportedFeature;
+import bluej.stride.framedjava.elements.BreakElement;
+import bluej.stride.framedjava.elements.CaseElement;
+import bluej.stride.framedjava.elements.ClassElement;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.elements.CommentElement;
+import bluej.stride.framedjava.elements.ConstructorElement;
+import bluej.stride.framedjava.elements.ForeachElement;
+import bluej.stride.framedjava.elements.IfElement;
+import bluej.stride.framedjava.elements.ImportElement;
+import bluej.stride.framedjava.elements.InterfaceElement;
+import bluej.stride.framedjava.elements.MethodProtoElement;
+import bluej.stride.framedjava.elements.NormalMethodElement;
+import bluej.stride.framedjava.elements.ReturnElement;
+import bluej.stride.framedjava.elements.SwitchElement;
+import bluej.stride.framedjava.elements.ThrowElement;
+import bluej.stride.framedjava.elements.TryElement;
+import bluej.stride.framedjava.elements.VarElement;
+import bluej.stride.framedjava.elements.WhileElement;
+import bluej.utility.JavaUtils;
+import bluej.utility.Utility;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 import static bluej.parser.lexer.JavaTokenTypes.SL_COMMENT;
 
@@ -179,7 +212,7 @@ public class JavaStrideParser extends JavaParser
     /**
      * The stack of try/catch/finally currently being defined
      */
-    private Stack<TryBuilder> tries = new Stack<>();
+    private final Stack<TryBuilder> tries = new Stack<>();
     /**
      * The name of the package declaration seen in the file (null if none) 
      */
@@ -503,7 +536,7 @@ public class JavaStrideParser extends JavaParser
         // Works out the current parse position
         private int getCurPosition()
         {
-            return (int) Optional.ofNullable(getTokenStream().getMostRecent()).map(LocatableToken::getPosition).orElse(0);
+            return Optional.ofNullable(getTokenStream().getMostRecent()).map(LocatableToken::getPosition).orElse(0);
         }
 
         /**
@@ -1561,11 +1594,11 @@ public class JavaStrideParser extends JavaParser
             {
                 if (m.getStart().getPosition() >= prev && m.getEnd().getPosition() <= endExcl.getPosition())
                 {
-                    r.append(source.substring(prev, m.getStart().getPosition()));
+                    r.append(source, prev, m.getStart().getPosition());
                     prev = m.getEnd().getPosition() + m.getEnd().getLength();
                 }
             }
-            r.append(source.substring(prev, endExcl.getPosition()));
+            r.append(source, prev, endExcl.getPosition());
             return r.toString();
         }
     }
@@ -1593,13 +1626,13 @@ public class JavaStrideParser extends JavaParser
     }
     
     // A delegate for our TypeDefHandler implementation
-    private static interface TypeDefDelegate
+    private interface TypeDefDelegate
     {
-        public void gotName(String name);
+        void gotName(String name);
 
-        public CodeElement end();
+        CodeElement end();
 
-        public void gotContent(CodeElement element);
+        void gotContent(CodeElement element);
 
         void gotImplements(String type);
 
@@ -1679,7 +1712,7 @@ public class JavaStrideParser extends JavaParser
             warnUnsupportedModifiers("interface", modifiers);
             return new InterfaceElement(null, null, new NameDefSlotFragment(name),
                 extendsTypes.stream().map(t -> toType(t)).collect(Collectors.toList()), fields, methods,
-                new JavadocUnit(doc), pkg == null ? null : pkg, importsForCU(), true);
+                new JavadocUnit(doc), pkg, importsForCU(), true);
         }
     }
     
@@ -1768,7 +1801,7 @@ public class JavaStrideParser extends JavaParser
                 toType(extendsType),
                 implementsTypes.stream().map(t -> toType(t)).collect(Collectors.toList()), fields,
                 constructors, methods,
-                new JavadocUnit(doc), pkg == null ? null : pkg, importsForCU(), true);
+                new JavadocUnit(doc), pkg, importsForCU(), true);
         }
     }
 

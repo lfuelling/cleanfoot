@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017,2018 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,26 +22,18 @@
 package bluej.stride.generic;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.Config;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.ErrorShower;
-import bluej.stride.framedjava.frames.BlankFrame;
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.framedjava.frames.FrameHelper;
 import bluej.stride.framedjava.slots.StructuredSlot;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.operations.*;
-import bluej.stride.slots.EditableSlot;
-import bluej.stride.slots.FocusParent;
-import bluej.stride.slots.HeaderItem;
-import bluej.stride.slots.SlotLabel;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.BetterVBox;
-import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import javafx.beans.binding.When;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -57,15 +49,42 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.frames.BlankFrame;
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.framedjava.frames.FrameHelper;
+import bluej.stride.operations.CopyFrameAsImageOperation;
+import bluej.stride.operations.CopyFrameAsJavaOperation;
+import bluej.stride.operations.CopyFrameAsStrideOperation;
+import bluej.stride.operations.CutFrameOperation;
+import bluej.stride.operations.DeleteFrameOperation;
+import bluej.stride.operations.DisableFrameOperation;
+import bluej.stride.operations.EnableFrameOperation;
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.FocusParent;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotLabel;
+
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.BetterVBox;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The base frame from which specific frames are derived.
@@ -145,9 +164,9 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
     }
 
     /** enum for keeping track of frame preview state */
-    public static enum FramePreviewEnabled
+    public enum FramePreviewEnabled
     {
-        PREVIEW_NONE, PREVIEW_ENABLED, PREVIEW_DISABLED;
+        PREVIEW_NONE, PREVIEW_ENABLED, PREVIEW_DISABLED
     }
 
     /**
@@ -406,11 +425,6 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
             boolean dr = f.disabledRoot.get();
             f.disabledRoot.set(true);
             JavaFXUtil.setPseudoclass("bj-hide-caret", true, f.getNode());
-            if (Config.isRetinaDisplay())
-            {
-                // Take Retina resolution screenshot:
-                //p.setTransform(Transform.scale(2, 2));
-            }
             f.getNode().snapshot(p, image);
             f.disabledRoot.set(dr);
             JavaFXUtil.setPseudoclass("bj-hide-caret", false, f.getNode());
@@ -1105,12 +1119,12 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
     public void pullUpContents()
     {
         editor.modifiedFrame(this, false); //notify the editor that a change has been occured. That will trigger a file save
-        getCursorBefore().insertFramesAfter(Utility.<Frame>concat(getCanvases().<List<Frame>>map(canvas -> {
+        getCursorBefore().insertFramesAfter(Utility.concat(getCanvases().map(canvas -> {
             // Make copy because we're about to modify the contents:
             List<Frame> contents = new ArrayList<>(canvas.getBlockContents());
             contents.forEach(c -> canvas.removeBlock(c));
             return contents;
-        }).collect(Utility.<List<Frame>>intersperse(() -> Arrays.<Frame>asList(new BlankFrame(editor)))).toArray(new List[0])));
+        }).collect(Utility.intersperse(() -> Arrays.asList(new BlankFrame(editor)))).toArray(new List[0])));
     }
 
     /**
@@ -1296,14 +1310,14 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
     public void addError(CodeError err)
     {
         allFrameErrors.add(err);
-        err.bindFresh(fresh);
+        err.bindFresh(fresh, editor);
     }
 
     @Override
     public void focusAndPositionAtError(CodeError err)
     {
         // Whatever the error is, just focus the cursor before us:
-        Objects.requireNonNull(getCursorBefore()).requestFocus();
+        getCursorBefore().requestFocus();
     }
 
     @Override
@@ -1487,7 +1501,7 @@ public abstract class Frame implements CursorFinder, FocusParent<FrameContentIte
         return modifiers.get(name);
     }
 
-    public static enum ShowReason { EXCEPTION, LINK_TARGET }
+    public enum ShowReason { EXCEPTION, LINK_TARGET }
 
     /**
      * Different view modes in Stride editor.

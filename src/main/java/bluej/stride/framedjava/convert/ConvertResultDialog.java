@@ -21,7 +21,10 @@
  */
 package bluej.stride.framedjava.convert;
 
-import bluej.Config;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import bluej.utility.Utility;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -29,8 +32,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import bluej.Config;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A dialog shown when the user has tried to convert Java to Stride,

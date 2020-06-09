@@ -21,9 +21,11 @@
  */
 package bluej.stride.operations;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.CustomMenuItem;
 import bluej.stride.generic.FrameCursor;
 import bluej.stride.generic.InteractionManager;
-import javafx.scene.control.CustomMenuItem;
 
 public abstract class FrameCursorOperation extends AbstractOperation
 {

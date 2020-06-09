@@ -21,6 +21,9 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.Config;
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
@@ -28,9 +31,6 @@ import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameContentRow;
 import bluej.stride.generic.InteractionManager;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by neil on 04/12/2015.

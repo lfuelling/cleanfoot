@@ -22,7 +22,12 @@
 package bluej.debugger.jdi;
 
 import bluej.debugger.DebuggerObject;
-import bluej.debugger.gentype.*;
+import bluej.debugger.gentype.GenTypeArray;
+import bluej.debugger.gentype.GenTypeArrayClass;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
+
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ObjectReference;

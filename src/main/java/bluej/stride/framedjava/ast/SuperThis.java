@@ -29,9 +29,9 @@ public enum SuperThis
     SUPER("super"), THIS("this"), EMPTY("");
     // EMPTY is not a valid state in the language, but it arises in the case that the slot is empty
     
-    private String displayName;
+    private final String displayName;
     
-    private SuperThis(String displayName)
+    SuperThis(String displayName)
     {
         this.displayName = displayName;
     }

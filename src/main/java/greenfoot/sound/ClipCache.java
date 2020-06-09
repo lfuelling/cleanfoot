@@ -21,16 +21,17 @@
  */
 package greenfoot.sound;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * A cache for soundclip data.
@@ -40,13 +41,13 @@ import java.util.Map;
 public class ClipCache
 {
     /** Data for clips that aren't currently in use */
-    private LinkedHashMap<String,ClipData> freeClips = new LinkedHashMap<String,ClipData>();
+    private final LinkedHashMap<String,ClipData> freeClips = new LinkedHashMap<String,ClipData>();
     private int numberFreeClips = 0;
     
-    private static int MAX_CACHED_CLIPS = 20;
+    private static final int MAX_CACHED_CLIPS = 20;
     
     /** Data for clips that are in use */
-    private Map<String,ClipData> cachedClips = new HashMap<String,ClipData>();
+    private final Map<String,ClipData> cachedClips = new HashMap<String,ClipData>();
     
     public synchronized ClipData getCachedClip(URL url)
         throws IOException, UnsupportedAudioFileException

@@ -22,21 +22,14 @@
 package bluej.stride.slots;
 
 
-import bluej.editor.stride.FrameCatalogue;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.links.PossibleLink;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.slots.TextOverlayPosition;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.View;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.slots.SuggestionList.SuggestionDetails;
-import bluej.stride.slots.SuggestionList.SuggestionListListener;
-import bluej.utility.Utility;
-import bluej.utility.javafx.ErrorUnderlineCanvas;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ObjectProperty;
@@ -56,16 +49,24 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+
+import bluej.editor.stride.FrameCatalogue;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.links.PossibleLink;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.slots.TextOverlayPosition;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.View;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.SuggestionList.SuggestionDetails;
+import bluej.stride.slots.SuggestionList.SuggestionListListener;
+import bluej.utility.Utility;
+import bluej.utility.javafx.ErrorUnderlineCanvas;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A choice slot has three overlaid elements (not counting the error underline) that make up
@@ -92,7 +93,7 @@ public class ChoiceSlot<T extends Enum<T>> implements EditableSlot, CopyableHead
     private final Label futureDisplay; // The grey version of what would be completed
     private final DummyTextField dummyField; // An empty text field, just used to show a cursor and handle input
     private final ErrorUnderlineCanvas errorMarker;
-    private Function<T, Boolean> isValid;
+    private final Function<T, Boolean> isValid;
     // We must keep a reference to this to avoid problems with GC and weak listeners:
     private final BooleanBinding effectivelyFocusedProperty;
 
@@ -461,7 +462,7 @@ public class ChoiceSlot<T extends Enum<T>> implements EditableSlot, CopyableHead
     @Override
     public ObservableList<Node> getComponents()
     {
-        return FXCollections.observableArrayList((Node)pane);
+        return FXCollections.observableArrayList(pane);
     }
 
     @Override

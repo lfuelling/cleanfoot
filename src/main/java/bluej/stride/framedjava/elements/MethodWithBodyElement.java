@@ -22,22 +22,32 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.debugger.gentype.Reflective;
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.MethodFrameWithBody;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
-import nu.xom.Element;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Utility;
+import nu.xom.Element;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.debugger.gentype.Reflective;
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.ParamFragment;
+import bluej.stride.framedjava.ast.ThrowsTypeFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.MethodFrameWithBody;
 
 /**
  * A parent class which is shared between ConstructorElement and NormalMethodElement.
@@ -60,7 +70,7 @@ public abstract class MethodWithBodyElement extends DocumentContainerCodeElement
      * Constructor when generated from the GUI
      */
     public MethodWithBodyElement(MethodFrameWithBody<?> frame, AccessPermissionFragment access, List<ParamFragment> params,
-                                 List<ThrowsTypeFragment> throwsTypes, List<CodeElement> contents, JavadocUnit documentation, boolean enabled)
+            List<ThrowsTypeFragment> throwsTypes, List<CodeElement> contents, JavadocUnit documentation, boolean enabled)
     {
         this.frame = frame;
         this.access = access;
@@ -218,10 +228,10 @@ public abstract class MethodWithBodyElement extends DocumentContainerCodeElement
     }
 
     @Override
-    public List<CodeElement.LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
+    public List<LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
     {
-        List<CodeElement.LocalParamInfo> vars = new ArrayList<>();
-        params.forEach(param -> vars.add(new CodeElement.LocalParamInfo(param.getParamType().getContent(), param.getParamName().getContent(), true, this)));
+        List<LocalParamInfo> vars = new ArrayList<>();
+        params.forEach(param -> vars.add(new LocalParamInfo(param.getParamType().getContent(), param.getParamName().getContent(), true, this)));
         return vars;
     }
     

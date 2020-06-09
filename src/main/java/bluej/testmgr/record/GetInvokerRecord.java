@@ -32,13 +32,13 @@ import bluej.pkgmgr.PkgMgrFrame;
 public class GetInvokerRecord extends InvokerRecord
 {
     /** The invoker record for the inspector where the Get button was pressed, that resulted in the creation of this GetInvokerRecord. */
-    private InvokerRecord parentIr;
+    private final InvokerRecord parentIr;
     
     /** Name of the field to Get */
-    private String fieldName;
+    private final String fieldName;
     
     /** Type of the field */
-    private String fieldType;
+    private final String fieldType;
     
     /** Name of the object as it appears on the object bench */
     private String objName;

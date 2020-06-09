@@ -21,10 +21,10 @@
  */
 package bluej.extensions.event;
 
+import java.io.File;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * This class encapsulates compiler events.
@@ -35,7 +35,7 @@ import java.io.File;
  * @author Damiano Bolla, University of Kent at Canterbury, 2003
  */
 @OnThread(Tag.Any)
-public class CompileEvent implements ExtensionEvent
+public class CompileEvent implements ExtensionEvent 
 {
     /**
      * Event generated when compilation begins.
@@ -65,8 +65,8 @@ public class CompileEvent implements ExtensionEvent
     public static final int COMPILE_FAILED_EVENT = 5;
 
     private final boolean keepClasses;
-    private int    eventId;
-    private File[] fileNames;   // An array of names this event belong to
+    private final int    eventId;
+    private final File[] fileNames;   // An array of names this event belong to
     private int    errorLineNumber;
     private int    errorColumn;
     private int    endErrorLine;

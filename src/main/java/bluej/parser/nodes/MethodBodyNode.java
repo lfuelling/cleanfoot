@@ -97,7 +97,7 @@ public class MethodBodyNode extends IncrementalParsingNode
     
     @Override
     public PackageOrClass resolvePackageOrClass(String name,
-                                                Reflective querySource, int fromPosition)
+            Reflective querySource, int fromPosition)
     {
         ParsedNode cnode = classNodes.get(name);
         if (cnode != null && cnode.getOffsetFromParent() <= fromPosition) {

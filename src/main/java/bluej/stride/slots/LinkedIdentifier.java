@@ -23,6 +23,7 @@ package bluej.stride.slots;
 
 import bluej.stride.framedjava.slots.UnderlineContainer;
 import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

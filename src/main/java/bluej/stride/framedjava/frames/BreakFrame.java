@@ -26,13 +26,17 @@
 package bluej.stride.framedjava.frames;
 
 
-import bluej.stride.framedjava.elements.BreakElement;
-import bluej.stride.generic.*;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import bluej.stride.framedjava.elements.BreakElement;
+import bluej.stride.generic.DefaultFrameFactory;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleLineFrame;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -47,7 +51,7 @@ public class BreakFrame extends SingleLineFrame
     private SimpleDoubleProperty xOffset;
     private SimpleDoubleProperty yOffset;
 
-    public static enum BreakEncloser
+    public enum BreakEncloser
     {
         WHILE, FOREACH, SWITCH;
         

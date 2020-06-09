@@ -21,13 +21,14 @@
  */
 package bluej.stride.operations;
 
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import bluej.utility.Utility;
-
 import java.util.List;
 import java.util.function.Consumer;
+
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import javafx.beans.value.ObservableValue;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Utility;
 
 /**
  * Implementation of FrameOperation, designed to allow you to
@@ -35,8 +36,8 @@ import java.util.function.Consumer;
  */
 public class CustomFrameOperation extends FrameOperation
 {
-    private List<ItemLabel> labels;
-    private Consumer<List<Frame>> action;
+    private final List<ItemLabel> labels;
+    private final Consumer<List<Frame>> action;
 
     // Constructor for operations with customisable Combine
     public CustomFrameOperation(InteractionManager editor, String identifier, Combine combine, List<String> name, MenuItemOrder menuOrder, Consumer<List<Frame>> action)

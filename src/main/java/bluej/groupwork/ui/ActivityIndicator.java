@@ -29,14 +29,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
 public class ActivityIndicator extends StackPane
 {
-    private ProgressBar progressBar;
-    private Label messageLabel;
+    private final ProgressBar progressBar;
+    private final Label messageLabel;
     private Timeline animation;
 
     public ActivityIndicator()

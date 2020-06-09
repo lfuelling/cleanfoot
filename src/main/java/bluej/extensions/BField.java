@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2016  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2016,2018  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,6 +21,8 @@
  */
 package bluej.extensions;
 
+import java.util.List;
+
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
@@ -32,11 +34,23 @@ import bluej.utility.Debug;
 import bluej.utility.Utility;
 import bluej.views.FieldView;
 import bluej.views.View;
-import com.sun.jdi.*;
+
+import com.sun.jdi.ArrayReference;
+import com.sun.jdi.BooleanValue;
+import com.sun.jdi.ByteValue;
+import com.sun.jdi.CharValue;
+import com.sun.jdi.DoubleValue;
+import com.sun.jdi.Field;
+import com.sun.jdi.FloatValue;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.LongValue;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortValue;
+import com.sun.jdi.StringReference;
+import com.sun.jdi.Value;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * A wrapper for a field of a BlueJ class.
@@ -135,7 +149,7 @@ public class BField
      * When you are inspecting a static field use this one.
      *
      * @return                            The staticField value
-     * @throws ProjectNotOpenException   if the project to which this field belongs has been closed by the user.
+     * @throws  ProjectNotOpenException   if the project to which this field belongs has been closed by the user.
      * @throws  PackageNotFoundException  if the package to which this field belongs has been deleted by the user.
      */
     @OnThread(Tag.SwingIsFX)
@@ -204,7 +218,7 @@ public class BField
      *
      * @param  onThis                     Description of the Parameter
      * @return                            The value value
-     * @throws ProjectNotOpenException   if the project to which the field belongs has been closed by the user.
+     * @throws  ProjectNotOpenException   if the project to which the field belongs has been closed by the user.
      * @throws  PackageNotFoundException  if the package to which the field belongs has been deleted by the user.
      */
     public Object getValue(BObject onThis)
@@ -255,28 +269,28 @@ public class BField
             return ((StringReference) val).value();
         }
         if (val instanceof BooleanValue) {
-            return new Boolean(((BooleanValue) val).value());
+            return Boolean.valueOf(((BooleanValue) val).value());
         }
         if (val instanceof ByteValue) {
-            return new Byte(((ByteValue) val).value());
+            return Byte.valueOf(((ByteValue) val).value());
         }
         if (val instanceof CharValue) {
-            return new Character(((CharValue) val).value());
+            return Character.valueOf(((CharValue) val).value());
         }
         if (val instanceof DoubleValue) {
-            return new Double(((DoubleValue) val).value());
+            return Double.valueOf(((DoubleValue) val).value());
         }
         if (val instanceof FloatValue) {
-            return new Float(((FloatValue) val).value());
+            return Float.valueOf(((FloatValue) val).value());
         }
         if (val instanceof IntegerValue) {
-            return new Integer(((IntegerValue) val).value());
+            return Integer.valueOf(((IntegerValue) val).value());
         }
         if (val instanceof LongValue) {
-            return new Long(((LongValue) val).value());
+            return Long.valueOf(((LongValue) val).value());
         }
         if (val instanceof ShortValue) {
-            return new Short(((ShortValue) val).value());
+            return Short.valueOf(((ShortValue) val).value());
         }
 
         if (unpackArray && val instanceof ArrayReference)

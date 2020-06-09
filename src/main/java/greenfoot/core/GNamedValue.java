@@ -31,8 +31,8 @@ import bluej.debugmgr.NamedValue;
  */
 public class GNamedValue implements NamedValue
 {
-    private String name;
-    private JavaType type;
+    private final String name;
+    private final JavaType type;
     
     public GNamedValue(String instanceName, JavaType type)
     {

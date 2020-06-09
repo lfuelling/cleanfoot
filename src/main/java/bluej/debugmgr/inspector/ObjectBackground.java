@@ -1,12 +1,17 @@
 package bluej.debugmgr.inspector;
 
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ResizableCanvas;
 import javafx.beans.value.ObservableDoubleValue;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Paint;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
+
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.ResizableCanvas;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -41,7 +46,7 @@ public class ObjectBackground extends ResizableCanvas
         double w = getWidth();
         double h = getHeight();
 
-        final Paint fill = new Color(227.0 / 255.0, 71.0 / 255.0, 71.0 / 255.0, 1.0);
+        final Paint fill = new javafx.scene.paint.Color(227.0 / 255.0, 71.0 / 255.0, 71.0 / 255.0, 1.0);
         gc.setFill(fill);
         gc.fillRect(0, 0, w, h);
 

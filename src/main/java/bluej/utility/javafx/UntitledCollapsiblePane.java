@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program.
- Copyright (C) 2016,2017 Michael Kölling and John Rosenberg
+ Copyright (C) 2016,2017,2018 Michael Kölling and John Rosenberg
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -48,12 +48,12 @@ import javafx.util.Duration;
  */
 public class UntitledCollapsiblePane extends Pane
 {
-    public static enum ArrowLocation
+    public enum ArrowLocation
     {
         /* Arrow at top, content expands downwards from top */
         TOP,
         /* Arrow at left, content expands rightwards from left */
-        LEFT;
+        LEFT
     }
 
     private final ArrowLocation arrowLocation;
@@ -174,20 +174,35 @@ public class UntitledCollapsiblePane extends Pane
     }
 
     private void layoutChildren(double x, double y,
-                                            final double w, final double h) {
+                                            final double w, final double h)
+    {
 
         // header
-        final double arrowSize = snapSize(arrow.TRIANGLE_DEPTH + 2 * arrowPadding);
+        final double arrowSize;
 
         if (isVertical())
+        {
+            arrowSize = snapSizeY(TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding);
             arrowWrapper.resize(w, arrowSize);
+        }
         else
+        {
+            arrowSize = snapSizeX(TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding);
             arrowWrapper.resize(arrowSize, h);
+        }
         positionInArea(arrowWrapper, x, y,
-            isVertical() ? w : arrowSize, isVertical() ? arrowSize : h, 0, HPos.CENTER, VPos.CENTER);
+                isVertical() ? w : arrowSize, isVertical() ? arrowSize : h, 0, HPos.CENTER, VPos.CENTER);
 
         // content size, in the dimension in which we collapse (height if arrow at top, else width)
-        final double contentSize = snapSize((isVertical() ? h : w) - arrowSize);
+        final double contentSize;
+        if (isVertical())
+        {
+            contentSize = snapSizeY(h - arrowSize);
+        }
+        else
+        {
+            contentSize = snapSizeX(w - arrowSize);
+        }
 
         if (isVertical())
         {
@@ -209,25 +224,25 @@ public class UntitledCollapsiblePane extends Pane
     @Override
     protected double computePrefWidth(double height)
     {
-        return isVertical() ? content.prefWidth(height) : content.prefWidth(height) * getTransition() + arrow.TRIANGLE_DEPTH + 2 * arrowPadding;
+        return isVertical() ? content.prefWidth(height) : content.prefWidth(height) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding;
     }
 
     @Override
     protected double computePrefHeight(double width)
     {
-        return isVertical() ? content.prefHeight(width) * getTransition() + arrow.TRIANGLE_DEPTH + 2 * arrowPadding : content.prefHeight(width);
+        return isVertical() ? content.prefHeight(width) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding : content.prefHeight(width);
     }
 
     @Override
     protected double computeMinWidth(double height)
     {
-        return isVertical() ? content.minWidth(height) : content.minWidth(height) * getTransition() + arrow.TRIANGLE_DEPTH + 2 * arrowPadding;
+        return isVertical() ? content.minWidth(height) : content.minWidth(height) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding;
     }
 
     @Override
     protected double computeMinHeight(double width)
     {
-        return isVertical() ? content.minHeight(width) * getTransition() + arrow.TRIANGLE_DEPTH + 2 * arrowPadding : content.minHeight(width);
+        return isVertical() ? content.minHeight(width) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding : content.minHeight(width);
     }
 
     private double getTransition()

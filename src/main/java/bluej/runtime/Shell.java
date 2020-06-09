@@ -68,7 +68,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public Object result = o;
+            public final Object result = o;
         };
     }
 
@@ -76,7 +76,7 @@ public abstract class Shell
     {
         return new Object() {
            @SuppressWarnings("unused")
-           public String result = s;
+           public final String result = s;
         };
     }
 
@@ -84,7 +84,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public boolean result = b;
+            public final boolean result = b;
         };
     }
 
@@ -92,7 +92,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public byte result = b;
+            public final byte result = b;
         };
     }
 
@@ -100,14 +100,14 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public char result = c;
+            public final char result = c;
         };
     }
 
     protected static Object makeObj(final double d) {
         return new Object() {
             @SuppressWarnings("unused")
-            public double result = d;
+            public final double result = d;
         };
     }
 
@@ -115,7 +115,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public float result = f;
+            public final float result = f;
         };
     }
 
@@ -123,7 +123,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public int result = i;
+            public final int result = i;
         };
     }
 
@@ -131,7 +131,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public long result = l;
+            public final long result = l;
         };
     }
 
@@ -139,7 +139,7 @@ public abstract class Shell
     {
         return new Object() {
             @SuppressWarnings("unused")
-            public short result = s;
+            public final short result = s;
         };
     }
 }

@@ -21,21 +21,25 @@
  */
 package bluej.pkgmgr;
 
+import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
+import javafx.scene.Node;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+
 import bluej.BlueJTheme;
 import bluej.Config;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Dialog for showing the user a list of files which

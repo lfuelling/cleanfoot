@@ -31,6 +31,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.util.Duration;
 
+import java.util.function.Consumer;
+
 /**
  * Created by neil on 21/03/2016.
  */

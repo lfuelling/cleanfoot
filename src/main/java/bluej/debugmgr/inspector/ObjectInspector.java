@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2010,2011,2013,2014,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2010,2011,2013,2014,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,32 +21,44 @@
  */
 package bluej.debugmgr.inspector;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.swing.SwingUtilities;
+
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PackageEditor;
-import bluej.testmgr.record.*;
+import bluej.testmgr.record.ArrayElementGetRecord;
+import bluej.testmgr.record.ArrayElementInspectorRecord;
+import bluej.testmgr.record.GetInvokerRecord;
+import bluej.testmgr.record.InvokerRecord;
+import bluej.testmgr.record.ObjectInspectInvokerRecord;
 import bluej.utility.DialogManager;
 import bluej.utility.JavaNames;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.*;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * A window that displays the fields in an object or a method return value.
@@ -160,8 +172,7 @@ public class ObjectInspector extends Inspector
         BorderPane mainPanel = new BorderPane();
         mainPanel.setCenter(fieldList);
         
-        Label lab = new Label("  " + noFieldsMsg);
-        fieldList.setPlaceholder(lab);
+        fieldList.setPlaceHolderText("  " + noFieldsMsg);
 
         mainPanel.setRight(createInspectAndGetButtons());
 
@@ -273,12 +284,7 @@ public class ObjectInspector extends Inspector
             // for array compression..
             if (queryArrayElementSelected) { // "..." in Array inspector
                 setCurrentObj(null, null, null); //  selected
-                if (! obj.getElementType().isPrimitive()) {
-                    setButtonsEnabled(true, false);
-                }
-                else {
-                    setButtonsEnabled(false, false);
-                }
+                setButtonsEnabled(!obj.getElementType().isPrimitive(), false);
             }
             else {
                 if (!obj.getElementType().isPrimitive()) {
@@ -461,7 +467,7 @@ public class ObjectInspector extends Inspector
         // mimic the public length field that arrays possess
         // according to the java spec...
         indexToSlotList = new LinkedList<Integer>();
-        indexToSlotList.add(0, new Integer(ARRAY_LENGTH_SLOT_VALUE));
+        indexToSlotList.add(0, Integer.valueOf(ARRAY_LENGTH_SLOT_VALUE));
 
         // the +1 here is due to the fact that if we do not have at least one
         // more than
@@ -482,7 +488,7 @@ public class ObjectInspector extends Inspector
 
             // now the first of our expansion slots
             newArray.add(new FieldInfo("[...]", ""));
-            indexToSlotList.add(new Integer(ARRAY_QUERY_SLOT_VALUE));
+            indexToSlotList.add(Integer.valueOf(ARRAY_QUERY_SLOT_VALUE));
 
             for (int i = VISIBLE_ARRAY_TAIL; i > 0; i--) {
                 // last 5 elements are displayed

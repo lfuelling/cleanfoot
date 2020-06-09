@@ -21,10 +21,10 @@
  */
 package bluej.terminal;
 
+import java.awt.Toolkit;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.awt.*;
 
 /**
  * A type-ahead input buffer for the BlueJ terminal. Implemented with
@@ -36,10 +36,10 @@ import java.awt.*;
 @OnThread(Tag.Any)
 public final class InputBuffer 
 {
-    private char[] buffer;
+    private final char[] buffer;
     private int bufferNextFull = 0;    // next free position
     private int bufferNextFree = 0;    // next full position
-    private int bufferSize;
+    private final int bufferSize;
     private boolean eofMark = false;
     
     public static char EOF_CHAR = '\u0004'; // internal code for EOF

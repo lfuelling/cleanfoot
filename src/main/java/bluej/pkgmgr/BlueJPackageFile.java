@@ -21,14 +21,14 @@
  */
 package bluej.pkgmgr;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Reference to the BlueJ package file(s). This includes references to the old
@@ -68,9 +68,9 @@ public class BlueJPackageFile
     private static final String pkgfileName = "package.bluej";
     private static final String oldPkgfileName = "bluej.pkg";
 
-    private File dir;
-    private File pkgFile;
-    private File oldPkgFile;
+    private final File dir;
+    private final File pkgFile;
+    private final File oldPkgFile;
 
     /**
      * @see PackageFileFactory

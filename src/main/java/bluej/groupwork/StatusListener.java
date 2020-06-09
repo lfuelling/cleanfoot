@@ -34,13 +34,11 @@ public interface StatusListener
     /**
      * Status is available for a file.
      */
-    @OnThread(Tag.Worker)
-    public void gotStatus(TeamStatusInfo info);
+    @OnThread(Tag.Worker) void gotStatus(TeamStatusInfo info);
     
     /**
      * The status operation is complete. A status handle is provided
      * to allow commit operations.
      */
-    @OnThread(Tag.Worker)
-    public void statusComplete(StatusHandle statusHandle);
+    @OnThread(Tag.Worker) void statusComplete(StatusHandle statusHandle);
 }

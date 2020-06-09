@@ -21,9 +21,20 @@
  */
 package greenfoot.sound;
 
-import javax.sound.midi.*;
 import java.io.IOException;
 import java.net.URL;
+
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MetaEventListener;
+import javax.sound.midi.MetaMessage;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.Sequencer;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Synthesizer;
+import javax.sound.midi.Transmitter;
 
 /**
  * Plays sound from a MIDI file.
@@ -40,8 +51,8 @@ public class MidiFileSound implements Sound
     {
         //System.out.println(s);
     }
-    private URL url;
-    private SoundPlaybackListener playbackListener;
+    private final URL url;
+    private final SoundPlaybackListener playbackListener;
     private Sequencer sequencer;
     private Synthesizer synthesizer;
     private Sequence sequence;

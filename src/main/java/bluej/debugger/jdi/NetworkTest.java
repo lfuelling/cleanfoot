@@ -21,12 +21,17 @@
  */
 package bluej.debugger.jdi;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.IOException;
-import java.net.*;
 
 /**
  * A network test which logs diagnostics information.

@@ -21,16 +21,17 @@
  */
 package bluej.debugger.jdi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.utility.Debug;
+
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ReferenceType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents an class running on the user (remote) machine.
@@ -110,7 +111,7 @@ public class JdiClass extends DebuggerClass
         if (remoteClass != null) {
             List<Field> allFields = remoteClass.allFields();
             for (int i = 0; i < allFields.size(); i++) {
-                Field field = (Field) allFields.get(i);
+                Field field = allFields.get(i);
                 if (field.isStatic())
                     staticFields.add(field);
             }

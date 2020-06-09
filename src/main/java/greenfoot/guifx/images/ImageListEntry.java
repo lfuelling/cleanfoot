@@ -22,9 +22,9 @@
 package greenfoot.guifx.images;
 
 import bluej.utility.Debug;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.io.File;
 import java.net.MalformedURLException;
 

@@ -21,15 +21,25 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.*;
-import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.*;
-
 import java.io.File;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+
+import org.tigris.subversion.javahl.ChangePath;
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.LogDate;
+import org.tigris.subversion.javahl.LogMessageCallback;
+import org.tigris.subversion.javahl.Revision;
+import org.tigris.subversion.javahl.RevisionRange;
+import org.tigris.subversion.javahl.SVNClientInterface;
+
+import bluej.groupwork.HistoryInfo;
+import bluej.groupwork.LogHistoryListener;
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
 
 /**
  * A subversion history command.
@@ -38,7 +48,7 @@ import java.util.Map;
  */
 public class SvnHistoryCommand extends SvnCommand
 {
-    private LogHistoryListener listener;
+    private final LogHistoryListener listener;
     
     public SvnHistoryCommand(SvnRepository repository, LogHistoryListener listener)
     {

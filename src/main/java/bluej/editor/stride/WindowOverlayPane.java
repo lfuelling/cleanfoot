@@ -24,6 +24,7 @@ package bluej.editor.stride;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableDoubleValue;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;

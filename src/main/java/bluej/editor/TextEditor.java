@@ -79,7 +79,7 @@ public interface TextEditor extends Editor
      * @throws  IllegalArgumentException  if either of the specified TextLocations
      * represent a position which does not exist in the text.
      */
-    public void setSelection(SourceLocation begin, SourceLocation end);
+    void setSelection(SourceLocation begin, SourceLocation end);
     
     /**
      * Set the selection of the editor to be a len characters on the line
@@ -106,7 +106,7 @@ public interface TextEditor extends Editor
      *
      * @return    the LineColumn object.
      */
-    public SourceLocation getCaretLocation();
+    SourceLocation getCaretLocation();
     
     /**
      * Sets the current Caret location within the edited text.
@@ -114,7 +114,7 @@ public interface TextEditor extends Editor
      * @param  location                   The location in the text to set the Caret to.
      * @throws  IllegalArgumentException  if the specified TextLocation represents a position which does not exist in the text.
      */
-    public void setCaretLocation(SourceLocation location);
+    void setCaretLocation(SourceLocation location);
 
 
     /**
@@ -122,14 +122,14 @@ public interface TextEditor extends Editor
      *
      * @return    the current beginning of the selection or null if no text is selected.
      */
-    public SourceLocation getSelectionBegin();
+    SourceLocation getSelectionBegin();
     
     /**
      * Returns the location where the current selection ends.
      *
      * @return    the current end of the selection or null if no text is selected.
      */
-    public SourceLocation getSelectionEnd();
+    SourceLocation getSelectionEnd();
 
     /**
      * Returns the text which lies between the two LineColumn.
@@ -139,7 +139,7 @@ public interface TextEditor extends Editor
      * @return                            The text value
      * @throws  IllegalArgumentException  if either of the specified SourceLocations represent a position which does not exist in the text.
      */
-    public String getText(SourceLocation begin, SourceLocation end);
+    String getText(SourceLocation begin, SourceLocation end);
 
     /**
      * Request to the editor to replace the text between beginning and end with the given newText
@@ -152,15 +152,15 @@ public interface TextEditor extends Editor
      * represent a position which does not exist in the text.
      * @throws  BadLocationException  if internally the text points outside a location in the text.
      */
-    public void setText(SourceLocation begin, SourceLocation end, String newText);
-
+    void setText(SourceLocation begin, SourceLocation end, String newText);
+        
     /**
      * Returns the LineColumn object from the given offset in the text.
      *
      * @return    the LineColumn object or null if the offset points outside the text.
      */
-    public SourceLocation getLineColumnFromOffset(int offset);
-
+    SourceLocation getLineColumnFromOffset(int offset);
+    
     /**
      * Translates a LineColumn into an offset into the text held by the editor.
      *
@@ -169,22 +169,22 @@ public interface TextEditor extends Editor
      * @throws  IllegalArgumentException  if the specified LineColumn
      * represent a position which does not exist in the text.
      */
-    public int getOffsetFromLineColumn(SourceLocation location);
+    int getOffsetFromLineColumn(SourceLocation location);
 
-
+    
     /**
      * Returns the length of the line indicated in the edited text.
      *
      * @param  line  the line in the text for which the length should be calculated, starting from 0
      * @return       the length of the line, -1 if line is invalid
      */
-    public int getLineLength(int line);
-
+    int getLineLength(int line);
+    
     /**
      * Return the number of lines in the document.
      */
-    public int numberOfLines();
-
+    int numberOfLines();
+    
     /**
      * Returns the length of the data.  This is the number of
      * characters of content that represents the users data.
@@ -194,7 +194,7 @@ public interface TextEditor extends Editor
      *
      * @return the length >= 0
      */
-    public int getTextLength();
+    int getTextLength();
     
     /**
      * Get a node representing the the parsed structure of the source
@@ -202,5 +202,5 @@ public interface TextEditor extends Editor
      * 
      * @return A ParsedNode instance, or null if not supported.
      */
-    public ParsedCUNode getParsedNode();
+    ParsedCUNode getParsedNode();
 }

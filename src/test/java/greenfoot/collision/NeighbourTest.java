@@ -21,18 +21,19 @@
  */
 package greenfoot.collision;
 
-import greenfoot.TestObject;
 import greenfoot.TestUtilDelegate;
 import greenfoot.World;
+import greenfoot.TestObject;
 import greenfoot.WorldCreator;
 import greenfoot.core.Simulation;
 import greenfoot.core.WorldHandler;
 import greenfoot.util.GreenfootUtil;
-import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
+import junit.framework.TestCase;
 
 /**
  * 

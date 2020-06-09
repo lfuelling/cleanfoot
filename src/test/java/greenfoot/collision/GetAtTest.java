@@ -21,12 +21,16 @@
  */
 package greenfoot.collision;
 
-import greenfoot.*;
+import java.util.List;
+
+import greenfoot.GreenfootImage;
+import greenfoot.TestObject;
+import greenfoot.TestUtilDelegate;
+import greenfoot.World;
+import greenfoot.WorldCreator;
 import greenfoot.core.Simulation;
 import greenfoot.util.GreenfootUtil;
 import junit.framework.TestCase;
-
-import java.util.List;
 
 public class GetAtTest extends TestCase
 {
@@ -249,8 +253,8 @@ public class GetAtTest extends TestCase
                 setImage(new GreenfootImage(60, 60));
                 getOneObjectAtOffset(0, 0, TestObject.class);
             }
-        };
-        
+        }
+
         world = WorldCreator.createWorld(10, 10, 60);
         TestObject wombat = new TestObject(58, 45);
         world.addObject(wombat, 4, 7);

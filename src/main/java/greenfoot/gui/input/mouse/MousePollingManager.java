@@ -22,11 +22,13 @@
 package greenfoot.gui.input.mouse;
 
 import greenfoot.MouseInfo;
+import greenfoot.gui.input.mouse.MouseEventData;
+
+import java.awt.event.MouseEvent;
+
 import javafx.scene.input.MouseButton;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.awt.event.MouseEvent;
 
 /**
  * There are two ways that the mouse can be handled in Greenfoot. One is the

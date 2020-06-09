@@ -73,7 +73,7 @@ public class GenTypeTests extends TestCase
         basePars.add(oBound);
         GenTypeClass baseClass = new GenTypeClass(baseReflective, basePars);
         //Map m = baseClass.mapToDerived(derivedR2);
-        GenTypeClass mapped = (GenTypeClass) baseClass.mapToDerived(derivedR2);
+        GenTypeClass mapped = baseClass.mapToDerived(derivedR2);
         
         //assertTrue(m.get("T").equals(oBound));
         assertEquals("derived2<java.lang.Object>", mapped.toString());

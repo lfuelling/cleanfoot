@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,17 +21,14 @@
  */
 package bluej.stride.framedjava.elements;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
 import bluej.debugger.gentype.ConstructorReflective;
-import bluej.parser.CodeSuggestions;
-import bluej.parser.entity.EntityResolver;
 import bluej.stride.framedjava.ast.FrameFragment;
-import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.Loader;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.frames.TopLevelFrame;
-import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.generic.AssistContentThreadSafe;
 import bluej.stride.generic.InteractionManager;
 import nu.xom.Attribute;
@@ -39,11 +36,14 @@ import nu.xom.Element;
 import nu.xom.Elements;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
+import bluej.parser.ExpressionTypeInfo;
+import bluej.parser.entity.EntityResolver;
+import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.frames.TopLevelFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
 
 public interface TopLevelCodeElement
 {
@@ -51,7 +51,7 @@ public interface TopLevelCodeElement
     // to try to make sure we don't pass the wrong element when a top-level element is intended
     
     // Helper methods:
-    public static ArrayList<TypeSlotFragment> xmlToTypeList(Element el, String container, String itemName, String itemAttribute)
+    static ArrayList<TypeSlotFragment> xmlToTypeList(Element el, String container, String itemName, String itemAttribute)
     {
         ArrayList<TypeSlotFragment> members = new ArrayList<>();
         Element collectionChildElement = el.getFirstChildElement(container);
@@ -71,7 +71,7 @@ public interface TopLevelCodeElement
     }
 
     // Makes an XML element named container, with an element per string (of type itemName) with content put in the given itemAttribute
-    public static Element typeListToXML(List<TypeSlotFragment> items, String container, String itemName, String itemAttribute)
+    static Element typeListToXML(List<TypeSlotFragment> items, String container, String itemName, String itemAttribute)
     {
         Element el = new Element(container);
         for (TypeSlotFragment s : items)
@@ -83,7 +83,7 @@ public interface TopLevelCodeElement
         return el;
     }
 
-    public static List<CodeElement> fillChildrenElements(ContainerCodeElement parent, Element el, String string)
+    static List<CodeElement> fillChildrenElements(ContainerCodeElement parent, Element el, String string)
     {
         List<CodeElement> members = new ArrayList<CodeElement>();
         Element collectionChildElement = el.getFirstChildElement(string);
@@ -98,45 +98,39 @@ public interface TopLevelCodeElement
         return members;
     }
 
-    public static Attribute getStrideVersionAttribute()
+    static Attribute getStrideVersionAttribute()
     {
         return new Attribute("strideversion", "1");
     }
 
-    @OnThread(Tag.FXPlatform)
-    public CodeSuggestions getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing);
+    @OnThread(Tag.FXPlatform) ExpressionTypeInfo getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing);
 
-    @OnThread(Tag.FX)
-    public TopLevelFrame<? extends TopLevelCodeElement> createTopLevelFrame(InteractionManager editor);
+    @OnThread(Tag.FX) TopLevelFrame<? extends TopLevelCodeElement> createTopLevelFrame(InteractionManager editor);
 
-    public List<ImportElement> getImports();
+    List<ImportElement> getImports();
 
-    public String getName();
+    String getName();
     
     // Used to help style the tab:
-    public String getStylePrefix();
+    String getStylePrefix();
 
-    @OnThread(Tag.FXPlatform)
-    public EntityResolver getResolver();
+    @OnThread(Tag.FXPlatform) EntityResolver getResolver();
 
-    public @OnThread(Tag.FX)
-    InteractionManager getEditor();
+    @OnThread(Tag.FX) InteractionManager getEditor();
 
     // Methods mirroring CodeElement:
-    public LocatableElement toXML();
+    LocatableElement toXML();
 
-    public TopLevelFrame getFrame();
+    TopLevelFrame getFrame();
 
-    public Stream<CodeElement> streamContained();
+    Stream<CodeElement> streamContained();
 
-    @OnThread(Tag.FXPlatform)
-    public Stream<SyntaxCodeError> findEarlyErrors();
+    @OnThread(Tag.FXPlatform) Stream<SyntaxCodeError> findEarlyErrors();
 
-    @OnThread(Tag.FXPlatform)
-    public JavaSource toJavaSource();
+    @OnThread(Tag.FXPlatform) JavaSource toJavaSource();
 
     @OnThread(Tag.FXPlatform)
-    public default JavaSource toJavaSource(boolean warning)
+    default JavaSource toJavaSource(boolean warning)
     {
         JavaSource java = toJavaSource();
         if (warning) {

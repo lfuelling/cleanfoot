@@ -22,25 +22,25 @@
 package bluej.stride.framedjava.frames;
 
 
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameDictionary;
-import bluej.stride.generic.FrameTypeCheck;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameDictionary;
+import bluej.stride.generic.FrameTypeCheck;
+
 public class StrideDictionary extends FrameDictionary<StrideCategory>
 {
-    private static StrideDictionary instance = new StrideDictionary();
+    private static final StrideDictionary instance = new StrideDictionary();
     
     public static StrideDictionary getDictionary()
     {
         return instance;
     }
 
-    private Map<String, Character> extensions = new HashMap<>();
+    private final Map<String, Character> extensions = new HashMap<>();
 
     public static final char ABSTRACT_EXTENSION_CHAR = 'b';
     public static final char DEFAULT_EXTENSION_CHAR = 'd';//

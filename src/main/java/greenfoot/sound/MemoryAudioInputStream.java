@@ -21,9 +21,10 @@
  */
 package greenfoot.sound;
 
+import java.io.IOException;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
 
 /**
  * An implementation of GreenfootAudioInputStream that reads from a memory buffer
@@ -32,10 +33,10 @@ import java.io.IOException;
  */
 public class MemoryAudioInputStream implements GreenfootAudioInputStream
 {
-    private byte[] sound;
-    private int startOffset;
-    private int endOffset;
-    private AudioFormat format;
+    private final byte[] sound;
+    private final int startOffset;
+    private final int endOffset;
+    private final AudioFormat format;
     private int markIndex;
     private int curIndex;
     

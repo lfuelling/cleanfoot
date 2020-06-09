@@ -21,12 +21,12 @@
  */
 package bluej.stride.operations;
 
-import bluej.stride.generic.FrameState;
-import bluej.utility.javafx.FXRunnable;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import bluej.stride.generic.FrameState;
+import bluej.utility.javafx.FXRunnable;
 
 /**
  * An undo/redo manager for the frame editor. A stack of farme states is maintained;
@@ -176,8 +176,6 @@ public class UndoRedoManager
         }
         if (index == -1)
             return false;
-        if (index < current && current - index <= withinNumUndos)
-            return true;
-        return false;
+        return index < current && current - index <= withinNumUndos;
     }
 }

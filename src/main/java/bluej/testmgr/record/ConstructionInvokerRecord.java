@@ -31,10 +31,10 @@ import bluej.pkgmgr.PkgMgrFrame;
  */
 public class ConstructionInvokerRecord extends InvokerRecord
 {
-    private String type;
-    private String name;
-    private String command;
-    private String [] argumentValues;
+    private final String type;
+    private final String name;
+    private final String command;
+    private final String [] argumentValues;
     
     public ConstructionInvokerRecord(String type, String name, String command, String [] argVals)
     {

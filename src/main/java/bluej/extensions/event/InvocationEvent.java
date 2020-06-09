@@ -21,6 +21,8 @@
  */
 package bluej.extensions.event;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.JavaPrimitiveType;
 import bluej.debugger.gentype.JavaType;
@@ -29,11 +31,10 @@ import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.extensions.BPackage;
 import bluej.extensions.ExtensionBridge;
 import bluej.pkgmgr.PkgMgrFrame;
+
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 
 /**
@@ -72,12 +73,14 @@ public class InvocationEvent implements ExtensionEvent
      */
     public final static int TERMINATED_EXIT = 4;
 
-    private String className, objectName, methodName;
-    private JavaType[] signature;
-    private String[] parameters;
+    private final String className;
+    private final String objectName;
+    private final String methodName;
+    private final JavaType[] signature;
+    private final String[] parameters;
     private int invocationStatus;
-    private bluej.pkgmgr.Package bluej_pkg;
-    private DebuggerObject resultObj;
+    private final bluej.pkgmgr.Package bluej_pkg;
+    private final DebuggerObject resultObj;
 
 
     /**

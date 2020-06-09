@@ -21,6 +21,10 @@
  */
 package bluej.stride.framedjava.ast;
 
+import java.io.StringReader;
+import java.util.List;
+import java.util.function.Consumer;
+
 import bluej.parser.JavaParser;
 import bluej.parser.ParseFailure;
 import bluej.parser.lexer.JavaLexer;
@@ -31,10 +35,6 @@ import bluej.stride.framedjava.convert.JavaStrideParser;
 import bluej.stride.framedjava.elements.CodeElement;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.StringReader;
-import java.util.List;
-import java.util.function.Consumer;
 
 @OnThread(Tag.FXPlatform)
 public class Parser
@@ -54,10 +54,7 @@ public class Parser
 
             // Only valid if we have parsed all the way to end of the String:
             LocatableToken tok = p.getTokenStream().nextToken();
-            if (tok.getType() != JavaTokenTypes.EOF)
-                return false;
-
-            return true;
+            return tok.getType() == JavaTokenTypes.EOF;
         }
         catch (ParseFailure pf)
         {
@@ -90,10 +87,7 @@ public class Parser
         JavaLexer lexer = new JavaLexer(new StringReader(s));
         LocatableToken t = lexer.nextToken();
         LocatableToken t2 = lexer.nextToken();
-        if (t.getType() == JavaTokenTypes.IDENT && t2.getType() == JavaTokenTypes.EOF)
-            return true;
-        else
-            return false;
+        return t.getType() == JavaTokenTypes.IDENT && t2.getType() == JavaTokenTypes.EOF;
     }
 
     public static boolean parseableAsExpression(String e)
@@ -130,7 +124,7 @@ public class Parser
         
     }
     
-    public static enum JavaContext
+    public enum JavaContext
     {
         /** An item within a method (or similar) */
         STATEMENT,

@@ -102,7 +102,6 @@ prefmgr.edit.editorfontsize=\u5b57\u4f53\u5927\u5c0f
 prefmgr.edit.usesyntaxhilighting=\u4f7f\u7528\u8bed\u6cd5\u9ad8\u4eae
 prefmgr.edit.autoindent=\u81ea\u52a8\u5bf9\u9f50 (\u56de\u8f66\u548cTab\u952e)
 prefmgr.edit.displaylinenumbers=\u663e\u793a\u884c\u53f7
-prefmgr.edit.makeBackup=\u5907\u4efd\u6e90\u6587\u4ef6
 prefmgr.edit.matchBrackets=\u5339\u914d\u62ec\u53f7
 
 
@@ -158,7 +157,6 @@ editor.helpLabel=\u5e2e\u52a9
 
 # item labels (can be omitted if same as action name)
 editor.saveLabel=\u4fdd\u5b58
-editor.reloadLabel=\u91cd\u65b0\u8f7d\u5165
 editor.printLabel=\u6253\u5370...
 editor.closeLabel=\u5173\u95ed
 
@@ -242,8 +240,6 @@ editor.info.newFile=\u65b0\u5efa\u6587\u4ef6
 editor.info.errorSaving=\u4fdd\u5b58\u6587\u4ef6\u65f6\u51fa\u9519!
 editor.info.compiled=\u7f16\u8bd1\u5b8c\u6210 - \u6ca1\u6709\u8bed\u6cd5\u9519\u8bef
 editor.info.noChanges=\u6ca1\u6709\u6539\u53d8\u4e0d\u9700\u8981\u4fdd\u5b58
-editor.info.cannotReload=\u4e0d\u80fd\u91cd\u65b0\u88c5\u8f7d - \u6b64\u6587\u672c\u672a\u4fdd\u5b58!
-editor.info.reload=("\u91cd\u65b0\u88c5\u8f7d" \u4ece\u78c1\u76d8\u91cd\u65b0\u88c5\u8f7d\u6700\u8fd1\u4e00\u6b21\u7684\u5b58\u50a8\u72b6\u6001.)
 editor.info.emptySearchString=\u5c06\u67e5\u627e\u5b57\u7b26\u4e32\u7f6e\u7a7a.
 editor.info.notFound=\u6ca1\u627e\u5230
 editor.info.compiling=\u7f16\u8bd1...

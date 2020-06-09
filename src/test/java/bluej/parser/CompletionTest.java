@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2014,2015,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2014,2015,2016,2017,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -32,8 +32,6 @@ import java.util.concurrent.Executor;
 
 import bluej.JavaFXThreadingRule;
 import bluej.editor.moe.ScopeColors;
-import javafx.embed.swing.JFXPanel;
-import junit.framework.TestCase;
 import bluej.debugger.gentype.FieldReflective;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.GenTypeSolid;
@@ -161,7 +159,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(67, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(67, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
     }
@@ -241,9 +239,84 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(73, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(73, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.Object", suggests.getSuggestionType().toString());
+    }
+
+    /**
+     * Completion from an expression involving a local variable declared as "var"
+     */
+    @Test
+    public void test3var() throws Exception
+    {
+        String aClassSrc = "class A {\n" +   //       10 
+        "void someMethod() {\n" +            // +20 = 30 
+        "    var b = new Object();\n" +      // +26 = 56 
+        "    int a = b.hashCode();\n" +      // int a = b. <-- 70
+        "}\n" +
+        "}\n";
+        
+        PlainDocument doc = new PlainDocument();
+        doc.insertString(0, aClassSrc);
+        
+        ParsedCUNode aNode = cuForSource(aClassSrc, "");
+        resolver.addCompilationUnit("", aNode);
+        
+        ExpressionTypeInfo suggests = aNode.getExpressionType(70, doc);
+        assertNotNull(suggests);
+        assertEquals("java.lang.Object", suggests.getSuggestionType().toString());
+    }
+
+    /**
+     * Completion from an expression involving a local variable declared as "var"
+     */
+    @Test
+    public void test4var() throws Exception
+    {
+        String aClassSrc = "class A {\n" +
+                "void someMethod() {\n" +
+                "    var b = \"hello\";\n" +
+                "    int a = b.length();\n" +
+                "}\n" +
+                "}\n";
+
+        PlainDocument doc = new PlainDocument();
+        doc.insertString(0, aClassSrc);
+
+        ParsedCUNode aNode = cuForSource(aClassSrc, "");
+        resolver.addCompilationUnit("", aNode);
+
+        ExpressionTypeInfo suggests = aNode.getExpressionType(aClassSrc.indexOf("length()"), doc);
+        assertNotNull(suggests);
+        assertEquals("java.lang.String", suggests.getSuggestionType().toString());
+    }
+
+    /**
+     * Completion from an expression involving a local variable declared as "var"
+     */
+    @Test
+    public void test5var() throws Exception
+    {
+        String aClassSrc = "class A {\n" +
+                "void someMethod() {\n" +
+                "    var b = java.util.List.of(\"hello\");\n" +
+                "    int a = b.get(0).length();\n" +
+                "}\n" +
+                "}\n";
+
+        PlainDocument doc = new PlainDocument();
+        doc.insertString(0, aClassSrc);
+
+        ParsedCUNode aNode = cuForSource(aClassSrc, "");
+        resolver.addCompilationUnit("", aNode);
+
+        ExpressionTypeInfo suggestsList = aNode.getExpressionType(aClassSrc.indexOf("get(0)"), doc);
+        assertNotNull(suggestsList);
+        assertEquals("java.util.List<java.lang.String>", suggestsList.getSuggestionType().toString());
+        ExpressionTypeInfo suggests = aNode.getExpressionType(aClassSrc.indexOf("length()"), doc);
+        assertNotNull(suggests);
+        assertEquals("java.lang.String", suggests.getSuggestionType().toString());
     }
     
     /** Test that a for-loop initializer creates a recognized variable */
@@ -264,7 +337,32 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(73, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(73, doc);
+        assertNotNull(suggests);
+        assertEquals("java.lang.Object", suggests.getSuggestionType().toString());
+    }
+
+    /**
+     * Test that a for-loop initializer, declared with "var", creates a recognised variable
+     */
+    @Test
+    public void testForInitializerVar() throws Exception
+    {
+        String aClassSrc = "class A {\n" +   //       10 
+        "void someMethod() {\n" +            // +20 = 30 
+        "    for (var o = new Object() ; ; ) {\n" +  // +38 = 68
+        "        o.wait();\n" +              // o. <-- 78
+        "    }" +
+        "}\n" +
+        "}\n";
+        
+        PlainDocument doc = new PlainDocument();
+        doc.insertString(0, aClassSrc);
+        
+        ParsedCUNode aNode = cuForSource(aClassSrc, "");
+        resolver.addCompilationUnit("", aNode);
+        
+        ExpressionTypeInfo suggests = aNode.getExpressionType(78, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.Object", suggests.getSuggestionType().toString());
     }
@@ -289,7 +387,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(60, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(60, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
     }
@@ -313,7 +411,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(44, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(44, doc);
         assertNull(suggests);
     }
     
@@ -337,7 +435,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("abc", aNode);
 
-        CodeSuggestions suggests = aNode.getExpressionType(44, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(44, doc);
         assertNotNull(suggests);
         assertEquals("abc.A", suggests.getSuggestionType().toString());
     }
@@ -365,7 +463,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(89, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(89, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.Integer", suggests.getSuggestionType().toString());
         
@@ -397,7 +495,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(89, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(89, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.Integer", suggests.getSuggestionType().toString());
 
@@ -425,7 +523,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(93, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(93, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
 
@@ -455,7 +553,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(109, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(109, doc);
         assertNotNull(suggests);
         GenTypeClass suggestsType = suggests.getSuggestionType().asClass();
         assertNotNull(suggestsType);
@@ -480,7 +578,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(48, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(48, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
         assertNotNull(suggests.getSuggestionToken());
@@ -506,7 +604,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(49, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(49, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
     }
@@ -526,7 +624,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(35, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(35, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -547,7 +645,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
 
-        CodeSuggestions suggests = aNode.getExpressionType(68, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(68, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -574,7 +672,7 @@ public class CompletionTest
         doc.insertString(53, "U");
         aNode = doc.getParser();
         
-        CodeSuggestions suggests = aNode.getExpressionType(68, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(68, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -601,7 +699,7 @@ public class CompletionTest
         doc.insertString(8, "U");
         aNode = doc.getParser();
         
-        CodeSuggestions suggests = aNode.getExpressionType(68, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(68, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -620,7 +718,7 @@ public class CompletionTest
         ParsedCUNode aNode = doc.getParser();
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(66, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(66, doc);
         assertNotNull(suggests);
         GenTypeSolid stsolid = suggests.getSuggestionType().asSolid();
         assertNotNull(stsolid);
@@ -643,7 +741,7 @@ public class CompletionTest
         ParsedCUNode aNode = doc.getParser();
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(67, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(67, doc);
         assertNotNull(suggests);
         GenTypeSolid stsolid = suggests.getSuggestionType().asSolid();
         assertNotNull(stsolid);
@@ -668,7 +766,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(38, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(38, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -692,7 +790,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(38, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(38, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -716,7 +814,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(33, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(33, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -740,7 +838,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(33, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(33, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -770,7 +868,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(77, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(77, doc);
         assertNotNull(suggests);
         assertEquals("Canvas", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -796,7 +894,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(105, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(105, doc);
         assertNotNull(suggests);
         assertEquals("javax.swing.text.DefaultEditorKit.BeepAction", suggests.getSuggestionType().toString());
         assertFalse(suggests.isStatic());
@@ -819,7 +917,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(61, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(61, doc);
         assertNotNull(suggests);
         assertEquals("A", suggests.getSuggestionType().toString());
         assertEquals("s", suggests.getSuggestionToken().getText());
@@ -841,12 +939,12 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(98, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(98, doc);
         assertNotNull(suggests);
         assertEquals("java.util.List<?>", suggests.getSuggestionType().toString());
         
         AssistContent [] assists = ParseUtils.getPossibleCompletions(suggests, new JavadocResolver() {
-            public String getJavadoc(String name) { throw new IllegalStateException(); }
+            public String getJavadoc(String moduleName, String name) { throw new IllegalStateException(); }
             
             public void getJavadoc(Reflective declType, Collection<? extends ConstructorOrMethodReflective> methods)
             {
@@ -888,7 +986,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(53, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(53, doc);
         assertNotNull(suggests);
     }
 
@@ -909,7 +1007,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(56, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(56, doc);
         assertNotNull(suggests);
     }
 
@@ -927,7 +1025,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(57, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(57, doc);
         assertNotNull(suggests);
         
         AssistContent[] acontent = ParseUtils.getPossibleCompletions(suggests, new JavadocResolver() {
@@ -937,7 +1035,7 @@ public class CompletionTest
             }
 
             @Override
-            public String getJavadoc(String typeName)
+            public String getJavadoc(String moduleName, String typeName)
             {
                 throw new RuntimeException("Not implemented in test stub.");
             }
@@ -969,7 +1067,7 @@ public class CompletionTest
         resolver.addCompilationUnit("", aNode);
         
         // In ticket #340 this causes an EmptyStackException:
-        CodeSuggestions suggests = aNode.getExpressionType(80, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(80, doc);
         assertNotNull(suggests);
     }
 
@@ -992,7 +1090,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(112, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(112, doc);
         assertNotNull(suggests);
         assertTrue(new GenTypeClass(new JavaReflective(Thread.class)).isAssignableFrom(suggests.getSuggestionType()));
     }
@@ -1012,7 +1110,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
         
-        CodeSuggestions suggests = aNode.getExpressionType(68, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(68, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String[]", suggests.getSuggestionType().toString());
     }
@@ -1041,7 +1139,7 @@ public class CompletionTest
         
         MoeSyntaxDocument aDoc = documentForSource(aSrc, "");
         ParsedCUNode aNode = aDoc.getParser();
-        CodeSuggestions suggests = aNode.getExpressionType(85, aDoc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(85, aDoc);
         assertEquals(".", aDoc.getText(84, 1));  // check position calculation
         assertNull(suggests);
         
@@ -1068,7 +1166,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
             
-        CodeSuggestions suggests = aNode.getExpressionType(66, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(66, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.String[]", suggests.getSuggestionType().toString());        
     }
@@ -1094,7 +1192,7 @@ public class CompletionTest
         ParsedCUNode aNode = cuForSource(aClassSrc, "");
         resolver.addCompilationUnit("", aNode);
             
-        CodeSuggestions suggests = aNode.getExpressionType(77, doc);
+        ExpressionTypeInfo suggests = aNode.getExpressionType(77, doc);
         assertNotNull(suggests);
         assertEquals("java.lang.Runnable", suggests.getSuggestionType().toString());
         

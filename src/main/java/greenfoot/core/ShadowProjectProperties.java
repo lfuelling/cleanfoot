@@ -21,6 +21,8 @@
  */
 package greenfoot.core;
 
+import bluej.utility.Debug;
+
 import java.util.HashMap;
 import java.util.Map;
 

@@ -21,14 +21,14 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.GenTypeSolid;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * A JavaEntity subclass for representing type parameters. In particular this avoids
@@ -44,7 +44,7 @@ public class TparEntity extends JavaEntity
 {
     private JavaEntity bounds;
     private GenTypeDeclTpar tpar;
-    private String name;
+    private final String name;
     
     public TparEntity(String name, JavaEntity bounds)
     {

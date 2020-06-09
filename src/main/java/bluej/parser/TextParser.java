@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2012,2013,2014  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,18 +21,48 @@
  */
 package bluej.parser;
 
-import bluej.debugger.gentype.*;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Stack;
+
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.JavaPrimitiveType;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
 import bluej.parser.TextAnalyzer.MethodCallDesc;
-import bluej.parser.entity.*;
+import bluej.parser.entity.ConstantBoolValue;
+import bluej.parser.entity.ConstantFloatValue;
+import bluej.parser.entity.ConstantIntValue;
+import bluej.parser.entity.ConstantStringEntity;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.ErrorEntity;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.NullEntity;
+import bluej.parser.entity.PackageOrClass;
+import bluej.parser.entity.SolidTargEntity;
+import bluej.parser.entity.TypeArgumentEntity;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.UnboundedWildcardEntity;
+import bluej.parser.entity.UnresolvedEntity;
+import bluej.parser.entity.ValueEntity;
+import bluej.parser.entity.WildcardExtendsEntity;
+import bluej.parser.entity.WildcardSuperEntity;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.utility.JavaReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.*;
 
 /**
  * A parser for the codepad.
@@ -41,9 +71,9 @@ import java.util.*;
  */
 public class TextParser extends JavaParser
 {
-    private EntityResolver resolver;
-    private JavaEntity accessType;
-    private boolean staticAccess;
+    private final EntityResolver resolver;
+    private final JavaEntity accessType;
+    private final boolean staticAccess;
     
     protected Stack<JavaEntity> valueStack = new Stack<JavaEntity>();
     private int arrayCount = 0;
@@ -91,7 +121,7 @@ public class TextParser extends JavaParser
     private int state = STATE_NONE;
 
     /** Arguments for a method or constructor call are added to the list at the top of this stack */
-    private Stack<List<JavaEntity>> argumentStack = new Stack<List<JavaEntity>>();
+    private final Stack<List<JavaEntity>> argumentStack = new Stack<List<JavaEntity>>();
     
     
     /**
@@ -122,7 +152,7 @@ public class TextParser extends JavaParser
      * @param col         The column in the source where the expression occurs
      */
     public TextParser(EntityResolver resolver, Reader r, JavaEntity accessType, boolean staticAccess,
-                      int line, int col, int pos)
+            int line, int col, int pos)
     {
         super(r, line, col, pos);
         this.resolver = resolver;
@@ -563,7 +593,7 @@ public class TextParser extends JavaParser
     {
         if (op.getToken().getType() == JavaTokenTypes.IDENT) {
             processMethodCall(accessType.getType().asClass(), op.getToken().getText(),
-                    Collections.<LocatableToken>emptyList());
+                    Collections.emptyList());
         }
         else {
             valueStack.push(new ErrorEntity());
@@ -580,7 +610,7 @@ public class TextParser extends JavaParser
         
         // Gather the argument types.
         List<JavaEntity> argList = argumentStack.pop();
-        JavaType[] argTypes = new JavaType[argList.size()];
+        JavaType [] argTypes = new JavaType[argList.size()];
         for (int i = 0; i < argTypes.length; i++) {
             JavaEntity cent = argList.get(i).resolveAsValue();
             if (cent == null) {
@@ -671,7 +701,7 @@ public class TextParser extends JavaParser
     }
     
     private static boolean checkOverrideEquivalence(List<GenTypeDeclTpar> firstTpars, List<JavaType> firstParamTypes,
-                                                    List<GenTypeDeclTpar> secondTpars, List<JavaType> secondParamTypes)
+            List<GenTypeDeclTpar> secondTpars, List<JavaType> secondParamTypes)
     {
         if (firstTpars.size() != 0 && secondTpars.size() != 0) {
             // Type parameters must be matchable
@@ -680,7 +710,7 @@ public class TextParser extends JavaParser
             }
             
             // Create a map from second method tpar name to first method tpar
-            Map<String, GenTypeParameter> tparMap = new HashMap<String, GenTypeParameter>();
+            Map<String,GenTypeParameter> tparMap = new HashMap<String,GenTypeParameter>();
             Iterator<GenTypeDeclTpar> i = firstTpars.iterator();
             Iterator<GenTypeDeclTpar> j = secondTpars.iterator();
             while (i.hasNext()) {
@@ -951,13 +981,13 @@ public class TextParser extends JavaParser
         // either argument is String. However, if the type is a type parameter
         // with a bound type of String, the compiler still applies concatenation.
         if (a1solid != null) {
-            GenTypeClass[] stypes = a1solid.getReferenceSupertypes();
+            GenTypeClass [] stypes = a1solid.getReferenceSupertypes();
             if (stypes.length > 0) {
                 a1class = a1solid.getReferenceSupertypes()[0];
             }
         }
         if (a2solid != null) {
-            GenTypeClass[] stypes = a2solid.getReferenceSupertypes();
+            GenTypeClass [] stypes = a2solid.getReferenceSupertypes();
             if (stypes.length > 0) {
                 a2class = a2solid.getReferenceSupertypes()[0];
             }
@@ -1114,14 +1144,14 @@ public class TextParser extends JavaParser
                     float a1 = promoteToFloat(arg1);
                     float a2 = promoteToFloat(arg2);
                     boolean rval= (a1 == a2) ^ (op.type != JavaTokenTypes.EQUAL);
-                    valueStack.push(new ConstantBoolValue(rval));
+                    valueStack.push(new ConstantBoolValue(rval));                    
                 }
                 else {
                     // JT_DOUBLE
                     double a1 = promoteToDouble(arg1);
                     double a2 = promoteToDouble(arg2);
                     boolean rval= (a1 == a2) ^ (op.type != JavaTokenTypes.EQUAL);
-                    valueStack.push(new ConstantBoolValue(rval));
+                    valueStack.push(new ConstantBoolValue(rval));                    
                 }
                 return;
             }
@@ -1130,7 +1160,7 @@ public class TextParser extends JavaParser
             if (arg1.hasConstantBooleanValue() && arg2.hasConstantBooleanValue()) {
                 boolean a1 = arg1.getConstantBooleanValue();
                 boolean a2 = arg2.getConstantBooleanValue();
-                boolean rval = op.type == JavaTokenTypes.EQUAL ? a1 == a2 : a1 != a2;
+                boolean rval = (op.type == JavaTokenTypes.EQUAL) == (a1 == a2);
                 valueStack.push(new ConstantBoolValue(rval));
                 return;
             }
@@ -1669,8 +1699,22 @@ public class TextParser extends JavaParser
                 }
             }
         }
-        else {
-            // TODO handle LITERAL_super
+        else if (token.getType() == JavaTokenTypes.LITERAL_super) 
+        {
+            for (JavaType type : accessType.getType().asClass().getReflective().getSuperTypes()) 
+            {
+                if (type != null) 
+                {
+                    valueStack.push(new ValueEntity(type));
+                } 
+                else 
+                {
+                    valueStack.push(new ErrorEntity());
+                }
+            }
+        }   
+        else 
+        {
             valueStack.push(new ErrorEntity());
         }
     }

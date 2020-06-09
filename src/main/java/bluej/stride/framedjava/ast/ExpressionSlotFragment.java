@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,30 +21,38 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.parser.JavaParser;
-import bluej.parser.lexer.JavaTokenTypes;
-import bluej.parser.lexer.LocatableToken;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.elements.LocatableElement.LocationMap;
-import bluej.stride.framedjava.errors.*;
-import bluej.stride.framedjava.frames.AssignFrame;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
-import bluej.utility.javafx.FXPlatformConsumer;
-import javafx.application.Platform;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import bluej.parser.lexer.JavaTokenTypes;
+import bluej.stride.framedjava.elements.LocatableElement.LocationMap;
+import bluej.stride.framedjava.errors.UnknownTypeError;
+import bluej.stride.generic.AssistContentThreadSafe;
+import bluej.utility.javafx.FXPlatformConsumer;
+import javafx.application.Platform;
+import bluej.parser.JavaParser;
+import bluej.parser.lexer.LocatableToken;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.errors.DirectSlotError;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.errors.UndeclaredVariableInExpressionError;
+import bluej.stride.framedjava.errors.UndeclaredVariableLvalueError;
+import bluej.stride.framedjava.errors.UnneededSemiColonError;
+import bluej.stride.framedjava.frames.AssignFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Utility;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public abstract class ExpressionSlotFragment extends StructuredSlotFragment
 {
@@ -239,7 +247,7 @@ public abstract class ExpressionSlotFragment extends StructuredSlotFragment
             
             //Debug.message("Assign LHS: " + assignmentLHSParent + " Java: \"" + getJavaCode() + "\"");
 
-            Stream<DirectSlotError> undeclaredVarErrors = plains.stream().map(identToken ->
+            List<DirectSlotError> undeclaredVarErrors = plains.stream().map(identToken ->
             {
                 if (!vars.containsKey(identToken.getText()))
                 {
@@ -251,7 +259,7 @@ public abstract class ExpressionSlotFragment extends StructuredSlotFragment
                         identToken.getColumn() - 1 + identToken.getLength(), slot, vars.keySet());
                 }
                 return null;
-            }).filter(x -> x != null);
+            }).filter(x -> x != null).collect(Collectors.toList());
 
             editor.withTypes(availableTypes -> {
 
@@ -282,7 +290,7 @@ public abstract class ExpressionSlotFragment extends StructuredSlotFragment
                     };
                 }).filter(x -> x != null);
 
-                f.complete(Stream.concat(undeclaredVarErrors, unknownTypeErrors).peek(e -> e.recordPath(rootPathMap.locationFor(this))).collect(Collectors.toList()));
+                f.complete(Stream.concat(undeclaredVarErrors.stream(), unknownTypeErrors).peek(e -> e.recordPath(rootPathMap.locationFor(this))).collect(Collectors.toList()));
             });
             // TODO errors for compounds
         }));

@@ -22,7 +22,6 @@
 package greenfoot.util;
 
 import bluej.BlueJPropStringSource;
-
 import java.util.Properties;
 
 
@@ -34,7 +33,7 @@ import java.util.Properties;
  */
 public class StandalonePropStringManager implements BlueJPropStringSource
 {
-    private Properties values;
+    private final Properties values;
     
     public StandalonePropStringManager(Properties props)
     {

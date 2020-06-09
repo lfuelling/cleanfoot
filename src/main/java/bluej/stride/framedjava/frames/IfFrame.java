@@ -22,6 +22,10 @@
 package bluej.stride.framedjava.frames;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.ast.SlotFragment;
@@ -31,17 +35,17 @@ import bluej.stride.framedjava.elements.IfElement;
 import bluej.stride.framedjava.elements.SandwichCanvasesElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
-import bluej.stride.generic.*;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SandwichCanvasesFrame;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Container-block representing an if statement.
@@ -99,8 +103,8 @@ public class IfFrame extends SandwichCanvasesFrame
      * @param elseContents If null, no finally.
      */
     public IfFrame(InteractionManager editor, ExpressionSlotFragment condition, List<Frame> thenContents,
-                   List<FilledExpressionSlotFragment> elseIfConditions, List<List<Frame>> elseIfContents,
-                   List<Frame> elseContents, boolean enabled)
+                    List<FilledExpressionSlotFragment> elseIfConditions, List<List<Frame>> elseIfContents,
+                    List<Frame> elseContents, boolean enabled)
     {
         this(editor, thenContents);
         ifCondition.setText(condition);
@@ -190,7 +194,7 @@ public class IfFrame extends SandwichCanvasesFrame
     }
 
     protected SandwichCanvasesElement regenerateCodeElement(List<CodeElement> firstCanvasContents,
-                                                            List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled)
+                 List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled)
     {
         List<FilledExpressionSlotFragment> elseIfConditionsCode = Utility.mapList(elseIfConditions, ExpressionSlot::getSlotElement);
         return new IfElement(this, ifCondition.getSlotElement(), firstCanvasContents, elseIfConditionsCode,

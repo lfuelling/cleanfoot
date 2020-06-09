@@ -32,7 +32,7 @@ import threadchecker.Tag;
  */
 public class SolidTargEntity extends TypeArgumentEntity
 {
-    private JavaEntity solid;
+    private final JavaEntity solid;
     
     public SolidTargEntity(JavaEntity solid)
     {

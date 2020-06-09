@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2010,2011,2012,2013,2015,2018 Poul Henriksen and Michael Kolling 
+ Copyright (C) 2010,2011,2012,2013,2015,2018,2019 Poul Henriksen and Michael Kolling 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,9 +21,36 @@
  */
 package greenfoot.vmcomm;
 
-import bluej.debugger.*;
+import bluej.debugger.VarDisplayInfo;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.JavaType;
+import greenfoot.core.PickActorHelper;
+import greenfoot.core.Simulation;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import greenfoot.core.ProjectManager;
+import greenfoot.core.WorldHandler;
+import greenfoot.guifx.GreenfootStage;
+import greenfoot.platforms.ide.WorldHandlerDelegateIDE;
+import greenfoot.record.GreenfootRecorder;
+import greenfoot.util.DebugUtil;
+import javafx.application.Platform;
+import bluej.debugger.Debugger;
+import bluej.debugger.DebuggerClass;
+import bluej.debugger.DebuggerEvent;
+import bluej.debugger.DebuggerField;
+import bluej.debugger.DebuggerListener;
+import bluej.debugger.DebuggerObject;
+import bluej.debugger.DebuggerThread;
+import bluej.debugger.SourceLocation;
 import bluej.debugmgr.Invoker;
 import bluej.debugmgr.NamedValue;
 import bluej.debugmgr.ValueCollection;
@@ -33,21 +60,8 @@ import bluej.debugmgr.objectbench.ObjectBenchListener;
 import bluej.pkgmgr.Project;
 import bluej.utility.Debug;
 import bluej.utility.JavaNames;
-import greenfoot.core.PickActorHelper;
-import greenfoot.core.ProjectManager;
-import greenfoot.core.Simulation;
-import greenfoot.core.WorldHandler;
-import greenfoot.guifx.GreenfootStage;
-import greenfoot.platforms.ide.WorldHandlerDelegateIDE;
-import greenfoot.record.GreenfootRecorder;
-import greenfoot.util.DebugUtil;
-import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * A class that does several things:
@@ -62,7 +76,7 @@ import java.util.*;
  */
 public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInterface, ValueCollection
 {  
-    private static final String SIMULATION_CLASS = Simulation.class.getName();
+    private static final String SIMULATION_CLASS = Simulation.class.getName();   
     private static final String[] INVOKE_METHODS = {Simulation.ACT_WORLD, Simulation.ACT_ACTOR,
             Simulation.NEW_INSTANCE, Simulation.RUN_QUEUED_TASKS, Simulation.WORLD_STARTED, Simulation.WORLD_STOPPED};
     private static final String SIMULATION_INVOKE_KEY = SIMULATION_CLASS + "INTERNAL";
@@ -85,15 +99,16 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
     private static final String PICK_HELPER_KEY = "PICK_HELPER_PICKED";
     private PickListener pickListener;
 
-    private Project project;
+    private final Project project;
     private DebuggerThread simulationThread;
     private DebuggerClass simulationClass;
-    private GreenfootRecorder greenfootRecorder;
+    private final GreenfootRecorder greenfootRecorder;
     private SimulationStateListener simulationListener;
-    private Map<String,GreenfootObject> objectBench = new HashMap<>();
-    private List<ObjectBenchListener> benchListeners = new ArrayList<>();
+    private final Map<String,GreenfootObject> objectBench = new HashMap<>();
+    private final List<ObjectBenchListener> benchListeners = new ArrayList<>();
     
-    private VMCommsMain vmComms;
+    private final VMCommsMain vmComms;
+    @OnThread(Tag.VMEventHandler)
     private boolean hasLaunched = false;
 
     /**
@@ -122,7 +137,7 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
         // (We know hasLaunched will be false at this point because we only just made the GreenfootDebugHandler):
         if (project.getDebugger().addDebuggerListener(handler) == Debugger.IDLE)
         {
-            handler.launch(project.getDebugger());
+            project.getDebugger().runOnEventHandler(() -> handler.launch(project.getDebugger()));
         }
         GreenfootStage.makeStage(project, handler).show();
     }
@@ -222,6 +237,7 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      * at the top of the class for how it works.
      */
     @Override
+    @OnThread(Tag.VMEventHandler)
     public boolean examineDebuggerEvent(final DebuggerEvent e)
     {
         final Debugger debugger = (Debugger)e.getSource();
@@ -247,8 +263,8 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
         }
         else if (atBreakpoint && e.getBreakpointProperties().get(NAME_ACTOR_KEY) != null)
         {
-            VarDisplayInfo varDisplayInfo = e.getThread().getLocalVariables(0).get(0);
-            greenfootRecorder.nameActors(fetchArray(varDisplayInfo.getFetchObject().get()));
+            DebuggerObject actorArray = e.getThread().getStackObject(0, 0);
+            greenfootRecorder.nameActors(fetchArray(actorArray));
             e.getThread().cont();
             return true;
         }
@@ -376,6 +392,7 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      * 
      * <p>We call threadHalted if necessary.
      */
+    @OnThread(Tag.VMEventHandler)
     @Override
     public void processDebuggerEvent(final DebuggerEvent e, boolean skipUpdate)
     {
@@ -412,6 +429,7 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      * Launches Greenfoot on the debug VM.  Only call this once (check the hasLaunched flag before calling)
      * @param debugger The debugger for the project.
      */
+    @OnThread(Tag.VMEventHandler)
     private void launch(Debugger debugger)
     {
         if (! ProjectManager.checkLaunchFailed())
@@ -436,6 +454,7 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      * 
      * Returns a task that will run them onwards, which can be scheduled as you like
      */
+    @OnThread(Tag.VMEventHandler)
     private void runToInternalBreakpoint(final Debugger debugger, final DebuggerThread thread)
     {
         // Set a break point where we want them to be:
@@ -479,9 +498,7 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
                     }
                 }
             }
-            else if (JavaNames.getBase(className).startsWith(Invoker.SHELLNAME)) {
-                return true;
-            }
+            else return JavaNames.getBase(className).startsWith(Invoker.SHELLNAME);
         }
         
         return false;
@@ -540,10 +557,12 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      */
     public void haltSimulationThread()
     {
-        if (simulationThread != null)
-        {
-            simulationThread.halt();
-        }
+        project.getDebugger().runOnEventHandler(() -> {
+            if (simulationThread != null)
+            {
+                simulationThread.halt();
+            }
+        });
     }
 
     @Override
@@ -649,9 +668,9 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      */
     private static class GreenfootObject implements NamedValue
     {
-        private GenTypeClass type;
-        private String name;
-        private DebuggerObject debuggerObject;
+        private final GenTypeClass type;
+        private final String name;
+        private final DebuggerObject debuggerObject;
         
         /**
          * Construct a GreenfootObject with the given name and type.
@@ -699,55 +718,48 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
     /**
      * A listener for results of pick requests.
      */
-    public static interface PickListener
+    public interface PickListener
     {
         // World is only relevant if actors list is empty.
-        @OnThread(Tag.Any)
-        public void picked(int pickId, List<DebuggerObject> actors, DebuggerObject world);
+        @OnThread(Tag.Any) void picked(int pickId, List<DebuggerObject> actors, DebuggerObject world);
     }
 
     /**
      * A listener to the simulation's state
      */
-    public static interface SimulationStateListener
+    public interface SimulationStateListener
     {
         /**
          * Called when the simulation starts running
          */
-        @OnThread(Tag.Any)
-        public void simulationStartedRunning();
+        @OnThread(Tag.Any) void simulationStartedRunning();
 
         /**
          * Called when the simulation has been paused in a normal manner
          * (i.e. either user hit pause, or called Greenfoot.stop)
          */
-        @OnThread(Tag.Any)
-        public void simulationPaused();
+        @OnThread(Tag.Any) void simulationPaused();
 
         /**
          * Called when the simulation thread has hit a (user) breakpoint
          */
-        @OnThread(Tag.Any)
-        public void simulationDebugHalted();
+        @OnThread(Tag.Any) void simulationDebugHalted();
 
         /**
          * Called when the simulation thread has resumed from a (user) breakpoint
          */
-        @OnThread(Tag.Any)
-        public void simulationDebugResumed();
+        @OnThread(Tag.Any) void simulationDebugResumed();
 
         /**
          * Called when there is an error while instantiating the world.
          */
-        @OnThread(Tag.Any)
-        public void worldInstantiationError();
+        @OnThread(Tag.Any) void worldInstantiationError();
 
         /**
          * Called when the debug VM has just terminated
          * (but not yet restarted)
          */
-        @OnThread(Tag.Any)
-        public void simulationVMTerminated();
+        @OnThread(Tag.Any) void simulationVMTerminated();
     }
 
     /**
@@ -756,16 +768,12 @@ public class GreenfootDebugHandler implements DebuggerListener, ObjectBenchInter
      */
     public void simulationThreadResumeOnResetClick()
     {
-        if (simulationThread != null && simulationThread.isSuspended())
-        {
-            // This code runs in parallel with GreenfootDebugHandler.examineDebuggerEvent() and
-            // there is theoretically a race condition where the "special" breakpoints are set
-            // before we resume the simulation thread here, meaning that the simulation thread
-            // will get suspended again shortly after the reset (before the world is instantiated).
-            // In practice this seems almost impossible since it would require the user to
-            // "step" or "halt" immediately before "reset", so we'll assume this is safe.
-            simulationThread.cont();
-        }
+        project.getDebugger().runOnEventHandler(() -> {
+            if (simulationThread != null && simulationThread.isSuspended())
+            {
+                simulationThread.cont();
+            }
+        });
         objectBench.clear();
     }
 }

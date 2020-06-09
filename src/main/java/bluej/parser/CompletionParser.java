@@ -21,15 +21,19 @@
  */
 package bluej.parser;
 
-import bluej.debugger.gentype.*;
-import bluej.parser.entity.EntityResolver;
-import bluej.parser.entity.JavaEntity;
-import bluej.parser.lexer.LocatableToken;
-
 import java.io.Reader;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.lexer.LocatableToken;
 
 /**
  * A parser which determines what code completions are available.
@@ -39,7 +43,7 @@ import java.util.Set;
 public class CompletionParser extends TextParser
 {
     private Map<String,Set<MethodReflective>> methodSuggestions = Collections.emptyMap();
-    private Map<String, FieldReflective> fieldSuggestions = Collections.emptyMap();
+    private Map<String,FieldReflective> fieldSuggestions = Collections.emptyMap();
     private JavaEntity suggestionEntity;
     private LocatableToken suggestionToken;
     private boolean staticRestricted=false;
@@ -81,7 +85,7 @@ public class CompletionParser extends TextParser
      * @param  col     The source column where the expression begins
      */
     public CompletionParser(EntityResolver resolver, Reader reader,
-                            JavaEntity defaultEnt, int line, int col, int pos)
+            JavaEntity defaultEnt, int line, int col, int pos)
     {
         super(resolver, reader, defaultEnt, false, line, col, pos);
         suggestionEntity = defaultEnt;

@@ -23,7 +23,10 @@ package bluej.debugmgr;
 
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.ExceptionDescription;
-import bluej.testmgr.record.InvokerRecord;
+
+import bluej.testmgr.record.*;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 
 /**

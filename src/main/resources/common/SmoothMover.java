@@ -1,4 +1,4 @@
-import greenfoot.Actor;
+import greenfoot.*;  // (World, Actor, GreenfootImage, and Greenfoot)
 
 /**
  * A variation of an actor that maintains a precise location (using doubles for the co-ordinates

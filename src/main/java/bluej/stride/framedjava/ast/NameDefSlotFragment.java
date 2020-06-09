@@ -21,13 +21,13 @@
  */
 package bluej.stride.framedjava.ast;
 
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.errors.EmptyError;
 import bluej.stride.framedjava.errors.SyntaxCodeError;
 import bluej.stride.framedjava.errors.UnneededSemiColonError;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.slots.TextSlot;
-
-import java.util.stream.Stream;
 
 public class NameDefSlotFragment extends TextSlotFragment
 {

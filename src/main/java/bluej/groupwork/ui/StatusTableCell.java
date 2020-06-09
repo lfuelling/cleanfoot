@@ -24,8 +24,10 @@ package bluej.groupwork.ui;
 import bluej.groupwork.TeamStatusInfo;
 import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.utility.Debug;
+
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

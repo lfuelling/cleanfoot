@@ -38,5 +38,5 @@ public interface NameTransform
      *            The type name to translate
      * @return The translated type name
      */
-    public String transform(String typeName);
+    String transform(String typeName);
 }

@@ -21,6 +21,13 @@
  */
 package bluej.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import bluej.Config;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.Reflective;
@@ -31,8 +38,6 @@ import bluej.parser.lexer.LocatableToken;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
 
 /**
  * Maintain and manage a collection of import statements.
@@ -67,12 +72,12 @@ public class ImportsCollection
     }
     
     /** non-wildcard non-static type imports. the entities should resolve to types. */
-    private Map<String, LocatableImport> normalImports;
+    private final Map<String, LocatableImport> normalImports;
     /** non-static wildcard imports. The entities should resolve to PackageOrClass */
-    private List<LocatableImport> wildcardImports;
+    private final List<LocatableImport> wildcardImports;
     /** static wildcard imports. The entities should resolve to types. */
-    private List<LocatableImport> staticWildcardImports; // list of TypeEntity
-    private Map<String,List<LocatableImport>> staticImports; // The String gives
+    private final List<LocatableImport> staticWildcardImports; // list of TypeEntity
+    private final Map<String,List<LocatableImport>> staticImports; // The String gives
                                 // the name of the imported static member(s) from the given
                                 // class(es).
     

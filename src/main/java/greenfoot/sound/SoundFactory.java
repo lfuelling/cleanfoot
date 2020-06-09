@@ -23,9 +23,10 @@ package greenfoot.sound;
 
 import greenfoot.util.GreenfootUtil;
 
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 import java.net.URL;
+
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * Class responsible for creating Sounds and loading them.
@@ -35,13 +36,13 @@ import java.net.URL;
 public class SoundFactory 
 {
     /** singleton */
-    private static SoundFactory instance;
+    private static SoundFactory instance;    
 
     /**
      * Collection of all sounds, which can be used to affect the state of all
      * sounds, for instance it can pause/resume all sounds.
      */
-    private SoundCollection soundCollection;
+    private final SoundCollection soundCollection;
     
     /**
      * Only use clips when the size of the clip is below this value (size of the

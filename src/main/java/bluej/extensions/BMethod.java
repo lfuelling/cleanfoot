@@ -29,7 +29,6 @@ import bluej.views.View;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
-
 import java.lang.reflect.Modifier;
 
 /**
@@ -48,13 +47,13 @@ public class BMethod
 {
     // The same reasoning as of BConstructor applies here.
     
-    private Identifier parentId;
-    private MethodView bluej_view;
+    private final Identifier parentId;
+    private final MethodView bluej_view;
     
     /**
      * Constructor.
      */
-    BMethod (Identifier aParentId, MethodView i_bluej_view )
+    BMethod ( Identifier aParentId, MethodView i_bluej_view )
     {
         parentId   = aParentId;
         bluej_view = i_bluej_view;
@@ -178,8 +177,8 @@ public class BMethod
      * @throws InvocationArgumentException if the <code>params</code> don't match the object's arguments.
      * @throws InvocationErrorException if an error occurs during the invocation.
      */
-    public Object invoke (BObject onThis, Object[] params)
-        throws ProjectNotOpenException, PackageNotFoundException,
+    public Object invoke (BObject onThis, Object[] params) 
+        throws ProjectNotOpenException, PackageNotFoundException, 
                InvocationArgumentException, InvocationErrorException
     {
         ObjectWrapper instanceWrapper=null;

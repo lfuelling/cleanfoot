@@ -21,16 +21,16 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.stride.framedjava.elements.CodeElement;
-
 import java.util.Map;
+
+import bluej.stride.framedjava.elements.CodeElement;
 
 /**
  * Created by neil on 22/05/2016.
  */
 public abstract class StructuredSlotFragment extends StringSlotFragment
 {
-    private String javaCode;
+    private final String javaCode;
 
     public StructuredSlotFragment(String content, String javaCode)
     {

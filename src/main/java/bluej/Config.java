@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,10 +21,26 @@
  */
 package bluej;
 
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.time.LocalDate;
+import java.util.*;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
@@ -43,20 +59,24 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Polygon;
 import javafx.stage.Screen;
 import javafx.stage.Window;
+
+import javax.swing.ImageIcon;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.stage.WindowEvent;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.io.*;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.util.List;
-import java.util.*;
 
 /**
  * Class to handle application configuration for BlueJ.
@@ -84,16 +104,14 @@ public final class Config
 {
     public static final String nl = System.getProperty("line.separator");
     public static final String osname = System.getProperty("os.name", "");
-    public static final String DEFAULT_LANGUAGE = "labels/english";
+    public static final String DEFAULT_LANGUAGE = "english";
     public static final String BLUEJ_OPENPACKAGE = "bluej.openPackage";
     public static final String bluejDebugLogName = "bluej-debuglog.txt";
     public static final String greenfootDebugLogName = "greenfoot-debuglog.txt";
-    private static final int SHORTCUT_MASK =
-        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     // Bit ugly having it here, but it's needed by MiscPrefPanel (which may just be in BlueJ)
     // and by Greenfoot
-    public static final KeyStroke GREENFOOT_SET_PLAYER_NAME_SHORTCUT =
-        KeyStroke.getKeyStroke(KeyEvent.VK_P, SHORTCUT_MASK | InputEvent.SHIFT_DOWN_MASK);
+    public static final KeyCodeCombination GREENFOOT_SET_PLAYER_NAME_SHORTCUT = 
+        new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
     /** name of the icons file for the VM on Mac */
     private static final String BLUEJ_DEBUG_DOCK_ICON = "vm.icns";
     private static final String GREENFOOT_DEBUG_DOCK_ICON = "greenfootvm.icns";
@@ -113,7 +131,6 @@ public final class Config
     public static Rectangle screenBounds; // maximum dimensions of screen
     public static String debugLogName = bluejDebugLogName;
     public static List<String> fontOptions = new ArrayList<>();
-    private static Boolean isRaspberryPi = null;
     // a border for components with keyboard focus
     private static Border focusBorder;
     // a border for components without keyboard focus
@@ -134,12 +151,13 @@ public final class Config
     private static File greenfootLibDir;
     private static boolean initialised = false;
     private static boolean isGreenfoot = false;
-    private static List<String> debugVMArgs = new ArrayList<>();
+    private static final List<String> debugVMArgs = new ArrayList<>();
     /** whether this is the debug vm or not. */
     private static boolean isDebugVm = true; // Default to true, will be corrected on main VM
     public static final String EDITOR_COUNT_JAVA = "session.numeditors.java";
     public static final String EDITOR_COUNT_STRIDE = "session.numeditors.stride";
-    private static long MAX_DEBUG_LOG_SIZE = 1048576;
+    public static final String MESSAGE_LATEST_SEEN = "bluej.latest.msg";
+    private static final long MAX_DEBUG_LOG_SIZE = 1048576;
 
     /**
      * Initialisation of BlueJ configuration. Must be called at startup.
@@ -179,7 +197,7 @@ public final class Config
 
         // construct paths for the configuration directories
         Config.bluejLibDir = bluejLibDir;
-        Config.greenfootLibDir = bluejLibDir;
+        Config.greenfootLibDir = new File(bluejLibDir, "greenfoot");
         
         // setup our heirarchy of property objects if it is not done yet:
         if(systemProps == null)
@@ -473,35 +491,6 @@ public final class Config
         return osname.startsWith("Mac");
     }
     
-    /**
-     * Tell us whether we are running on Raspberry Pi. The first call of this
-     * method performs the check and puts its result in the static variable with
-     * the same same. Other calls just return the result stored in the variable.
-     */
-    public static boolean isRaspberryPi() {
-        if (Config.isRaspberryPi == null) {
-            boolean result = false;
-            if (Config.isLinux()) {
-                try {
-                    Scanner scanner = new Scanner(new File(
-                            "/proc/cpuinfo"));
-                    while (scanner.hasNextLine()) {
-                        String lineFromFile = scanner.nextLine();
-                        if (lineFromFile.startsWith("Hardware") && lineFromFile.contains("BCM")) {
-                            result = true;
-                            break;
-                        }
-                    }
-                    scanner.close();
-                } catch (FileNotFoundException fne) {
-
-                }
-            }
-            Config.isRaspberryPi = result;
-        }
-        return Config.isRaspberryPi;
-    }
-
     private static boolean osVersionNumberAtLeast(int... target)
     {
         return versionAtLeast(System.getProperty("os.version"), target);
@@ -596,6 +585,16 @@ public final class Config
     }
     
     /**
+     * Whether we need to make all dialogs resizable, due to bug:
+     * https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8198761
+     */
+    public static boolean makeDialogsResizable()
+    {
+        // The bug only affects Linux:
+        return Config.isLinux();
+    }
+    
+    /**
      * Return the name of a directory within the user's home directory
      * that should be used for storing BlueJ user preferences.
      * 
@@ -669,6 +668,7 @@ public final class Config
                         Debug.message("BlueJ version " + Boot.BLUEJ_VERSION);
                     }
                     Debug.message("Java version " + System.getProperty("java.version"));
+                    Debug.message("JavaFX version " + System.getProperty("javafx.runtime.version"));
                     Debug.message("Virtual machine: " +
                             System.getProperty("java.vm.name") + " " +
                             System.getProperty("java.vm.version") +
@@ -766,6 +766,16 @@ public final class Config
     }
 
     /**
+     * Records the date of the latest seen message from the server and saves the bluej.properties file.
+     * @param latestSeen The id (start date) of the latest message the user has seen.
+     */
+    public static void recordLatestSeen(LocalDate latestSeen)
+    {
+        userProps.setProperty(MESSAGE_LATEST_SEEN, latestSeen.toString());
+        saveAppProperties();
+    }
+
+    /**
      * Load a BlueJ definition file. This creates a new properties object.
      * The new properties object can be returned directly, or an empty
      * properties object can be returned that has the named definitions as
@@ -796,8 +806,7 @@ public final class Config
     private static Properties loadLanguageLabels(String language)
     {
         // add the defaults (English)
-        Properties labels = loadDefs(DEFAULT_LANGUAGE + File.separator +
-                "labels", System.getProperties());
+        Properties labels = loadDefs(DEFAULT_LANGUAGE + File.separator + "labels", System.getProperties());
 
         // Load frame labels
         String frameLabels = DEFAULT_LANGUAGE + File.separator + "frame-labels";
@@ -812,7 +821,7 @@ public final class Config
         // if greenfoot, add specific additional labels
         if(isGreenfoot())
         {
-            // load greenfoot labels to default labels
+            // load greenfoot labels to default lanbels
             String greenfootLabels = DEFAULT_LANGUAGE + File.separator + "greenfoot/greenfoot-labels";
             File greenfootLabelFile = new File(bluejLibDir, greenfootLabels);
             try{
@@ -824,7 +833,7 @@ public final class Config
         }
         // add localised labels if necessary...
         if(!DEFAULT_LANGUAGE.equals(language)) {
-            String languageFileName = File.separator + "labels"  + File.separator + language + File.separator + "labels";
+            String languageFileName = language + File.separator + "labels";
             File languageFile = new File(bluejLibDir, languageFileName);
             try{
                 labels.load(new FileInputStream(languageFile));
@@ -834,7 +843,7 @@ public final class Config
             }
 
             // Load frame labels
-            String languageFrameLabels = "labels" + File.separator + language + File.separator + "frame-labels";
+            String languageFrameLabels = language + File.separator + "frame-labels";
             File languageFrameLabelFile = new File(bluejLibDir, languageFrameLabels);
             try{
                 labels.load(new FileInputStream(languageFrameLabelFile));
@@ -844,7 +853,7 @@ public final class Config
             }
 
             if(isGreenfoot()) {
-                File greenfootLabels = new File(bluejLibDir, "labels" + File.separator + language + File.separator + "greenfoot/greenfoot-labels");
+                File greenfootLabels = new File(bluejLibDir, language + File.separator + "greenfoot/greenfoot-labels");
                 try{
                     labels.load(new FileInputStream(greenfootLabels));
                 }
@@ -913,7 +922,7 @@ public final class Config
         List<String> r = new ArrayList<>();
         for (int i = 1; ;i++)
         {
-            String s = getString(stem + Integer.toString(i), null);
+            String s = getString(stem + i, null);
             if (s != null)
                 r.add(s);
             else
@@ -1009,39 +1018,6 @@ public final class Config
     public static boolean hasAcceleratorKey(String strname)
     {
         return langProps.getProperty(strname, strname).indexOf('@') != -1;
-    }    
-    
-    /**
-     * parses the labels file and creates a KeyStroke with the right accelerator
-     * key and modifiers
-     * @param strname
-     * @return a KeyStroke
-     */
-    public static KeyStroke getAcceleratorKey(String strname)
-    {
-        // In principle, hasAcceleratorKey() should be invoked before invoking
-        // getAcceleratorKey() to take a suitable action according to the case
-        // in place. However, we should check again here as a precaution to avoid
-        // any future bug or NPE been thrown for no reason.
-        if (!hasAcceleratorKey(strname))
-            return null;
-
-        int index;
-        int modifiers = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-        String str = langProps.getProperty(strname, strname);
-        String keyString;
-        index = str.indexOf('@');
-        index++;
-        if(str.charAt(index) == '^') { //then the modifiers is CTRL + SHIFT
-            index++;
-            modifiers |= InputEvent.SHIFT_MASK;
-        }
-        keyString = str.substring(index).toUpperCase();
-        if(keyString.length() == 1) {
-            return KeyStroke.getKeyStroke(keyString.codePointAt(0), modifiers);
-        }
-        KeyStroke k1= KeyStroke.getKeyStroke(keyString);
-        return KeyStroke.getKeyStroke(k1.getKeyCode(), modifiers);
     }
 
     @OnThread(Tag.FX)
@@ -1303,7 +1279,7 @@ public final class Config
             java.net.URL u = getImageFile(propname).toURI().toURL();
             return new ImageIcon(u);
         }
-        catch (MalformedURLException mue) { }
+        catch (java.net.MalformedURLException mue) { }
         catch (NullPointerException npe) { }
         return null;
     }
@@ -1321,11 +1297,11 @@ public final class Config
             java.net.URL u = getImageFile(propname).toURI().toURL();
             return new javafx.scene.image.Image(u.toString());
         }
-        catch (MalformedURLException mue) { }
+        catch (java.net.MalformedURLException mue) { }
         catch (NullPointerException npe) { }
         return null;
     }
-
+    
     /**
      * Return an icon for an image file name, without going through bluej.defs.
      * The parameter specifies the final image name, not a property.
@@ -1335,12 +1311,12 @@ public final class Config
     {
         if (filename == null)
             throw new IllegalArgumentException("Cannot load null image");
-
+        
         File image = new File(bluejLibDir, "images" + File.separator + filename);
         try {
             return new ImageIcon(image.toURI().toURL());
         }
-        catch (MalformedURLException mue) { }
+        catch (java.net.MalformedURLException mue) { }
         return null;
     }
 
@@ -1354,17 +1330,17 @@ public final class Config
     {
         if (filename == null)
             throw new IllegalArgumentException("Cannot load null image");
-
+        
         File image = new File(bluejLibDir, "images" + File.separator + filename);
         try {
             return new javafx.scene.image.Image(image.toURI().toURL().toString());
         }
-        catch (MalformedURLException mue) { }
+        catch (java.net.MalformedURLException mue) { }
         return null;
     }
 
     /**
-     * Find and return an image. The image will have to be tracked.
+     * Find and return an image. The image will have to be tracked. 
      */
     public static Image getImage(String propname)
     {
@@ -1372,7 +1348,7 @@ public final class Config
             java.net.URL u = getImageFile(propname).toURI().toURL();
             return Toolkit.getDefaultToolkit().createImage(u);
         }
-        catch (MalformedURLException mue) { }
+        catch (java.net.MalformedURLException mue) { }
         catch (NullPointerException npe) { }        
         return null;
     }
@@ -1538,7 +1514,7 @@ public final class Config
     {
         try {
             String rgbStr = getPropString(itemname, "255,0,255");
-            String rgbVal[] = Utility.split(rgbStr, ",");
+            String[] rgbVal = Utility.split(rgbStr, ",");
 
             if (rgbVal.length < 3)
                 Debug.reportError("Error reading colour ["+itemname+"]");
@@ -1570,7 +1546,7 @@ public final class Config
                 return null;
             }
             
-            String rgbVal[] = Utility.split(rgbStr, ",");
+            String[] rgbVal = Utility.split(rgbStr, ",");
             if (rgbVal.length < 3) {
                 Debug.reportError("Error reading colour ["+itemname+"]");
             }
@@ -1963,28 +1939,6 @@ public final class Config
         return normalBorder;
     }
 
-    public static boolean isRetinaDisplay()
-    {
-     if (isMacOS()) {
-           // From http://bulenkov.com/2013/06/23/retina-support-in-oracle-jdk-1-7/
-           GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-           final GraphicsDevice device = env.getDefaultScreenDevice();
-
-           try {
-               Field field = device.getClass().getDeclaredField("scale");
-               if (field != null) {
-                   field.setAccessible(true);
-                   Object scale = field.get(device);
-
-                   if (scale instanceof Integer && ((Integer)scale) == 2) {
-                       return true;
-                   }
-               }
-           } catch (Exception ignore) {}
-       }
-       return false;
-    }
-
     public static void loadFXFonts()
     {
         if (!fontOptions.isEmpty())
@@ -2059,7 +2013,7 @@ public final class Config
         // We store the double as an integer by multiplying by scale:
         double SCALE = 1_000_000;
 
-        double initialPos = (double) Config.getPropInteger(locationName, (int) (0.5 * SCALE)) / SCALE;
+        double initialPos = (double)Config.getPropInteger(locationName, (int) (0.5 * SCALE)) / SCALE;
 
         JavaFXUtil.addChangeListener(splitPane.getDividers().get(0).positionProperty(), pos -> putPropInteger(locationName, (int)(pos.doubleValue() * SCALE)));
 

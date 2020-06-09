@@ -22,6 +22,7 @@
 package bluej.utility.javafx;
 
 import bluej.Config;
+
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Dialog;

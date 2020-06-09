@@ -23,14 +23,13 @@ package bluej.groupwork.git;
 
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
-import org.eclipse.jgit.api.Git;
+import java.io.IOException;
+import java.util.Collection;
 import org.eclipse.jgit.api.LsRemoteCommand;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.StoredConfig;
-
-import java.io.IOException;
-import java.util.Collection;
 
 /**
  * Git command to share a project

@@ -22,6 +22,7 @@
 package bluej.stride.framedjava.errors;
 
 import bluej.compiler.CompilerAPICompiler;
+import bluej.compiler.Diagnostic.DiagnosticOrigin;
 import bluej.stride.framedjava.ast.SlotFragment;
 import threadchecker.OnThread;
 import threadchecker.Tag;
@@ -39,7 +40,7 @@ public abstract class DirectSlotError extends CodeError {
      * @param origin The origin of the error (typically, STRIDE_EARLY or STRIDE_LATE)
      */
     @OnThread(Tag.FXPlatform)
-    public DirectSlotError(SlotFragment code) {
+    public DirectSlotError(SlotFragment code, DiagnosticOrigin origin) {
         super(code, CompilerAPICompiler.getNewErrorIdentifer());
     }
 }

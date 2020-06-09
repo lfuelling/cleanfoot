@@ -21,9 +21,12 @@
  */
 package bluej.utility;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
+
+import javax.swing.JComponent;
 
 /**
  * A label which supports multiple lines of text, and which wraps text if
@@ -34,7 +37,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class MultiWrapLabel extends JComponent
 {
-    private static String lineSep = System.getProperty("line.separator");
+    private static final String lineSep = System.getProperty("line.separator");
     
     private String text;
     private int wrapWidth;

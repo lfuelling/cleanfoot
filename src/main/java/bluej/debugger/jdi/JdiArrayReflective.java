@@ -21,7 +21,8 @@
  */
 package bluej.debugger.jdi;
 
-import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.*;
+
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
@@ -33,7 +34,7 @@ import com.sun.jdi.VirtualMachine;
  */
 public class JdiArrayReflective extends JdiReflective
 {
-    private JavaType componentType;
+    private final JavaType componentType;
     
     public JdiArrayReflective(JavaType t, ReferenceType srctype)
     {

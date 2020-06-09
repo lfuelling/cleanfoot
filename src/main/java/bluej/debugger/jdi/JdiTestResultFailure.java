@@ -37,7 +37,7 @@ public class JdiTestResultFailure extends JdiTestResult
      * Construct a new test failure result.
      */
     JdiTestResultFailure(String className, String methodName, String exceptionMsg, String traceMsg,
-                         SourceLocation failPoint, int runTimeMs)
+            SourceLocation failPoint, int runTimeMs)
     {
         super(className, methodName, runTimeMs);
 

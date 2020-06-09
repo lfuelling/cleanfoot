@@ -21,7 +21,8 @@
  */
 package bluej.pkgmgr;
 
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -31,11 +32,10 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An overlay pane which can display nodes at arbitrary positions, 
@@ -114,10 +114,10 @@ public class MouseTrackingOverlayPane extends Pane
     
     @OnThread(Tag.FXPlatform)
     @FunctionalInterface
-    public static interface MousePositionListener
+    public interface MousePositionListener
     {
         // These will only be received while the mouse is in the pane,
         // not when it is outside the pane:
-        public void mouseMoved(double sceneX, double sceneY);
+        void mouseMoved(double sceneX, double sceneY);
     }
 }

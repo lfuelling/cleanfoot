@@ -21,6 +21,29 @@
  */
 package bluej.groupwork.ui;
 
+import java.util.Arrays;
+import java.util.List;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
 import bluej.Config;
 import bluej.groupwork.TeamSettings;
 import bluej.groupwork.TeamSettingsController;
@@ -30,20 +53,9 @@ import bluej.groupwork.actions.ValidateConnectionAction;
 import bluej.utility.Debug;
 import bluej.utility.javafx.HorizontalRadio;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A panel for team settings.
@@ -54,22 +66,22 @@ import java.util.List;
 @OnThread(Tag.FXPlatform)
 public class TeamSettingsPanel extends VBox
 {
-    private TeamSettingsController teamSettingsController;
-    private TeamSettingsDialog teamSettingsDialog;
+    private final TeamSettingsController teamSettingsController;
+    private final TeamSettingsDialog teamSettingsDialog;
 
-    private GridPane personalPane;
-    private GridPane locationPane;
+    private final GridPane personalPane;
+    private final GridPane locationPane;
 
-    private Label serverLabel    = new Label(Config.getString("team.settings.server"));
-    private Label prefixLabel    = new Label(Config.getString("team.settings.prefix"));
-    private Label protocolLabel  = new Label(Config.getString("team.settings.protocol"));
-    private Label uriLabel       = new Label(Config.getString("team.settings.uri"));
+    private final Label serverLabel    = new Label(Config.getString("team.settings.server"));
+    private final Label prefixLabel    = new Label(Config.getString("team.settings.prefix"));
+    private final Label protocolLabel  = new Label(Config.getString("team.settings.protocol"));
+    private final Label uriLabel       = new Label(Config.getString("team.settings.uri"));
 
-    private Label yourNameLabel  = new Label(Config.getString("team.settings.yourName"));
-    private Label yourEmailLabel = new Label(Config.getString("team.settings.yourEmail"));
-    private Label userLabel      = new Label(Config.getString("team.settings.user"));
-    private Label passwordLabel  = new Label(Config.getString("team.settings.password"));
-    private Label groupLabel     = new Label(Config.getString("team.settings.group"));
+    private final Label yourNameLabel  = new Label(Config.getString("team.settings.yourName"));
+    private final Label yourEmailLabel = new Label(Config.getString("team.settings.yourEmail"));
+    private final Label userLabel      = new Label(Config.getString("team.settings.user"));
+    private final Label passwordLabel  = new Label(Config.getString("team.settings.password"));
+    private final Label groupLabel     = new Label(Config.getString("team.settings.group"));
 
 
     private final HorizontalRadio<ServerType> serverTypes;
@@ -90,7 +102,7 @@ public class TeamSettingsPanel extends VBox
     /** identifiers which field is the primary personal information field */
     private TextField personalPrimaryField;
 
-    private CheckBox useAsDefault;
+    private final CheckBox useAsDefault;
     private ServerType selectedServerType = null;
 
     public TeamSettingsPanel(TeamSettingsController teamSettingsController, TeamSettingsDialog dialog, ObservableList<String> styleClass)

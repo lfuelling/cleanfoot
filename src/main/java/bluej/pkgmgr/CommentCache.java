@@ -21,9 +21,9 @@
  */
 package bluej.pkgmgr;
 
-import bluej.utility.GeneralCache;
-
 import java.util.Properties;
+
+import bluej.utility.GeneralCache;
 
 /**
  * A cache for class comments (javadoc/parameter names). Adding new entries to the cache

@@ -31,7 +31,7 @@ public class GenTypeUnbounded extends GenTypeWildcard
 {
     public GenTypeUnbounded()
     {
-        super((GenTypeSolid) null, null);
+        super(null, null);
     }
     
     /**

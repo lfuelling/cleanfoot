@@ -25,7 +25,7 @@ import greenfoot.Actor;
 import greenfoot.World;
 import greenfoot.WorldVisitor;
 
-import java.awt.*;
+import java.awt.Point;
 
 /**
  * A helper class which can be instantiated to fetch a reference to the

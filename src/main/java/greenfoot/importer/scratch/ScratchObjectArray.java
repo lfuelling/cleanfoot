@@ -39,7 +39,7 @@ import java.util.Iterator;
  */
 class ScratchObjectArray extends ScratchObject implements Iterable<ScratchObject>
 {
-    private ScratchObject[] value;
+    private final ScratchObject[] value;
 
     public ScratchObjectArray(ScratchObject[] value)
     {

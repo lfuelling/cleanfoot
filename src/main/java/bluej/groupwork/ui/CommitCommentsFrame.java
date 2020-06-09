@@ -21,35 +21,57 @@
  */
 package bluej.groupwork.ui;
 
-import bluej.Config;
-import bluej.groupwork.*;
-import bluej.groupwork.TeamStatusInfo.Status;
-import bluej.groupwork.actions.CommitAction;
-import bluej.pkgmgr.BlueJPackageFile;
-import bluej.pkgmgr.Project;
-import bluej.utility.DialogManager;
-import bluej.utility.FXWorker;
-import bluej.utility.Utility;
-import bluej.utility.javafx.FXCustomizedDialog;
-import bluej.utility.javafx.JavaFXUtil;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+
+import bluej.Config;
+import bluej.groupwork.CommitFilter;
+import bluej.groupwork.Repository;
+import bluej.groupwork.StatusHandle;
+import bluej.groupwork.StatusListener;
+import bluej.groupwork.TeamStatusInfo;
+import bluej.groupwork.TeamStatusInfo.Status;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.actions.CommitAction;
+import bluej.pkgmgr.BlueJPackageFile;
+import bluej.pkgmgr.Project;
+import bluej.utility.DialogManager;
+import bluej.utility.FXWorker;
+import bluej.utility.javafx.FXCustomizedDialog;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.Utility;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A user interface to add commit comments.
@@ -59,15 +81,15 @@ import java.util.stream.Collectors;
 @OnThread(Tag.FXPlatform)
 public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements CommitAndPushInterface
 {
-    private Project project;
+    private final Project project;
     private Repository repository;
     private CommitAction commitAction;
     private CommitWorker commitWorker;
 
-    private ObservableList<TeamStatusInfo> commitListModel = FXCollections.observableArrayList();
-    private Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>();
+    private final ObservableList<TeamStatusInfo> commitListModel = FXCollections.observableArrayList();
+    private final Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>();
     /** The packages whose layout should be committed compulsorily */
-    private Set<File> packagesToCommmit = new HashSet<>();
+    private final Set<File> packagesToCommmit = new HashSet<>();
 
     private final TextArea commitText = new TextArea("");
     private final CheckBox includeLayout = new CheckBox(Config.getString("team.commit.includelayout"));

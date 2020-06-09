@@ -21,16 +21,22 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.TeamworkCommandAborted;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.utility.Debug;
-import org.tigris.subversion.javahl.*;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Depth;
+import org.tigris.subversion.javahl.PropertyData;
+import org.tigris.subversion.javahl.SVNClientInterface;
+import org.tigris.subversion.javahl.Status;
+import org.tigris.subversion.javahl.StatusCallback;
+
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.utility.Debug;
 
 /**
  * A subversion command to commit files.
@@ -63,13 +69,13 @@ public class SvnCommitAllCommand extends SvnCommand
         // A class to allow callbacks to pass back status information.
         class StatusRef {
             Status status;
-        };
+        }
 
         try {
             // First "svn add" the new files
             Iterator<File> i = newFiles.iterator();
             while (i.hasNext()) {
-                File newFile = (File) i.next();
+                File newFile = i.next();
                 
                 final StatusRef statusRef = new StatusRef();
                 
@@ -96,7 +102,7 @@ public class SvnCommitAllCommand extends SvnCommand
             // And binary files
             i = binaryNewFiles.iterator();
             while (i.hasNext()) {
-                File newFile = (File) i.next();
+                File newFile = i.next();
                 
                 final StatusRef statusRef = new StatusRef();
                 client.status(newFile.getAbsolutePath(), Depth.empty, false, true, true, false, null,
@@ -120,7 +126,7 @@ public class SvnCommitAllCommand extends SvnCommand
             // "svn delete" removed files
             i = deletedFiles.iterator();
             while (i.hasNext()) {
-                File newFile = (File) i.next();
+                File newFile = i.next();
                 client.remove(new String[] {newFile.getAbsolutePath()}, "", true, false, Collections.emptyMap());
             }
             
@@ -128,7 +134,7 @@ public class SvnCommitAllCommand extends SvnCommand
             String [] commitFiles = new String[files.size()];
             i = files.iterator();
             for (int j = 0; j < commitFiles.length; j++) {
-                File file = (File) i.next();
+                File file = i.next();
                 commitFiles[j] = file.getAbsolutePath();
             }
             client.commit(commitFiles, commitComment, Depth.empty, false, false, null, Collections.emptyMap());

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017,2018 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,25 +21,55 @@
  */
 package bluej.utility.javafx;
 
-import bluej.Config;
-import bluej.editor.stride.CodeOverlayPane.WidthLimit;
-import bluej.editor.stride.FXTabbedEditor;
-import bluej.editor.stride.WindowOverlayPane;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
+import java.awt.*;
+import java.awt.event.MouseListener;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.binding.*;
-import javafx.beans.property.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.binding.StringExpression;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.*;
-import javafx.css.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
+import javafx.css.CssMetaData;
+import javafx.css.PseudoClass;
+import javafx.css.SimpleStyleableDoubleProperty;
+import javafx.css.SimpleStyleableObjectProperty;
+import javafx.css.StyleConverter;
+import javafx.css.Styleable;
+import javafx.css.StyleableObjectProperty;
+import javafx.css.StyleableProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
@@ -52,18 +82,30 @@ import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Labeled;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.control.*;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.*;
+import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyCombination.Modifier;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -75,23 +117,26 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+
+import bluej.Config;
+import bluej.editor.stride.CodeOverlayPane.WidthLimit;
+import bluej.editor.stride.FXTabbedEditor;
+import bluej.editor.stride.WindowOverlayPane;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseListener;
-import java.awt.image.RenderedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.List;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 
 /**
  * JavaFXUtil is a collection of static utility methods for JavaFX-related code
@@ -630,8 +675,14 @@ public class JavaFXUtil
         
         Bounds b = scrollPane.getContent().sceneToLocal(target.localToScene(target.getBoundsInLocal()));
         
-        scrollPane.setHvalue(b.getMinX() / scrollWidth);
-        scrollPane.setVvalue(b.getMinY() / scrollHeight);
+        if (scrollPane.getHbarPolicy() != ScrollBarPolicy.NEVER && scrollWidth != 0)
+        {
+            scrollPane.setHvalue(b.getMinX() / scrollWidth);
+        }
+        if (scrollPane.getVbarPolicy() != ScrollBarPolicy.NEVER && scrollHeight != 0)
+        {
+            scrollPane.setVvalue(b.getMinY() / scrollHeight);
+        }
     }
 
     /**
@@ -807,7 +858,7 @@ public class JavaFXUtil
      */
     public static class ListBuilder<T>
     {
-        private ArrayList<T> list;
+        private final ArrayList<T> list;
 
         private ListBuilder(List<T> list)
         {
@@ -1324,7 +1375,7 @@ public class JavaFXUtil
         src.addListener(new ListChangeListener<SRC2>()
         {
             @Override
-            public void onChanged(Change<? extends SRC2> changes)
+            public void onChanged(ListChangeListener.Change<? extends SRC2> changes)
             {
                 changeWrapper.accept(() -> {
                     while (changes.next())
@@ -1356,12 +1407,12 @@ public class JavaFXUtil
      * in which case this methods will no longer update the list.  This may be what you want (once
      * the property is no longer in use, this listener will get GC-ed too), but if you don't then
      * make sure you store a reference to the putInList expression.
-     *
+     * 
      * @param putInList Whether the list should contain the items (true expression) or be empty (false expression)
      * @param items The items to put in the list when putInList is true
      * @return The ObservableList which will (or will not) contain the items.
      */
-    public static <T> ObservableList<T> listBool(BooleanExpression putInList, T... items)
+    public static <T> ObservableList<T> listBool(BooleanExpression putInList, List<T> items)
     {
         ObservableList<T> r = FXCollections.observableArrayList();
         if (putInList.get()) {
@@ -1379,10 +1430,29 @@ public class JavaFXUtil
     }
 
     /**
+     * Takes a BooleanProperty and an item.  Gives back an observable list that contains
+     * a singleton list of the item when (and only when) the BooleanProperty is true, but is empty in the case
+     * that the BooleanProperty is false.  Uses JavaFX bindings to update the list's contents.
+     *
+     * Note that if no reference is maintained to the BooleanExpression, it can get GC-ed,
+     * in which case this methods will no longer update the list.  This may be what you want (once
+     * the property is no longer in use, this listener will get GC-ed too), but if you don't then
+     * make sure you store a reference to the putInList expression.
+     *
+     * @param putInList Whether the list should contain the item (true expression) or be empty (false expression)
+     * @param items The item to put in the list when putInList is true
+     * @return The ObservableList which will (or will not) contain the item.
+     */
+    public static <T> ObservableList<T> listBool(BooleanExpression putInList, T item)
+    {
+        return listBool(putInList, List.of(item));
+    }
+
+    /**
      * Creates a ChangeListener that will execute the given action (with the new value)
      * once, on the first change, and then remove itself as a listener.  Also returns
      * an action that can remove the listener earlier.
-     *
+     * 
      * @param prop The observable value
      * @param callback A listener, to be called at most once, on the first change of "prop"
      * @return An action which, if run, removes this listener.  If the listener has already
@@ -1398,7 +1468,7 @@ public class JavaFXUtil
                 callback.accept(newValue);
                 prop.removeListener(this);
             }
-
+            
         };
         prop.addListener(l);
         return () -> prop.removeListener(l);
@@ -1408,9 +1478,9 @@ public class JavaFXUtil
      * Creates a ChangeListener that will execute the given action (with the new value)
      * once, on the first change, and then remove itself as a listener. The observable should
      * only be changed on the FX Platform thread.
-     *
+     * 
      * Also returns an action that can remove the listener earlier.
-     *
+     * 
      * @param prop The observable value
      * @param callback A listener, to be called at most once, on the first change of "prop"
      * @return An action which, if run, removes this listener.  If the listener has already
@@ -1418,7 +1488,7 @@ public class JavaFXUtil
      */
     @OnThread(Tag.FXPlatform)
     public static <T> FXPlatformRunnable listenOnce(ObservableValue<T> prop,
-                                                    FXPlatformConsumer<T> callback)
+            FXPlatformConsumer<T> callback)
     {
         ChangeListener<T> l = new ChangeListener<T>() {
             @Override
@@ -1433,14 +1503,14 @@ public class JavaFXUtil
         prop.addListener(l);
         return () -> prop.removeListener(l);
     }
-
+    
     /**
      * Makes one list (dest) always contain the contents of the other (src) until the returned
      * action is executed to cancel the binding.
-     *
+     * 
      * This is effectively identical to binding on non-lists, but FX doesn't contain built-in
      * support for binding lists, so we do it ourselves.
-     *
+     * 
      * @param dest The list to copy to
      * @param src The list to copy from
      * @return An action which, if run, cancels this binding effect.
@@ -1459,7 +1529,7 @@ public class JavaFXUtil
      * the old value and the new value).  Usually, you just want the new value.
      * This method lets you specify a lambda which only takes the new value,
      * and thus saves you having two unused parameters every time.
-     *
+     * 
      * @param property The observable item to add the change listener to.
      *                 Must only ever be altered on the FX thread.
      * @param listener The listener to add; whenever there is a change in the property,
@@ -1480,7 +1550,7 @@ public class JavaFXUtil
     @OnThread(Tag.FX)
     @SuppressWarnings("threadchecker")
     public static <T> FXPlatformRunnable addChangeListenerPlatform(ObservableValue<T> property,
-                                                                   FXPlatformConsumer<T> listener)
+            FXPlatformConsumer<T> listener)
     {
         ChangeListener<T> wrapped = (a, b, newVal) -> listener.accept(newVal);
         property.addListener(wrapped);
@@ -1501,7 +1571,7 @@ public class JavaFXUtil
      * Returns a task which, if executed, cancels the task.  This can be done synchronously,
      * since the task runs on the FX thread and so does this call; you cannot make this call
      * during an execution of the task.
-     *
+     * 
      * @param delay The delay before running the task (if zero or less, task is run before returning)
      * @param task The task to run (on the FX thread)
      * @return An action which, if run, cancels the execution of the task.  If the task
@@ -1516,7 +1586,7 @@ public class JavaFXUtil
             task.run();
             return () -> {};
         }
-
+        
         // The documentation for stop says it may not stop immediately, so we
         // use this boolean as a fail safe:
         BooleanProperty okToRun = new SimpleBooleanProperty(true);
@@ -1531,15 +1601,15 @@ public class JavaFXUtil
             timeline.stop();
         };
     }
-
+    
     /**
      * Runs the given task on the FX Platform thread after the given interval,
      * and then forever-after, with the given interval between each execution.
-     *
+     * 
      * Returns an action which, if executed, cancels the task.  This can be done synchronously,
      * since the task runs on the FX thread and so does this call; you cannot make this call
      * during an execution of the task.
-     *
+     * 
      * @param interval The interval between tasks, and from now until the first run.
      *                 Must be greater than zero
      * @param task     The task to run (on the FX thread)
@@ -1551,7 +1621,7 @@ public class JavaFXUtil
         {
             throw new IllegalArgumentException("Cannot run at a regular interval of zero or less");
         }
-
+        
         // The documentation for stop says it may not stop immediately, so we
         // use this boolean as a fail safe:
         BooleanProperty okToRun = new SimpleBooleanProperty(true);
@@ -1567,20 +1637,20 @@ public class JavaFXUtil
             timeline.stop();
         };
     }
-
-    public static enum DragType
+    
+    public enum DragType
     {
         /** The copy key (Mac: option, Others: Ctrl) was held down */
         FORCE_COPYING,
         /** The move key (shift) was held down */
         FORCE_MOVING,
         /** No modifier was held down */
-        DEFAULT;
+        DEFAULT
     }
 
     /**
      * Checks if the drag-copy or drag-move modifiers was held down during a particular mouse event.
-     *
+     * 
      * Drag-copy: On Mac this is the option key.  On Windows and Linux, this is the Ctrl key.
      * Drag-move: The shift key.
      */
@@ -1598,13 +1668,13 @@ public class JavaFXUtil
 
     /**
      * Binds the pseudo-classes on the given node to the given set.
-     *
+     * 
      * This translates into adding/removing classes as they are added/removed
      * from the given set, as well as adding all classes from the set initially.
-     *
+     * 
      * If there is an orthogonal class, i.e. one never used at all in the from set,
      * it is valid to set that class on/off on the "to" node before or after this binding call.
-     *
+     * 
      * @param to The node on which to set the pseudo-classes
      * @param from The set of pseudo-classes to copy from
      */
@@ -1648,8 +1718,8 @@ public class JavaFXUtil
             return menuBar;
         };
     }
-
-    public static interface SwingOrFXMenu
+    
+    public interface SwingOrFXMenu
     {
         @OnThread(Tag.Swing)
         FXPlatformSupplier<Menu> getFXMenu(Object eventSource);
@@ -1756,7 +1826,7 @@ public class JavaFXUtil
     public static FXPlatformSupplier<MenuBar> swingMenuBarToFX(List<SwingOrFXMenu> mixedMenus, Object eventSource)
     {
         List<FXPlatformSupplier<Menu>> menus = mixedMenus.stream().map(m -> m.getFXMenu(eventSource)).collect(Collectors.toList());
-
+        
         return () -> {
             MenuBar menuBar = new MenuBar();
             for (FXPlatformSupplier<Menu> menuFXSupplier : menus)
@@ -1820,7 +1890,7 @@ public class JavaFXUtil
             return menu;
         };
     }
-
+    
     @OnThread(Tag.Swing)
     public static FXPlatformRunnable swingMenuItemsToContextMenu(ContextMenu destination, List<JMenuItem> swingItems, Object source, FXBiConsumer<JMenuItem, MenuItem> extraConvert)
     {
@@ -1938,7 +2008,7 @@ public class JavaFXUtil
             boolean startsEnabled = swingItem.isEnabled();
             // Circumvent thread-checker; it is ok to make an FX menu item on this
             // thread as long as we don't try to add it to scene graph:
-            MenuItem item = ((BiFunction<String, Boolean, MenuItem>) JavaFXUtil::makeFXMenuItem).apply(menuText, startsEnabled);
+            MenuItem item = ((BiFunction<String, Boolean, MenuItem>)JavaFXUtil::makeFXMenuItem).apply(menuText, startsEnabled);
             // Must add listeners now, because if change occurs between us returning an FX action,
             // and the action actually being run, we could miss it.
             swingItem.addPropertyChangeListener("enabled", e2 -> {
@@ -1953,7 +2023,7 @@ public class JavaFXUtil
                     item.setText(label);
                 });
             });
-
+            
             return () -> {
                 item.setOnAction(e -> {
                 	ContextMenu menu = item.getParentPopup();
@@ -2025,7 +2095,7 @@ public class JavaFXUtil
         // menu item shortcut is not supported because it doesn't work on some OSes
         KeyCode code = awtKeyCodeToFX(shortcut.getKeyCode());
         if (code != null)
-            return new KeyCodeCombination(code, fxModifiers.toArray(new Modifier[0]));
+            return new KeyCodeCombination(code, fxModifiers.toArray(new KeyCombination.Modifier[0]));
         else
             return null;
     }

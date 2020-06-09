@@ -21,6 +21,6 @@
  */
 @OnThread(Tag.FX)
 package bluej.utility.javafx.binding;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+

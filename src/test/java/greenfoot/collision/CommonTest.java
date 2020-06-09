@@ -21,15 +21,16 @@
  */
 package greenfoot.collision;
 
-import greenfoot.TestObject;
+import java.util.List;
+
 import greenfoot.TestUtilDelegate;
-import greenfoot.World;
-import greenfoot.WorldCreator;
 import greenfoot.core.Simulation;
+import greenfoot.platforms.ide.GreenfootUtilDelegateIDE;
 import greenfoot.util.GreenfootUtil;
 import junit.framework.TestCase;
-
-import java.util.List;
+import greenfoot.World;
+import greenfoot.TestObject;
+import greenfoot.WorldCreator;
 
 /**
  * Common tests for the Collision API in greenfoot.

@@ -37,7 +37,7 @@ import org.fxmisc.undo.UndoManager;
  */
 public class MoeUndoManager
 {
-    private UndoManager undoManager;
+    private final UndoManager undoManager;
     private BooleanProperty canUndo;
     private BooleanProperty canRedo;
 

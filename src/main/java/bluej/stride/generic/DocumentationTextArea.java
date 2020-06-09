@@ -25,17 +25,15 @@
  */
 package bluej.stride.generic;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.ast.JavaFragment;
 import bluej.stride.framedjava.ast.links.PossibleLink;
-import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.frames.TopLevelFrame;
-import bluej.stride.framedjava.slots.TextOverlayPosition;
-import bluej.stride.generic.Frame.View;
-import bluej.stride.slots.EditableSlot;
-import bluej.stride.slots.Focus;
-import bluej.stride.slots.FocusParent;
-import bluej.stride.slots.HeaderItem;
-import bluej.utility.javafx.*;
+import bluej.utility.javafx.ScalableHeightLabel;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -43,14 +41,20 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.slots.TextOverlayPosition;
+import bluej.stride.generic.Frame.View;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.Focus;
+import bluej.stride.slots.FocusParent;
+import bluej.stride.slots.HeaderItem;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.ScrollFreeTextArea;
+import bluej.utility.javafx.SharedTransition;
 import javafx.scene.layout.BorderPane;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * A custom text area for documentation comment of a class, method, etc.
@@ -58,7 +62,7 @@ import java.util.stream.Stream;
  */
 public class DocumentationTextArea extends ScrollFreeTextArea implements EditableSlot, FrameContentItem
 {
-    private Frame frameParent;
+    private final Frame frameParent;
     private View curView = View.NORMAL;
     // Assume Javadoc comment:
     private final ScalableHeightLabel previewCommentStart = new ScalableHeightLabel("/**", true);

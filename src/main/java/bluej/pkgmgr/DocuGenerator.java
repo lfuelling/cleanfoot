@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2015,2016  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2015,2016,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -33,7 +33,16 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import javax.swing.*;
-import java.io.*;
+import javax.tools.DocumentationTool;
+import javax.tools.ToolProvider;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -55,7 +64,7 @@ public class DocuGenerator
 {
     // static fields - tool-independent
     /** The name of the directory where project documentation is written to. */
-    private static String docDirName =
+    private static final String docDirName =
                                 Config.getPropString("doctool.outputdir");
 
     /** Header for log file when generating documentation for projects. */
@@ -63,12 +72,12 @@ public class DocuGenerator
                                 Config.getPropString("Project documentation");
 
     /** Header for log file when generating documentation for classes. */
-    private static String classLogHeader =
+    private static final String classLogHeader =
                                 Config.getPropString("Class documentation");
 
     // static fields - tool-dependent
     /** The name (including path) of the documentation tool used. */
-    private static String docCommand =
+    private static final String docCommand =
                             Config.getJDKExecutablePath("doctool.command","javadoc");
 
     /** javadoc parameters for all runs: include author and version 
@@ -76,23 +85,23 @@ public class DocuGenerator
      * consider only package, protected, and public classes and members,
      * include bottom line.
      */
-    private static String fixedJavadocParams = Config.getPropString("doctool.options");
+    private static final String fixedJavadocParams = Config.getPropString("doctool.options");
 
     /** javadoc parameters for preview runs: do not generate an index,
      * a tree, a help.
      */
-    private static String tmpJavadocParams = " -noindex -notree -nohelp -nonavbar";
+    private static final String tmpJavadocParams = " -noindex -notree -nohelp -nonavbar";
 
     /** The project this generator belongs to. */
-    private Project project;
+    private final Project project;
     /** The project directory. */
-    private File projectDir;
+    private final File projectDir;
     /** the path of the project directory, the root for all sources. */
-    private String projectDirPath;
+    private final String projectDirPath;
     /** the directory where documentation is written to. */
-    private File docDir;
+    private final File docDir;
     /** the path of the directory where documentation is written to. */
-    private String docDirPath;
+    private final String docDirPath;
 
     /* -------------- end of static field declarations ----------------- */
 
@@ -124,11 +133,11 @@ public class DocuGenerator
      */
     private static class DocuRunStarter extends Thread
     {
-        private String[] docuCall;
+        private final String[] docuCall;
         private File showFile;
-        private File logFile;
-        private String logHeader;
-        private boolean openBrowser;
+        private final File logFile;
+        private final String logHeader;
+        private final boolean openBrowser;
         private static final Object mutex = new Object();
 
         public DocuRunStarter(String[] call, File result, File log, 
@@ -173,44 +182,17 @@ public class DocuGenerator
                     
                     logWriter.println("<---- end of javadoc command ---->");
                     logWriter.flush();
+
+                    DocumentationTool docTool = ToolProvider.getSystemDocumentationTool();
                     
-                    // Call Javadoc
-                    Method executeMethod = null;
-                    try {
-                        Class<?> javadocClass = Class.forName("com.sun.tools.javadoc.Main");
-                        executeMethod = javadocClass.getMethod("execute",
-                                new Class [] {String.class, PrintWriter.class, PrintWriter.class,
-                                PrintWriter.class, String.class, String[].class});
+                    if (docTool != null)
+                    {
+                        exitValue = docTool.run(null, logStream, logStream, docuCall2);
                     }
-                    catch (ClassNotFoundException cnfe) {
-                        cnfe.printStackTrace();
-                    }
-                    catch (NoSuchMethodException nsme) {
-                        nsme.printStackTrace();
-                    }
-                    
-                    // First try and execute javadoc in the same VM via reflection:
-                    if (executeMethod != null) {
-                        try {
-                            Integer result = (Integer) executeMethod.invoke(null,
-                                    new Object [] {"javadoc", logWriter, logWriter,
-                                    logWriter, "com.sun.tools.doclets.standard.Standard",
-                                    docuCall2});
-                            exitValue = result.intValue();
-                        }
-                        catch (IllegalAccessException iae) {
-                            // Try as an external process instead
-                            executeMethod = null;
-                        }
-                        catch (InvocationTargetException ite) {
-                            exitValue = -1;
-                            ite.printStackTrace(logWriter);
-                        }
-                    }
-                    
+                    else
                     // If javadoc doesn't seem to be available via reflection,
                     // execute it as an external process
-                    if (executeMethod == null) {
+                    {
                         Process docuRun = Runtime.getRuntime().exec(docuCall);
                         
                         // because we don't know what comes first we have to start
@@ -276,8 +258,8 @@ public class DocuGenerator
      */
     private static class EchoThread extends Thread
     {
-        private InputStream   readStream;
-        private OutputStream outStream;
+        private final InputStream   readStream;
+        private final OutputStream outStream;
 
         @OnThread(Tag.Any)
         public EchoThread(InputStream r,OutputStream out)
@@ -526,7 +508,7 @@ public class DocuGenerator
             BufferedReader logReader = new BufferedReader(new FileReader(logFile));
             String header = logReader.readLine();
             logReader.close();
-            return (header == null? false : header.equals(projectLogHeader));
+            return (header != null && header.equals(projectLogHeader));
         }
         catch(Exception e)
         {

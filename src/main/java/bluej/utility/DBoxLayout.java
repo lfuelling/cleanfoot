@@ -21,8 +21,13 @@
  */
 package bluej.utility;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.LayoutManager2;
+
+import javax.swing.SizeRequirements;
 
 /**
  * A handy layout manager, similar to BoxLayout but which handles component alignment
@@ -38,7 +43,7 @@ public class DBoxLayout implements LayoutManager2
     /** A SizeRequirements object representing an empty size */
     private static final SizeRequirements noSize = new SizeRequirements(0, 0, 0, 0.5f); 
     
-    private int axis;
+    private final int axis;
     
     /** minimum required space between components */
     private int minComponentSpacing;

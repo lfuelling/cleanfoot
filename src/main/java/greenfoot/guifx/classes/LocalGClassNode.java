@@ -26,9 +26,9 @@ import bluej.debugger.gentype.Reflective;
 import bluej.editor.Editor;
 import bluej.extensions.SourceType;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.DependentTarget.State;
-import bluej.pkgmgr.t4rget.DependentTarget.TargetListener;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget.State;
+import bluej.pkgmgr.target.DependentTarget.TargetListener;
 import bluej.utility.javafx.JavaFXUtil;
 import greenfoot.guifx.GreenfootStage;
 import greenfoot.guifx.classes.GClassDiagram.GClassType;
@@ -55,7 +55,7 @@ import java.util.List;
 public class LocalGClassNode extends GClassNode implements TargetListener
 {
     private final GClassType type;
-    private GClassDiagram classDiagram;
+    private final GClassDiagram classDiagram;
     private final ClassTarget classTarget;
     private String imageFilename;
     
@@ -68,7 +68,7 @@ public class LocalGClassNode extends GClassNode implements TargetListener
      * @param type The type of this class (Actor/World child, or Other)
      */
     public LocalGClassNode(GClassDiagram classDiagram, ClassTarget classTarget,
-                           List<GClassNode> subClasses, GClassType type)
+            List<GClassNode> subClasses, GClassType type)
     {
         super(getImageForClass(classTarget, type), subClasses, classDiagram.getSelectionManager());
         this.imageFilename = classTarget.getPackage().getLastSavedProperties()

@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2005-2009,2010,2011,2013,2014,2015,2016,2018  Poul Henriksen and Michael Kolling 
+ Copyright (C) 2005-2009,2010,2011,2013,2014,2015,2016,2018,2019  Poul Henriksen and Michael Kolling 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -72,7 +72,7 @@ public abstract class Actor
     /**
      * Sequence number of this actor
      */
-    private int mySequenceNumber;
+    private final int mySequenceNumber;
 
     /**
      * The last time objects in the world were painted, where was this object
@@ -100,9 +100,9 @@ public abstract class Actor
     /** Axis-aligned bounding rectangle of the object, in pixels. */
     private Rect boundingRect;
     /** X-coordinates of the rotated bounding rectangle's corners */
-    private int[] boundingXs = new int[4];
+    private final int[] boundingXs = new int[4];
     /** Y-coordinates of the rotated bounding rectangle's corners */
-    private int[] boundingYs = new int[4];
+    private final int[] boundingYs = new int[4];
     /** Cached image width */
     private int imageWidth;
     /** Cached image hieght */
@@ -116,7 +116,6 @@ public abstract class Actor
         catch (Exception e) {
             // Should not happen unless the Greenfoot installation is seriously broken.
             e.printStackTrace();
-            System.err.println(GreenfootUtil.getGreenfootLogoPath());
             System.err.println("Greenfoot installation is broken - reinstalling Greenfoot might help.");
         }
     }
@@ -263,7 +262,7 @@ public abstract class Actor
         failIfNotInWorld();
         // We use <=,>= not == because actors can be outside the world bounds, and 
         // the method should still return true in this case
-        return (x <= 0 || y <= 0 || x >= getWorld().getWidth() - 1 || y >= getWorld().getHeight() - 1);
+        return (x <= 0 || y <= 0 || x >= world.getWidth() - 1 || y >= world.getHeight() - 1);
     }
 
     /**
@@ -396,7 +395,7 @@ public abstract class Actor
      * @param <W> The type of the world.
      * @param worldClass The class of the world type.
      * @return The world this actor is in, or null if either this actor is not in a world
-     * @throws ClassCastException If the actor is in a world, but not one that is an instance of worldClass or one of its subclasses
+     * @throws java.lang.ClassCastException If the actor is in a world, but not one that is an instance of worldClass or one of its subclasses
      */
     public <W> W getWorldOfType(Class<W> worldClass)
     {
@@ -544,7 +543,7 @@ public abstract class Actor
      * 
      * @return A rect specified in pixels!
      */
-    Rect getBoundingRect()
+    Rect getBoundingRect() 
     {
         if (boundingRect == null) {
             calcBounds();
@@ -557,7 +556,7 @@ public abstract class Actor
      */
     private void calcBounds()
     {
-        World w = getWorld();
+        World w = world;
         if(w == null) {
             return;
         }
@@ -645,12 +644,11 @@ public abstract class Actor
      */
     int toPixel(int x)
     {
-        World aWorld = getWorld();
-        if(aWorld == null) {
+        if(world == null) {
             // Should never happen
             throw new IllegalStateException(NO_WORLD);
         }
-        return x * aWorld.getCellSize() +  aWorld.getCellSize()/2;
+        return x * world.getCellSize() +  world.getCellSize()/2;
     }
 
     
@@ -847,13 +845,9 @@ public abstract class Actor
                 if (checkOutside(myX, myY, otherX, otherY)) {
                     return false;
                 }
-                if (checkOutside(otherX, otherY, myX, myY)) {
-                    return false;
-                }
+                return !checkOutside(otherX, otherY, myX, myY);
             }
         }
-        
-        return true;
     }
 
     /**
@@ -992,7 +986,7 @@ public abstract class Actor
         failIfNotInWorld();
         // This cast should never fail, because getOneIntersectingObject will only
         // be non-null if cls extends Actor.
-        Actor a = (Actor)getOneIntersectingObject(cls);
+        Actor a = getOneIntersectingObject(cls);
         if (a != null)
         {
             world.removeObject(a);

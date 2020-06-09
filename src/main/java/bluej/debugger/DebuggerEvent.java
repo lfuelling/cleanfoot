@@ -33,10 +33,9 @@ import java.util.EventObject;
 @OnThread(Tag.Any)
 public class DebuggerEvent extends EventObject
 {
-    public static interface BreakpointProperties
+    public interface BreakpointProperties
     {
-        @OnThread(Tag.Any)
-        public Object get(Object key);
+        @OnThread(Tag.Any) Object get(Object key);
     }
 
     /**
@@ -63,7 +62,7 @@ public class DebuggerEvent extends EventObject
      */
     public final static int THREAD_CONTINUE = 6;
 
-    private int id;
+    private final int id;
     private DebuggerThread thr;
     private int oldState, newState;
     private BreakpointProperties props;

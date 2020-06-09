@@ -21,18 +21,22 @@
  */
 package bluej.debugmgr;
 
-import bluej.utility.javafx.*;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.GrowableList;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class that holds the components for  a list of parameters. 
@@ -45,18 +49,18 @@ public class ParameterList
     /**
      * The combo boxes for all non-vararg actual parameters.
      */
-    private List<ComboBox<String>> parameters;
+    private final List<ComboBox<String>> parameters;
     /**
      * The actual varargs list at the end of the parameters.  Null if there
      * are no varargs.
      */
     private GrowableList<ComboBox<String>> varArgsList;
     /** The varargs history.  Only relevant if varArgsList != null */
-    private ObservableList<String> varArgsHistory = FXCollections.observableArrayList();
+    private final ObservableList<String> varArgsHistory = FXCollections.observableArrayList();
     /**
      * The default parameter value
      */
-    private String defaultParamValue;
+    private final String defaultParamValue;
     private final FXConsumer<TextField> setLastFocused;
     private final FXPlatformRunnable fireOK;
 

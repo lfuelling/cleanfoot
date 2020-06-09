@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2012,2013,2014,2015,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2011,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,42 +21,62 @@
  */
 package bluej.utility;
 
-import bluej.Config;
-import bluej.prefmgr.PrefMgr;
-import bluej.utility.javafx.FXPlatformSupplier;
-import com.apple.eawt.Application;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
-import javafx.stage.Stage;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Serializer;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import javax.swing.*;
-import javax.swing.text.TabExpander;
-import java.awt.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Shape;
+import java.awt.Window;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import javax.swing.*;
+import javax.swing.text.TabExpander;
+
+import bluej.prefmgr.PrefMgr;
+import bluej.utility.javafx.FXPlatformSupplier;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.stage.Stage;
+
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.Serializer;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.Config;
 
 /**
  * Some generally useful utility methods available to all of bluej.
@@ -72,7 +92,7 @@ public class Utility
     /**
      * Used to track which events have occurred for firstTimeThisRun()
      */
-    private static Set<String> occurredEvents = new HashSet<String>();
+    private static final Set<String> occurredEvents = new HashSet<String>();
 
     /**
      * Draw a thick rectangle - another of the things missing from the AWT
@@ -206,7 +226,7 @@ public class Utility
         } while ((start < len) && (offset != -1));
 
         // Convert the list into an Array of Strings
-        String result[] = new String[strings.size()];
+        String[] result = new String[strings.size()];
         strings.toArray(result);
         return result;
     }
@@ -528,7 +548,7 @@ public class Utility
     public static void appToFront()
     {
         if (Config.isMacOS()) {
-            Application.getApplication().requestForeground(false);
+            SwingUtilities.invokeLater(() -> Desktop.getDesktop().requestForeground(false));
             return;
         }
 
@@ -636,7 +656,7 @@ public class Utility
     /**
      * merge strings in s2 into s1 at positions of '$'
      */
-    public static String mergeStrings(String s1, String s2[])
+    public static String mergeStrings(String s1, String[] s2)
     {
         for (int current = 0; current < s2.length; current++) {
             s1 = mergeStrings(s1, s2[current]);
@@ -935,34 +955,17 @@ public class Utility
      * @param files an array of files.
      * @return a non null string, possibly empty.
      */
-    public static final String toClasspathString(File[] files)
+    public static final String toClasspathString(List<File> files)
     {
-        if ((files == null) || (files.length < 1)) {
+        if (files == null) {
             return "";
         }
 
-        boolean addSeparator = false; // Do not add a separator at the beginning
-        StringBuffer buf = new StringBuffer();
-
-        for (int index = 0; index < files.length; index++) {
-            File file = files[index];
-
-            // It may happen that one entry is null, strange, but just skip it.
-            if (file == null) {
-                continue;
-            }
-
-            if (addSeparator) {
-                buf.append(File.pathSeparatorChar);
-            }
-
-            buf.append(file.toString());
-
-            // From now on, you have to add a separator.
-            addSeparator = true;
-        }
-
-        return buf.toString();
+        // It may happen that one entry is null, strange, but just skip it.
+        return files.stream()
+                .filter(f -> f != null)
+                .map(f -> f.toString())
+                .collect(Collectors.joining(File.pathSeparator));
     }
     
     /**
@@ -971,10 +974,10 @@ public class Utility
      * @param urls  an array of URL to be converted
      * @return  a non null (but possibly empty) array of File
      */
-    public static final File[] urlsToFiles(URL[] urls)
+    public static final List<File> urlsToFiles(URL[] urls)
     {
         if ((urls == null) || (urls.length < 1)) {
-            return new File[0];
+            return Collections.emptyList();
         }
 
         List<File> rlist = new ArrayList<File>();
@@ -991,7 +994,7 @@ public class Utility
             }
         }
 
-        return rlist.toArray(new File[rlist.size()]);
+        return rlist;
     }
 
     /**
@@ -1236,9 +1239,7 @@ public class Utility
         return greenfootDir;
     }
 
-    public static String getGreenfootApiDocURL(String page) throws IOException,
-            MalformedURLException
-    {
+    public static String getGreenfootApiDocURL(String page) throws IOException {
         String customUrl = Config.getPropString("greenfoot.url.javadoc", null);
         if(customUrl != null)
         {
@@ -1368,10 +1369,9 @@ public class Utility
     }
 
     @FunctionalInterface
-    public static interface BackgroundRunnable extends Runnable
+    public interface BackgroundRunnable extends Runnable
     {
-        @OnThread(value = Tag.Worker, ignoreParent = true)
-        public void run();
+        @OnThread(value = Tag.Worker, ignoreParent = true) void run();
     }
 
     // The Runnable will run on an arbitrary thread
@@ -1405,7 +1405,7 @@ public class Utility
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serialiseCodeTo(xml, baos);
-        return baos.toString("UTF-8");
+        return baos.toString(StandardCharsets.UTF_8);
     }
 
     @OnThread(Tag.Any)

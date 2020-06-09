@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2011,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -25,8 +25,12 @@ import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import bluej.editor.moe.MoeSyntaxDocument;
-import bluej.parser.CodeSuggestions;
-import bluej.parser.entity.*;
+import bluej.parser.ExpressionTypeInfo;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.PackageOrClass;
+import bluej.parser.entity.TparEntity;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.ValueEntity;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -41,11 +45,11 @@ import java.util.List;
  */
 public class MethodNode extends JavaParentNode
 {
-    private String name;
-    private String javadoc;
+    private final String name;
+    private final String javadoc;
     private JavaEntity returnType;
-    private List<String> paramNames = new ArrayList<String>();
-    private List<JavaEntity> paramTypes = new ArrayList<JavaEntity>();
+    private final List<String> paramNames = new ArrayList<String>();
+    private final List<JavaEntity> paramTypes = new ArrayList<JavaEntity>();
     private List<TparEntity> typeParams = null;
     private boolean isVarArgs = false;
     private int modifiers = 0;
@@ -250,8 +254,8 @@ public class MethodNode extends JavaParentNode
     }
     
     @Override
-    protected CodeSuggestions getExpressionType(int pos, int nodePos,
-                                                JavaEntity defaultType, MoeSyntaxDocument document)
+    protected ExpressionTypeInfo getExpressionType(int pos, int nodePos,
+            JavaEntity defaultType, MoeSyntaxDocument document)
     {
         if (Modifier.isStatic(modifiers)) {
             JavaType dtype = defaultType.getType();

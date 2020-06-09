@@ -27,8 +27,15 @@ import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.canvases.JavaCanvas;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.SandwichCanvasesElement;
-import bluej.stride.framedjava.frames.*;
+import bluej.stride.framedjava.frames.BlankFrame;
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.framedjava.frames.DebuggableFrame;
+import bluej.stride.framedjava.frames.DebuggableParentFrame;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.StrideDictionary;
+import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.operations.FrameOperation;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Utility;
@@ -48,19 +55,19 @@ import java.util.List;
 public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
     implements CodeFrame<SandwichCanvasesElement>, DebuggableFrame
 {
-    private String stylePrefix;
-    private String frameCaption;
+    private final String stylePrefix;
+    private final String frameCaption;
     private final JavaCanvas firstCanvas;
 
-    private String intermediateCanvasCaption;
+    private final String intermediateCanvasCaption;
     private final List<JavaCanvas> intermediateCanvases = new ArrayList<>();
 
-    private String tailCanvasCaption;
+    private final String tailCanvasCaption;
     private JavaCanvas tailCanvas;
     protected SandwichCanvasesElement element;
     protected final InteractionManager editor; // Saved for creating intermediate/tail canvases.
 
-    private StrideDictionary dictionary = StrideDictionary.getDictionary();
+    private final StrideDictionary dictionary = StrideDictionary.getDictionary();
 
     /**
      * Default constructor.
@@ -177,9 +184,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
     {
         super.removeCanvas(canvas);
         //check if it is an intermediate canvas
-        if (intermediateCanvases.contains(canvas)){
-            intermediateCanvases.remove(canvas);
-        }
+        intermediateCanvases.remove(canvas);
         //check if we are removing a tail canvas
         if (tailCanvas == canvas){
             tailCanvas = null;

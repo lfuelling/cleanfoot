@@ -32,5 +32,5 @@ public interface InvocationListener
      * This method will be called when an invocation has finished.
      * If a long operation must be performed you should start a Thread.
      */
-    public void invocationFinished(InvocationEvent event);
+    void invocationFinished(InvocationEvent event);
 }

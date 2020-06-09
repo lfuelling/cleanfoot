@@ -34,9 +34,9 @@ import java.util.List;
 @OnThread(Tag.Any)
 public final class ExceptionDescription
 {
-    private String className;
-    private String text;
-    private List<SourceLocation> stack;
+    private final String className;
+    private final String text;
+    private final List<SourceLocation> stack;
 
     /**
      * Construct an exception description.

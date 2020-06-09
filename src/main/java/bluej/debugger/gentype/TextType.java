@@ -40,7 +40,7 @@ import java.util.Set;
  */
 public class TextType extends GenTypeSolid
 {
-    private String text;
+    private final String text;
     
     public TextType(String text)
     {
@@ -109,7 +109,7 @@ public class TextType extends GenTypeSolid
     
     // methods from GenTypeParameterizable
     
-    public void getParamsFromTemplate(Map<String, GenTypeParameter> map, GenTypeParameter template)
+    public void getParamsFromTemplate(Map<String,GenTypeParameter> map, GenTypeParameter template)
     {
         throw new UnsupportedOperationException();
     }
@@ -142,7 +142,7 @@ public class TextType extends GenTypeSolid
         return text;
     }
     
-    public GenTypeSolid[] getUpperBounds()
+    public GenTypeSolid [] getUpperBounds()
     {
         throw new UnsupportedOperationException();
     }

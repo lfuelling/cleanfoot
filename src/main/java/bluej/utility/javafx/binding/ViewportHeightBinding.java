@@ -30,7 +30,7 @@ import javafx.scene.control.ScrollPane;
  */
 public class ViewportHeightBinding extends DoubleBinding
 {
-    private ScrollPane scroll;
+    private final ScrollPane scroll;
 
     public ViewportHeightBinding(ScrollPane scroll)
     {

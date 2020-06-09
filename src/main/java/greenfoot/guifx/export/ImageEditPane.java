@@ -23,6 +23,7 @@ package greenfoot.guifx.export;
 
 import bluej.Config;
 import bluej.utility.javafx.JavaFXUtil;
+
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.control.Slider;
@@ -56,9 +57,9 @@ public class ImageEditPane extends HBox
     private Slider zoomSlider;
 
     /** Width of the image view */
-    private int width;
+    private final int width;
     /** Height of the image view */
-    private int height;
+    private final int height;
     
     /** Label used for the slider. */
     private ImageView bigLabel;

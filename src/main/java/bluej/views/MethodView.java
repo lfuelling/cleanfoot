@@ -21,17 +21,17 @@
  */
 package bluej.views;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Map;
+
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugger.gentype.JavaType;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A representation of a Java method in BlueJ
@@ -44,7 +44,7 @@ public class MethodView extends CallableView implements Comparable<MethodView>
     @OnThread(Tag.Any)
     protected final Method method;
     protected View returnType;
-    private JavaType jtReturnType;
+    private final JavaType jtReturnType;
 
     /**
      * Constructor.
@@ -158,7 +158,7 @@ public class MethodView extends CallableView implements Comparable<MethodView>
      * @param genericParams  The map of String -> GenType
      * @return  the signature string with type parameters mapped
      */
-    public String getLongDesc(Map<String, GenTypeParameter> genericParams)
+    public String getLongDesc(Map<String,GenTypeParameter> genericParams)
     {
         try {
             if (genericParams == null && isStatic()) {
@@ -187,7 +187,7 @@ public class MethodView extends CallableView implements Comparable<MethodView>
     {
         try {
             JavaUtils jutils = JavaUtils.getJavaUtils();
-            JavaType[] ptypes = jutils.getParamGenTypes(method, raw);
+            JavaType [] ptypes = jutils.getParamGenTypes(method, raw);
             return ptypes;
         }
         catch (ClassNotFoundException cnfe) {
@@ -245,9 +245,7 @@ public class MethodView extends CallableView implements Comparable<MethodView>
                 return false;
             }
             if (c[0].isArray() && String.class.equals(c[0].getComponentType())) {
-                if (Modifier.isStatic(getModifiers()) && Modifier.isPublic(getModifiers())) {
-                    return true;
-                }
+                return Modifier.isStatic(getModifiers()) && Modifier.isPublic(getModifiers());
             }
         }
         return false;
@@ -292,7 +290,7 @@ public class MethodView extends CallableView implements Comparable<MethodView>
     }
 
     @OnThread(Tag.FXPlatform)
-    public void print(FormattedPrintWriter out, Map<String, GenTypeParameter> typeParams, int indents)
+    public void print(FormattedPrintWriter out, Map<String,GenTypeParameter> typeParams, int indents)
     {
         Comment comment = getComment();
         if(comment != null) {

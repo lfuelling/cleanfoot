@@ -41,9 +41,9 @@ public abstract class ResultWatcherBase implements ResultWatcher
     private final CallableView method;
     private DebuggerObject obj;  // can be null for static method calls
     private String objInstanceName;  // can be null
-    private Package pkg;
-    private Stage parentWindow;
-    private String className;
+    private final Package pkg;
+    private final Stage parentWindow;
+    private final String className;
 
     /**
      * Construct a new ResultWatcherBase, for a constructor or static method call.

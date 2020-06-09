@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2015,2016,2017  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2010,2015,2016,2017,2019  Michael Kolling and John Rosenberg 
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,36 +21,42 @@
  */
 package bluej.prefmgr;
 
+import javax.swing.SwingUtilities;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+
 import bluej.BlueJTheme;
-import bluej.Config;
-import bluej.classmgr.ClassMgrPrefPanel;
-import bluej.editor.moe.EditorPrefPanel;
-import bluej.editor.moe.KeyBindingsPanel;
-import bluej.extmgr.ExtensionPrefManager;
-import bluej.extmgr.ExtensionsManager;
 import bluej.pkgmgr.Project;
 import bluej.utility.Utility;
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SwingNodeFixed;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.embed.swing.SwingNode;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+
+import bluej.Config;
+import bluej.classmgr.ClassMgrPrefPanel;
+import bluej.editor.moe.EditorPrefPanel;
+import bluej.editor.moe.KeyBindingsPanel;
+import bluej.extmgr.ExtensionPrefManager;
+import bluej.extmgr.ExtensionsManager;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 
 /**
  * A JDialog subclass to allow the user to interactively edit
@@ -70,7 +76,7 @@ public class PrefMgrDialog
      * is set to true (on the FXPlatform thread) once they are ready.
      */
     @OnThread(Tag.FXPlatform)
-    private BooleanProperty prefPanesCreated = new SimpleBooleanProperty(false);
+    private final BooleanProperty prefPanesCreated = new SimpleBooleanProperty(false);
     
     /** Indicates whether the dialog has been prepared for display. */
     private boolean prepared = false;
@@ -138,9 +144,9 @@ public class PrefMgrDialog
     }
 
 
-    private ArrayList<PrefPanelListener> listeners = new ArrayList<PrefPanelListener>();
-    private ArrayList<Node> tabs = new ArrayList<>();
-    private ArrayList<String> titles = new ArrayList<String>();
+    private final ArrayList<PrefPanelListener> listeners = new ArrayList<PrefPanelListener>();
+    private final ArrayList<Node> tabs = new ArrayList<>();
+    private final ArrayList<String> titles = new ArrayList<String>();
 
     private Dialog<Void> window;
     private TabPane tabbedPane = null;
@@ -186,17 +192,6 @@ public class PrefMgrDialog
                     // Extensions is sixth:
                     add(5, extSwing, Config.getString("extmgr.extensions"), mgr);
                 });
-                if (Config.isRaspberryPi())
-                {
-                    //display the Raspberry Pi specific options
-                    RaspberryPiPanel rpp = new RaspberryPiPanel();
-                    SwingNode piSwing = new SwingNodeFixed();
-                    piSwing.setContent(rpp);
-                    Platform.runLater(() -> {
-                        // Pi is seventh:
-                        add(6, piSwing, Config.getString("extmgr.raspberryPi.rpiPanelTitle"), rpp);
-                    });
-                }
             }
             Platform.runLater(() -> prefPanesCreated.set(true));
         });

@@ -32,10 +32,10 @@ import threadchecker.Tag;
 @OnThread(Tag.Any)
 public final class SourceLocation
 {
-    private String classname;
-    private String filename;
-    private String methodname;
-    private int lineNumber;
+    private final String classname;
+    private final String filename;
+    private final String methodname;
+    private final int lineNumber;
 
     /**
      * Construct a SourceLocation instance.

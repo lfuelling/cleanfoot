@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2015,2016,2018 Michael Kölling and John Rosenberg
+ Copyright (C) 2015,2016,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,8 +22,18 @@
 package bluej.stride.framedjava.frames;
 
 
-import bluej.editor.stride.FrameCatalogue;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.parser.AssistContent.Access;
+import javafx.application.Platform;
+import javafx.beans.binding.StringExpression;
+import javafx.scene.control.TextField;
+import javafx.util.Pair;
+
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
 import bluej.stride.framedjava.ast.links.PossibleLink;
 import bluej.stride.framedjava.ast.links.PossibleTypeLink;
@@ -35,21 +45,18 @@ import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.RecallableFocus;
 import bluej.stride.generic.SingleLineFrame;
-import bluej.stride.slots.*;
+import bluej.stride.slots.TextSlot;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotTraversalChars;
+import bluej.stride.slots.CompletionCalculator;
+import bluej.stride.slots.SuggestionList;
 import bluej.stride.slots.SuggestionList.SuggestionListListener;
+
+import bluej.editor.stride.FrameCatalogue;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
-import javafx.beans.binding.StringExpression;
-import javafx.scene.control.TextField;
-import javafx.util.Pair;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A statement for import packages/classes
@@ -62,7 +69,7 @@ public class ImportFrame extends SingleLineFrame implements CodeFrame<ImportElem
         new FrameCatalogue.Hint("greenfoot.*", "Greenfoot classes"),
         new FrameCatalogue.Hint("java.util.*", "Java utility classes")
     );
-    private TextSlot<ImportFragment> importField;
+    private final TextSlot<ImportFragment> importField;
     private ImportElement element;
     
     /**
@@ -81,18 +88,22 @@ public class ImportFrame extends SingleLineFrame implements CodeFrame<ImportElem
                                                      SuggestionListListener clickListener,
                                                      FXPlatformConsumer<SuggestionList> handler)
             {
-                imports = editor.getImportSuggestions().entrySet().stream().flatMap(e ->
-                    e.getValue().stream().filter(ac ->
-                            // Only if visible:
-                            ac.getPackage() == null || ac.getPackage().equals("") || ac.getAccessPermission() == Access.PUBLIC
-                        ).flatMap(
-                                ac -> (ac.getPackage() == null || ac.getPackage().equals("")) ?
-                                        Stream.of(ac.getName()) :
-                                        Stream.of(ac.getPackage() + "." + (ac.getDeclaringClass() == null ? "" : ac.getDeclaringClass() + ".") + ac.getName(), ac.getPackage() + ".*")
-                        ).sorted().distinct().map(v -> new Pair<SuggestionList.SuggestionShown, String>(e.getKey(), v))
-                ).collect(Collectors.toList());
-                SuggestionList suggestionDisplay = new SuggestionList(editor, Utility.mapList(imports, imp -> new SuggestionList.SuggestionDetails(imp.getValue(), null, null, imp.getKey())), null, SuggestionList.SuggestionShown.COMMON, null, clickListener);
-                handler.accept(suggestionDisplay);
+                Utility.runBackground(() -> {
+                    imports = editor.getImportSuggestions().entrySet().stream().flatMap(e ->
+                            e.getValue().stream().filter(ac ->
+                                    // Only if visible:
+                                    ac.getPackage() == null || ac.getPackage().equals("") || ac.getAccessPermission() == Access.PUBLIC
+                            ).flatMap(
+                                    ac -> (ac.getPackage() == null || ac.getPackage().equals("")) ?
+                                            Stream.of(ac.getName()) :
+                                            Stream.of(ac.getPackage() + "." + (ac.getDeclaringClass() == null ? "" : ac.getDeclaringClass() + ".") + ac.getName(), ac.getPackage() + ".*")
+                            ).sorted().distinct().map(v -> new Pair<SuggestionList.SuggestionShown, String>(e.getKey(), v))
+                    ).collect(Collectors.toList());
+                    Platform.runLater(() -> {
+                        SuggestionList suggestionDisplay = new SuggestionList(editor, Utility.mapList(imports, imp -> new SuggestionList.SuggestionDetails(imp.getValue(), null, null, imp.getKey())), null, SuggestionList.SuggestionShown.COMMON, null, clickListener);
+                        handler.accept(suggestionDisplay);
+                    });
+                });
             }
             
             @Override

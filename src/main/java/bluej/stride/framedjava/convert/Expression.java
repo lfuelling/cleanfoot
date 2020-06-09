@@ -21,23 +21,24 @@
  */
 package bluej.stride.framedjava.convert;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import bluej.parser.lexer.JavaLexer;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.ast.OptionalExpressionSlotFragment;
+import bluej.stride.framedjava.ast.Parser;
 import bluej.stride.framedjava.ast.SuperThisParamsExpressionFragment;
 import bluej.stride.framedjava.convert.ConversionWarning.UnsupportedFeature;
 import bluej.stride.framedjava.elements.AssignElement;
 import bluej.stride.framedjava.elements.CallElement;
 import bluej.stride.framedjava.elements.CodeElement;
-
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * An expression.  Because expressions have different text in Stride versus Java
@@ -146,7 +147,7 @@ class Expression
             warnIncDec();
             String choppedStride = stride.substring(0, stride.length() - 3);
             String choppedJava = java.substring(0, java.length() - 3);
-            return new AssignElement(null, new FilledExpressionSlotFragment(choppedStride, choppedJava), new FilledExpressionSlotFragment(choppedStride + " " + stride.substring(stride.length() - 1, stride.length()) + " 1", choppedJava + " " + java.substring(java.length() - 1, java.length()) + " 1"), true);
+            return new AssignElement(null, new FilledExpressionSlotFragment(choppedStride, choppedJava), new FilledExpressionSlotFragment(choppedStride + " " + stride.substring(stride.length() - 1) + " 1", choppedJava + " " + java.substring(java.length() - 1) + " 1"), true);
         }
         else
         {

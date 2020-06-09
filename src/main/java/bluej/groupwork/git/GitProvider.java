@@ -22,26 +22,41 @@
 package bluej.groupwork.git;
 
 import bluej.Config;
-import bluej.groupwork.*;
+import bluej.groupwork.Repository;
+import bluej.groupwork.TeamSettings;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.TeamworkCommandUnsupportedSetting;
+import bluej.groupwork.TeamworkProvider;
+import bluej.groupwork.UnsupportedSettingException;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.*;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FS;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.*;
-import java.util.Arrays;
 
 /**
  * Teamwork provider for Git.

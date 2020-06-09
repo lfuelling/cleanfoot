@@ -21,21 +21,29 @@
  */
 package bluej.stride.slots;
 
-import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
-import bluej.stride.framedjava.elements.CodeElement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.StructuredCompletionCalculator;
+import bluej.utility.Utility;
+import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.slots.ExpressionCompletionCalculator;
 import bluej.stride.generic.AssistContentThreadSafe;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.SuggestionList.SuggestionDetailsWithHTMLDoc;
 import bluej.stride.slots.SuggestionList.SuggestionListListener;
-import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
 
 public class TypeCompletionCalculator implements StructuredCompletionCalculator
 {

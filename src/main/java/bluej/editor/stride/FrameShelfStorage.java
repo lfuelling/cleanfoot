@@ -21,22 +21,22 @@
  */
 package bluej.editor.stride;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.IdentityHashMap;
+import javafx.collections.ListChangeListener;
+
 import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.Frame;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
-import javafx.collections.ListChangeListener;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.ParsingException;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.IdentityHashMap;
 
 /**
  * The central storage (one per project) for frame shelf contents.  Each GUI FXTabbedWindow

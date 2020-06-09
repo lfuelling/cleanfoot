@@ -31,13 +31,13 @@ import bluej.pkgmgr.PkgMgrFrame;
 public class ArrayElementGetRecord extends InvokerRecord
 {
     /** The invoker record for the inspector where the Get button was pressed, that resulted in the creation of this GetInvokerRecord. */
-    private InvokerRecord parentIr;
+    private final InvokerRecord parentIr;
     
     /** Index of the element to get */
-    private int elementIndex;
+    private final int elementIndex;
     
     /** Type of the element */
-    private String elementType;
+    private final String elementType;
     
     /** Name of the object as it appears on the object bench */
     private String objName;

@@ -29,10 +29,10 @@ package bluej.debugger.gentype;
  */
 public class FieldReflective
 {
-    private String name;
-    private JavaType type;
-    private int modifiers;
-    private Reflective declaringType;
+    private final String name;
+    private final JavaType type;
+    private final int modifiers;
+    private final Reflective declaringType;
     
     public FieldReflective(String name, JavaType type, int modifiers, Reflective declaringType)
     {

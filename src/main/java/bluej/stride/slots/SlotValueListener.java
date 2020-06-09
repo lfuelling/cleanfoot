@@ -37,8 +37,8 @@ public interface SlotValueListener
     boolean valueChanged(HeaderItem slot, String oldValue, String newValue, FocusParent<HeaderItem> parent);
 
     @OnThread(Tag.FXPlatform)
-    default void backSpacePressedAtStart(HeaderItem slot) {};
+    default void backSpacePressedAtStart(HeaderItem slot) {}
 
     @OnThread(Tag.FXPlatform)
-    default void deletePressedAtEnd(HeaderItem slot) {};
+    default void deletePressedAtEnd(HeaderItem slot) {}
 }

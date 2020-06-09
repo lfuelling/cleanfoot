@@ -21,9 +21,9 @@
  */
 package bluej.stride.framedjava.slots;
 
-import bluej.utility.Utility;
-
 import java.util.Optional;
+
+import bluej.utility.Utility;
 
 /**
  * A CaretPos is a singly-linked immutable list of integers, representing a caret position

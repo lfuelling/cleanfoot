@@ -21,12 +21,22 @@
  */
 package greenfoot.sound;
 
-import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * Plays sound from a URL. The sound is loaded into memory the first time it is
@@ -39,9 +49,9 @@ import java.net.URL;
  */
 public class SoundClip implements Sound, LineListener
 {
-    private static ClipCache clipCache = new ClipCache();
-    private static ClipProcessThread processThread = new ClipProcessThread();
-    private static ClipCloserThread closerThread = new ClipCloserThread();
+    private static final ClipCache clipCache = new ClipCache();
+    private static final ClipProcessThread processThread = new ClipProcessThread();
+    private static final ClipCloserThread closerThread = new ClipCloserThread();
 
     /** URL of the sound data. */
     private final URL url;
@@ -59,8 +69,8 @@ public class SoundClip implements Sound, LineListener
     private enum ClipState
     {
         STOPPED, PLAYING, PAUSED_LOOPING, PAUSED_PLAYING, CLOSED, LOOPING, STOPPING
-    };
-    
+    }
+
     /** requested clip state (never STOPPING) */
     private ClipState clipState = ClipState.CLOSED;
     
@@ -73,7 +83,7 @@ public class SoundClip implements Sound, LineListener
     private int masterVolume = 100;
     
     /** Listener for state changes. */
-    private SoundPlaybackListener playbackListener;
+    private final SoundPlaybackListener playbackListener;
     
     private boolean resumedLoop;
     
@@ -150,8 +160,11 @@ public class SoundClip implements Sound, LineListener
             clipData = clipCache.getCachedClip(url);
             clipCache.releaseClipData(clipData);
         }
-        catch (IOException | UnsupportedAudioFileException e) {
-            e.printStackTrace();
+        catch (IOException e) {
+            
+        }
+        catch (UnsupportedAudioFileException e) {
+            
         }
     }
 

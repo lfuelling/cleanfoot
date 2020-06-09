@@ -21,12 +21,12 @@
  */
 package bluej.editor.moe;
 
+import java.io.File;
+
 import bluej.Config;
 import bluej.utility.BlueJFileReader;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * Wrapper for functionality around translating parser error codes to human-readable

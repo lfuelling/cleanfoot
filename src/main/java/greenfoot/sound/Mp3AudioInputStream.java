@@ -21,14 +21,20 @@
  */
 package greenfoot.sound;
 
-import bluej.utility.Debug;
-import javazoom.jl.decoder.*;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.BitstreamException;
+import javazoom.jl.decoder.Decoder;
+import javazoom.jl.decoder.DecoderException;
+import javazoom.jl.decoder.Header;
+import javazoom.jl.decoder.SampleBuffer;
+import bluej.utility.Debug;
 
 public class Mp3AudioInputStream implements GreenfootAudioInputStream
 {
@@ -43,10 +49,10 @@ public class Mp3AudioInputStream implements GreenfootAudioInputStream
     /** The MPEG audio decoder. */
     private Decoder decoder;
     /** URL of the resource */
-    private URL url;
+    private final URL url;
     private boolean readingHasStarted = false;
     private BufferedInputStream inputStream;
-    private AudioFormat format;
+    private final AudioFormat format;
     private SampleBuffer unreadSample;
 
     /** Whether the stream is open or not. */

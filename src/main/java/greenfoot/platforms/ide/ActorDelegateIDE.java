@@ -34,7 +34,7 @@ import greenfoot.platforms.ActorDelegate;
  */
 public class ActorDelegateIDE implements ActorDelegate
 {
-    private ReadOnlyProjectProperties projectProperties;
+    private final ReadOnlyProjectProperties projectProperties;
     
     private ActorDelegateIDE(ReadOnlyProjectProperties projectProperties)
     {

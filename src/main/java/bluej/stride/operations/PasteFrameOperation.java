@@ -28,21 +28,21 @@ import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCursor;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class PasteFrameOperation extends FrameOperation
 {
     public PasteFrameOperation(InteractionManager editor)
     {
-        super(editor, "PASTE", AbstractOperation.Combine.ALL, new KeyCodeCombination(KeyCode.V, KeyCombination.SHORTCUT_DOWN));
+        super(editor, "PASTE", Combine.ALL, new KeyCodeCombination(KeyCode.V, KeyCombination.SHORTCUT_DOWN));
     }
 
     @Override
@@ -77,8 +77,8 @@ public class PasteFrameOperation extends FrameOperation
     }
 
     @Override
-    public List<AbstractOperation.ItemLabel> getLabels()
+    public List<ItemLabel> getLabels()
     {
-        return Collections.singletonList(l(Config.getString("frame.operation.paste"), MenuItemOrder.PASTE));
+        return Arrays.asList(l(Config.getString("frame.operation.paste"), MenuItemOrder.PASTE));
     }
 }

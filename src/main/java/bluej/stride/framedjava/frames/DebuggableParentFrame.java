@@ -22,11 +22,11 @@
 package bluej.stride.framedjava.frames;
 
 import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.canvases.JavaCanvas;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 public interface DebuggableParentFrame extends DebuggableFrame
 {
-    @OnThread(Tag.FXPlatform)
-    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug);
+    @OnThread(Tag.FXPlatform) HighlightedBreakpoint showDebugAtEnd(DebugInfo debug);
 }

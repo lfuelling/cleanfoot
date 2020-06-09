@@ -97,7 +97,7 @@ public class TextAnalyserTest
         
         List<MethodCallDesc> choices = TextAnalyzer.getSuitableMethods("get", listClass.getCapture(),
                 new JavaType[] {argType},
-                Collections.<GenTypeParameter>emptyList(), new JavaReflective(Object.class));
+                Collections.emptyList(), new JavaReflective(Object.class));
         
         assertEquals(1, choices.size());
         MethodCallDesc mcd = choices.get(0);
@@ -135,7 +135,7 @@ public class TextAnalyserTest
          // Check call to foo returns String:
          List<MethodCallDesc> choices = TextAnalyzer.getSuitableMethods("foo", test1class,
                  new JavaType[] {listListExtendsString},
-                 Collections.<GenTypeParameter>emptyList(), test1class.getReflective());
+                 Collections.emptyList(), test1class.getReflective());
 
          assertEquals(1, choices.size());
          MethodCallDesc mcd = choices.get(0);
@@ -171,7 +171,7 @@ public class TextAnalyserTest
          // Check call to foo returns String:
          List<MethodCallDesc> choices = TextAnalyzer.getSuitableMethods("foo", test1class,
                  new JavaType[] {listListExtendsString},
-                 Collections.<GenTypeParameter>emptyList(), test1class.getReflective());
+                 Collections.emptyList(), test1class.getReflective());
 
          assertEquals(1, choices.size());
          MethodCallDesc mcd = choices.get(0);
@@ -210,7 +210,7 @@ public class TextAnalyserTest
         
         List<MethodCallDesc> choices = TextAnalyzer.getSuitableMethods("foo", test1class,
                 new JavaType[] {arg1, arg2},
-                Collections.<GenTypeParameter>emptyList(), test1class.getReflective());
+                Collections.emptyList(), test1class.getReflective());
         
         assertEquals(1, choices.size());
         MethodCallDesc mcd = choices.get(0);
@@ -224,7 +224,7 @@ public class TextAnalyserTest
 
         choices = TextAnalyzer.getSuitableMethods("foo", test1classNotRaw.getCapture(),
                 new JavaType[] {arg1, arg2},
-                Collections.<GenTypeParameter>emptyList(), test1class.getReflective());
+                Collections.emptyList(), test1class.getReflective());
         
         assertEquals(1, choices.size());
         mcd = choices.get(0);

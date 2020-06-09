@@ -37,5 +37,5 @@ public interface ExtensionEventListener
      * return as quickly as possible. 
      * If a long operation must be performed you should start a Thread.
      */
-    public void eventOccurred(ExtensionEvent event);
+    void eventOccurred(ExtensionEvent event);
 }

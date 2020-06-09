@@ -21,19 +21,19 @@
  */
 package bluej.editor.stride;
 
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Debug;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.input.KeyCode;
-import javafx.scene.media.AudioClip;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Map;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.media.AudioClip;
+
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Debug;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A file completion for sound filenames in the scenario's "sounds/" subdirectory

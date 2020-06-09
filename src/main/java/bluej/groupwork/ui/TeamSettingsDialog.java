@@ -29,6 +29,7 @@ import bluej.utility.javafx.JavaFXUtil;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Window;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -42,8 +43,8 @@ import threadchecker.Tag;
 @OnThread(Tag.FXPlatform)
 public class TeamSettingsDialog extends FXCustomizedDialog<TeamSettings>
 {
-    private TeamSettingsController teamSettingsController;
-    private TeamSettingsPanel teamSettingsPanel;
+    private final TeamSettingsController teamSettingsController;
+    private final TeamSettingsPanel teamSettingsPanel;
     private Button okButton;
 
     /**

@@ -305,7 +305,7 @@ public class TestHangingFlowPane
     }
 
     // We're dealing with simple integers, so only need a small comparison delta:
-    private static double e = 0.000001;
+    private static final double e = 0.000001;
 
     private static void assertLayout(Node n, double x, double y, double width, double height)
     {

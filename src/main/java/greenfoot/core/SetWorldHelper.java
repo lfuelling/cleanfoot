@@ -1,5 +1,6 @@
 package greenfoot.core;
 
+import greenfoot.Greenfoot;
 import greenfoot.World;
 
 /**

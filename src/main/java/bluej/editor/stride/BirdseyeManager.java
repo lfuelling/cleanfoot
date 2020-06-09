@@ -21,8 +21,11 @@
  */
 package bluej.editor.stride;
 
-import bluej.stride.generic.FrameCursor;
 import javafx.scene.Node;
+
+import bluej.stride.generic.FrameCursor;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.FXRunnable;
 
 /**
  * An interface implemented by ClassFrame/InterfaceFrame, providing methods

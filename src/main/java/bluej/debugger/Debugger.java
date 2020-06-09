@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,16 +21,18 @@
  */
 package bluej.debugger;
 
+import java.io.File;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import bluej.classmgr.BPClassLoader;
 import bluej.debugger.jdi.JdiDebugger;
+import bluej.debugger.jdi.TestResultsWithRunTime;
 import bluej.utility.javafx.FXPlatformSupplier;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * A class defining the debugger primitives needed by BlueJ. May be supported by different
@@ -170,7 +172,7 @@ public abstract class Debugger
      * 
      * @return  a Map of (String name, DebuggerObject obj) entries
      */
-    public abstract Map<String, DebuggerObject> getObjects();
+    public abstract Map<String,DebuggerObject> getObjects();
 
     /**
      * Guess a suitable name for an object about to be put on the object bench.
@@ -204,18 +206,19 @@ public abstract class Debugger
      * @return          a Map of (String name, DebuggerObject obj) entries
      */
     @OnThread(Tag.Any)
-    public abstract FXPlatformSupplier<Map<String, DebuggerObject>> runTestSetUp(String className);
+    public abstract FXPlatformSupplier<Map<String,DebuggerObject>> runTestSetUp(String className);
 
     /**
-     * Run a single test method in a test class and return the result.
+     * Run a single test method or all test methods in a test class and return the result.
      * 
      * @param  className  the fully qualified name of the class
-     * @param  methodName the name of the method
-     * @return            a DebuggerTestResult object
+     * @param  methodName
+     *            the name of the method, it can be null if the test runs on all test methods
+     * @return a TestResultsWithRunTime object that wraps the test result and test's runtime
      */
     @OnThread(Tag.Any)
-    public abstract DebuggerTestResult runTestMethod(String className, String methodName);
-
+    public abstract TestResultsWithRunTime runTestMethod(String className, String methodName);
+    
     /**
      * Dispose all top level windows in the remote machine.
      */
@@ -247,7 +250,7 @@ public abstract class Debugger
      */
     @OnThread(Tag.Any)
     public abstract DebuggerResult instantiateClass(String className, String [] paramTypes,
-                                                    DebuggerObject[] args);
+            DebuggerObject [] args);
     
     /**
      * Get a class from the virtual machine, using the current classloader.
@@ -324,4 +327,12 @@ public abstract class Debugger
      * Sets which thread invoked methods/constructors should be run on.
      */
     public abstract void setRunOnThread(RunOnThread runOnThread);
+    
+    public interface EventHandlerRunnable
+    {
+        @OnThread(Tag.VMEventHandler) void run();
+    }
+    
+    @OnThread(Tag.Any)
+    public abstract void runOnEventHandler(EventHandlerRunnable runnable);
 }

@@ -21,9 +21,11 @@
  */
 package bluej.debugger.gentype;
 
-import bluej.utility.JavaNames;
-
 import java.util.Map;
+
+import bluej.utility.JavaNames;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Interface for a parameterizable type, that is, a type which could have type
@@ -35,13 +37,13 @@ import java.util.Map;
 public abstract class GenTypeParameter
 {
 
-    private static NameTransform stripPrefixNt = new NameTransform() {
+    private static final NameTransform stripPrefixNt = new NameTransform() {
         public String transform(String x) {
             return JavaNames.stripPrefix(x);
         }
     };
     
-    private static NameTransform nullTransform = new NameTransform() {
+    private static final NameTransform nullTransform = new NameTransform() {
         public String transform(String x) {
             return x;
         }
@@ -94,7 +96,7 @@ public abstract class GenTypeParameter
             newUpper = upperBound;
         }
         else {
-            newUpper = IntersectionType.getIntersection(new GenTypeSolid[] {otherUpper, upperBound});
+            newUpper = IntersectionType.getIntersection(new GenTypeSolid [] {otherUpper, upperBound});
         }
         
         // Calculate new lower bounds
@@ -107,7 +109,7 @@ public abstract class GenTypeParameter
             newLower = otherLower;
         }
         else {
-            newLower = GenTypeSolid.lub(new GenTypeSolid[] {otherLower, lowerBound});
+            newLower = GenTypeSolid.lub(new GenTypeSolid [] {otherLower, lowerBound});
         }
         
         // If the upper bounds now equals the lower bounds, we have a solid
@@ -168,9 +170,7 @@ public abstract class GenTypeParameter
             if (otherLower == null) {
                 return false;
             }
-            if (! otherLower.isAssignableFrom(myLower)) {
-                return false;
-            }
+            return otherLower.isAssignableFrom(myLower);
         }
         
         return true;

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2013,2014,2016,2017,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2011,2013,2014,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,6 +21,20 @@
  */
 package bluej.debugmgr.inspector;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
@@ -28,18 +42,8 @@ import bluej.pkgmgr.Package;
 import bluej.testmgr.record.InvokerRecord;
 import bluej.utility.JavaNames;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.*;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A window that displays the static fields in an class.
@@ -128,8 +132,7 @@ public class ClassInspector extends Inspector
         BorderPane mainPanel = new BorderPane();
 
         mainPanel.setCenter(fieldList);
-        Label lab = new Label("  " + noFieldsMsg);
-        fieldList.setPlaceholder(lab);
+        fieldList.setPlaceHolderText("  " + noFieldsMsg);
 
         mainPanel.setRight(createInspectAndGetButtons());
 
@@ -205,12 +208,7 @@ public class ClassInspector extends Inspector
         if (field != null && field.isReferenceType() && ! field.isNull()) {
             setCurrentObj(field.getValueObject(null), field.getName(), field.getType().toString());
 
-            if (Modifier.isPublic(field.getModifiers())) {
-                setButtonsEnabled(true, true);
-            }
-            else {
-                setButtonsEnabled(true, false);
-            }
+            setButtonsEnabled(true, Modifier.isPublic(field.getModifiers()));
         }
         else {
             setCurrentObj(null, null, null);

@@ -21,12 +21,16 @@
  */
 package bluej.pkgmgr;
 
-import bluej.debugger.gentype.Reflective;
-import bluej.parser.entity.*;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.Target;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+import bluej.debugger.gentype.Reflective;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.PackageEntity;
+import bluej.parser.entity.PackageOrClass;
+import bluej.parser.entity.TypeEntity;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.Target;
 
 /**
  * Resolve project entities.
@@ -36,7 +40,7 @@ import threadchecker.Tag;
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
 public class ProjectEntityResolver implements EntityResolver
 {
-    private Project project;
+    private final Project project;
     
     /**
      * Construct a ProjectEntityResolver for the given project.

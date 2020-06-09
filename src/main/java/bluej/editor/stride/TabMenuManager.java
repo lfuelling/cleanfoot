@@ -21,21 +21,21 @@
  */
 package bluej.editor.stride;
 
-import bluej.Config;
-import bluej.compiler.CompileReason;
-import bluej.compiler.CompileType;
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+
+import bluej.compiler.CompileReason;
+import bluej.compiler.CompileType;
+import bluej.Config;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by neil on 26/11/15.

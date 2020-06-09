@@ -21,15 +21,16 @@
  */
 package greenfoot.guifx.export;
 
+import static greenfoot.export.Exporter.ExportFunction;
+
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.io.File;
+import javafx.stage.Window;
 
-import static greenfoot.export.Exporter.ExportFunction;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Export dialog's tab for exporting to a gfar project.

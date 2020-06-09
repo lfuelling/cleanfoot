@@ -21,27 +21,25 @@
  */
 package bluej.pkgmgr;
 
+import java.awt.Rectangle;
+import java.awt.geom.Area;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.swing.SwingUtilities;
+
 import bluej.Config;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
-import bluej.debugger.DebuggerObject;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.extensions.BDependency;
-import bluej.extmgr.ExtensionsManager;
 import bluej.extmgr.FXMenuManager;
-import bluej.extmgr.PackageExtensionMenu;
-import bluej.graph.SelectionController;
-import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.dependency.UsesDependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.DependentTarget;
-import bluej.pkgmgr.t4rget.Target;
-import bluej.testmgr.record.InvokerRecord;
+import bluej.pkgmgr.target.ClassTarget;
 import bluej.utility.DialogManager;
 import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ResizableCanvas;
-import bluej.views.CallableView;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
@@ -61,14 +59,23 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+
+import bluej.debugger.DebuggerObject;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.extensions.BDependency;
+import bluej.extmgr.ExtensionsManager;
+import bluej.extmgr.PackageExtensionMenu;
+import bluej.graph.SelectionController;
+import bluej.pkgmgr.dependency.Dependency;
+import bluej.pkgmgr.dependency.UsesDependency;
+import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.target.Target;
+import bluej.testmgr.record.InvokerRecord;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.ResizableCanvas;
+import bluej.views.CallableView;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.geom.Area;
-import java.util.List;
-import java.util.*;
 
 /**
  * The main class diagram in the BlueJ package manager frame, supporting
@@ -118,7 +125,7 @@ public final class PackageEditor extends StackPane
     
     // For showing info about the arrow-drawing in progress; the overlay pane:
     @OnThread(Tag.FXPlatform)
-    private MouseTrackingOverlayPane overlay;
+    private final MouseTrackingOverlayPane overlay;
     // The tooltip shown when creating an arrow (null if not showing):
     @OnThread(Tag.FXPlatform)
     private Label arrowCreationTip;
@@ -360,7 +367,7 @@ public final class PackageEditor extends StackPane
             // lets discount the vertex we are adding from the space
             // calculations
             if (vertex != t) {
-                Rectangle vr = new Rectangle(vertex.getX(), vertex.getY(), (int)vertex.getWidth(), (int)vertex.getHeight());
+                Rectangle vr = new Rectangle(vertex.getX(), vertex.getY(), vertex.getWidth(), vertex.getHeight());
                 a.add(new Area(vr));
             }
         }
@@ -371,7 +378,7 @@ public final class PackageEditor extends StackPane
         if (RIGHT_PLACEMENT_MIN > minWidth)
             minWidth = RIGHT_PLACEMENT_MIN;
 
-        Rectangle targetRect = new Rectangle((int)t.getWidth() + WHITESPACE_SIZE * 2, (int)t.getHeight() + WHITESPACE_SIZE * 2);
+        Rectangle targetRect = new Rectangle(t.getWidth() + WHITESPACE_SIZE * 2, t.getHeight() + WHITESPACE_SIZE * 2);
 
         for (int y = 0; y < (2 * minHeight); y += 10) {
             for (int x = 0; x < (minWidth - t.getWidth() - 2 * WHITESPACE_SIZE); x += 10) {
@@ -446,7 +453,7 @@ public final class PackageEditor extends StackPane
 
     private static final int ARROW_SIZE = 18; // pixels
     private static final double ARROW_ANGLE = Math.PI / 6; // radians
-    private static final double DASHES[] = {5.0f, 2.0f};
+    private static final double[] DASHES = {5.0f, 2.0f};
 
     /**
      * Schedules a repaint.  The repaint is done with a runLater,
@@ -601,7 +608,7 @@ public final class PackageEditor extends StackPane
     private void actualRepaint()
     {
         aboutToRepaint = false;
-        List<Dependency> extendsDeps = isShowExtends() ? new ArrayList<>(pkg.getExtendsArrows()) : Collections.emptyList();;
+        List<Dependency> extendsDeps = isShowExtends() ? new ArrayList<>(pkg.getExtendsArrows()) : Collections.emptyList();
         List<UsesDependency> usesDeps = isShowUses() ? new ArrayList<>(pkg.getUsesArrows()) : Collections.emptyList();
 
         List<ExtendsDepInfo> extendsLines = new ArrayList<>(Utility.mapList(extendsDeps, ExtendsDepInfo::new));
@@ -1070,6 +1077,12 @@ public final class PackageEditor extends StackPane
     public void callStaticMethodOrConstructor(CallableView view)
     {
         pmf.callStaticMethodOrConstructor(view);
+    }
+
+    @Override
+    public void highlightObject(DebuggerObject currentObject)
+    {
+        pmf.getObjectBench().highlightObject(currentObject);
     }
 
     /**

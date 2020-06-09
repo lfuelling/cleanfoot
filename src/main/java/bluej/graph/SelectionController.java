@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2013,2014,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2013,2014,2016,2017,2018  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -24,17 +24,18 @@ package bluej.graph;
 import bluej.Config;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PackageEditor;
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.target.Target;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.util.Collection;
 import java.util.List;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 
 /**
@@ -55,7 +56,7 @@ public class SelectionController
     private boolean moving = false; 
     private boolean resizing = false;
 
-    private TraverseStrategy traverseStragegiImpl = new TraverseStrategyImpl();
+    private final TraverseStrategy traverseStragegiImpl = new TraverseStrategyImpl();
 
     
     /**
@@ -75,7 +76,7 @@ public class SelectionController
     /**
      * A mouse-pressed event. Analyse what we should do with it.
      */
-    public void mousePressed(MouseEvent evt)
+    public void mousePressed(javafx.scene.input.MouseEvent evt)
     {
         int clickX = (int)evt.getX();
         int clickY = (int)evt.getY();
@@ -128,7 +129,7 @@ public class SelectionController
             if (evt.getClickCount() > 1) {
                 selection.getSelected().forEach(target -> {
                     if (evt.getTarget().equals(target)) {
-                        selection.doubleClick();
+                        selection.doubleClick(false);
                         return;
                     }
                 });

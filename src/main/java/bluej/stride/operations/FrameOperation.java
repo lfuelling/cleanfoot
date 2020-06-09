@@ -21,23 +21,25 @@
  */
 package bluej.stride.operations;
 
+import java.util.Collections;
+import java.util.List;
+
+import bluej.stride.slots.EditableSlot.SortedMenuItem;
+import javafx.application.Platform;
+import javafx.scene.control.CustomMenuItem;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.RecallableFocus;
-import bluej.stride.slots.EditableSlot.SortedMenuItem;
-import javafx.scene.control.CustomMenuItem;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.KeyCombination;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.Collections;
-import java.util.List;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCombination;
 
 public abstract class FrameOperation extends AbstractOperation
 {
 
-    private KeyCombination shortcut;
+    private final KeyCombination shortcut;
 
     public FrameOperation(InteractionManager editor, String identifier, Combine combine)
     {

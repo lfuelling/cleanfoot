@@ -26,23 +26,31 @@
 package bluej.stride.framedjava.frames;
 
 
-import bluej.stride.framedjava.ast.ExpressionSlotFragment;
-import bluej.stride.framedjava.elements.ReturnElement;
-import bluej.stride.framedjava.slots.OptionalExpressionSlot;
-import bluej.stride.generic.*;
+import java.util.List;
+import java.util.stream.Stream;
+
 import bluej.stride.slots.EditableSlot;
-import bluej.stride.slots.HeaderItem;
-import bluej.stride.slots.SlotLabel;
-import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Cursor;
-
-import java.util.stream.Stream;
+import bluej.stride.framedjava.ast.ExpressionSlotFragment;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.canvases.JavaCanvas;
+import bluej.stride.framedjava.elements.ReturnElement;
+import bluej.stride.framedjava.slots.OptionalExpressionSlot;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotLabel;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
 
 /**
  * A return statement
@@ -86,7 +94,7 @@ public class ReturnFrame extends SingleLineFrame
             e.consume();
         });
         
-        getHeaderRow().bindContentsConcat(FXCollections.<ObservableList<? extends HeaderItem>>observableArrayList(
+        getHeaderRow().bindContentsConcat(FXCollections.observableArrayList(
                 FXCollections.observableArrayList(headerCaptionLabel),
                 JavaFXUtil.listBool(notShowingValue, spacer),
                 JavaFXUtil.listBool(showingValue, value),

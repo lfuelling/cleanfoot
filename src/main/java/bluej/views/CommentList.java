@@ -24,10 +24,10 @@ package bluej.views;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.ArrayList;
 
 /**
  * CommentList class - maintains a list of BlueJ comments
@@ -36,7 +36,7 @@ import java.util.Properties;
  */
 public final class CommentList
 {
-    private List<Comment> comments;
+    private final List<Comment> comments;
 	
     /**
      * Constructor - create a CommentList with an initial list of comments.

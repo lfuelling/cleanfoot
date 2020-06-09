@@ -21,13 +21,13 @@
  */
 package bluej.stride.framedjava.slots;
 
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
+
+import javafx.geometry.Point2D;
+import javafx.scene.Node;
 
 /**
  * Represents a text location on the overlay pane.  You can think of it as representing the
@@ -208,8 +208,8 @@ public class TextOverlayPosition
      * Creates a TextOverlayPosition using the given scene coordinates.
      */
     public static TextOverlayPosition fromScene(double x,
-                                                double topY, double baselineY, double bottomY,
-                                                StructuredSlotField expressionSlotField)
+            double topY, double baselineY, double bottomY,
+            StructuredSlotField expressionSlotField)
     {
         return new TextOverlayPosition(expressionSlotField, x, topY, baselineY, bottomY);
     }

@@ -21,31 +21,50 @@
  */
 package bluej.groupwork.ui;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
 import bluej.Config;
-import bluej.groupwork.*;
-import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.groupwork.actions.UpdateAction;
+import bluej.groupwork.Repository;
+import bluej.groupwork.StatusHandle;
+import bluej.groupwork.StatusListener;
+import bluej.groupwork.TeamStatusInfo;
+import bluej.groupwork.TeamStatusInfo.Status;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamViewFilter;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.UpdateFilter;
 import bluej.pkgmgr.BlueJPackageFile;
 import bluej.pkgmgr.Project;
 import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
-import bluej.utility.Utility;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import bluej.utility.Utility;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A user interface for showing files to be updated
@@ -63,15 +82,15 @@ public class UpdateFilesFrame extends FXCustomizedDialog<Void>
     private Button updateButton;
     private UpdateWorker updateWorker;
 
-    private Project project;
+    private final Project project;
     private Repository repository;
     private ObservableList<UpdateStatus> updateListModel;
 
-    private Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>(); // set of TeamStatusInfo
-    private Set<File> forcedLayoutFiles = new HashSet<>(); // set of File
+    private final Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>(); // set of TeamStatusInfo
+    private final Set<File> forcedLayoutFiles = new HashSet<>(); // set of File
 
-    private static UpdateStatus noFilesToUpdate = new UpdateStatus(Config.getString("team.noupdatefiles"));
-    private static UpdateStatus needUpdate = new UpdateStatus(Config.getString("team.pullNeeded"));
+    private static final UpdateStatus noFilesToUpdate = new UpdateStatus(Config.getString("team.noupdatefiles"));
+    private static final UpdateStatus needUpdate = new UpdateStatus(Config.getString("team.pullNeeded"));
 
     private boolean includeLayout = true;
     private boolean pullWithNoChanges = false;

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2013,2014,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2013,2014,2016,2017,2018  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,12 +21,16 @@
  */
 package bluej.graph;
 
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.target.Target;
 import bluej.utility.javafx.FXPlatformConsumer;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * SelectionSet holds a set of selected graph elements. By inserting an
@@ -38,8 +42,8 @@ import java.util.*;
 @OnThread(Tag.FXPlatform)
 public final class SelectionSet
 {
-    private Set<Target> elements = new HashSet<>();
-    private List<FXPlatformConsumer<Collection<Target>>> listeners = new ArrayList<>();
+    private final Set<Target> elements = new HashSet<>();
+    private final List<FXPlatformConsumer<Collection<Target>>> listeners = new ArrayList<>();
 
     /**
      * 
@@ -105,12 +109,12 @@ public final class SelectionSet
     /**
      * Perform a double click on the selection.
      * 
-     * @param evt  The mouse event that originated this double click.
+     * @param  openInNewWindow if this is true, the editor opens in a new window.
      */
-    public void doubleClick()
+    public void doubleClick(boolean openInNewWindow)
     {
         for (Target element : elements) {
-            element.doubleClick();
+            element.doubleClick(openInNewWindow);
         }        
     }
 

@@ -21,18 +21,18 @@
  */
 package bluej.editor.moe;
 
-import bluej.Config;
-import bluej.editor.moe.MoeSyntaxDocument.Element;
-import bluej.editor.moe.MoeSyntaxDocument.Position;
-import bluej.parser.nodes.NodeTree.NodeAndPosition;
-import bluej.parser.nodes.ParsedNode;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import bluej.Config;
+import bluej.editor.moe.MoeSyntaxDocument.Element;
+import bluej.editor.moe.MoeSyntaxDocument.Position;
+import bluej.parser.nodes.NodeTree.NodeAndPosition;
+import bluej.parser.nodes.ParsedNode;
 
 /**
  * This class contains the "auto layout" functionality of the editor.
@@ -47,8 +47,8 @@ public class MoeIndent
 
     public static class AutoIndentInformation
     {
-        private boolean perfect;
-        private int newCaretPos;
+        private final boolean perfect;
+        private final int newCaretPos;
         
         public AutoIndentInformation(boolean perfect, int newCaretPos)
         {
@@ -81,7 +81,7 @@ public class MoeIndent
      * start and end positions, and apply it. Return information about the applied indentation.
      */
     public static AutoIndentInformation calculateIndentsAndApply(MoeSyntaxDocument doc,
-                                                                 int startPos, int endPos, int prevCaretPos)
+            int startPos, int endPos, int prevCaretPos)
     {
         int caretPos = prevCaretPos;
         Element rootElement = doc.getDefaultRootElement();
@@ -187,7 +187,7 @@ public class MoeIndent
      *         Returns null if start does not contain the given element
      */
     private static String calculateIndent(Element el,
-                                          NodeAndPosition<ParsedNode> start, IndentCalculator startIC, MoeSyntaxDocument doc)
+            NodeAndPosition<ParsedNode> start, IndentCalculator startIC, MoeSyntaxDocument doc)
     {
         int pos = el.getStartOffset() + findFirstNonIndentChar(getElementContents(doc, el), true);
         if (pos >= start.getPosition() && pos < start.getEnd()) {
@@ -221,7 +221,7 @@ public class MoeIndent
      * @param endPos    End of document region to scan
      */
     private static void checkMethodSpacing(NodeAndPosition<ParsedNode> root, Element map,
-                                           List<DocumentAction> updates, int startPos, int endPos)
+            List<DocumentAction> updates, int startPos, int endPos)
     {
         NodeAndPosition<ParsedNode> current = null;
         NodeAndPosition<ParsedNode> next = null;
@@ -265,19 +265,19 @@ public class MoeIndent
      * the corresponding node should have.  You should use getForChild as you
      * descend the parse tree to get the indentation for child nodes.
      */
-    private static interface IndentCalculator
+    private interface IndentCalculator
     {
         /**
          * Gets the IndentCalculator for the given child node of the node that this
          * IndentCalculator instance corresponds to
          */
-        public IndentCalculator getForChild(ParsedNode n);
+        IndentCalculator getForChild(ParsedNode n);
         /**
          * Gets the indent for a line in the current node that begins with the
          * given character.  This allows for comments (such as this one right here)
          * to have their leading asterisks indented by an extra space. 
          */
-        public String getCurIndent(char beginsWith);
+        String getCurIndent(char beginsWith);
     }
     
     /**
@@ -359,7 +359,7 @@ public class MoeIndent
          * Apply the edit represented by this DocumentAction to the document, and return the
          * adjusted caret position.
          */
-        public int apply(MoeSyntaxDocument doc, int prevCaretPos);
+        int apply(MoeSyntaxDocument doc, int prevCaretPos);
     }
 
     /**
@@ -442,8 +442,8 @@ public class MoeIndent
      */
     private static class DocumentAddLineAction implements DocumentAction
     {
-        private int position;
-        private boolean twoSeparators;
+        private final int position;
+        private final boolean twoSeparators;
         
         public DocumentAddLineAction(int position)
         {

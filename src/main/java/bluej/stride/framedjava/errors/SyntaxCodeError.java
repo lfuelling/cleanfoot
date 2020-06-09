@@ -21,13 +21,17 @@
  */
 package bluej.stride.framedjava.errors;
 
-import bluej.compiler.Diagnostic.DiagnosticOrigin;
-import bluej.stride.framedjava.ast.SlotFragment;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
+
+import bluej.compiler.Diagnostic;
+import bluej.compiler.Diagnostic.DiagnosticOrigin;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.StringSlotFragment;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class SyntaxCodeError extends DirectSlotError
 {
@@ -42,7 +46,7 @@ public class SyntaxCodeError extends DirectSlotError
     @OnThread(Tag.Any)
     public SyntaxCodeError(SlotFragment slot, String msg)
     {
-        super(slot);
+        super(slot, DiagnosticOrigin.STRIDE_EARLY);
         this.message = msg;
     }
     

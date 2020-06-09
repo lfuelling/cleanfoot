@@ -25,7 +25,8 @@ import greenfoot.Actor;
 import greenfoot.ActorVisitor;
 import greenfoot.util.Circle;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -177,10 +178,7 @@ public class BVHInsChecker
             if (result == null && parent != null) {
                 return parent.getOneIntersectingObjectUpwards(c, checker);
             }
-            else if (result != null) {
-                return result;
-            }
-            return null;
+            else return result;
         }
 
         /**
@@ -376,11 +374,8 @@ public class BVHInsChecker
         {
             if (n == null) {
                 return false;
-            }            
-            if (root == n || n.parent != null) {
-                return true;
             }
-            return false;
+            return root == n || n.parent != null;
         }
 
         /**
@@ -697,9 +692,9 @@ public class BVHInsChecker
     }
 
     public CircleTree tree;
-    private GOCollisionQuery actorQuery = new GOCollisionQuery();
-    private NeighbourCollisionQuery neighbourQuery = new NeighbourCollisionQuery();
-    private PointCollisionQuery pointQuery = new PointCollisionQuery();
+    private final GOCollisionQuery actorQuery = new GOCollisionQuery();
+    private final NeighbourCollisionQuery neighbourQuery = new NeighbourCollisionQuery();
+    private final PointCollisionQuery pointQuery = new PointCollisionQuery();
     private int cellSize;
     private List<Actor> objects;
 
@@ -731,7 +726,7 @@ public class BVHInsChecker
 
     public synchronized void removeObject(Actor object)
     {
-        tree.removeNode((Node) ActorVisitor.getData(object));
+        tree.removeNode((Node) ActorVisitor.getData(object));       
         
         ActorVisitor.setData(object, null);
         objects.remove(object);

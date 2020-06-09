@@ -21,6 +21,9 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.List;
+import java.util.Optional;
+
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.JavaFragment;
@@ -31,12 +34,10 @@ import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameContentRow;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.ChoiceSlot;
+import bluej.utility.javafx.FXConsumer;
 import bluej.utility.javafx.FXPlatformConsumer;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by neil on 22/05/2016.

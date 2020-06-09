@@ -21,25 +21,27 @@
  */
 package bluej.extensions;
 
+import java.awt.Graphics2D;
+
+import javax.swing.JMenuItem;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.extensions.BDependency.Type;
 import bluej.extensions.event.ExtensionEvent;
 import bluej.extmgr.ExtensionMenu;
 import bluej.extmgr.ExtensionPrefManager;
 import bluej.extmgr.ExtensionWrapper;
-import bluej.pkgmgr.Layer;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.DependentTarget;
-import com.sun.jdi.Value;
-import threadchecker.OnThread;
-import threadchecker.Tag;
+import bluej.pkgmgr.Layer;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget;
 
-import javax.swing.*;
-import java.awt.*;
+import com.sun.jdi.Value;
 
 
 /**

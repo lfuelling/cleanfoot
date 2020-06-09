@@ -21,15 +21,15 @@
  */
 package bluej.stride.operations;
 
-import bluej.stride.generic.InteractionManager;
+import java.util.List;
+
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
+import bluej.stride.generic.InteractionManager;
 import javafx.scene.control.MenuItem;
-
-import java.util.List;
 
 public abstract class AbstractOperation
 {
@@ -47,7 +47,7 @@ public abstract class AbstractOperation
      */
     public enum Combine
     {
-        ANY, ALL, ONE;
+        ANY, ALL, ONE
     }
 
     protected final String identifier;
@@ -74,8 +74,8 @@ public abstract class AbstractOperation
 
     public static class ItemLabel
     {
-        private ObservableValue<String> label;
-        private MenuItemOrder order;
+        private final ObservableValue<String> label;
+        private final MenuItemOrder order;
 
         public ItemLabel(ObservableValue<String> label, MenuItemOrder order)
         {

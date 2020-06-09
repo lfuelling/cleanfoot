@@ -21,8 +21,13 @@
  */
 package bluej.utility;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LayoutManager;
+
+import javax.swing.JPanel;
 
 /**
  * A small extension to JPanel that uses a gradient fill for the background

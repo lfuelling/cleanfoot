@@ -21,21 +21,23 @@
  */
 package bluej.debugger.jdi;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
+
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents an object running on the user (remote) machine, together with an optional generic
@@ -69,7 +71,7 @@ public class JdiObject extends DebuggerObject
             return new JdiArray((ArrayReference) obj, expectedType);
         }
         else {
-            if( expectedType instanceof GenTypeClass) {
+            if( expectedType instanceof GenTypeClass ) {
                 return new JdiObject(obj, (GenTypeClass)expectedType);
             }
             else {
@@ -310,7 +312,7 @@ public class JdiObject extends DebuggerObject
 
         // object must be JdiObject at this point
         JdiObject test = (JdiObject)o;
-        return this.obj.equals(test.obj);
+        return Objects.equals(this.obj, test.obj);
     }
 
     /**

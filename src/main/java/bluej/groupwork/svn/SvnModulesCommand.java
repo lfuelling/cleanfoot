@@ -21,12 +21,20 @@
  */
 package bluej.groupwork.svn;
 
+import java.util.List;
+
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Depth;
+import org.tigris.subversion.javahl.DirEntry;
+import org.tigris.subversion.javahl.ListCallback;
+import org.tigris.subversion.javahl.Lock;
+import org.tigris.subversion.javahl.NodeKind;
+import org.tigris.subversion.javahl.Revision;
+import org.tigris.subversion.javahl.SVNClientInterface;
+
 import bluej.groupwork.TeamworkCommandAborted;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
-import org.tigris.subversion.javahl.*;
-
-import java.util.List;
 
 /**
  * A command to retrieve a list of modules from a subversion repository.
@@ -35,7 +43,7 @@ import java.util.List;
  */
 public class SvnModulesCommand extends SvnCommand
 {
-    private List<String> modulesList;
+    private final List<String> modulesList;
     
     public SvnModulesCommand(SvnRepository repository, List<String> modulesList)
     {

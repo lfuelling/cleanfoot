@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2014,2016  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2010,2014,2016,2018  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,14 +21,18 @@
  */
 package bluej.pkgmgr.print;
 
+import bluej.Config;
+import bluej.editor.Editor;
 import bluej.editor.moe.PrintDialog.PrintChoices;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.pkgmgr.t4rget.ReadmeTarget;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.ReadmeTarget;
 import bluej.utility.Debug;
+import bluej.utility.DialogManager;
 import bluej.utility.javafx.FXRunnable;
 import javafx.print.PrinterJob;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -79,7 +83,13 @@ public class PackagePrintManager extends Thread
         {
             ReadmeTarget readmeTgt = pkg.getReadmeTarget();
             if (readmeTgt != null)
-                printActions.add(readmeTgt.getEditor().printTo(job, printChoices.printSize, printChoices.printLineNumbers, printChoices.printHighlighting));
+            {
+                if (readmeTgt.getEditor() != null)
+                {
+                    printActions.add(readmeTgt.getEditor().printTo(job, printChoices.printSize, 
+                            printChoices.printLineNumbers, printChoices.printHighlighting));
+                }
+            }
         }
     }
 

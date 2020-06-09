@@ -21,16 +21,14 @@
  */
 package bluej.editor.moe;
 
-import bluej.Config;
+import java.util.*;
+import java.util.Map.Entry;
+
+import javax.swing.text.Segment;
+
 import bluej.editor.moe.BlueJSyntaxView.ParagraphAttribute;
 import bluej.editor.moe.BlueJSyntaxView.ScopeInfo;
 import bluej.editor.moe.Token.TokenType;
-import bluej.parser.entity.EntityResolver;
-import bluej.parser.nodes.NodeTree;
-import bluej.parser.nodes.NodeTree.NodeAndPosition;
-import bluej.parser.nodes.ParsedCUNode;
-import bluej.parser.nodes.ParsedNode;
-import bluej.utility.Debug;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
 import com.google.common.collect.ImmutableSet;
@@ -41,10 +39,13 @@ import org.reactfx.Subscription;
 import org.reactfx.collection.LiveList;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.text.Segment;
-import java.util.*;
-import java.util.Map.Entry;
+import bluej.Config;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.nodes.NodeTree;
+import bluej.parser.nodes.NodeTree.NodeAndPosition;
+import bluej.parser.nodes.ParsedCUNode;
+import bluej.parser.nodes.ParsedNode;
+import bluej.utility.Debug;
 
 
 /**
@@ -234,8 +235,8 @@ public class MoeSyntaxDocument
      * that we get an unexpected exception. 
      */
     
-    private static int EDIT_INSERT = 0;
-    private static int EDIT_DELETE = 1;
+    private static final int EDIT_INSERT = 0;
+    private static final int EDIT_DELETE = 1;
 
     public void copyFrom(MoeSyntaxDocument from)
     {
@@ -344,7 +345,7 @@ public class MoeSyntaxDocument
         int length;
     }
     
-    private List<EditEvent> recentEdits = new LinkedList<EditEvent>();
+    private final List<EditEvent> recentEdits = new LinkedList<EditEvent>();
     
     private void recordEvent(MoeSyntaxEvent event)
     {
@@ -1063,13 +1064,13 @@ public class MoeSyntaxDocument
     }
 
     @OnThread(Tag.FXPlatform)
-    public static interface Element
+    public interface Element
     {
-        public Element getElement(int index);
-        public int getStartOffset();
-        public int getEndOffset();
-        public int getElementIndex(int offset);
-        public int getElementCount();
+        Element getElement(int index);
+        int getStartOffset();
+        int getEndOffset();
+        int getElementIndex(int offset);
+        int getElementCount();
     }
 
     public Element getDefaultRootElement()

@@ -21,24 +21,30 @@
  */
 package bluej.pkgmgr;
 
-import bluej.Boot;
-import bluej.Config;
-import bluej.utility.Debug;
-import bluej.utility.javafx.JavaFXUtil;
-import javafx.application.Platform;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+
+import bluej.utility.javafx.JavaFXUtil;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.Boot;
+import bluej.Config;
+import bluej.utility.Debug;
 
 /**
  * Dialog implementing version check functionality.
@@ -59,7 +65,7 @@ final public class VersionCheckDialog extends Dialog<Void>
 
     private String newVersion = null;
     private Thread versionThread = null;
-    private boolean isClosed = false;
+    private final boolean isClosed = false;
 
     /**
      * Create a new version check dialogue and make it visible.

@@ -26,16 +26,22 @@
 package bluej.stride.framedjava.frames;
 
 
+import javafx.util.Duration;
+
 import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.elements.CallElement;
 import bluej.stride.framedjava.slots.CallExpressionSlot;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.StructuredSlot.SplitInfo;
-import bluej.stride.generic.*;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameContentItem;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleLineFrame;
 import bluej.stride.slots.HeaderItem;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

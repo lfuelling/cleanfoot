@@ -21,6 +21,14 @@
  */
 package bluej.stride.slots;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.utility.Utility;
@@ -28,14 +36,6 @@ import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.HangingFlowPane;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Like SlotLabel, but makes each word a separate Label, to support wrapping in the flow pane.

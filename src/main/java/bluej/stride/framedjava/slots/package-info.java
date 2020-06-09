@@ -21,6 +21,6 @@
  */
 @OnThread(Tag.FX)
 package bluej.stride.framedjava.slots;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+

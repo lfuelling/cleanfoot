@@ -22,6 +22,7 @@
 package bluej.utility;
 
 import javafx.application.Platform;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -46,7 +47,7 @@ public abstract class FXWorker
         synchronized void clear() { thread = null; }
     }
 
-    private ThreadVar threadVar;
+    private final ThreadVar threadVar;
 
     /**
      * Start a thread that will call the <code>construct</code> method

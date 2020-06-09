@@ -23,6 +23,7 @@ package greenfoot.platforms.standalone;
 
 import greenfoot.ActorVisitor;
 import greenfoot.GreenfootImage;
+import greenfoot.core.ProjectProperties;
 import greenfoot.core.ReadOnlyProjectProperties;
 import greenfoot.platforms.ActorDelegate;
 
@@ -35,7 +36,7 @@ import greenfoot.platforms.ActorDelegate;
 public class ActorDelegateStandAlone
     implements ActorDelegate
 {
-    private static ActorDelegateStandAlone instance = new ActorDelegateStandAlone();
+    private static final ActorDelegateStandAlone instance = new ActorDelegateStandAlone();
     private ReadOnlyProjectProperties properties;
     
     /**

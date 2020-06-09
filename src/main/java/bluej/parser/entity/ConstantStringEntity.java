@@ -30,7 +30,7 @@ import bluej.debugger.gentype.JavaType;
  */
 public class ConstantStringEntity extends ValueEntity
 {
-    private String value;
+    private final String value;
     
     /**
      * Construct a constant string entity

@@ -21,15 +21,22 @@
  */
 package bluej;
 
+import java.awt.Dimension;
+import java.awt.Image;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.border.Border;
+import javax.swing.plaf.FontUIResource;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+
 import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
+
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import java.awt.*;
+import bluej.prefmgr.PrefMgr;
 
 /**
  * Some helper methods for setting visual details.

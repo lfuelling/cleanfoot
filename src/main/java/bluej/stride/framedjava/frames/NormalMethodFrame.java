@@ -25,13 +25,29 @@ import bluej.Config;
 import bluej.debugger.gentype.Reflective;
 import bluej.parser.AssistContent.CompletionKind;
 import bluej.parser.AssistContent.ParamInfo;
-import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.ast.ASTUtility;
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
-import bluej.stride.framedjava.elements.*;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.ParamFragment;
+import bluej.stride.framedjava.elements.ClassElement;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.elements.ConstructorElement;
+import bluej.stride.framedjava.elements.MethodProtoElement;
+import bluej.stride.framedjava.elements.NormalMethodElement;
 import bluej.stride.framedjava.slots.ExpressionCompletionCalculator;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
+import bluej.stride.generic.AssistContentThreadSafe;
+import bluej.stride.generic.ExtensionDescription;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameContentRow;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
 import bluej.stride.operations.CustomFrameOperation;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.operations.ToggleBooleanProperty;
@@ -68,9 +84,9 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     public static final String TOGGLE_FINAL_METHOD = "toggleFinalMethod";
 
     private final SlotLabel staticLabel;
-    private BooleanProperty staticModifier = new SimpleBooleanProperty(false);
+    private final BooleanProperty staticModifier = new SimpleBooleanProperty(false);
     private final SlotLabel finalLabel;
-    private BooleanProperty finalModifier = new SimpleBooleanProperty(false);
+    private final BooleanProperty finalModifier = new SimpleBooleanProperty(false);
     private final WrappableSlotLabel overrideLabel = new WrappableSlotLabel("") {
         @Override
         public void setView(View oldView, View newView, SharedTransition animate)
@@ -124,7 +140,7 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
         overrideLabel.addStyleClass("method-override-label");
         overrideLabel.setAlignment(HangingFlowPane.FlowAlignment.RIGHT);
         
-        getHeaderRow().bindContentsConcat(FXCollections.<ObservableList<? extends HeaderItem>>observableArrayList(
+        getHeaderRow().bindContentsConcat(FXCollections.observableArrayList(
                 FXCollections.observableArrayList(access),
                 JavaFXUtil.listBool(staticModifier, staticLabel),
                 JavaFXUtil.listBool(finalModifier, finalLabel),
@@ -208,7 +224,7 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
         public void withCalculatedSuggestionList(PosInSourceDoc pos, CodeElement codeEl,
                                                  SuggestionListListener listener, FXPlatformConsumer<SuggestionList> handler) {
             
-            ClassFrame classFrame = (ClassFrame) ASTUtility.getTopLevelElement(codeEl).getFrame();
+            ClassFrame classFrame = (ClassFrame)ASTUtility.getTopLevelElement(codeEl).getFrame();
             
             classFrame.withInheritedItems(Collections.singleton(CompletionKind.METHOD), inheritedMethodsByDeclarer ->
             {

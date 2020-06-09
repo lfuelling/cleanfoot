@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2005-2013,2014,2015,2016,2017,2018  Poul Henriksen and Michael Kolling
+ Copyright (C) 2005-2013,2014,2015,2016,2017,2018,2019  Poul Henriksen and Michael Kolling
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,21 +21,22 @@
  */
 package greenfoot.core;
 
-import bluej.runtime.ExecServer;
-import bluej.utility.Debug;
 import greenfoot.event.SimulationListener;
+import greenfoot.vmcomm.VMCommsSimulation;
 import greenfoot.platforms.ide.ActorDelegateIDE;
 import greenfoot.platforms.ide.WorldHandlerDelegateIDE;
 import greenfoot.sound.SoundFactory;
 import greenfoot.util.Version;
-import greenfoot.vmcomm.VMCommsSimulation;
+
+import java.awt.EventQueue;
+import java.lang.reflect.Field;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
+
+import bluej.runtime.ExecServer;
+import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.awt.*;
-import java.lang.reflect.Field;
 
 /**
  * The main class for greenfoot. This is a singleton (in the JVM). Since each
@@ -46,7 +47,7 @@ import java.lang.reflect.Field;
  */
 public class GreenfootMain extends Thread
 {
-    public static enum VersionInfo {
+    public enum VersionInfo {
         /** The project API version matches the greenfoot API version */
         VERSION_OK,
         /** The project API version was different, and has been updated */
@@ -148,7 +149,7 @@ public class GreenfootMain extends Thread
                             else if (e == SyncEvent.END_ACT_ROUND
                                     || e == SyncEvent.QUEUED_TASK_END)
                             {
-                                vmComms.userCodeStopped();
+                                vmComms.userCodeStopped(e == SyncEvent.QUEUED_TASK_END);
                             }
                             else if (e == SyncEvent.DELAY_LOOP_ENTERED)
                             {

@@ -21,19 +21,37 @@
  */
 package bluej.editor.stride;
 
-import bluej.stride.generic.*;
+import bluej.stride.generic.ExtensionDescription;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.stride.generic.InteractionManager;
 import bluej.stride.operations.AbstractOperation;
 import bluej.stride.operations.AbstractOperation.ItemLabel;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.slots.EditableSlot.MenuItems;
 import bluej.stride.slots.EditableSlot.SortedMenuItem;
 import bluej.stride.slots.EditableSlot.TopLevelMenu;
-import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.MultiListener;
+import bluej.utility.Utility;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -47,13 +65,6 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A class for keeping track of the current frame selection.  A frame selection is
@@ -381,7 +392,7 @@ public class FrameSelection
     @OnThread(Tag.FX)
     public void addChangeListener(FXPlatformRunnable listener)
     {
-        JavaFXUtil.runNowOrLater(() -> selection.addListener((ListChangeListener<Frame>) c -> listener.run()));
+        JavaFXUtil.runNowOrLater(() -> selection.addListener((ListChangeListener<Frame>)c -> listener.run()));
     }
 
     @OnThread(Tag.FXPlatform)
@@ -426,7 +437,7 @@ public class FrameSelection
 
             // TODO Refactor the Enable/Disable FrameOperations to make them more consistent and use them instead of next lines
             editor.beginRecordingState(cursor);
-            getCanHaveEnabledState(allDisabled ? true : false).forEach(t -> t.setFrameEnabled(allDisabled ? true : false));
+            getCanHaveEnabledState(allDisabled).forEach(t -> t.setFrameEnabled(allDisabled));
             editor.endRecordingState(cursor);
 
             return true;

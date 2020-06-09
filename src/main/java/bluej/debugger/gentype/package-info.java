@@ -4,6 +4,5 @@
 @OnThread(Tag.Any)
 package bluej.debugger.gentype;
 
-
 import threadchecker.OnThread;
 import threadchecker.Tag;

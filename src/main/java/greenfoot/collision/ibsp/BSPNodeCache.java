@@ -31,7 +31,7 @@ public class BSPNodeCache
 {
     private static final int CACHE_SIZE = 1000;
     
-    private static BSPNode[] cache = new BSPNode[CACHE_SIZE];
+    private static final BSPNode [] cache = new BSPNode[CACHE_SIZE];
     private static int tail = 0;
     private static int size = 0;
     

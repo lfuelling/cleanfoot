@@ -23,6 +23,7 @@ package bluej.stride.framedjava.ast;
 
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.LocatableElement.LocationMap;
+import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.DirectSlotError;
 import bluej.stride.generic.InteractionManager;
 import threadchecker.OnThread;
@@ -30,6 +31,7 @@ import threadchecker.Tag;
 
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 /**
  * Created by neil on 20/02/2015.

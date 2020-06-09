@@ -21,9 +21,9 @@
  */
 package bluej.utility.javafx.binding;
 
-import javafx.collections.ObservableList;
-
 import java.util.stream.Stream;
+
+import javafx.collections.ObservableList;
 
 /**
  * Binds a destination list to the concatenation of an observable list of observable lists.

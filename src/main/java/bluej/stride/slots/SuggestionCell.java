@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,9 +21,6 @@
  */
 package bluej.stride.slots;
 
-import bluej.utility.javafx.FXPlatformConsumer;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ScalableHeightLabel;
 import javafx.animation.FadeTransition;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.value.ChangeListener;
@@ -35,6 +32,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.util.Duration;
 
+import bluej.utility.javafx.FXPlatformConsumer;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.ScalableHeightLabel;
+
 class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> implements ChangeListener<Object>
 {
     private final Label special;
@@ -44,8 +45,6 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
     private final Label next; // next char to input
     private final Label suffix;
     private final Label fixedPostSuffix;
-    private final Label buttonHint;
-    private boolean showingHint;
     private final BorderPane pane;
     private final HBox hbox;
 
@@ -75,12 +74,6 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         suffix.setMinWidth(0.0);
         fixedPostSuffix.setMinWidth(0.0);
         
-        this.buttonHint = new ScalableHeightLabel("\u21B5", false);
-        JavaFXUtil.addStyleClass(buttonHint, "suggestion-button-hint");
-        buttonHint.setMinWidth(Region.USE_PREF_SIZE);
-        buttonHint.setOpacity(0);
-        showingHint = false;
-
         special.setMaxWidth(9999.0);
         special.setText("Related:");
         JavaFXUtil.addStyleClass(special, "suggestion-similar-heading");
@@ -93,7 +86,6 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         // and hbox will shrink if needed (shrinking suffix)
         pane = new BorderPane();
         pane.setCenter(hbox);
-        pane.setRight(buttonHint);
         JavaFXUtil.addStyleClass(pane, "suggestion");
 
         pane.setOnMouseClicked(e -> clickListener.accept(itemProperty().get()));
@@ -131,7 +123,6 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         else
         {
             pane.setCenter(hbox);
-            pane.setRight(buttonHint);
         }
 
         if (item != null && item.index != -1)
@@ -163,15 +154,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         JavaFXUtil.setPseudoclass("bj-suggestion-similar", !direct, pane);
 
         JavaFXUtil.setPseudoclass("bj-suggestion-highlight", highlighted, pane);
-        if (canTab)
-        {
-            setHintShowing(true, true);
-        }
-        else
-        {
-            setHintShowing(false, true);
-        }
-
+        
         prefix.setText(text.substring(0, at));
         int end = Math.min(at + len, text.length());
         matching.setText(text.substring(at, end));
@@ -194,24 +177,5 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
     public void changed(ObservableValue<?> observable, Object oldValue, Object newValue)
     {
         update(itemProperty().get());
-    }
-
-    private void setHintShowing(boolean shouldShow, boolean immediate)
-    {
-        if (showingHint != shouldShow)
-        {
-            showingHint = shouldShow;
-            double targetOpacity = shouldShow ? 1.0 : 0.0;
-            if (immediate)
-            {
-                buttonHint.setOpacity(targetOpacity);
-            }
-            else
-            {
-                FadeTransition ft = new FadeTransition(Duration.millis(200), buttonHint);
-                ft.setToValue(targetOpacity);
-                ft.play();
-            }
-        }
     }
 }

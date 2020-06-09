@@ -23,7 +23,9 @@ package greenfoot.core;
 
 import greenfoot.util.GraphicsUtilities;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
 
 /**
  * Representation for text labels appearing on the world.

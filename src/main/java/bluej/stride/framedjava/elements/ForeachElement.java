@@ -21,14 +21,6 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.ForeachFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,6 +28,22 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.ast.JavaContainerDebugHandler;
+import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.ForeachFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
 
 public class ForeachElement extends ContainerCodeElement
   implements JavaSingleLineDebugHandler, JavaContainerDebugHandler
@@ -47,7 +55,7 @@ public class ForeachElement extends ContainerCodeElement
     private final List<CodeElement> contents;
     private ForeachFrame frame;
 
-    public ForeachElement(ForeachFrame frame, TypeSlotFragment type, NameDefSlotFragment var, FilledExpressionSlotFragment collection, List<CodeElement> contents,
+    public ForeachElement(ForeachFrame frame, TypeSlotFragment type, NameDefSlotFragment var, FilledExpressionSlotFragment collection, List<CodeElement> contents, 
             boolean enabled)
     {
         this.frame = frame;
@@ -156,8 +164,8 @@ public class ForeachElement extends ContainerCodeElement
     }
     
     @Override
-    public List<CodeElement.LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
+    public List<LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
     {
-        return Collections.singletonList(new CodeElement.LocalParamInfo(type.getContent(), var.getContent(), false, this));
+        return Collections.singletonList(new LocalParamInfo(type.getContent(), var.getContent(), false, this));
     }
 }

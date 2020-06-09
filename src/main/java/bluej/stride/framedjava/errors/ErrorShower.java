@@ -21,6 +21,9 @@
  */
 package bluej.stride.framedjava.errors;
 
+import java.util.stream.Stream;
+
+import bluej.stride.framedjava.ast.JavaFragment;
 import javafx.scene.Node;
 
 /**
@@ -30,7 +33,7 @@ import javafx.scene.Node;
  */
 public interface ErrorShower 
 {
-    public void focusAndPositionAtError(CodeError err);
+    void focusAndPositionAtError(CodeError err);
 
-    public Node getRelevantNodeForError(CodeError err);
+    Node getRelevantNodeForError(CodeError err);
 }

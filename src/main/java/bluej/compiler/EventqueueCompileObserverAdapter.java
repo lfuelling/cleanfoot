@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutionException;
  */
 final public class EventqueueCompileObserverAdapter implements CompileObserver
 {
-    private FXCompileObserver link;
+    private final FXCompileObserver link;
 
     /**
      * Constructor for EventqueueCompileObserver. The link parameter is a compiler

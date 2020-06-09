@@ -1,13 +1,13 @@
 package bluej.editor.stride;
 
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.List;
 import javafx.css.CssMetaData;
 import javafx.css.SimpleStyleableObjectProperty;
 import javafx.css.Styleable;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 
-import java.util.List;
+import bluej.utility.javafx.JavaFXUtil;
 
 /**
  * Created by neil on 29/06/2016.

@@ -22,6 +22,7 @@
 package bluej.stride.framedjava.ast;
 
 import bluej.stride.framedjava.elements.LocatableElement;
+import nu.xom.Attribute;
 import nu.xom.Element;
 
 public class ThrowsTypeFragment

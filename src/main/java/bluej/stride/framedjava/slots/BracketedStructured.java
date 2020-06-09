@@ -21,26 +21,26 @@
  */
 package bluej.stride.framedjava.slots;
 
-import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
-import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
-import bluej.stride.generic.Frame.View;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
-import bluej.utility.javafx.HangingFlowPane;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
-import bluej.utility.javafx.binding.ConcatListBinding;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
+import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
+import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.Frame.View;
+import bluej.utility.Utility;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
+import bluej.utility.javafx.binding.ConcatListBinding;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * A bracketed subexpression in an expression slot.  This item will have matching

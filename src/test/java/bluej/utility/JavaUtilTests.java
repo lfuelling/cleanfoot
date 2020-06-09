@@ -91,7 +91,7 @@ public class JavaUtilTests extends TestCase
         
         Class<? extends JavaUtilTests> thisClass = getClass();
         try {
-            sampleMeth = thisClass.getMethod("sampleMethod", new Class [] {int.class, int.class});
+            sampleMeth = thisClass.getMethod("sampleMethod", int.class, int.class);
         }
         catch (NoSuchMethodException nsme) {
             fail();
@@ -104,7 +104,7 @@ public class JavaUtilTests extends TestCase
             // test a varargs method
             Class<?> clazz = Class.class;
             try {
-                sampleMeth = clazz.getMethod("getConstructor", new Class [] {Class [].class});
+                sampleMeth = clazz.getMethod("getConstructor", Class [].class);
             }
             catch (NoSuchMethodException nsme) {
                 fail();
@@ -115,7 +115,7 @@ public class JavaUtilTests extends TestCase
         }
 
         try {
-            sampleMeth = thisClass.getMethod("sampleMethod2", new Class [] {String[].class});
+            sampleMeth = thisClass.getMethod("sampleMethod2", String[].class);
         }
         catch (NoSuchMethodException nsme) {
             fail();

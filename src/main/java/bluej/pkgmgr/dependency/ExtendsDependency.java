@@ -21,10 +21,9 @@
  */
 package bluej.pkgmgr.dependency;
 
-import bluej.extensions.BDependency;
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.DependentTarget;
+import bluej.pkgmgr.target.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -68,7 +67,7 @@ public class ExtendsDependency extends Dependency
     
     @Override
     @OnThread(Tag.Any)
-    public BDependency.Type getType()
+    public Type getType()
     {
         return Type.EXTENDS;
     }

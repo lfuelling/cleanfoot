@@ -21,10 +21,8 @@
  */
 package bluej.extensions;
 
-import bluej.pkgmgr.PkgMgrFrame;
-import com.sun.jdi.ArrayReference;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.Value;
+import bluej.pkgmgr.*;
+import com.sun.jdi.*;
 
 /**
  * A wrapper for an array object in BlueJ.

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2018 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,13 +21,27 @@
  */
 package bluej.stride.slots;
 
-import bluej.Config;
-import bluej.prefmgr.PrefMgr;
-import bluej.utility.Utility;
-import bluej.utility.javafx.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import bluej.utility.Debug;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringExpression;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.CssMetaData;
@@ -51,17 +65,17 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
+
+import bluej.prefmgr.PrefMgr;
+import bluej.utility.javafx.FXPlatformConsumer;
+import bluej.utility.javafx.FXPlatformRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import bluej.Config;
+import bluej.utility.Utility;
+import bluej.utility.javafx.FXSupplier;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.ScalableHeightLabel;
 
 
 /**
@@ -187,10 +201,10 @@ public class SuggestionList
 
     private boolean expectingToLoseFocus = false;
 
-    private ObjectProperty<SuggestionShown> shownState = new SimpleObjectProperty<>(SuggestionShown.COMMON);
+    private final ObjectProperty<SuggestionShown> shownState = new SimpleObjectProperty<>(SuggestionShown.COMMON);
     
     private FXPlatformRunnable cancelShowDocsTask;
-    private Pane docPane;
+    private final Pane docPane;
 
     private boolean hiding = false;
 
@@ -247,9 +261,9 @@ public class SuggestionList
     }
 
     // Whether the suggestion is common (shown from first trigger) or rare (shown only on second trigger)
-    public static enum SuggestionShown
+    public enum SuggestionShown
     {
-        COMMON, RARE;
+        COMMON, RARE
     }
 
     // package-visible; needs to be seen by SuggestionCell
@@ -466,7 +480,7 @@ public class SuggestionList
         listAndMoreAndTransPane.setPickOnBounds(false);
         listBox.setMaxHeight(300.0);
         // This is a heuristic: double the font size for each item, but it seems to work well:
-        listBox.setPrefHeight(choices.isEmpty() ? 100.0 : 2 * PrefMgr.strideFontSizeProperty().get() * choices.size());
+        listBox.setPrefHeight(choices.isEmpty() ? 100.0 : 2 * listParent.getFontSize() * choices.size());
         listAndDocBorderPane.setCenter(listAndMoreAndTransPane);
         BorderPane.setMargin(listAndMoreAndTransPane, new Insets(0, 1, 0, 0));
         listAndDocBorderPane.setRight(docPane);
@@ -535,7 +549,7 @@ public class SuggestionList
             for (int i = 0; i < choices.size(); i++)
             {
                 SuggestionDetails choice = choices.get(i);
-                SuggestionListItem sugg = new SuggestionListItem(i, targetType != null && choice.type != null ? targetType.equals(choice.type) : false, j == 0);
+                SuggestionListItem sugg = new SuggestionListItem(i, (targetType != null && choice.type != null) && targetType.equals(choice.type), j == 0);
                 doubleSuggestions.add(sugg);
             }
         }
@@ -991,7 +1005,7 @@ public class SuggestionList
         return choices.size() == 0 ? -1 : highlighted % choices.size();
     }
     
-    public static interface SuggestionListListener
+    public interface SuggestionListListener
     {
         /**
          * An item has been selected by clicking on it.
@@ -1031,14 +1045,14 @@ public class SuggestionList
 
         // Called when focus was lost and we are hiding, but not because choiceClicked() or keyTyped returned DISMISS
         @OnThread(Tag.FXPlatform)
-        default void suggestionListFocusStolen(int highlighted) { };
+        default void suggestionListFocusStolen(int highlighted) { }
 
         @OnThread(Tag.FXPlatform)
-        default void hidden() { };
+        default void hidden() { }
 
-        public static enum Response
+        enum Response
         {
-            DISMISS, CONTINUE;
+            DISMISS, CONTINUE
         }
     }
 
@@ -1124,18 +1138,22 @@ public class SuggestionList
     }
 
     @OnThread(Tag.FXPlatform)
-    public static interface SuggestionListParent
+    public interface SuggestionListParent
     {
         /**
          * Gets font size as a complete piece of CSS (including any "-fx-font-size:" etc)
          * ready to set as the inline style.
          */
-        @OnThread(Tag.FX)
-        public StringExpression getFontCSS();
+        @OnThread(Tag.FX) StringExpression getFontCSS();
 
+        /**
+         * Gets font size as a double, used for size calculation
+         */
+        double getFontSize();
+        
         /**
          * Add any necessary listeners to a code completion window
          */
-        public void setupSuggestionWindow(Stage window);
+        void setupSuggestionWindow(Stage window);
     }
 }

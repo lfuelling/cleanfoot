@@ -21,14 +21,15 @@
  */
 package greenfoot.sound;
 
-import bluej.utility.Debug;
+import java.io.IOException;
+import java.net.URL;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
-import java.net.URL;
+
+import bluej.utility.Debug;
 
 /**
  * Wrapper classer for a AudioInputStream. It just delegates all methods
@@ -39,7 +40,7 @@ import java.net.URL;
 public class JavaAudioInputStream implements GreenfootAudioInputStream
 {
     private AudioInputStream stream;
-    private URL url;
+    private final URL url;
     private boolean readingHasStarted = false;
     private boolean open;
 

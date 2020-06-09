@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,37 +22,57 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.debugger.gentype.*;
-import bluej.editor.moe.MoeSyntaxDocument;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import bluej.debugger.gentype.ConstructorReflective;
+import bluej.editor.moe.ScopeColors;
 import bluej.parser.AssistContent.CompletionKind;
 import bluej.parser.AssistContent.ParamInfo;
-import bluej.parser.CodeSuggestions;
-import bluej.parser.entity.EntityResolver;
 import bluej.parser.entity.PackageResolver;
-import bluej.parser.entity.ParsedReflective;
-import bluej.parser.nodes.JavaParentNode;
-import bluej.parser.nodes.ParsedNode;
-import bluej.parser.nodes.ParsedTypeNode;
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.ast.Parser;
+import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.ErrorShower;
 import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.frames.ClassFrame;
-import bluej.stride.framedjava.frames.ConstructorFrame;
-import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.Frame.ShowReason;
 import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
 import nu.xom.Attribute;
 import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
+import bluej.editor.moe.MoeSyntaxDocument;
+import bluej.parser.ExpressionTypeInfo;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.ParsedReflective;
+import bluej.parser.nodes.JavaParentNode;
+import bluej.parser.nodes.ParsedNode;
+import bluej.parser.nodes.ParsedTypeNode;
+import bluej.stride.framedjava.ast.FrameFragment;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.frames.ClassFrame;
+import bluej.stride.framedjava.frames.ConstructorFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.utility.Utility;
 
 /**
  * A code element corresponding to a top-level class.
@@ -151,7 +171,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
      * Creates a class element from the given XML element, used when loading code
      * from disk or from the clipboard.
      */
-    public ClassElement(Element el, EntityResolver projectResolver)
+    public ClassElement(Element el, EntityResolver projectResolver, String packageName)
     {
         Attribute abstractAttribute = el.getAttribute("abstract");
         abstractModifier = (abstractAttribute == null) ? false : Boolean.valueOf(abstractAttribute.getValue());
@@ -160,7 +180,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         final String extendsAttribute = el.getAttributeValue("extends");
         extendsName = (extendsAttribute != null) ? new TypeSlotFragment(extendsAttribute, el.getAttributeValue("extends-java")) : null;
 
-        packageName = (projectResolver instanceof PackageResolver) ? ((PackageResolver)projectResolver).getPkg() : "";
+        this.packageName = packageName;
 
         Element javadocEL = el.getFirstChildElement("javadoc");
         if (javadocEL != null) {
@@ -175,7 +195,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         constructors = TopLevelCodeElement.fillChildrenElements(this, el, "constructors");
         methods = TopLevelCodeElement.fillChildrenElements(this, el, "methods");
        
-        enable = new Boolean(el.getAttributeValue("enable"));
+        enable = Boolean.valueOf(el.getAttributeValue("enable"));
         this.projectResolver = projectResolver;
         this.openingCurly = new FrameFragment(null, this, "{");
         this.closingCurly = new FrameFragment(null, this, "}");
@@ -222,7 +242,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         JavaSource java = new JavaSource(null, header);
         java.prependJavadoc(documentation.getJavaCode());
 
-        java.prependLine(Arrays.asList((JavaFragment) f(frame, "")), null);
+        java.prependLine(Arrays.asList(f(frame, "")), null);
         Utility.backwards(CodeElement.toJavaCodes(imports)).forEach(imp -> java.prepend(imp));
         java.prependLine(Collections.singletonList(f(frame, "import lang.stride.*;")), null);
 
@@ -233,11 +253,11 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         java.appendLine(Arrays.asList(openingCurly), null);
         fields.stream().filter(f -> f.isEnable()).forEach(f -> java.addIndented(f.toJavaSource()));
         constructors.stream().filter(c -> c.isEnable()).forEach(c -> {
-            java.appendLine(Arrays.asList((JavaFragment) f(frame, "")), null);
+            java.appendLine(Arrays.asList(f(frame, "")), null);
             java.addIndented(c.toJavaSource());
         });
         methods.stream().filter(m -> m.isEnable()).forEach(m -> {
-            java.appendLine(Arrays.asList((JavaFragment) f(frame, "")), null);
+            java.appendLine(Arrays.asList(f(frame, "")), null);
             java.addIndented(m.toJavaSource());
         });
 
@@ -371,7 +391,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
     
     @Override
     @OnThread(Tag.FXPlatform)
-    public CodeSuggestions getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing)
+    public ExpressionTypeInfo getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing)
     {
         // Must get document before getting position:
         MoeSyntaxDocument doc = getSourceDocument(completing);
@@ -598,7 +618,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
     {
         public final JavaSource java;
         public final IdentityHashMap<JavaFragment, Integer> fragmentPositions;
-        private String src;
+        private final String src;
         private MoeSyntaxDocument document;
 
         public DocAndPositions(String src, JavaSource java, IdentityHashMap<JavaFragment, Integer> fragmentPositions)

@@ -22,21 +22,22 @@
 package bluej.stride.generic;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import bluej.Config;
 import bluej.editor.stride.FrameCatalogue;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.framedjava.frames.StrideCategory;
 import bluej.stride.framedjava.frames.StrideDictionary;
-import bluej.stride.generic.FrameDictionary.Entry;
-import bluej.stride.operations.PasteFrameOperation;
-import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -44,13 +45,21 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.NumberExpressionBase;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -60,11 +69,19 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.generic.FrameDictionary.Entry;
+import bluej.stride.operations.PasteFrameOperation;
+import bluej.stride.slots.EditableSlot;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Between-block horizontal cursor placeholder/button
@@ -72,10 +89,10 @@ import java.util.stream.Collectors;
  */
 public class FrameCursor implements RecallableFocus
 {    
-    static final int FULL_HEIGHT = 5;
-    static final int HIDE_HEIGHT = 0; // To leave a click target there
-    private final int ERROR_COUNT_TRIGGER = 2;
-    private int consecutiveErrors = 0;
+    public static final int FULL_HEIGHT = 5;
+    public static final int HIDE_HEIGHT = 0; // To leave a click target there
+    final int ERROR_COUNT_TRIGGER = 2;
+    int consecutiveErrors = 0;
     private ContextMenu menu;
     private final FrameCanvas parentCanvas;
     
@@ -104,6 +121,13 @@ public class FrameCursor implements RecallableFocus
                     .collect(Collectors.toList());
 
             final boolean selection = !editor.getSelection().getSelected().isEmpty();
+            // Is it a request to expand/collapse?
+            if (false && (key == '+' || key == '-')) {
+                //List<Frame> targets = selection ? editor.getSelection().getSelected() : Collections.singletonList(getFrameAfter());
+                //targets.stream().filter(Frame::isCollapsible)
+                //    .forEach(t -> t.setCollapsed(key == '-')); // otherwise it's plus
+                return true;
+            }
 
             if (selection && editor.getSelection().executeKey(this, key))
                 return true;
@@ -224,7 +248,7 @@ public class FrameCursor implements RecallableFocus
         private static final Duration DEFAULT_DURATION = Duration.millis(100);
         // The shortest between cursor movements that we will not animate:
         public static final long ANIMATE_GAP = 800L;
-        private Set<NumberExpressionBase> shrinkingSpace = new HashSet<>();
+        private final Set<NumberExpressionBase> shrinkingSpace = new HashSet<>();
         private FrameCursor growing;
         // Note we must track shrink and grow separately because they usually
         // come in pairs, so we don't want the cursor losing focus on the shrink
@@ -451,14 +475,14 @@ public class FrameCursor implements RecallableFocus
                     editor.showUndoDeleteBanner(effort);
                     // We might get deleted during this code, so cache value of getParentCanvas:
                     FrameCanvas c = getParentCanvas();
-                    toDelete.forEach(c::removeBlock);
+                    toDelete.forEach(f -> c.removeBlock(f));
                 }
                 else
                 {
                     Debug.message("Warning: trying to delete selection from remote cursor");
                 }
                 editor.getSelection().clear();
-                Objects.requireNonNull(focusAfter).requestFocus();
+                focusAfter.requestFocus();
                 editor.endRecordingState(focusAfter);
                 editor.updateCatalog(focusAfter);
                 event.consume();
@@ -525,7 +549,7 @@ public class FrameCursor implements RecallableFocus
             }
             else if (event.getCode() == KeyCode.SPACE && event.isControlDown())
             {
-                keyTyped(editor, parentCanvas, ' ', true);
+                keyTyped(editor, parentCanvas, ' ', event.isControlDown());
             }
         });
     }

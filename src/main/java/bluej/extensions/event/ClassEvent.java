@@ -21,11 +21,11 @@
  */
 package bluej.extensions.event;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.extensions.BClass;
 import bluej.extensions.BPackage;
 import bluej.pkgmgr.Package;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * This class encapsulates events which occur on BlueJ classes.<p>
@@ -58,9 +58,9 @@ public class ClassEvent implements ExtensionEvent
     public static final int CHANGED_NAME = 1;
     public static final int REMOVED = 2;
     
-    private int eventId;
-    private Package bluejPackage;
-    private BClass bClass;
+    private final int eventId;
+    private final Package bluejPackage;
+    private final BClass bClass;
     private boolean isCompiled;
     private boolean hasError;
     private String oldName;

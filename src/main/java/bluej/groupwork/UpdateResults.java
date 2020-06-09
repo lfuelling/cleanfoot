@@ -39,12 +39,12 @@ public interface UpdateResults
     /**
      * Check whether a merge commit is needed to complete the merge.
      */
-    public boolean mergeCommitNeeded();
+    boolean mergeCommitNeeded();
     
     /**
      * Get a list of File objects that represents conflicts. 
      */
-    public List<File> getConflicts();
+    List<File> getConflicts();
     
     /**
      * Get the set of files which had binary conflicts. These are files which
@@ -52,7 +52,7 @@ public interface UpdateResults
      * be made about which version (local or repository) is to be retained; use
      * the overrideFiles() method to finalise this decision.
      */
-    public Set<File> getBinaryConflicts();
+    Set<File> getBinaryConflicts();
     
     /**
      * Once the initial update has finished and the binary conflicts are known,
@@ -63,7 +63,6 @@ public interface UpdateResults
      *               local version. (For any file not in the set, the local version
      *               is retained). 
      */
-    @OnThread(Tag.FXPlatform)
-    public void overrideFiles(Set<File> files);
+    @OnThread(Tag.FXPlatform) void overrideFiles(Set<File> files);
 
 }

@@ -21,11 +21,15 @@
  */
 package bluej.parser;
 
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
-
-import java.io.Reader;
-import java.util.*;
 
 /**
  * A parser which extracts certain information needed for BlueJ's unit test
@@ -47,7 +51,7 @@ public class UnitTestParser extends JavaParser
     private SourceLocation fixtureInsertLocation;
     private Map<String,SourceSpan> methodSpans = new HashMap<String,SourceSpan>();
     
-    private Stack<SourceLocation> fieldStarts = new Stack<SourceLocation>();
+    private final Stack<SourceLocation> fieldStarts = new Stack<SourceLocation>();
     
     public UnitTestParser(Reader r)
     {

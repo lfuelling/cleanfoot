@@ -41,7 +41,7 @@ public interface DependencyListener {
      *            A <code>DependencyEvent</code> object which describes the
      *            event.
      */
-    public void dependencyAdded(DependencyEvent event);
+    void dependencyAdded(DependencyEvent event);
 
     /**
      * A dependency was removed from the package.
@@ -50,7 +50,7 @@ public interface DependencyListener {
      *            A <code>DependencyEvent</code> object which describes the
      *            event.
      */
-    public void dependencyRemoved(DependencyEvent event);
+    void dependencyRemoved(DependencyEvent event);
 
     /**
      * <p>
@@ -69,5 +69,5 @@ public interface DependencyListener {
      *            A <code>DependencyEvent</code> object which describes the
      *            event.
      */
-    public void dependencyVisibilityChanged(DependencyEvent event);
+    void dependencyVisibilityChanged(DependencyEvent event);
 }

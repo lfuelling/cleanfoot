@@ -21,21 +21,22 @@
  */
 package bluej.stride.framedjava.frames;
 
-import bluej.Config;
-import bluej.debugger.DebuggerField;
-import bluej.pkgmgr.Package;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Window;
+
+import bluej.Config;
+import bluej.debugger.DebuggerField;
+import bluej.pkgmgr.Package;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 public class ReferenceDebugVarInfo implements DebugVarInfo
 {
-    private Package pkg;
-    private Window editorFrame;
-    private DebuggerField field;
+    private final Package pkg;
+    private final Window editorFrame;
+    private final DebuggerField field;
     
     @OnThread(Tag.Any)
     public ReferenceDebugVarInfo(Package pkg, Window editorFrame, DebuggerField field)

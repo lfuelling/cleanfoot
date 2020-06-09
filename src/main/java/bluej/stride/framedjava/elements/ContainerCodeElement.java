@@ -21,15 +21,15 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.generic.FrameCanvas;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.generic.FrameCanvas;
 
 public abstract class ContainerCodeElement extends CodeElement
 {

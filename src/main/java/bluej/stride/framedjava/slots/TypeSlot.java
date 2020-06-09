@@ -21,6 +21,16 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javafx.beans.binding.StringExpression;
+import javafx.scene.Node;
+
 import bluej.Config;
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
@@ -38,17 +48,8 @@ import bluej.utility.javafx.FXBiConsumer;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.FXSupplier;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.binding.StringExpression;
-import javafx.scene.Node;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by neil on 22/05/2016.
@@ -60,7 +61,7 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
     private final List<FXSupplier<Boolean>> backspaceListeners = new ArrayList<>();
     private final List<FXSupplier<Boolean>> deleteListeners = new ArrayList<>();
     
-    public static enum Role
+    public enum Role
     {
         /** Declaring arbitrary variable; can be any type */
         DECLARATION,
@@ -71,7 +72,7 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
         /** Must be an interface */
         INTERFACE,
         /** Throws or Catch; must be a throwable */
-        THROWS_CATCH;
+        THROWS_CATCH
     }
     
     public TypeSlot(InteractionManager editor, Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row, Role role, String stylePrefix)

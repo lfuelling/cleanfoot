@@ -33,21 +33,21 @@ public interface PublishListener extends EventListener
     /**
      * The upload completed successfully.
      */
-    public void uploadComplete(PublishEvent event);
+    void uploadComplete(PublishEvent event);
     
     /**
      * An error occurred. The upload will not complete.
      */
-    public void errorRecieved(PublishEvent event);
+    void errorRecieved(PublishEvent event);
     
     /**
      * Some upload progress has been made.
      */
-    public void progressMade(PublishEvent event);
+    void progressMade(PublishEvent event);
     
     /**
      * Proxy authentication details are required.
      * @return a 2-element array containing a username/password pair, or null if the user cancels.
      */
-    public String[] needProxyAuth();
+    String[] needProxyAuth();
 }

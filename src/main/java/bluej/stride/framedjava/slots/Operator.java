@@ -21,11 +21,8 @@
  */
 package bluej.stride.framedjava.slots;
 
-import bluej.stride.generic.Frame.View;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.HangingFlowPane;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import java.util.stream.Stream;
+
 import javafx.beans.binding.When;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -34,8 +31,11 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-
-import java.util.stream.Stream;
+import bluej.stride.generic.Frame.View;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 
 /**
  * An operator is a read-only operator label (e.g. +, *, >>, etc) in an
@@ -244,7 +244,7 @@ class Operator
         return JavaFXUtil.cloneLabel(l, editor.getFontCSS());
     }
 
-    public static enum Precedence
+    public enum Precedence
     {
         // DOT is like ULTRA; highest priority, but only used for dots
         // Similarly, COMMA and NEW are like ZERO; lowest priority, but only used for new/commas

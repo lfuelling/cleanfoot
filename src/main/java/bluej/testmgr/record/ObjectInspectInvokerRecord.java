@@ -34,7 +34,7 @@ import bluej.pkgmgr.PkgMgrFrame;
  */
 public class ObjectInspectInvokerRecord extends InvokerRecord
 {
-    private String name;
+    private final String name;
     private InvokerRecord parentIr;
 
     /**

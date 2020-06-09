@@ -22,10 +22,10 @@
 package greenfoot.export.mygame;
 
 import bluej.utility.FXWorker;
+import java.io.IOException;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.IOException;
 
 /**
  * Abstract class that can be used to check (asynchronously) whether a scenario already exists on the

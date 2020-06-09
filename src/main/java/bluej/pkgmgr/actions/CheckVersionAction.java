@@ -21,6 +21,8 @@
  */
 package bluej.pkgmgr.actions;
 
+import javafx.application.Platform;
+
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.VersionCheckDialog;
 

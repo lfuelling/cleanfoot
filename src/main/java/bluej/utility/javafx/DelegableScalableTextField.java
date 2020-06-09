@@ -21,6 +21,7 @@
  */
 package bluej.utility.javafx;
 
+import java.util.List;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -34,10 +35,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Region;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 public class DelegableScalableTextField<DELEGATE_IDENT> extends ScalableHeightTextField
 {

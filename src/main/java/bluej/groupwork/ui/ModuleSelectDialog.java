@@ -21,6 +21,21 @@
  */
 package bluej.groupwork.ui;
 
+import bluej.utility.javafx.JavaFXUtil;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.groupwork.Repository;
 import bluej.groupwork.TeamUtils;
@@ -30,15 +45,7 @@ import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.FXPlatformSupplier;
-import bluej.utility.javafx.JavaFXUtil;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.*;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -51,7 +58,7 @@ import threadchecker.Tag;
 @OnThread(Tag.FXPlatform)
 public class ModuleSelectDialog extends FXCustomizedDialog<String>
 {
-    private Repository repository;
+    private final Repository repository;
     private ModuleListerWorker worker;
 
     private final ActivityIndicator progressBar = new ActivityIndicator();
@@ -164,7 +171,7 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
     {
         private TeamworkCommand command;
         private TeamworkCommandResult result;
-        private ObservableList<String> modules;
+        private final ObservableList<String> modules;
 
         public ModuleListerWorker()
         {

@@ -50,7 +50,7 @@ public class ExpressionInformation
     // if expression is a call of an instance method, this is the type of the instance.
     private GenTypeClass instanceType;
     
-    private static final Comment emptyComment = new Comment();;
+    private static final Comment emptyComment = new Comment();
 
     /**
      * Generates the expression information from a method view. The actual

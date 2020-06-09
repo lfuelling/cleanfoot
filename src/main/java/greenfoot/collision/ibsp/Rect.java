@@ -154,9 +154,6 @@ final public class Rect
         }         
         if (otherBounds.y >= getTop()) {
             return false;
-        } else if (y >= otherBounds.getTop()) {
-            return false;
-        }
-        return true;
+        } else return y < otherBounds.getTop();
     }
 }

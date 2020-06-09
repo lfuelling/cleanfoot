@@ -35,9 +35,9 @@ public interface SlotParent<T> extends FocusParent<T>
      * @return True if we have focused into another slot, or deleted this slot, or somehow it is invalid to retain
      * focus in the src slot
      */
-    public boolean backspaceAtStart(T src);
+    boolean backspaceAtStart(T src);
 
-    public boolean deleteAtEnd(T src);
+    boolean deleteAtEnd(T src);
 
-    public void escape(T src);
+    void escape(T src);
 }

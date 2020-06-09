@@ -21,8 +21,11 @@
  */
 package bluej.utility;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 /**
  * An improved Box class. It allows specifying a default alignment for
@@ -32,8 +35,8 @@ import java.awt.*;
  */
 public class DBox extends JPanel
 {
-    private float defaultAlignment;
-    private int axis;
+    private final float defaultAlignment;
+    private final int axis;
     
     private boolean xAxisBounded;
     private boolean yAxisBounded;

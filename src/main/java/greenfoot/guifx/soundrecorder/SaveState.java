@@ -25,6 +25,8 @@ import bluej.Config;
 import bluej.utility.DialogManager;
 import bluej.utility.javafx.JavaFXUtil;
 import greenfoot.sound.SoundRecorder;
+
+import java.io.File;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -34,8 +36,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 
 /**

@@ -21,9 +21,12 @@
  */
 package bluej.stride.generic;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+
 import bluej.utility.javafx.BetterVBox;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -37,16 +40,22 @@ import javafx.css.Styleable;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
 import javafx.scene.Node;
-import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 
 // Package-visible
 // A VBox that supports a -bj-left-margin CSS property
@@ -145,7 +154,7 @@ class CanvasVBox extends BetterVBox
     public static List <CssMetaData <? extends Styleable, ? > > getClassCssMetaData() { return cssMetaDataList; }
     @Override public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() { return getClassCssMetaData(); }
 
-    private DoubleProperty animateExtraSpace = new SimpleDoubleProperty(0.0);
+    private final DoubleProperty animateExtraSpace = new SimpleDoubleProperty(0.0);
     // This one is only used by imports canvas at the moment, to animate left border:
     private final DoubleProperty leftMarginScale = new SimpleDoubleProperty(1.0);
     

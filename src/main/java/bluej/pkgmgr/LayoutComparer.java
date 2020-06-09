@@ -21,12 +21,12 @@
  */
 package bluej.pkgmgr;
 
-import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.DependentTarget;
+import java.util.Comparator;
+
+import bluej.pkgmgr.dependency.*;
+import bluej.pkgmgr.target.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Comparator;
 
 /**
  * An ordering on targets to make layout nicer (reduce line intersections, etc.). This

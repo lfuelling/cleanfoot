@@ -21,7 +21,11 @@
  */
 package bluej.debugger.jdi;
 
-import com.sun.jdi.*;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
+import com.sun.jdi.LocalVariable;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 
 /*
  * Jdi Utilities, java 1.5 version.

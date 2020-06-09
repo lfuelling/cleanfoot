@@ -21,13 +21,14 @@
  */
 package bluej.stride.framedjava.errors;
 
-import bluej.stride.framedjava.ast.StringSlotFragment;
-import bluej.utility.javafx.FXRunnable;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.Collections;
 import java.util.List;
+
+import bluej.stride.framedjava.ast.StringSlotFragment;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.utility.javafx.FXRunnable;
 
 /**
  * An error which indicates an extra semi-colon at the end of a slot.

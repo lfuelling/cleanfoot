@@ -35,7 +35,7 @@ import java.util.*;
  */
 public final class BSPNode
 {
-    private Map<Actor, ActorNode> actors;
+    private final Map<Actor, ActorNode> actors;
     
     private BSPNode parent;
     private Rect area;

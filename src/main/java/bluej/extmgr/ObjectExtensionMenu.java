@@ -21,14 +21,14 @@
  */
 package bluej.extmgr;
 
+import javax.swing.JMenuItem;
+
 import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.extensions.BObject;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
 
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Object
@@ -38,7 +38,7 @@ import javax.swing.*;
  */
 public class ObjectExtensionMenu implements ExtensionMenu
 {
-    private ObjectWrapper objectWrapper;
+    private final ObjectWrapper objectWrapper;
 
     /**
      * Constructor. Creates a new {@link ObjectExtensionMenu}.

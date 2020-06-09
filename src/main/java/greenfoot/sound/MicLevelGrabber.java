@@ -21,7 +21,11 @@
  */
 package greenfoot.sound;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.TargetDataLine;
 
 /**
  * Gets the overall level of the default microphone plugged into the system.
@@ -48,7 +52,7 @@ public class MicLevelGrabber
                 line.open();
                 line.start();
                 int bufferSize = (int) (format.getSampleRate() / 20) * format.getFrameSize();
-                byte buffer[] = new byte[bufferSize];
+                byte[] buffer = new byte[bufferSize];
                 int bytesRead = line.read(buffer, 0, bufferSize);
                 line.stop();
                 line.close();

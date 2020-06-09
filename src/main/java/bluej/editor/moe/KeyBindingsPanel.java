@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2015,2016  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2015,2016,2019  Michael Kolling and John Rosenberg 
 
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -32,12 +32,22 @@ import bluej.utility.javafx.FXPlatformSupplier;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.animation.RotateTransition;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination.ModifierValue;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Window;
@@ -82,10 +92,10 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     private final ListView<KeyCodeCombination> keyList;
     private final Text helpLabel;
 
-    private MoeActions actions;     // The Moe action manager
+    private final MoeActions actions;     // The Moe action manager
 
     private Properties help;
-    private List<ActionInfo> functions;     // all user functions
+    private final List<ActionInfo> functions;     // all user functions
     private static Label errorLabel;
 
     private static class ActionInfo
@@ -280,6 +290,10 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     private void handleAddKey()
     {
         Optional<KeyCodeCombination> newKey = new KeyCaptureDialog().showAndWait();
+        if (newKey.equals(Optional.of(ButtonType.CANCEL)))
+        {
+            return; 
+        }
         if (newKey.isPresent())
         {
             String action = functionList.getSelectionModel().getSelectedItem();

@@ -25,33 +25,41 @@ import bluej.Config;
 import bluej.debugger.gentype.ConstructorReflective;
 import bluej.debugger.gentype.Reflective;
 import bluej.pkgmgr.Project;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import bluej.utility.Utility;
+import bluej.pkgmgr.target.ClassTarget;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.Utility;
+
 import greenfoot.export.Exporter;
-import greenfoot.export.ScenarioSaver;
+import static greenfoot.export.Exporter.ExportFunction;
+
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
-import javafx.application.Platform;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
+import greenfoot.export.ScenarioSaver;
 
-import javax.swing.*;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static greenfoot.export.Exporter.ExportFunction;
+import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Window;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import javax.swing.*;
 
 /**
  * A dialog allowing the user to export a scenario in a variety of ways.

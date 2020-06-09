@@ -719,7 +719,7 @@ public class NodeTree<T extends RBTreeNode<T>>
      */
     public static class NodeAndPosition<T extends RBTreeNode<T>>
     {
-        private T parsedNode;
+        private final T parsedNode;
         private int position;
         private int size;
 

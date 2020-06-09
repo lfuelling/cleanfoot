@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class GenTypeCapture extends GenTypeTpar
 {
-    private GenTypeWildcard wildcard;
+    private final GenTypeWildcard wildcard;
     
     public GenTypeCapture(GenTypeWildcard wildcard)
     {

@@ -21,11 +21,11 @@
  */
 package bluej.stride.framedjava.convert;
 
-import bluej.stride.framedjava.elements.CodeElement;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
+import bluej.stride.framedjava.elements.CodeElement;
 
 /**
  * A class for keeping track of the try/catch finally being built up.

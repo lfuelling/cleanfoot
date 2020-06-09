@@ -21,10 +21,9 @@
  */
 package bluej.utility.filefilter;
 
-import bluej.pkgmgr.Package;
+import java.io.*;
 
-import java.io.File;
-import java.io.FileFilter;
+import bluej.pkgmgr.Package;
 
 /**
  * A FileFilter that only accepts BlueJ package directories.

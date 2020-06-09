@@ -21,13 +21,12 @@
  */
 package bluej.classmgr;
 
-import bluej.Config;
-import bluej.utility.Debug;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
+
+import bluej.Config;
+import bluej.utility.Debug;
 
 /**
  * Class to maintain a single file/directory location in a classpath

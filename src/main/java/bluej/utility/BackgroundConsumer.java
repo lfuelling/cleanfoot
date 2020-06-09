@@ -9,5 +9,5 @@ import threadchecker.Tag;
 @OnThread(Tag.Worker)
 public interface BackgroundConsumer<T>
 {
-    public void accept(T t);
+    void accept(T t);
 }

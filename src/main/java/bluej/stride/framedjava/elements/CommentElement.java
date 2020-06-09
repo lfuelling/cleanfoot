@@ -21,17 +21,17 @@
  */
 package bluej.stride.framedjava.elements;
 
+import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.stride.framedjava.ast.JavaSource;
 import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.frames.CommentFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.stream.Stream;
 
 public class CommentElement extends CodeElement
 {

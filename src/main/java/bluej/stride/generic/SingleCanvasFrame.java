@@ -22,10 +22,8 @@
 package bluej.stride.generic;
 
 
-import bluej.stride.framedjava.frames.StrideDictionary;
-import bluej.utility.javafx.FXConsumer;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.binding.DoubleExpression;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -33,11 +31,13 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.paint.Color;
+
+import bluej.stride.framedjava.frames.StrideDictionary;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A statement block with a canvas underneath for embedding additional blocks - used for if statements, loops, etc.
@@ -47,7 +47,7 @@ public abstract class SingleCanvasFrame extends Frame implements CanvasParent
 {
     protected FrameCanvas canvas;
     
-    private Sidebar sidebar;
+    private final Sidebar sidebar;
     
     private boolean collapsible = false; 
     private boolean collapsed = false;

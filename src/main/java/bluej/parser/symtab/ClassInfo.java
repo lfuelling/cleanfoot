@@ -21,10 +21,10 @@
  */
 package bluej.parser.symtab;
 
+import java.util.*;
+
 import bluej.utility.JavaUtils;
 import bluej.utility.SortedProperties;
-
-import java.util.*;
 
 /**
  * Information about a class found in a source file. The information is
@@ -54,12 +54,12 @@ public final class ClassInfo
     private String name;
     private String superclass;
 
-    private List<String> implemented = new ArrayList<String>();
-    private List<String> imported = new ArrayList<String>();
-    private List<String> used = new ArrayList<String>();
-    private List<SavedComment> comments = new LinkedList<SavedComment>();
+    private final List<String> implemented = new ArrayList<String>();
+    private final List<String> imported = new ArrayList<String>();
+    private final List<String> used = new ArrayList<String>();
+    private final List<SavedComment> comments = new LinkedList<SavedComment>();
     
-    private List<String> typeParameterTexts = new ArrayList<String>();
+    private final List<String> typeParameterTexts = new ArrayList<String>();
     private Selection typeParametersSelection;
     private Selection extendsReplaceSelection;
 
@@ -132,9 +132,7 @@ public final class ClassInfo
         }
 
         superclass = name;
-        if(used.contains(name)) {
-            used.remove(name);
-        }
+        used.remove(name);
 
         for (int i = 0; i < unitTestClasses.length; i++) {
             if(name.equals(unitTestClasses[i])) {
@@ -396,7 +394,7 @@ public final class ClassInfo
      * @param pkgSemi
      */
     public void setPackageSelections(Selection pkgStatement, Selection pkgName, String pkgNameText,
-                                     Selection pkgSemi)
+                                        Selection pkgSemi)
     {
         packageStatementSelection = pkgStatement;
         packageNameSelection = pkgName;

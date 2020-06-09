@@ -27,7 +27,11 @@ import bluej.parser.nodes.ParsedNode;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A representation of document events in a MoeSyntaxDocuments. As well as textual

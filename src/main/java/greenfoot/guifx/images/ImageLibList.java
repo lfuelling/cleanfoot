@@ -22,13 +22,6 @@
 package greenfoot.guifx.images;
 
 import greenfoot.util.GreenfootUtil;
-import javafx.collections.FXCollections;
-import javafx.geometry.Pos;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Tooltip;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -36,6 +29,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javafx.collections.FXCollections;
+import javafx.geometry.Pos;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A list component which displays a list of images (found in a directory) with their
@@ -51,7 +52,7 @@ public class ImageLibList extends ListView<ImageListEntry>
     /** The directory whose images are currently displayed in this list */
     private File directory;
     private final String[] imageFileExtensions = new String[] { "jpg", "jpeg", "png", "gif" };
-    private boolean projectList;
+    private final boolean projectList;
 
     /**
      * Construct an empty ImageLibList.

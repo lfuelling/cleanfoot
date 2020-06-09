@@ -110,7 +110,8 @@ export.app.help=Create an executable jar file that can be run on its own.
 export.app.location=Save to:
 export.app.browse=Browse
 export.app.choose=Save executable jar file
-export.project.help=Create a standalone project gfar file.
+export.app.more=More information on running on other machines
+export.project.help=Create a standalone project gfar file.  This allows the whole project to be given to other people as a single file that Greenfoot can open directly.
 export.project.location=Save to:
 export.project.browse=Browse
 export.project.choose=Save project gfar file
@@ -289,6 +290,7 @@ menu.controls=Controls
 menu.debugger=Show Debugger
 
 menu.soundRecorder=Show Sound Recorder
+menu.tools.recompileAll=Recompile Scenario
 
 menu.help=Help
 menu.help.about=About Greenfoot...
@@ -332,7 +334,7 @@ sound-line-unavailable=Cannot get access to the sound card. If you have a sound 
 # MainFrame central messages
 centrePanel.message.openScenario=\u2196 Create or Open a scenario using the Scenario menu
 centrePanel.message.createWorldClass=Create a new subclass of World
-centrePanel.message.createWorldObject=Instantiate a new World object
+centrePanel.message.createWorldObject=Instantiate a new World object. For example, right-click ${exampleWorld} on the right and select "new ${exampleWorld}()"
 centrePanel.message.compile1=The world class can't be compiled.
 centrePanel.message.compile2=One of the classes may have an error, check them to initialize the scenario \u2197
 centrePanel.message.initialising=The world is being constructed...
@@ -346,6 +348,7 @@ centrePanel.message.afterRestarting1=Greenfoot has been restarted because the Wo
 centrePanel.message.afterRestarting2=Check the constructor of the World subclass.
 centrePanel.message.missingWorldConstructor1=The world could not be constructed. The world subclass may not
 centrePanel.message.missingWorldConstructor2=have a public constructor without parameters, or may not be public.
+centrePanel.message.quitGreenfoot=Greenfoot is closing the project.
 
 centrePanel.message.hung=Execution is taking a long time.  You may need to terminate execution using the spinning button, below right.
 

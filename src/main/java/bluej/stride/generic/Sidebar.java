@@ -21,7 +21,7 @@
  */
 package bluej.stride.generic;
 
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.List;
 import javafx.animation.FadeTransition;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -41,7 +41,7 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.util.Duration;
 
-import java.util.List;
+import bluej.utility.javafx.JavaFXUtil;
 
 public class Sidebar
 {
@@ -99,9 +99,9 @@ public class Sidebar
     }
 
     static Sidebar addSidebar(final InteractionManager editor,
-                              final Pane containedPane,
-                              final Observable observableBounds,
-                              String stylePrefix) {
+            final Pane containedPane,
+            final Observable observableBounds,
+            String stylePrefix) {
         final SidebarLabel sidebar = new SidebarLabel();
         // To avoid sidebar getting in the way of other layout calculations
         // (such as min height during birdseye view), we put it in an

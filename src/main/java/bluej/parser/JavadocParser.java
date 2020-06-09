@@ -21,12 +21,12 @@
  */
 package bluej.parser;
 
+import java.io.Reader;
+
 import bluej.parser.entity.EntityResolver;
 import bluej.parser.symtab.ClassInfo;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.Reader;
 
 /**
  * This class in a copy of InfoParser. However, it is tweaked for performance

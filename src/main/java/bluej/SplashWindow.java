@@ -38,15 +38,16 @@ import javafx.util.Duration;
  * This class implements a splash window that can be displayed while BlueJ is
  * starting up.
  *
- * @author Michael Kolling
+ * @author  Michael Kolling
  */
-public class SplashWindow extends Stage {
+public class SplashWindow extends Stage
+{
     /**
      * Construct a splash window.
-     *
      * @param image
      */
-    public SplashWindow(Image image) {
+    public SplashWindow(Image image)
+    {
         super(StageStyle.TRANSPARENT);
         ImageView imageView = new ImageView(image);
         BorderPane borderPane = new BorderPane(imageView);
@@ -64,7 +65,9 @@ public class SplashWindow extends Stage {
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         setX((screenBounds.getWidth() - image.getWidth()) / 2);
         setY((screenBounds.getHeight() - image.getHeight()) / 2);
-        setOnShown(e -> toFront());
+        setOnShown(e -> {
+            toFront();
+        });
         show();
 
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5000), e -> {

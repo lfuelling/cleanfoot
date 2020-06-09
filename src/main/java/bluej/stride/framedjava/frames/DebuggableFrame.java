@@ -32,7 +32,7 @@ import threadchecker.Tag;
 public interface DebuggableFrame
 {
     @OnThread(Tag.FXPlatform)
-    public default HighlightedBreakpoint showDebugBefore(DebugInfo debug)
+    default HighlightedBreakpoint showDebugBefore(DebugInfo debug)
     {
         return ((JavaCanvas)getParentCanvas()).showDebugBefore((Frame)this, debug);
     }

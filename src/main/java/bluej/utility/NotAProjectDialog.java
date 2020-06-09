@@ -23,14 +23,22 @@ package bluej.utility;
 
 import bluej.Config;
 import bluej.utility.javafx.JavaFXUtil;
+
 import javafx.collections.FXCollections;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -47,7 +55,7 @@ class NotAProjectDialog
     private static final ButtonType OPEN_BUTTON = ButtonType.NEXT;
     private final ListView<File> subDirList;
 
-    private static enum Choice { CANCEL, CHOOSE_AGAIN, SELECTED_FILE }
+    private enum Choice { CANCEL, CHOOSE_AGAIN, SELECTED_FILE }
     private static class ChoiceAndFile
     {
         private final Choice choice;

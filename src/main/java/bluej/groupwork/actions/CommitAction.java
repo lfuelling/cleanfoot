@@ -21,18 +21,23 @@
  */
 package bluej.groupwork.actions;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 import bluej.Config;
-import bluej.groupwork.*;
+import bluej.groupwork.StatusHandle;
+import bluej.groupwork.TeamStatusInfo;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
 import bluej.groupwork.ui.CommitAndPushInterface;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.FXWorker;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * An action to do an actual commit.
@@ -55,7 +60,7 @@ public class CommitAction extends TeamAction
     private Set<File> newFiles; // which files are new files
     private Set<File> deletedFiles; // which files are to be removed
     private Set<File> files; // files to commit (includes both of above)
-    private CommitAndPushInterface commitCommentsFrame;
+    private final CommitAndPushInterface commitCommentsFrame;
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private StatusHandle statusHandle;
     
@@ -143,7 +148,7 @@ public class CommitAction extends TeamAction
      */
     private class CommitWorker extends FXWorker
     {
-        private TeamworkCommand command;
+        private final TeamworkCommand command;
         private TeamworkCommandResult result;
         private boolean aborted;
 

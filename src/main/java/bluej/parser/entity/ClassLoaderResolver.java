@@ -30,7 +30,7 @@ import bluej.debugger.gentype.Reflective;
  */
 public class ClassLoaderResolver implements EntityResolver
 {
-    private ClassLoader classLoader;
+    private final ClassLoader classLoader;
     
     public ClassLoaderResolver(ClassLoader classLoader)
     {

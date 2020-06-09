@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2015,2016,2018 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,24 +22,30 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SandwichCanvasesFrame;
-import bluej.utility.Utility;
-import nu.xom.Element;
-import nu.xom.Elements;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.ast.JavaContainerDebugHandler;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SandwichCanvasesFrame;
+import bluej.utility.Utility;
+
+import nu.xom.Element;
+import nu.xom.Elements;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 
 public abstract class SandwichCanvasesElement extends ContainerCodeElement implements JavaSingleLineDebugHandler
@@ -157,14 +163,14 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
         {
             final int iFinal = i;
             JavaContainerDebugHandler intermediateCanvasHandler = debug -> frame.getIntermediateCanvasDebug(iFinal).showDebugAtEnd(debug);
-            src.appened(JavaSource.createCompoundStatement(frame, this, this, intermediateCanvasHandler,
+            src.append(JavaSource.createCompoundStatement(frame, this, this, intermediateCanvasHandler,
                     getIntermediateHeaderFragment(i),
                     CodeElement.toJavaCodes(intermediateCanvasContents.get(i))));
         }
 
         if (tailCanvasContents != null) {
             JavaContainerDebugHandler tailCanvasHandler = debug -> frame.getTailCanvasDebug().showDebugAtEnd(debug);
-            src.appened(JavaSource.createCompoundStatement(frame, this, this, tailCanvasHandler,
+            src.append(JavaSource.createCompoundStatement(frame, this, this, tailCanvasHandler,
                     Arrays.asList(f(frame, tailCanvasCaption)),
                     CodeElement.toJavaCodes(tailCanvasContents)));
         }
@@ -228,7 +234,7 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
 
     @OnThread(Tag.FX)
     protected abstract SandwichCanvasesFrame buildFrame(InteractionManager editor, List<Frame> firstCanvasFrames,
-                                                        List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable);
+                            List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable);
 
 
     @Override

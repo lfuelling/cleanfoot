@@ -21,17 +21,28 @@
  */
 package bluej.groupwork;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import bluej.Config;
 import bluej.groupwork.ui.TeamSettingsDialog;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.*;
-import java.util.*;
 
 /**
  * This class is responsible for reading and writing the configuration files
@@ -75,13 +86,13 @@ public class TeamSettingsController
     private static TeamworkProvider loadProvider(String name) throws Throwable
     {
         Class<?> c = Class.forName(name);
-        Object instance = c.newInstance();
-        return (TeamworkProvider) instance;
+        Object instance = c.getDeclaredConstructor().newInstance();
+        return (TeamworkProvider) instance;            
     }
     
     private Project project;
     private File projectDir;
-    private Properties teamProperties;
+    private final Properties teamProperties;
     private TeamSettingsDialog teamSettingsDialog;
     private TeamSettings settings;
     
@@ -303,7 +314,7 @@ public class TeamSettingsController
 
         if (providerName != null) {
             for (int index = 0; index < teamProviders.size(); index++) {
-                TeamworkProvider prov = (TeamworkProvider) teamProviders.get(index);
+                TeamworkProvider prov = teamProviders.get(index);
                 if (prov.getProviderName().equalsIgnoreCase(providerName)) {
                     return true;
                 }
@@ -338,7 +349,7 @@ public class TeamSettingsController
         String providerName = getPropString("bluej.teamsettings.vcs");
         if (providerName != null) {
             for (int index = 0; index < teamProviders.size(); index++) {
-                TeamworkProvider prov = (TeamworkProvider) teamProviders.get(index);
+                TeamworkProvider prov = teamProviders.get(index);
                 if (prov.getProviderName().equalsIgnoreCase(providerName)) {
                     provider = prov;
                 }

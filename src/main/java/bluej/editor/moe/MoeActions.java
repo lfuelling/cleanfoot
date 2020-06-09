@@ -35,6 +35,8 @@ import bluej.prefmgr.PrefMgr;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXAbstractAction;
+import bluej.utility.javafx.FXPlatformConsumer;
+import bluej.utility.javafx.FXPlatformFunction;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.Bindings;
@@ -54,14 +56,15 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import javax.swing.*;
+import javax.swing.KeyStroke;
 import javax.swing.text.DefaultEditorKit;
-import java.awt.*;
+import java.awt.Event;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,8 +91,8 @@ public final class MoeActions
     private static final int tabSize = Config.getPropInteger("bluej.editor.tabsize", 4);
     private static final String spaces = "                                        ";
     private static final char TAB_CHAR = '\t';
-    private static Modifier SHORTCUT_MASK = KeyCombination.SHORTCUT_DOWN;
-    private static Modifier[] SHIFT_SHORTCUT_MASK = { KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN};
+    private static final Modifier SHORTCUT_MASK = KeyCombination.SHORTCUT_DOWN;
+    private static final Modifier[] SHIFT_SHORTCUT_MASK = { KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN};
 
     // -------- INSTANCE VARIABLES --------
     private static final IdentityHashMap<MoeEditor, MoeActions> moeActions = new IdentityHashMap<>();
@@ -180,7 +183,7 @@ public final class MoeActions
                     return InputMap.ignore(EventPattern.keyPressed(e.getKey()));
                 else
                 {
-                    return InputMap.consume(EventPattern.keyPressed(e.getKey()), ev -> e.getValue().actionPerformed());
+                    return InputMap.consume(EventPattern.keyPressed(e.getKey()), ev -> e.getValue().actionPerformed(false));
                 }
             }).toArray(InputMap[]::new));
             Nodes.addInputMap(getTextComponent(), curKeymap);
@@ -413,7 +416,7 @@ public final class MoeActions
             File template = Config.getTemplateFile(templateName);
 
             InputStream fileStream = new FileInputStream(template);
-            BufferedReader in = new BufferedReader(new InputStreamReader(fileStream, "UTF-8"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(fileStream, StandardCharsets.UTF_8));
 
             int addedTextLength = 0;
             String line = in.readLine();
@@ -535,7 +538,7 @@ public final class MoeActions
                 KeyCodeCombination k = binding.getKey();
                 lines.add(k.getAlt().name() + " " + k.getControl().name() + " " + k.getMeta() + " " + k.getShift() + " " + k.getShortcut() + " " + k.getCode().name() + " " + binding.getValue().getName());
             }
-            Files.write(file.toPath(), lines, Charset.forName("UTF-8"));
+            Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
             return true;
         }
         catch (Exception exc) {
@@ -555,7 +558,7 @@ public final class MoeActions
             File file = Config.getUserConfigFile(KEYS_FILE_FX);
             if (file.exists())
             {
-                List<String> lines = Files.readAllLines(file.toPath(), Charset.forName("UTF-8")).stream()
+                List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8).stream()
                         .filter(l -> !l.startsWith("#") && !l.trim().isEmpty()).collect(Collectors.toList());
                 if (lines.isEmpty() || !lines.get(0).startsWith("version"))
                     return false;
@@ -654,6 +657,11 @@ public final class MoeActions
         }
     }
 
+    // We can't use the recommended Java 9 replacement of getModifiersEx()
+    // because that is on the key event, and we are loading a KeyStroke
+    // object from a file, saved on an old BlueJ.  So we must continue
+    // checking against the old modifiers:
+    @SuppressWarnings("deprecation")
     private static KeyCodeCombination convertSwingBindingToFX(KeyStroke swing)
     {
         List<Modifier> modifiers = new ArrayList<>();
@@ -985,7 +993,6 @@ public final class MoeActions
 
         MoeAbstractAction[] myActions = {
                 saveAction(),
-                reloadAction(),
                 printAction(),
                 closeAction(),
 
@@ -1074,13 +1081,13 @@ public final class MoeActions
         }
     }
 
-    public static enum Category
+    public enum Category
     {
         EDIT("editor.functions.editFunctions"), MOVE_SCROLL("editor.functions.moveScroll"), CLASS("editor.functions.classFunctions"), MISC("editor.functions.misc");
 
         private final String label;
 
-        private Category(String labelKey)
+        Category(String labelKey)
         {
             this.label = Config.getString(labelKey);
         }
@@ -1110,7 +1117,6 @@ public final class MoeActions
 
 
         addKeyCombinationForAction(new KeyCodeCombination(KeyCode.S, SHORTCUT_MASK), "save");
-        // "reload" not bound
         addKeyCombinationForAction(new KeyCodeCombination(KeyCode.P, SHORTCUT_MASK), "print");
         // "page-setup" not bound
         addKeyCombinationForAction(new KeyCodeCombination(KeyCode.W, SHORTCUT_MASK), "close");
@@ -1162,9 +1168,30 @@ public final class MoeActions
         return new MoeAbstractAction(name, category)
         {
             @Override
-            public @OnThread(value = Tag.FXPlatform) void actionPerformed()
+            public @OnThread(value = Tag.FXPlatform) void actionPerformed(boolean viaContextMenu)
             {
                 action.run();
+            }
+        };
+    }
+
+    /**
+     * Creates an action that can act differently if it
+     * is called via a context menu.
+     * 
+     * @param name The action name
+     * @param category The category for the preferences
+     * @param action Called with true if called via a context menu, false otherwise.
+     * @return
+     */
+    private MoeAbstractAction contextSensitiveAction(String name, Category category, FXPlatformConsumer<Boolean> action)
+    {
+        return new MoeAbstractAction(name, category)
+        {
+            @Override
+            public @OnThread(value = Tag.FXPlatform) void actionPerformed(boolean viaContextMenu)
+            {
+                action.accept(viaContextMenu);
             }
         };
     }
@@ -1181,7 +1208,7 @@ public final class MoeActions
         /**
          * Apply some action to a line in the document.
          */
-        public void apply(Element line, MoeSyntaxDocument doc);
+        void apply(Element line, MoeSyntaxDocument doc);
     }
 
     // --------------------------------------------------------------------
@@ -1220,17 +1247,6 @@ public final class MoeActions
     private MoeAbstractAction saveAction()
     {
         return action("save", Category.CLASS, () -> getEditor().userSave());
-    }
-
-    // --------------------------------------------------------------------
-
-    /**
-     * Reload has been chosen. Ask "Really?" and call "doReload" if the answer
-     * is yes.
-     */
-    private MoeAbstractAction reloadAction()
-    {
-        return action("reload", Category.CLASS, () -> getEditor().reload());
     }
 
     // --------------------------------------------------------------------
@@ -1504,33 +1520,45 @@ public final class MoeActions
 
     private MoeAbstractAction cutAction()
     {
-        return action("cut-to-clipboard", Category.EDIT, () -> {
+        return contextSensitiveAction("cut-to-clipboard", Category.EDIT, viaContextMenu -> {
             // Menu shortcut can trigger when e.g. find pane is focused, don't act if not focused:
-            if (editor.getSourcePane().isFocused())
+            if (viaContextMenu || editor.getSourcePane().isFocused())
             {
                 editor.getSourcePane().cut();
+                if (viaContextMenu)
+                {
+                    editor.getSourcePane().requestFocus();
+                }
             }
         });
     }
 
     private MoeAbstractAction copyAction()
     {
-        return action("copy-to-clipboard", Category.EDIT, () -> {
+        return contextSensitiveAction("copy-to-clipboard", Category.EDIT, viaContextMenu -> {
             // Menu shortcut can trigger when e.g. find pane is focused, don't act if not focused:
-            if (editor.getSourcePane().isFocused())
+            if (viaContextMenu || editor.getSourcePane().isFocused())
             {
                 editor.getSourcePane().copy();
+                if (viaContextMenu)
+                {
+                    editor.getSourcePane().requestFocus();
+                }
             }
         });
     }
 
     private MoeAbstractAction pasteAction()
     {
-        return action("paste-from-clipboard", Category.EDIT, () -> {
+        return contextSensitiveAction("paste-from-clipboard", Category.EDIT, viaContextMenu -> {
             // Menu shortcut can trigger when e.g. find pane is focused, don't act if not focused:
-            if (editor.getSourcePane().isFocused())
+            if (viaContextMenu || editor.getSourcePane().isFocused())
             {
                 editor.getSourcePane().paste();
+                if (viaContextMenu)
+                {
+                    editor.getSourcePane().requestFocus();
+                }
                 editor.getSourcePane().requestFollowCaret();
             }
         });
@@ -1627,14 +1655,14 @@ public final class MoeActions
     {
         return action("cut-word", Category.EDIT, () -> {
             boolean addToClipboard = lastActionWasCut;
-            getActionByName("caret-previous-word").actionPerformed();
-            getActionByName("selection-next-word").actionPerformed();
+            getActionByName("caret-previous-word").actionPerformed(false);
+            getActionByName("selection-next-word").actionPerformed(false);
             if (addToClipboard) {
                 addSelectionToClipboard(editor);
-                getActionByName("delete-previous").actionPerformed();
+                getActionByName("delete-previous").actionPerformed(false);
             }
             else {
-                getActionByName("cut-to-clipboard").actionPerformed();
+                getActionByName("cut-to-clipboard").actionPerformed(false);
             }
             lastActionWasCut = true;
         });
@@ -1656,13 +1684,13 @@ public final class MoeActions
     {
         return action("cut-end-of-word", Category.EDIT, () -> {
             boolean addToClipboard = lastActionWasCut;
-            getActionByName("selection-next-word").actionPerformed();
+            getActionByName("selection-next-word").actionPerformed(false);
             if (addToClipboard) {
                 addSelectionToClipboard(editor);
-                getActionByName("delete-previous").actionPerformed();
+                getActionByName("delete-previous").actionPerformed(false);
             }
             else {
-                getActionByName("cut-to-clipboard").actionPerformed();
+                getActionByName("cut-to-clipboard").actionPerformed(false);
             }
             lastActionWasCut = true;
         });
@@ -1701,7 +1729,7 @@ public final class MoeActions
         }
 
         @Override
-        public void actionPerformed()
+        public void actionPerformed(boolean viaContextMenu)
         {
             MoeEditorPane c = getTextComponent();
             int origPos = c.getCaretDot();
@@ -1728,7 +1756,7 @@ public final class MoeActions
         }
 
         @Override
-        public void actionPerformed()
+        public void actionPerformed(boolean viaContextMenu)
         {
             MoeEditorPane c = getTextComponent();
             int origPos = c.getCaretDot();
@@ -1755,7 +1783,7 @@ public final class MoeActions
         }
 
         @Override
-        public void actionPerformed()
+        public void actionPerformed(boolean viaContextMenu)
         {
             MoeEditorPane c = getTextComponent();
             int origPos = c.getCaretDot();
@@ -1772,7 +1800,7 @@ public final class MoeActions
         }
 
         @Override
-        public void actionPerformed()
+        public void actionPerformed(boolean viaContextMenu)
         {
             MoeEditorPane c = getTextComponent();
             int origPos = c.getCaretDot();
@@ -1789,7 +1817,7 @@ public final class MoeActions
         }
 
         @Override
-        public void actionPerformed()
+        public void actionPerformed(boolean viaContextMenu)
         {
             MoeEditorPane ed = getTextComponent();
             if (ed.getCaretColumn() > 1)
@@ -1821,7 +1849,7 @@ public final class MoeActions
         }
 
         @Override
-        public void actionPerformed()
+        public void actionPerformed(boolean viaContextMenu)
         {
             getTextComponent().lineEnd(withSelection ? SelectionPolicy.EXTEND : SelectionPolicy.CLEAR);
         }
@@ -1834,7 +1862,7 @@ public final class MoeActions
             MoeEditorPane c = getTextComponent();
             MoeAbstractAction prevWordAct = actions.get(DefaultEditorKit.previousWordAction);
             int end = c.getCaretDot();
-            prevWordAct.actionPerformed();
+            prevWordAct.actionPerformed(false);
             int begin = c.getCaretDot();
             c.replaceText(begin, end, "");
         });

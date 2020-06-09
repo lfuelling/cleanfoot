@@ -37,18 +37,18 @@ public interface Repository
     /**
      * Set the password used to access the repository
      */
-    public void setPassword(TeamSettings newSettings);
+    void setPassword(TeamSettings newSettings);
     
     /**
      * Returns true if this repository versions directories (subversion),
      * false otherwise (CVS).
      */
-    public boolean versionsDirectories();
+    boolean versionsDirectories();
     
     /**
      * Checkout project from repostitory to local project.
      */
-    public TeamworkCommand checkout(File projectPath);
+    TeamworkCommand checkout(File projectPath);
 
     /**
      * Commits the files and directories in the project.
@@ -65,21 +65,21 @@ public interface Repository
      *               and deletedFiles, as well as any other files to be committed)
      * @param commitComment  The comment for this commit
      */
-    public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
-                                     Set<File> deletedFiles, Set<File> files, String commitComment);
+    TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
+                              Set<File> deletedFiles, Set<File> files, String commitComment);
     
     /**
      * Put the project in the repository. This should create an empty project in
      * the repository, and set the local project up as a working copy (with
      * uncommitted files).
      */
-    public TeamworkCommand shareProject();
+    TeamworkCommand shareProject();
 
     /**
      * Push project changes to the upstream server.
      * This is used *only* by distributed version control.
      */
-    public TeamworkCommand pushChanges();
+    TeamworkCommand pushChanges();
     
     /**
      * Get status of all the given files.
@@ -94,19 +94,19 @@ public interface Repository
      *                do exist in the repository), regardless of whether they are listed in the
      *                files argument.
      */
-    public TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote);
+    TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote);
     
     /**
      * Get a list of modules in the repository. The module names (String) are added
      * to the supplied list before the command terminates.
      */
-    public TeamworkCommand getModules(List<String> modules);
+    TeamworkCommand getModules(List<String> modules);
     
     /**
      * Get the history of the repository - all commits, including file, date,
      * revision, user, and comment.
      */
-    public TeamworkCommand getLogHistory(LogHistoryListener listener);
+    TeamworkCommand getLogHistory(LogHistoryListener listener);
     
     /**
      * Prepare for the deletion of a directory. For CVS, this involves moving
@@ -117,18 +117,18 @@ public interface Repository
      * <p>Also, calling this may result in the directory
      * being removed.
      */
-    public boolean prepareDeleteDir(File dir);
+    boolean prepareDeleteDir(File dir);
     
     /**
      * Prepare a newly created directory for version control.
      */
-    public void prepareCreateDir(File dir);
+    void prepareCreateDir(File dir);
     
     /**
      * Get a filter which can filter out directories/files that comprise metadata
      * or other housekeeping information in the working copy
      */
-    public FileFilter getMetadataFilter();
+    FileFilter getMetadataFilter();
     
     /**
      * Get all the locally deleted files in the repository. The files are put
@@ -137,15 +137,15 @@ public interface Repository
      * <p>Calling this method Does not result in communication with the repository
      * server.
      */
-    public void getAllLocallyDeletedFiles(Set<File> files);
+    void getAllLocallyDeletedFiles(Set<File> files);
     
     /**
      * Gets the version control type, for data collection purposes
      */
-    public String getVCSType();
+    String getVCSType();
     
     /**
      * Gets the version control protocol, for data collection purposes
      */
-    public String getVCSProtocol();
+    String getVCSProtocol();
 }

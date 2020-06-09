@@ -21,9 +21,23 @@
  */
 package greenfoot.export.mygame;
 
-import bluej.Config;
-import greenfoot.event.PublishEvent;
-import greenfoot.event.PublishListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -49,17 +63,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import bluej.Config;
+import greenfoot.event.PublishEvent;
+import greenfoot.event.PublishListener;
 
 /**
  * MyGame client.
@@ -68,7 +74,7 @@ import java.util.*;
  */
 public class MyGameClient
 {
-    private PublishListener listener;
+    private final PublishListener listener;
     
     /**
      * Construct a MyGameClient instance, which issues updates/error responses to a specified listener.
@@ -84,8 +90,8 @@ public class MyGameClient
     }
     
     public final MyGameClient submit(String hostAddress, String uid, String password,
-                                     String jarFileName, File sourceFile, File screenshotFile, int width, int height,
-                                     ExportInfo info)
+            String jarFileName, File sourceFile, File screenshotFile, int width, int height,
+            ExportInfo info)
         throws IOException
     {
         DefaultHttpClient httpClient = getHttpClient();
@@ -316,7 +322,7 @@ public class MyGameClient
         HttpConnectionParams.setConnectionTimeout(client.getParams(), 20 * 1000);
         // 20 second timeout is quite generous
         
-        String encodedName = URLEncoder.encode(gameName, "UTF-8");
+        String encodedName = URLEncoder.encode(gameName, StandardCharsets.UTF_8);
         encodedName = encodedName.replace("+", "%20");
         HttpGet getMethod = new HttpGet(hostAddress +
                 "user/"+ uid + "/check_scenario/" + encodedName);

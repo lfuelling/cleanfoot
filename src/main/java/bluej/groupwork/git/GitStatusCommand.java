@@ -26,25 +26,30 @@ import bluej.groupwork.TeamStatusInfo;
 import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
+import static bluej.groupwork.git.GitUtilities.findForkPoint;
+import static bluej.groupwork.git.GitUtilities.getBehindCount;
+import static bluej.groupwork.git.GitUtilities.getDiffs;
+import static bluej.groupwork.git.GitUtilities.getFileNameFromDiff;
+import static bluej.groupwork.git.GitUtilities.isAheadOnly;
 import bluej.utility.Debug;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.lib.IndexDiff;
-import org.eclipse.jgit.revwalk.RevCommit;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Map;
 
-import static bluej.groupwork.git.GitUtilities.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.lib.IndexDiff;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Checks the status of a Git repository

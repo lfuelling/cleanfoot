@@ -21,18 +21,22 @@
  */
 package bluej.editor.stride;
 
+import java.util.List;
+
 import bluej.utility.javafx.FXConsumer;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.ObjectExpression;
+import javafx.beans.binding.StringExpression;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.value.ObservableStringValue;
+import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.Tab;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * There's not really a good name for this, but essentially it is a subclass of Tab

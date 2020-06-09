@@ -774,7 +774,7 @@ public class TextParserTest
         exprType = parser.getExpressionType();
         checkConstInt(exprType, 5);
         
-        parser = new TextParser(resolver, "\'a\'", null, true);
+        parser = new TextParser(resolver, "'a'", null, true);
         parser.parseExpression();
         assertTrue(parser.atEnd());
         exprType = parser.getExpressionType();

@@ -21,15 +21,16 @@
  */
 package bluej.groupwork;
 
-import bluej.utility.DialogManager;
-import bluej.utility.FileUtility;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import javafx.stage.Window;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
 
 /**
  * Utilities for teamwork functionality.

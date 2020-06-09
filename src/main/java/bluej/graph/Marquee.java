@@ -21,13 +21,15 @@
  */
 package bluej.graph;
 
+import java.util.*;
+
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.Target;
+import bluej.pkgmgr.target.Target;
+import bluej.utility.Debug;
+import javafx.application.Platform;
 import javafx.scene.shape.Rectangle;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
 
 /**
  * The diagram's marquee (a rectangular drag area for selecting graph elements).
@@ -40,7 +42,7 @@ public final class Marquee
 {
     private final Package graph;
     private int drag_start_x, drag_start_y;
-    private Rectangle currentRect;
+    private final Rectangle currentRect;
     private final SelectionSet selected;
     private boolean active = false;
     private final ArrayList<Target> previouslySelected = new ArrayList<>();

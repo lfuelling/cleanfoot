@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class ImageCache
 {
-    private static ImageCache instance = new ImageCache();
+    private static final ImageCache instance = new ImageCache();
     
     /** A soft reference to a cached image */
     private class CachedImageRef extends SoftReference<GreenfootImage>
@@ -50,7 +50,7 @@ public class ImageCache
         }
     }
     
-    private Map<String,CachedImageRef> imageCache = new HashMap<String,CachedImageRef>();
+    private final Map<String,CachedImageRef> imageCache = new HashMap<String,CachedImageRef>();
     private ReferenceQueue<GreenfootImage> imgCacheRefQueue = new ReferenceQueue<GreenfootImage>();
     
     /**

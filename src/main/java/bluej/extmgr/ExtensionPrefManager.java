@@ -21,15 +21,20 @@
  */
 package bluej.extmgr;
 
+import java.awt.BorderLayout;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+
 import bluej.pkgmgr.Project;
 import bluej.prefmgr.PrefPanelListener;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.util.List;
 
 /**
  * This manages the whole preference pane for Extensions
@@ -40,14 +45,14 @@ import java.util.List;
  */
 public class ExtensionPrefManager implements PrefPanelListener
 {
-    private List<ExtensionWrapper> extensionsList;
+    private final List<ExtensionWrapper> extensionsList;
 
     private final int DO_panelUpdate=1;
     private final int DO_loadValues=2;
     private final int DO_saveValues=3;
 
-    private JPanel drawPanel;
-    private JPanel rootPanel;
+    private final JPanel drawPanel;
+    private final JPanel rootPanel;
 
     /**
      * The manager needs to know the installed extensions

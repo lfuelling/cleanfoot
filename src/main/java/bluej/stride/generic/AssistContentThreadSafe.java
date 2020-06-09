@@ -21,26 +21,26 @@
  */
 package bluej.stride.generic;
 
-import bluej.parser.AssistContent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import bluej.parser.AssistContent.Access;
-import bluej.parser.AssistContent.CompletionKind;
-import bluej.parser.AssistContent.ParamInfo;
 import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.generic.InteractionManager.Kind;
-import bluej.utility.JavaUtils;
-import bluej.utility.Utility;
 import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import nu.xom.Attribute;
 import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import bluej.parser.AssistContent;
+import bluej.parser.AssistContent.CompletionKind;
+import bluej.parser.AssistContent.ParamInfo;
+import bluej.stride.generic.InteractionManager.Kind;
+import bluej.utility.JavaUtils;
+import bluej.utility.Utility;
 
 @OnThread(Tag.Any)
 public final class AssistContentThreadSafe

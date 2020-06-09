@@ -24,6 +24,7 @@ package bluej.stride.generic;
 import bluej.stride.operations.ToggleBooleanProperty;
 import bluej.utility.Debug;
 import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -35,7 +36,7 @@ public class ExtensionDescription
 {
     public enum ExtensionSource
     {
-        BEFORE, AFTER, INSIDE_FIRST, INSIDE_LATER, MODIFIER, SELECTION;
+        BEFORE, AFTER, INSIDE_FIRST, INSIDE_LATER, MODIFIER, SELECTION
     }
 
     // Note that the character may be '\b', for backspace.

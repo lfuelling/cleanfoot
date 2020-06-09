@@ -21,7 +21,6 @@
  */
 package greenfoot.core;
 
-import bluej.debugmgr.objectbench.ObjectBenchInterface;
 import greenfoot.Actor;
 import greenfoot.ActorVisitor;
 import greenfoot.World;
@@ -34,15 +33,18 @@ import greenfoot.gui.input.KeyboardManager;
 import greenfoot.gui.input.mouse.MousePollingManager;
 import greenfoot.gui.input.mouse.WorldLocator;
 import greenfoot.platforms.WorldHandlerDelegate;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import bluej.debugmgr.objectbench.ObjectBenchInterface;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * The worldhandler handles the connection between the World and the
@@ -73,7 +75,7 @@ public class WorldHandler
     @OnThread(Tag.Any)
     private final List<WorldListener> worldListeners = new ArrayList<>();
     @OnThread(Tag.Any)
-    private WorldHandlerDelegate handlerDelegate;
+    private final WorldHandlerDelegate handlerDelegate;
     @OnThread(Tag.Any)
     private final MousePollingManager mousePollingManager;
 
@@ -271,9 +273,9 @@ public class WorldHandler
         if (dragActor != null) {
             dragActorMoved = false;
             Simulation.getInstance().runLater(new SimulationRunnable() {
-                private Actor dragActor = WorldHandler.this.dragActor;
-                private int dragBeginX = WorldHandler.this.dragBeginX;
-                private int dragBeginY = WorldHandler.this.dragBeginY;
+                private final Actor dragActor = WorldHandler.this.dragActor;
+                private final int dragBeginX = WorldHandler.this.dragBeginX;
+                private final int dragBeginY = WorldHandler.this.dragBeginY;
                 @Override
                 public void run()
                 {

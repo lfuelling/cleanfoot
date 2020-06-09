@@ -28,8 +28,8 @@ package bluej.groupwork;
  */
 public class CompoundCommand implements TeamworkCommand
 {
-    private TeamworkCommand command1;
-    private TeamworkCommand command2;
+    private final TeamworkCommand command1;
+    private final TeamworkCommand command2;
     
     public CompoundCommand(TeamworkCommand command1, TeamworkCommand command2)
     {

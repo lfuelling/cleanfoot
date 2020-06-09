@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2010,2014,2015,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 2010,2014,2015,2017,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,13 +21,13 @@
  */
 package bluej.pkgmgr;
 
+import java.util.Collection;
+import java.util.concurrent.Executor;
+
 import bluej.debugger.gentype.Reflective;
 import bluej.parser.ConstructorOrMethodReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collection;
-import java.util.concurrent.Executor;
 
 /**
  * An interface for javadoc resolvers, which retrieve javadoc for a method. 
@@ -44,11 +44,17 @@ public interface JavadocResolver
      * @param  declType   the declaring type from where the methods are found.
      * @param  methods    the methods to resolve Javadoc for.
      */
-    public void getJavadoc(Reflective declType, Collection<? extends ConstructorOrMethodReflective> methods);
+    void getJavadoc(Reflective declType, Collection<? extends ConstructorOrMethodReflective> methods);
 
-    public String getJavadoc(String typeName);
+    /**
+     * Get the Javadoc for the given type
+     * @param moduleName The enclosing module of the type if known and applicable (may be null)
+     * @param typeName The fully qualified name of the type
+     * @return The Javadoc if found, or null if not.
+     */
+    String getJavadoc(String moduleName, String typeName);
 
-    public static interface AsyncCallback
+    interface AsyncCallback
     {
         @OnThread(Tag.FXPlatform)
         void gotJavadoc(ConstructorOrMethodReflective method);
@@ -65,6 +71,6 @@ public interface JavadocResolver
      * @return   true if the javadoc is available immediately (callback will not be
      *            notified) or false if a background task was submitted.
      */
-    public boolean getJavadocAsync(final ConstructorOrMethodReflective method, final AsyncCallback callback, Executor executor);
+    boolean getJavadocAsync(final ConstructorOrMethodReflective method, final AsyncCallback callback, Executor executor);
     
 }

@@ -31,13 +31,13 @@ import java.util.Map;
 public class JavaPrimitiveType
     extends JavaType
 {
-    private static JavaPrimitiveType[] primitiveTypes = new JavaPrimitiveType[JavaType.JT_MAX+1];
-    private static String [] typeNames = { "void", "null", "boolean", "char",
+    private static final JavaPrimitiveType [] primitiveTypes = new JavaPrimitiveType[JavaType.JT_MAX+1];
+    private static final String [] typeNames = { "void", "null", "boolean", "char",
             "byte", "short", "int", "long", "float", "double" };
     
     // each element represents a primitive type, and contains an array of
     // other types that this type can be assigned from
-    private static int assignableFrom [][] = new int [JT_MAX+1][];
+    private static final int[][] assignableFrom = new int [JT_MAX+1][];
     {
         assignableFrom[JT_VOID]    = new int[] {};
         assignableFrom[JT_NULL]    = new int[] {};
@@ -53,7 +53,7 @@ public class JavaPrimitiveType
     
     // instance fields
     
-    private int myIndex;
+    private final int myIndex;
     
     /*
      * Private constructor. Use "getXXX" methods to get a primitive instance. 

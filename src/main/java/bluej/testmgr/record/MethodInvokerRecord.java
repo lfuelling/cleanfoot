@@ -21,14 +21,14 @@
  */
 package bluej.testmgr.record;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugmgr.objectbench.ObjectBench;
 import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.utility.JavaNames;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * Records a single user interaction with the 
@@ -40,7 +40,7 @@ import threadchecker.Tag;
  */
 public class MethodInvokerRecord extends VoidMethodInvokerRecord
 {
-    private JavaType returnType;
+    private final JavaType returnType;
     private String benchType;
     protected String benchName;
     

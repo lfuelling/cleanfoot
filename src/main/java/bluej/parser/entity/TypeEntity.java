@@ -20,16 +20,20 @@
  */
 package bluej.parser.entity;
 
-import bluej.debugger.gentype.*;
-import bluej.utility.JavaReflective;
-import bluej.utility.JavaUtils;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
+import bluej.utility.JavaReflective;
+import bluej.utility.JavaUtils;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * An entity which essentially wraps a JavaType.
@@ -38,7 +42,7 @@ import java.util.Map;
  */
 public class TypeEntity extends PackageOrClass
 {
-    private JavaType thisType;
+    private final JavaType thisType;
     
     public TypeEntity(JavaType type)
     {
@@ -60,7 +64,7 @@ public class TypeEntity extends PackageOrClass
     TypeEntity(Reflective r, GenTypeClass outer)
     {
         // thisRef = r;
-        thisType = new GenTypeClass(r, Collections.<GenTypeParameter>emptyList(), outer);
+        thisType = new GenTypeClass(r, Collections.emptyList(), outer);
     }
 
     public JavaType getType()
@@ -136,7 +140,7 @@ public class TypeEntity extends PackageOrClass
                 //boolean accessAllowed = JavaUtils.checkMemberAccess(thisRef,
                 //        thisClass, accessor, member.getModifiers(), true);
                 GenTypeClass inner = new GenTypeClass(member,
-                    Collections.<GenTypeParameter>emptyList(), thisClass);
+                    Collections.emptyList(), thisClass);
                 return new TypeEntity(inner);
             }
             stypes.addAll(thisRef.getSuperTypesR());

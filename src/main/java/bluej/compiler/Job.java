@@ -21,13 +21,13 @@
  */
 package bluej.compiler;
 
-import bluej.Config;
-import bluej.classmgr.BPClassLoader;
-
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import bluej.Config;
+import bluej.classmgr.BPClassLoader;
 
 /**
  * A compiler "job". A list of filenames to compile + parameters.
@@ -42,14 +42,14 @@ class Job
     CompileObserver observer;
     File destDir;
     BPClassLoader bpClassLoader;
-    CompileInputFile sources[];
+    CompileInputFile[] sources;
     boolean internal; // true for compiling shell files, 
                       // or user files if we want to suppress 
                       // "unchecked" warnings, false otherwise
-    private List<String> userCompileOptions;
-    private Charset fileCharset;
-    private CompileType type;
-    private CompileReason reason;
+    private final List<String> userCompileOptions;
+    private final Charset fileCharset;
+    private final CompileType type;
+    private final CompileReason reason;
 
     /**
      * Generator for unique ascending compilation identifiers.  It doesn't matter if it's shared between
@@ -61,9 +61,9 @@ class Job
     /**
      * Create a job with a set of sources.
      */
-    public Job(CompileInputFile[] sourceFiles, Compiler compiler,
-               BPClassLoader bpClassLoader, File destDir, boolean internal,
-               List<String> userCompileOptions, Charset fileCharset, CompileType type, CompileReason reason)
+    public Job(CompileInputFile[] sourceFiles, Compiler compiler, CompileObserver observer,
+                        BPClassLoader bpClassLoader, File destDir, boolean internal,
+                        List<String> userCompileOptions, Charset fileCharset, CompileType type, CompileReason reason)
     {
         this.sources = sourceFiles;
         this.compiler = compiler;

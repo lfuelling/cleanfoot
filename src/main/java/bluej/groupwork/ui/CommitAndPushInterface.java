@@ -23,12 +23,12 @@ package bluej.groupwork.ui;
 
 import bluej.groupwork.TeamStatusInfo;
 import bluej.pkgmgr.Project;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import java.io.File;
 import java.util.Set;
+import javafx.stage.Window;
 
 /**
  * Common functionality between the two different commit dialogs in BlueJ - the "commit only"
@@ -39,49 +39,48 @@ import java.util.Set;
 @OnThread(Tag.FXPlatform)
 public interface CommitAndPushInterface
 {
-    public void setVisible(boolean show);
+    void setVisible(boolean show);
     
-    public String getComment();
+    String getComment();
     
-    public void reset();
+    void reset();
     
     /**
      * Get a list of the layout files to be committed
      */
-    public Set<File> getChangedLayoutFiles();
+    Set<File> getChangedLayoutFiles();
     
     /**
      * Get a set of the layout files which have changed (with status info).
      */
-    public Set<TeamStatusInfo> getChangedLayoutInfo();
+    Set<TeamStatusInfo> getChangedLayoutInfo();
     
-    public boolean includeLayout();
+    boolean includeLayout();
     
     /**
      * Start the activity indicator.
      */
-    public void startProgress();
+    void startProgress();
     
     /**
      * Stop the activity indicator. Call from any thread.
      */
-    @OnThread(Tag.Any)
-    public void stopProgress();
+    @OnThread(Tag.Any) void stopProgress();
     
-    public Project getProject();
+    Project getProject();
     
     /**
      * Displays a message on the commit/push window.
      * @param msg 
      */
-    public default void displayMessage(String msg){ }
+    default void displayMessage(String msg){ }
     
-    public Window asWindow();
+    Window asWindow();
     
-    public void setLocationRelativeTo(Window w);
+    void setLocationRelativeTo(Window w);
     
     /**
      * Check whether the dialog is currently open.
      */
-    public boolean isShowing();
+    boolean isShowing();
 }

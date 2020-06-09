@@ -23,18 +23,24 @@ package greenfoot.guifx.images;
 
 import bluej.Config;
 import bluej.extensions.SourceType;
-import bluej.pkgmgr.Project;
 import bluej.pkgmgr.Package;
+import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
 import greenfoot.guifx.ClassNameVerifier;
+
+import java.io.File;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -42,8 +48,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * A (modal) dialog for selecting a class image. The image can be selected from either the

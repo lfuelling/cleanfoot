@@ -21,6 +21,9 @@
  */
 package bluej.stride.framedjava.ast;
 
+import java.security.InvalidParameterException;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.ErrorShower;
@@ -30,9 +33,6 @@ import bluej.stride.generic.Frame;
 import bluej.stride.slots.EditableSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.security.InvalidParameterException;
-import java.util.stream.Stream;
 
 public class FrameFragment extends JavaFragment
 {

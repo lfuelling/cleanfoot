@@ -21,12 +21,6 @@
  */
 package bluej.groupwork.ui;
 
-import bluej.Config;
-import bluej.groupwork.TeamSettings;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.groupwork.TeamworkProvider;
-import bluej.utility.javafx.FXCustomizedDialog;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.application.Platform;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ProgressBar;
@@ -34,6 +28,14 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Window;
+
+import bluej.Config;
+import bluej.groupwork.TeamSettings;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.TeamworkProvider;
+import bluej.utility.javafx.FXCustomizedDialog;
+import bluej.utility.javafx.JavaFXUtil;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -50,8 +52,8 @@ public class CheckConnectionDialog extends FXCustomizedDialog<Void>
     private ProgressBar activityIndicator;
     private Text connLabel;
 
-    private TeamSettings settings;
-    private TeamworkProvider provider;
+    private final TeamSettings settings;
+    private final TeamworkProvider provider;
 
     public CheckConnectionDialog(Window owner, TeamworkProvider provider, TeamSettings settings)
     {

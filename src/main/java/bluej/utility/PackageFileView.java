@@ -21,12 +21,13 @@
  */
 package bluej.utility;
 
+import java.io.File;
+
+import javax.swing.Icon;
+import javax.swing.filechooser.FileView;
+
 import bluej.Config;
 import bluej.pkgmgr.Package;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileView;
-import java.io.File;
 
 /**
  * A FileView subclass that enables BlueJ packages to be displayed with a

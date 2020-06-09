@@ -21,13 +21,15 @@
  */
 package bluej.stride.framedjava.slots;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /**
  * A clone/wrapper of the List interface which adds an extra ModificationToken
@@ -36,7 +38,7 @@ import java.util.stream.Stream;
  */
 public class ProtectedList<T>
 {
-    private ObservableList<T> content = FXCollections.observableArrayList();
+    private final ObservableList<T> content = FXCollections.observableArrayList();
     
     public T get(int index)
     {

@@ -21,16 +21,21 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.*;
-import bluej.groupwork.TeamStatusInfo.Status;
-import bluej.utility.Debug;
-import org.tigris.subversion.javahl.*;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
+
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Depth;
+import org.tigris.subversion.javahl.SVNClientInterface;
+import org.tigris.subversion.javahl.StatusCallback;
+import org.tigris.subversion.javahl.StatusKind;
+
+import bluej.groupwork.*;
+import bluej.groupwork.TeamStatusInfo.Status;
+import bluej.utility.Debug;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Subversion "status" command.
@@ -39,8 +44,8 @@ import java.util.*;
  */
 public class SvnStatusCommand extends SvnCommand
 {
-    private StatusListener listener;
-    private FileFilter filter;
+    private final StatusListener listener;
+    private final FileFilter filter;
     private long currentRevision = -1;
     
     public SvnStatusCommand(SvnRepository repository, StatusListener listener,

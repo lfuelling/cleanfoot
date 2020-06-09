@@ -21,72 +21,80 @@
  */
 package bluej.collect;
 
-import difflib.Delta;
-import difflib.DiffUtils;
-import difflib.Patch;
-import junit.framework.TestCase;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
-public class TestDiff extends TestCase {
-    private String[] readFile(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line = null;
+import junit.framework.TestCase;
+import difflib.DiffUtils;
+import difflib.Patch;
+
+public class TestDiff extends TestCase
+{
+    private String[] readFile( File file ) throws IOException {
+        BufferedReader reader = new BufferedReader( new FileReader (file));
+        String         line = null;
         ArrayList<String> lines = new ArrayList<String>();
-
-        while ((line = reader.readLine()) != null) {
+        
+        while( ( line = reader.readLine() ) != null ) {
             lines.add(line);
         }
-
+        
         reader.close();
         return lines.toArray(new String[0]);
     }
-
-    private void assertDiffRoundTrip(String[] orig, String[] mod) throws IOException, InterruptedException {
+    
+    private void assertDiffRoundTrip(String[] orig, String[] mod) throws IOException, InterruptedException
+    {
         // Get the diff using our library:
         Patch patch = DiffUtils.diff(Arrays.asList(orig), Arrays.asList(mod));
-        String diff = makeDiff(patch);
+        String diff = patch.toString();
         // Now send it on a round trip with the system diff.
-
+        
         //   Make temp file and fill it with original:
         File tempFile = File.createTempFile("SRC", ".java");
         FileWriter fileWriter = new FileWriter(tempFile);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        for (String line : orig) {
+        BufferedWriter bufferedWriter = new BufferedWriter( fileWriter);
+        for (String line : orig)
+        {
             bufferedWriter.write(line + "\n");
         }
         bufferedWriter.close();
         fileWriter.close();
-
+        
         //   Run patch, and feed it the diff:
         Process p = Runtime.getRuntime().exec("patch --force " + tempFile.getAbsolutePath());
-        p.getOutputStream().write(diff.getBytes(Charset.forName("UTF-8")));
+        p.getOutputStream().write(diff.getBytes(StandardCharsets.UTF_8));
         p.getOutputStream().close();
 
-        int returnCode = p.waitFor();
+        int returnCode = p.waitFor();        
         assertEquals("Patch exit code", 0, returnCode);
-
+        
         //   Read back the original and check:
         String[] patched = readFile(tempFile);
-
+        
         assertEqualStringArray(orig, diff, mod, patched);
     }
-
-
-    private void assertEqualStringArray(String[] orig, String diff, String[] a, String[] b) {
+    
+    
+    private void assertEqualStringArray(String[] orig, String diff, String[] a, String[] b)
+    {
         assertEquals("Array length: " + printInfo(orig, diff, a, b), a.length, b.length);
         for (int i = 0; i < a.length; i++)
-            assertEquals("Line " + i + " for\n" + printInfo(orig, diff, a, b), a[i], b[i]);
-
+            assertEquals("Line " + i + " for\n"  + printInfo(orig, diff, a, b), a[i], b[i]);
+        
     }
 
-    private String printInfo(String[] orig, String diff, String[] a, String[] b) {
+    private String printInfo(String[] orig, String diff, String[] a, String[] b)
+    {
         StringBuilder s = new StringBuilder();
         s.append("### Original:\n");
         for (String line : orig) s.append(line + "\n");
@@ -98,56 +106,18 @@ public class TestDiff extends TestCase {
         return s.toString();
     }
 
-    @SuppressWarnings("unchecked")
-    @OnThread(Tag.Any)
-    // protected for testing purposes
-    protected static String makeDiff(Patch<Delta> patch) {
-        StringBuilder diff = new StringBuilder();
-        // There is a DiffUtils.generateUnifiedDiff function, but don't use it
-        // It's broken in 1.2.1 for patches that purely add lines
-
-        for (Delta delta : patch.getDeltas()) {
-            int srcLine, srcSize, destLine, destSize;
-            srcSize = delta.getOriginal().size();
-            destSize = delta.getRevised().size();
-            // It seems that the line numbers given back when the patch is a pure-insert
-            // (i.e. zero lines are modified in the original file) are off by one, so
-            // correct for this:
-            if (srcSize > 0) {
-                srcLine = delta.getOriginal().getPosition() + 1;
-                destLine = delta.getRevised().getPosition() + 1;
-            } else {
-                srcLine = delta.getOriginal().getPosition();
-                destLine = delta.getRevised().getPosition();
-            }
-            diff.append("@@ -")
-                    .append(srcLine).append(",")
-                    .append(srcSize).append(" +")
-                    .append(destLine).append(",")
-                    .append(destSize).append(" @@\n");
-            for (String l : (List<String>) delta.getOriginal().getLines()) {
-                diff.append("-")
-                        .append(l).append("\n");
-            }
-            for (String l : (List<String>) delta.getRevised().getLines()) {
-                diff.append("+")
-                        .append(l).append("\n");
-            }
-        }
-        return diff.toString();
+    public void testInsert() throws IOException, InterruptedException
+    {
+        assertDiffRoundTrip(new String[] {
+"class Foo",
+"{",
+"}"}, new String[] {
+"class Foo",
+"{",
+"  public int x;",
+"}"});
     }
-
-    public void testInsert() throws IOException, InterruptedException {
-        assertDiffRoundTrip(new String[]{
-                "class Foo",
-                "{",
-                "}"}, new String[]{
-                "class Foo",
-                "{",
-                "  public int x;",
-                "}"});
-    }
-
+    
     // This test can take a little while -- 75 seconds on my machine
     /*
     public void testBruteForceDiffs() throws IOException, InterruptedException

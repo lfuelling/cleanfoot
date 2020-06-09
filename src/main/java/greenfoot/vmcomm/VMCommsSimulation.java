@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2005-2009,2010,2011,2012,2013,2014,2015,2016,2018  Poul Henriksen and Michael Kolling 
+ Copyright (C) 2005-2009,2010,2011,2012,2013,2014,2015,2016,2018,2019  Poul Henriksen and Michael Kolling 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -44,6 +44,9 @@ import java.nio.IntBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Lives on the Simulation VM (aka debug VM), and handles communications with the server
@@ -52,24 +55,24 @@ import java.nio.channels.FileLock;
 public class VMCommsSimulation
 {
     private final WorldRenderer worldRenderer;    
-        
+
+    /** Available old world images for painting onto: */
+    private final BlockingQueue<BufferedImage> worldImagesForPainting = new ArrayBlockingQueue<BufferedImage>(3);
+    /** The current image waiting to send (may be null if none): */
+    private final AtomicReference<BufferedImage> worldImageForSending = new AtomicReference<>(null);
     // These variables are shared with the remote communications thread and need synchronised access:
-    /** Whether the image has been updated */
-    private boolean updateImage;
-    /** The world image (as most recently painted; double-buffered) */
-    private BufferedImage[] worldImages = new BufferedImage[2];
-    /** Index in worldImages of the most recently drawn world */
-    private int drawnWorld;
-    /** Whether the last drawn image is currently being transferred */
-    private boolean transferringImage;
     /** The prompt for Greenfoot.ask() */
+    @OnThread(value = Tag.Any, requireSynchronized = true)
     private String pAskPrompt;
     /** The ask request identifier */
+    @OnThread(value = Tag.Any, requireSynchronized = true)
     private int pAskId;
     /** The answer received from an ask */
+    @OnThread(value = Tag.Any, requireSynchronized = true)
     private String askAnswer;
 
     /** The status of entering delay loop */
+    @OnThread(value = Tag.Any, requireSynchronized = true)
     private boolean delayLoopEntered;
 
     private final ShadowProjectProperties projectProperties;
@@ -133,13 +136,12 @@ public class VMCommsSimulation
     private int lastAckCommand = -1;
     private int lastPaintSeq = -1; // last paint sequence
     private int lastPaintSize; // number of ints last transmitted as image
-    private boolean paintScheduled = false; // a paint is scheduled
     
     // How many times have we stopped with an error?  We continuously send the count to the
     // server VM, so that the server VM can observe changes in the count (only ever increases).
     private int stoppedWithErrorCount = 0;
     // When did user code last start?
-    private long startOfCurExecution = 0;
+    private final long startOfCurExecution = 0;
     // A strictly incrementing counter, incremented each time the world changes.
     private int worldCounter = 0;
     private World world;
@@ -198,7 +200,7 @@ public class VMCommsSimulation
         }
     }
 
-    public static enum PaintWhen { FORCE, IF_DUE, NO_PAINT}
+    public enum PaintWhen { FORCE, IF_DUE }
 
     /**
      * Paints the current world into the shared memory buffer so that the server VM can
@@ -206,58 +208,42 @@ public class VMCommsSimulation
      *
      * @param paintWhen  If IF_DUE, painting may be skipped if it's close to a recent paint.
      *                   FORCE always paints, NO_PAINT indicates that an actual image update
-     *                   is not required but other information in the frame should be sent. 
-     * @return Answer from Greenfoot.ask() if available, null otherwise
+     *                   is not required but other information in the frame should be sent.
      */
     @OnThread(Tag.Simulation)
-    public String paintRemote(PaintWhen paintWhen)
+    public void paintRemote(PaintWhen paintWhen)
     {
         long now = System.nanoTime();
         if (paintWhen == PaintWhen.IF_DUE && now - lastPaintNanos <= 8_333_333L)
         {
-            paintScheduled = (world != null);
-            return null; // No need to draw frame if less than 1/120th of sec between them,
+            return; // No need to draw frame if less than 1/120th of sec between them,
                          // but we must schedule a paint for the next sequence we send.
         }
 
-        // One element array to allow a reference to be set by readCommands:
-        String[] answer = new String[] {null};
-        
-        boolean sendImage = world != null && (paintWhen != PaintWhen.NO_PAINT || paintScheduled);
-        if (sendImage)
+        if (world != null)
         {
             lastPaintNanos = now;
             int imageWidth = WorldVisitor.getWidthInPixels(world);
             int imageHeight = WorldVisitor.getHeightInPixels(world);
-            BufferedImage worldImage;
+            BufferedImage worldImage = worldImagesForPainting.poll();
             
-            synchronized (this)
+            // If there are no available old images or it's the wrong size, make our own:
+            if (worldImage == null || worldImage.getHeight() != imageHeight
+                    || worldImage.getWidth() != imageWidth)
             {
-                int toDrawWorld = 1 - drawnWorld; // invert 0/1
-                worldImage = worldImages[toDrawWorld];
-                if (worldImage == null || worldImage.getHeight() != imageHeight
-                        || worldImage.getWidth() != imageWidth)
-                {
-                    worldImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-                    worldImages[toDrawWorld] = worldImage;
-                }
+                worldImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
             }
             
             worldRenderer.renderWorld(world, worldImage);
             
-            synchronized (this)
+            BufferedImage oldImage = worldImageForSending.getAndSet(worldImage);
+            // If there was an old image waiting which we've overwritten, put it back in our queue of old images:
+            if (oldImage != null)
             {
-                // If a world image is currently being transferred, we mustn't overwrite it.
-                // Therefore, alter drawnWorld only if that's not the case:
-                if (! transferringImage)
-                {
-                    drawnWorld = 1 - drawnWorld;
-                }
-                updateImage = true;
+                worldImagesForPainting.offer(oldImage);
+                // If it doesn't fit because the queue is full, just let it get GCed.
             }
         }
-        
-        return answer[0];
     }
 
     @OnThread(Tag.Simulation)
@@ -307,7 +293,7 @@ public class VMCommsSimulation
             synchronized (this)
             {
                 // Don't send double-buffered image if world has since disappeared:
-                doUpdateImage = updateImage && world != null;
+                doUpdateImage = world != null;
                 curWorld = this.world;
                 curWorldCounter = this.worldCounter;
             }
@@ -326,19 +312,7 @@ public class VMCommsSimulation
                 }
             }
             
-            BufferedImage img;
-            synchronized (this)
-            {
-                img = doUpdateImage ? worldImages[drawnWorld] : null;
-                transferringImage = (img != null);
-                if (img != null)
-                {
-                    // We want to clear the updateImage flag nice and early, so that any new image
-                    // generated in the meantime can correctly set it back to true:
-                    updateImage = false;
-                }
-            }
-            
+            BufferedImage img = doUpdateImage ? worldImageForSending.getAndSet(null) : null;
             int [] raw = (img == null) ? null : ((DataBufferInt) img.getData().getDataBuffer()).getData();
 
             int imageWidth = 0;
@@ -369,18 +343,10 @@ public class VMCommsSimulation
                     sharedMemory.put(raw[i]);
                 }
                 lastPaintSize = raw.length;
-                paintScheduled = false;
-                synchronized (this)
-                {
-                    transferringImage = false;
-                    // If another world image has been painted in the meantime, make sure that
-                    // drawnWorld indexes the correct image in the array (updateImage will have
-                    // been set true in paintRemote()):
-                    if (updateImage)
-                    {
-                        drawnWorld = 1 - drawnWorld;
-                    }
-                }
+                
+                // Now that we've rendered from it, put it back into the old images for re-use:
+                worldImagesForPainting.offer(img);
+                // If it doesn't fit, just let it get GCed.
             }
             sharedMemory.put(lastAckCommand);
             sharedMemory.put(stoppedWithErrorCount);
@@ -412,16 +378,16 @@ public class VMCommsSimulation
                     sharedMemory.put(codepoints.length);
                     sharedMemory.put(codepoints);
                 }
-            }
 
-            // Write the status of the delay loop
-            if (delayLoopEntered == true)
-            {
-                sharedMemory.put(1);
-            }
-            else
-            {
-                sharedMemory.put(0);
+                // Write the status of the delay loop
+                if (delayLoopEntered == true)
+                {
+                    sharedMemory.put(1);
+                }
+                else
+                {
+                    sharedMemory.put(0);
+                }
             }
 
             putLock.release();
@@ -497,7 +463,7 @@ public class VMCommsSimulation
         {
             lastSeqID = sharedMemory.get();
             int commandLength = sharedMemory.get();
-            int data[] = new int[commandLength];
+            int[] data = new int[commandLength];
             sharedMemory.get(data);
             if (Command.isKeyEvent(data[0]))
             {
@@ -617,14 +583,14 @@ public class VMCommsSimulation
     public void notifyStoppedWithError()
     {
         stoppedWithErrorCount += 1;
-        paintRemote(PaintWhen.NO_PAINT);
+        paintRemote(PaintWhen.FORCE);
     }
 
     /**
      * The delay loop is entered; need to let the server VM know.
      */
     @OnThread(Tag.Simulation)
-    public void notifyDelayLoopEntered()
+    public synchronized void notifyDelayLoopEntered()
     {
         delayLoopEntered = true;
     }
@@ -633,7 +599,7 @@ public class VMCommsSimulation
      * The delay loop is completed; need to let the server VM know.
      */
     @OnThread(Tag.Simulation)
-    public void notifyDelayLoopCompleted()
+    public synchronized void notifyDelayLoopCompleted()
     {
         delayLoopEntered = false;
     }
@@ -644,15 +610,6 @@ public class VMCommsSimulation
     @OnThread(Tag.Simulation)
     public void userCodeStarting()
     {
-        // If the other side already think we're running, not much cause to update them, so
-        // only bother if we've already been going for over a second:
-        long now = System.currentTimeMillis();
-        boolean recentlyRunning = now - startOfCurExecution < 1000L;
-        startOfCurExecution = now;
-        if (!recentlyRunning)
-        {
-            paintRemote(PaintWhen.NO_PAINT);
-        }
     }
 
     /**
@@ -660,9 +617,11 @@ public class VMCommsSimulation
      * Each userCodeStopped() event should follow one call to userCodeStarting().
      */
     @OnThread(Tag.Simulation)
-    public void userCodeStopped()
+    public void userCodeStopped(boolean suggestRepaint)
     {
-        startOfCurExecution = 0L;
-        paintRemote(PaintWhen.NO_PAINT);
+        if (suggestRepaint)
+        {
+            paintRemote(PaintWhen.FORCE);
+        }
     }
 }

@@ -24,6 +24,8 @@ package bluej.compiler;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+
 /**
  * Observer interface for classes that are interested in compilation.
  *

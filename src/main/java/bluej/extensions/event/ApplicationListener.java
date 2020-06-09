@@ -35,11 +35,11 @@ public interface ApplicationListener
      * return as quickly as possible. 
      * If a long operation must be performed you should start a Thread.
      */
-    public void blueJReady (ApplicationEvent event);
+    void blueJReady(ApplicationEvent event);
 
     /**
      * This method will be called when submission to the current data recording server
      * (Blackbox, or your local purpose-run recording server) has failed.
      */
-    default public void dataSubmissionFailed(ApplicationEvent event) { }
+    default void dataSubmissionFailed(ApplicationEvent event) { }
 }

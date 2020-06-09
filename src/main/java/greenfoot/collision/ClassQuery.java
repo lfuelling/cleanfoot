@@ -25,8 +25,8 @@ import greenfoot.Actor;
 
 public class ClassQuery implements CollisionQuery
 {
-    private Class<?> cls;
-    private CollisionQuery subQuery;
+    private final Class<?> cls;
+    private final CollisionQuery subQuery;
     
     public ClassQuery(Class<?> cls, CollisionQuery subQuery)
     {

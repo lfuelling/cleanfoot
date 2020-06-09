@@ -36,7 +36,7 @@ import java.util.function.Predicate;
 @OnThread(Tag.FXPlatform)
 public final class ViewFilter implements Predicate<MemberView>
 {
-    public static enum StaticOrInstance { STATIC, INSTANCE; }
+    public enum StaticOrInstance { STATIC, INSTANCE}
     
     private final StaticOrInstance staticOrInstance;
     // Show only items callable from another class in the given

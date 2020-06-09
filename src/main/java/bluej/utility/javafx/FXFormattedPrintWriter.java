@@ -21,10 +21,16 @@
  */
 package bluej.utility.javafx;
 
-import bluej.views.FormattedPrintWriter;
+import java.io.OutputStream;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+
+import bluej.views.FormattedPrintWriter;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

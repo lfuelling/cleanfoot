@@ -23,7 +23,9 @@ package bluej.groupwork.ui;
 
 import bluej.groupwork.TeamStatusInfo;
 import bluej.pkgmgr.Project;
+
 import javafx.scene.control.ListCell;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -35,7 +37,7 @@ import threadchecker.Tag;
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
 public class TeamStatusInfoCell extends ListCell<TeamStatusInfo>
 {
-    private Project project;
+    private final Project project;
 
     public TeamStatusInfoCell(Project proj)
     {

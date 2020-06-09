@@ -44,10 +44,10 @@ import bluej.utility.JavaNames;
  */
 public class TestEntityResolver implements EntityResolver
 {
-    private EntityResolver parent;
+    private final EntityResolver parent;
     
     /** A map from package name to a list of compilation units in that package */
-    private Map<String,List<ParsedCUNode>> pkgMap = new HashMap<String,List<ParsedCUNode>>();
+    private final Map<String,List<ParsedCUNode>> pkgMap = new HashMap<String,List<ParsedCUNode>>();
     
     public TestEntityResolver(EntityResolver parent)
     {

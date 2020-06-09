@@ -22,6 +22,7 @@
 package bluej.stride.framedjava.frames;
 
 import javafx.scene.Node;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

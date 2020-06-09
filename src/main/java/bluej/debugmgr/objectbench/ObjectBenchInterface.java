@@ -38,20 +38,20 @@ public interface ObjectBenchInterface
      * Add a listener for events on this object bench.
      * @param l  The listener to add
      */
-    public void addObjectBenchListener(ObjectBenchListener l);
+    void addObjectBenchListener(ObjectBenchListener l);
     
     /**
      * Remove a listener so that it no longer receives events.
      * @param l  The listener to remove
      */
-    public void removeObjectBenchListener(ObjectBenchListener l);
+    void removeObjectBenchListener(ObjectBenchListener l);
     
     /**
      * Check whether the bench contains an object with name 'name'.
      *
      * @param name  The name to check for.
      */
-    public boolean hasObject(String name);
+    boolean hasObject(String name);
     
     /**
      * Add an object to the bench with the specified name and type.
@@ -62,5 +62,5 @@ public interface ObjectBenchInterface
      * 
      * @return  The name actually used (may not match desired name in case of clash).
      */
-    public String addObject(DebuggerObject object, GenTypeClass type, String name);
+    String addObject(DebuggerObject object, GenTypeClass type, String name);
 }

@@ -27,23 +27,28 @@ import bluej.groupwork.UpdateListener;
 import bluej.groupwork.UpdateResults;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
-import javafx.application.Platform;
-import org.eclipse.jgit.api.CheckoutCommand;
-import org.eclipse.jgit.api.CheckoutCommand.Stage;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.MergeCommand;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.merge.MergeStrategy;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javafx.application.Platform;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.CheckoutCommand.Stage;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.merge.MergeStrategy;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Git command to pull project changes from the upstream repository.

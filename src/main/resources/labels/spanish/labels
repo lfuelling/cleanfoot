@@ -118,7 +118,6 @@ prefmgr.edit.colortransparency=Destacado de \u00c1mbito
 prefmgr.edit.usesyntaxhilighting=Usar destacado de sintaxis 
 prefmgr.edit.autoindent=Sangr\u00edas autom\u00e1ticas (teclas Enter y Tab)
 prefmgr.edit.displaylinenumbers=Desplegar n\u00fameros de l\u00ednea
-prefmgr.edit.makeBackup=Realizar respaldo de los archivos fuente
 prefmgr.edit.matchBrackets=Emparejar par\u00e9ntesis
 prefmgr.edit.keybindingstitle=Asociaci\u00f3n de Teclas
 prefmgr.edit.highlightLighter=M\u00e1s claro
@@ -160,14 +159,6 @@ extmgr.error.nomain=El manifiesto no contiene el atributo Clase-Principal (Main-
 extmgr.error.notsubclass=La clase Principal no es una subclase de Extensi\u00f3n
 extmgr.error.cannotload=La extension no puede ser cargada
 
-# Rasperry Pi preferences panel
-extmgr.raspberryPi.rpiPanelTitle=Rasbperry Pi
-extmgr.raspberryPi.title= Ajuste de la JVM 
-extmgr.raspberryPi.superUser=El c\u00f3digo del usuario debe ser ejecutado como root.
-prefmgr.raspberryPi.NoteLine1=Acceso root es requerido para accesar Gpio y hardware en la Raspberry Pi.
-prefmgr.raspberryPi.NoteLine2=Para permitir a BlueJ ser ejecutada como root, sudo debe ser permitido sin password.
-prefmgr.raspberryPi.NoteLine3=Para m\u00e1s informaci\u00f3n, por favor vea la lista de preguntas frecuentes en: http://bluej.org/faq.html#rasppi_hardware
-
 #---------------
 #Editor labels
 #---------------
@@ -192,7 +183,6 @@ editor.helpLabel = _Ayuda
 
 # item labels (can be omitted if same as action name)
 editor.saveLabel = Guardar
-editor.reloadLabel = Recargar
 editor.printLabel = Imprimir...
 editor.closeLabel =Cerrar
 
@@ -309,8 +299,6 @@ editor.info.version = Moe versi\u00f3n
 editor.info.errorSaving = Ocurri\u00f3 un error mientras se guardaba el archivo!
 editor.info.compiled = Clase compilada - no hay errores de sintaxis
 editor.info.noChanges = No hay modificaciones que necesiten ser guardadas
-editor.info.cannotReload = No se puede volver a cargar - este texto nunca fue guardado!
-editor.info.reload = (\"Reload\" vuelve a cargar el \u00faltimo estado guardado desde disco.)
 editor.info.emptySearchString = Cadena de b\u00fasqueda vac\u00eda.
 editor.info.notFound = No encontrada (buscar de nuevo desde el comienzo).
 editor.info.compiling = Compilando...
@@ -817,10 +805,6 @@ collect.dialog.ethics2=Si usted cambia de parecer acerca de ayudarnos con esta i
 collect.status.optedin=Usted est\u00e1 permitiendo actualmente la recolecci\u00f3n de datos an\u00f3nima para fines de investigaci\u00f3n
 collect.status.nextsession=Usted permitir\u00e1 la recolecci\u00f3n de datos an\u00f3nima para fines de investigaci\u00f3n la pr\u00f3xima vez que se inicie BlueJ
 collect.status.optedout=Usted no est\u00e1 participando en la recolecci\u00f3n de datos an\u00f3nima para fines de investigaci\u00f3n
-
-#Raspberry Pi
-raspberrypi.error.sudo=Acceso Sudo sin contrase\u00f1a no disponible. Continuando sin acceso al hardware.\nPara mayor informaci\u00f3n, por favor vea: http://bluej.org/faq.html#rasppi_hardware
-raspberrypi.error.sudo.title=No hay acceso al hardware
 
 # About
 

@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2010,2011,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2010,2011,2016,2017,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,6 +21,31 @@
  */
 package bluej.pkgmgr;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.extensions.SourceType;
 import bluej.utility.DialogManager;
@@ -28,19 +53,8 @@ import bluej.utility.JavaNames;
 import bluej.utility.javafx.HorizontalRadio;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.dialog.DialogPaneAnimateError;
-import javafx.application.Platform;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.util.*;
 
 /**
  * Dialog for creating a new class
@@ -163,6 +177,10 @@ class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
         
         updateOKButton(false);
         setOnShown(e -> Platform.runLater(nameField::requestFocus));
+        if (Config.makeDialogsResizable())
+        {
+            setResizable(true);
+        }
     }
 
     /**

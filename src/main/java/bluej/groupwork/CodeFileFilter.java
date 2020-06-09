@@ -21,9 +21,6 @@
  */
 package bluej.groupwork;
 
-import bluej.pkgmgr.BlueJPackageFile;
-import bluej.utility.Debug;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
@@ -33,6 +30,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import bluej.pkgmgr.BlueJPackageFile;
+import bluej.utility.Debug;
+
 /**
  * A FilenameFilter that filters out files based on a list of patterns. It also
  * filters out a standard set of file types (such as bluej.pkh files, ctxt files).
@@ -41,11 +41,11 @@ import java.util.regex.PatternSyntaxException;
  */
 public class CodeFileFilter implements FileFilter, FilenameFilter
 {
-    private boolean includePkgFiles;
+    private final boolean includePkgFiles;
     private boolean includeDirectories;
     private List<Pattern> patterns = null;
     private FileFilter parentFilter = null;
-    private File projectDir;
+    private final File projectDir;
 
     /**
      * Construct a filter, which has a flag to whether include Package Files.

@@ -21,6 +21,9 @@
  */
 package bluej.editor.stride;
 
+import java.util.Collections;
+import java.util.Map;
+
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCanvas;
 import bluej.stride.generic.FrameCursor;
@@ -29,9 +32,6 @@ import bluej.stride.slots.EditableSlot;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * A sum type that holds either an EditableSlot or a FrameCursor.
@@ -106,9 +106,7 @@ class CursorOrSlot
         CursorOrSlot that = (CursorOrSlot) o;
 
         if (cursor != null ? !cursor.equals(that.cursor) : that.cursor != null) return false;
-        if (slot != null ? !slot.equals(that.slot) : that.slot != null) return false;
-
-        return true;
+        return slot != null ? slot.equals(that.slot) : that.slot == null;
     }
 
     @Override

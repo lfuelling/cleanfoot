@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2014, Oracle and/or its affiliates. Copyright (c) 2015, Michael Koelling and John Rosenborg. All rights reserved.
+ * Copyright (c) 2011, 2014, Oracle and/or its affiliates.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,20 +24,33 @@
  */
 package bluej.utility.javafx;
 
-import com.sun.javafx.css.converters.EnumConverter;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.DoublePropertyBase;
-import javafx.beans.property.ObjectProperty;
-import javafx.css.*;
-import javafx.geometry.*;
-import javafx.scene.Node;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
+/*
+ * This file contains source taken from Oracle JavaFX "FlowPane" class, available under the
+ * GPL-with-classpath-exception license as per the original copyright notice above. Modifications
+ * have been made for use in BlueJ/Greenfoot.
+ * 
+ * Modified: 2015, 2018.
+ */
 
+import javafx.css.SimpleStyleableDoubleProperty;
+import javafx.scene.layout.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.DoublePropertyBase;
+import javafx.beans.property.ObjectProperty;
+import javafx.css.CssMetaData;
+import javafx.css.StyleableObjectProperty;
+import javafx.css.StyleableProperty;
+import javafx.css.converter.EnumConverter;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
+import javafx.css.Styleable;
 
 /**
  * FlowPane lays out its children in a flow that wraps at the flowpane's boundary.
@@ -85,7 +98,7 @@ import java.util.List;
  *
  * <p>
  * FlowPane may be styled with backgrounds and borders using CSS.  See
- * {@link Region Region} superclass for details.</p>
+ * {@link javafx.scene.layout.Region Region} superclass for details.</p>
  *
  * <h4>Resizable Range</h4>
  *
@@ -194,7 +207,7 @@ public class HangingFlowPane extends Pane {
         getChildren().addAll(children);
     }
 
-    private SimpleStyleableDoubleProperty hangingIndentProperty = new SimpleStyleableDoubleProperty(StyleableProperties.HANGING_INDENT, 0.0);
+    private final SimpleStyleableDoubleProperty hangingIndentProperty = new SimpleStyleableDoubleProperty(StyleableProperties.HANGING_INDENT, 0.0);
 
     /**
      * The amount that each row after the first is indented by.
@@ -203,7 +216,7 @@ public class HangingFlowPane extends Pane {
     {
         return hangingIndentProperty;
     }
-
+    
     public void setHangingIndent(double pixels)
     {
         hangingIndentProperty.set(pixels);
@@ -212,8 +225,8 @@ public class HangingFlowPane extends Pane {
     /**
      * The gap between rows when there are multiple rows
      */
-    private SimpleStyleableDoubleProperty rowSpacingProperty = new SimpleStyleableDoubleProperty(StyleableProperties.ROW_SPACING, 0.0);
-
+    private final SimpleStyleableDoubleProperty rowSpacingProperty = new SimpleStyleableDoubleProperty(StyleableProperties.ROW_SPACING, 0.0);
+    
     /**
      * The preferred width where content should wrap in a horizontal flowpane or
      * the preferred height where content should wrap in a vertical flowpane.
@@ -427,7 +440,7 @@ public class HangingFlowPane extends Pane {
                             runLength -= run.rects.get(run.rects.size() - 1).width + hgap;
                             run.rects.remove(run.rects.size() - 1);
                         }
-
+                        
                         // Make sure we can break here.  If not, and the run is not empty,
                         // go backwards (or keep going backwards)
                         // until we find a suitable break point.  However, if we have been
@@ -714,7 +727,7 @@ public class HangingFlowPane extends Pane {
 
     /**
      * Returns the baseline offset of provided children, with respect to the minimum complement, computed
-     * by {@link #getMinBaselineComplement(List)} from the same set of children.
+     * by {@link #getMinBaselineComplement(java.util.List)} from the same set of children.
      * @param children the children with baseline alignment
      * @param margins their margins (callback)
      * @param positionToWidth callback for children widths (can return -1 if no bias is used)
@@ -870,7 +883,7 @@ public class HangingFlowPane extends Pane {
     }
 
     /* utility method for computing the max of children's min or pref heights, taking into account baseline alignment */
-    private double getMaxAreaHeight(List<Node> children, double childWidths[], VPos valignment, boolean minimum) {
+    private double getMaxAreaHeight(List<Node> children, double[] childWidths, VPos valignment, boolean minimum) {
         final double singleChildWidth = childWidths == null ? -1 : childWidths.length == 1 ? childWidths[0] : Double.NaN;
         if (valignment == VPos.BASELINE) {
             double maxAbove = 0;
@@ -935,7 +948,7 @@ public class HangingFlowPane extends Pane {
         }
     }
 
-    public static enum FlowAlignment { LEFT, RIGHT }
+    public enum FlowAlignment { LEFT, RIGHT }
     private static final String ALIGNMENT = "hangingflowpane-alignment";
 
     /**

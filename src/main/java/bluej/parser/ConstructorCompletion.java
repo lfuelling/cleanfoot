@@ -21,6 +21,12 @@
  */
 package bluej.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import bluej.debugger.gentype.ConstructorReflective;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugger.gentype.JavaType;
@@ -28,12 +34,6 @@ import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Created by neil on 07/09/15.

@@ -21,12 +21,13 @@
  */
 package bluej.groupwork.svn;
 
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.SVNClientInterface;
+
 import bluej.groupwork.TeamworkCommand;
 import bluej.groupwork.TeamworkCommandAborted;
 import bluej.groupwork.TeamworkCommandResult;
 import bluej.utility.Debug;
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.SVNClientInterface;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -38,7 +39,7 @@ import threadchecker.Tag;
 abstract public class SvnCommand
     implements TeamworkCommand
 {
-    private SvnRepository repository;
+    private final SvnRepository repository;
     private SVNClientInterface client;
     private boolean cancelled = false;
     

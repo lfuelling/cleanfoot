@@ -1,6 +1,4 @@
-import greenfoot.Actor;
-import greenfoot.Color;
-import greenfoot.GreenfootImage;
+import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 
 
 /**

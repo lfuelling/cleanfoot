@@ -21,6 +21,13 @@
  */
 package bluej.stride.framedjava.convert;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
@@ -29,12 +36,8 @@ import bluej.stride.framedjava.ast.SuperThisParamsExpressionFragment;
 import bluej.stride.framedjava.convert.ConversionWarning.UnsupportedFeature;
 import bluej.stride.framedjava.elements.AssignElement;
 import bluej.stride.framedjava.elements.CodeElement;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
-import java.util.function.Consumer;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Class in charge of building expressions.
@@ -58,7 +61,7 @@ class ExpressionBuilder
     // The top-level assignment operator (e.g. =, +=, >>=), if any
     private LocatableToken assignOp; // may be null
     // The list of JavaTokenTypes.INC,DEC found in the expression
-    private List<Integer> incDec = new ArrayList<>();
+    private final List<Integer> incDec = new ArrayList<>();
     // The function to record a conversion warning
     private final Consumer<ConversionWarning> addWarning;
     // The stack of currently open masks.  We only need to record
@@ -204,8 +207,8 @@ class ExpressionBuilder
     }
 
     // When BiFunction isn't enough...
-    public static interface TriFunction<T1, T2, T3, R>
+    public interface TriFunction<T1, T2, T3, R>
     {
-        public R apply(T1 t1, T2 t2, T3 t3);
+        R apply(T1 t1, T2 t2, T3 t3);
     }
 }

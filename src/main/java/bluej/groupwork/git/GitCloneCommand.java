@@ -25,7 +25,10 @@ package bluej.groupwork.git;
 import bluej.groupwork.TeamworkCommandAborted;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
+import static bluej.groupwork.git.GitProvider.connectionDiagnosis;
 import bluej.utility.DialogManager;
+import java.io.File;
+import java.io.IOException;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -34,11 +37,6 @@ import org.eclipse.jgit.errors.NoRemoteRepositoryException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.StoredConfig;
 
-import java.io.File;
-import java.io.IOException;
-
-import static bluej.groupwork.git.GitProvider.connectionDiagnosis;
-
 /**
  * Clone a remote repository into a local directory.
  * @author Fabio Hedayioglu
@@ -46,7 +44,7 @@ import static bluej.groupwork.git.GitProvider.connectionDiagnosis;
 public class GitCloneCommand extends GitCommand 
 {
 
-    private File clonePath;
+    private final File clonePath;
 
     public GitCloneCommand(GitRepository repository, File projectPath) 
     {

@@ -21,7 +21,7 @@
  */
 package bluej.extensions;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
 /**
  * Extensions which wish to add preference items to BlueJ's Tools/Preferences/Extensions 
@@ -87,7 +87,7 @@ public interface PreferenceGenerator
      *
      * @return    The JPanel to contain preference data.
      */
-    public JPanel getPanel();
+    JPanel getPanel();
 
 
     /**
@@ -95,7 +95,7 @@ public interface PreferenceGenerator
      * its preference panel.
      * This is called from a swing thread, so be quick.
      */
-    public void loadValues();
+    void loadValues();
 
 
     /**
@@ -103,6 +103,6 @@ public interface PreferenceGenerator
      * its internal state. Value checking can be performed at this point.
      * This is called from a swing thread, so be quick.
      */
-    public void saveValues();
+    void saveValues();
 }
 

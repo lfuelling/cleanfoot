@@ -27,30 +27,33 @@ import bluej.groupwork.TeamUtils;
 import bluej.groupwork.TeamworkCommand;
 import bluej.groupwork.TeamworkCommandResult;
 import bluej.groupwork.ui.CommitAndPushFrame;
+import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.FXWorker;
-import javafx.application.Platform;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import javafx.application.Platform;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * This class implements the push action.
- *
  * @author Fabio Heday
  */
 @OnThread(Tag.FXPlatform)
-public class PushAction extends TeamAction {
-    private CommitAndPushFrame commitCommentsFrame;
-    private Set<File> filesToPush;
+public class PushAction extends TeamAction
+{
+    private final CommitAndPushFrame commitCommentsFrame;
+    private final Set<File> filesToPush;
     private PushWorker worker;
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private StatusHandle statusHandle;
 
-    public PushAction(CommitAndPushFrame frame) {
+    public PushAction(CommitAndPushFrame frame)
+    {
         super(Config.getString("team.push"), false);
         commitCommentsFrame = frame;
         this.filesToPush = new HashSet<>();
@@ -59,7 +62,8 @@ public class PushAction extends TeamAction {
     /**
      * Cancel the push, if it is running.
      */
-    public void cancel() {
+    public void cancel()
+    {
         setEnabled(true);
         if (worker != null) {
             worker.abort();
@@ -69,16 +73,17 @@ public class PushAction extends TeamAction {
 
     /**
      * Set the status handle to use in order to perform the commit operation.
-     *
      * @param statusHandle
      */
     @OnThread(Tag.Worker)
-    public synchronized void setStatusHandle(StatusHandle statusHandle) {
+    public synchronized void setStatusHandle(StatusHandle statusHandle)
+    {
         this.statusHandle = statusHandle;
     }
 
     @Override
-    protected void actionPerformed(Project project) {
+    protected void actionPerformed(Project project)
+    {
         commitCommentsFrame.startProgress();
         commitCommentsFrame.displayMessage(Config.getString("team.push.statusMessage"));
         setEnabled(false);
@@ -94,20 +99,22 @@ public class PushAction extends TeamAction {
      *
      * @author Fabio Heday
      */
-    private class PushWorker extends FXWorker {
-        private TeamworkCommand command;
+    private class PushWorker extends FXWorker
+    {
+        private final TeamworkCommand command;
         private TeamworkCommandResult result = null;
         private final boolean hasPassword;
         private boolean aborted;
 
         @OnThread(Tag.FXPlatform)
-        public PushWorker(Project project) {
+        public PushWorker(Project project)
+        {
             command = statusHandle.pushAll(filesToPush);
 
             //check if we have the password.
             if (!project.getTeamSettingsController().hasPasswordString()) {
                 //ask for the password.
-                if (!project.getTeamSettingsDialog().showAndWait().isPresent()) {
+                if ( ! project.getTeamSettingsDialog().showAndWait().isPresent() ) {
                     //user cancelled.
                     commitCommentsFrame.setVisible(true);
                     hasPassword = false;
@@ -121,8 +128,10 @@ public class PushAction extends TeamAction {
 
         @Override
         @OnThread(Tag.Worker)
-        public Object construct() {
-            if (!hasPassword) {
+        public Object construct()
+        {
+            if (!hasPassword)
+            {
                 Platform.runLater(this::abort);
                 return null;
             }
@@ -130,22 +139,25 @@ public class PushAction extends TeamAction {
             return result;
         }
 
-        public void abort() {
+        public void abort()
+        {
             command.cancel();
             aborted = true;
         }
 
         @Override
-        public void finished() {
+        public void finished()
+        {
             final Project project = commitCommentsFrame.getProject();
 
             if (!aborted) {
                 commitCommentsFrame.stopProgress();
                 if (!result.isError()) {
-                    if (!result.wasAborted()) {
+                    if ( !result.wasAborted()) {
                         commitCommentsFrame.displayMessage(Config.getString("team.push.statusDone"));
                     }
-                } else { // result is Error
+                }
+                else { // result is Error
                     commitCommentsFrame.displayMessage(Config.getString("team.push.error"));
                 }
             }
@@ -154,13 +166,9 @@ public class PushAction extends TeamAction {
 
             if (!aborted) {
                 setEnabled(true);
-                if (project.getTeamSettingsController().isDVCS()) {
-                    //do not close window, just update its contents.
-                    commitCommentsFrame.setVisible(true);
-                } else {
-                    //close window.
-                    commitCommentsFrame.setVisible(false);
-                }
+                //do not close window, just update its contents.
+                //close window.
+                commitCommentsFrame.setVisible(project.getTeamSettingsController().isDVCS());
             }
         }
     }

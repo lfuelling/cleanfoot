@@ -21,20 +21,22 @@
  */
 package bluej.stride.slots;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.ErrorShower;
-import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.UnderlineContainer;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.RecallableFocus;
-import bluej.utility.Utility;
-import bluej.utility.javafx.ErrorUnderlineCanvas.UnderlineInfo;
 import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.binding.ConcatListBinding;
 import bluej.utility.javafx.binding.DeepListBinding;
+
 import javafx.beans.value.ObservableBooleanValue;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -42,12 +44,17 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.RecallableFocus;
+import bluej.utility.Utility;
+import bluej.utility.javafx.ErrorUnderlineCanvas.UnderlineInfo;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.binding.ConcatListBinding;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * EditableSlot is used to access functionality common to all slots.  EditableSlot extends HeaderItem,
@@ -58,14 +65,14 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
     /**
      * Requests focus on the slot, at whatever position makes sense (should not perform a select-all)
      */
-    default public void requestFocus() { requestFocus(Focus.LEFT); }
+    default void requestFocus() { requestFocus(Focus.LEFT); }
 
     /**
      * Requests focus at the given position.
      * @param on Where to focus: LEFT, RIGHT or ALL
      * @see bluej.stride.slots.Focus
      */
-    public void requestFocus(Focus on);
+    void requestFocus(Focus on);
 
     /**
      * Called by the editor to indicate that we have lost focus.  We can't just listen to when our components
@@ -77,8 +84,7 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * Note that this method may currently be called on a slot which did not have focus -- it is more like
      * "notifyHasNoFocus" than "youHadFocusButJustLostIt"
      */
-    @OnThread(Tag.FXPlatform)
-    public void lostFocus();
+    @OnThread(Tag.FXPlatform) void lostFocus();
 
     /**
      * A property reflecting whether the field is "effectively focused"
@@ -88,54 +94,53 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * have GUI focus, but for our purposes it is logically the focus owner
      * within the editor.
      */
-    public ObservableBooleanValue effectivelyFocusedProperty();
+    ObservableBooleanValue effectivelyFocusedProperty();
 
     /**
      * Called to cleanup any state or overlays when the slot is going to be removed.
      * TODO May not be needed any more; might be covered by lostFocus
      */
-    public void cleanup();
+    void cleanup();
 
     /**
      * Called when the whole top level frame has been saved, so slots can perform any necessary updates
      * (e.g. method prompts)
      */
-    @OnThread(Tag.FXPlatform)
-    public void saved();
+    @OnThread(Tag.FXPlatform) void saved();
 
     // No need for any implementing classes to further override this:
-    default public @Override
+    default @Override
     EditableSlot asEditable() { return this; }
 
     /**
      * Gets the parent Frame of the slot
      * @return The parent frame
      */
-    public Frame getParentFrame();
+    Frame getParentFrame();
 
     /**
      * A method used to check/access this slot as an ExpressionSlot (nicer than using cast/instanceof)
      * @return Get this slot as an expression slot (type cast)
      */
-    default public ExpressionSlot asExpressionSlot() { return null; }
+    default ExpressionSlot asExpressionSlot() { return null; }
 
     /**
      * Checks whether the slot is blank or close enough.  Definition is context-dependent on the slot
      * @return True, if the slot is (essentially) blank
      */
-    public boolean isAlmostBlank();
+    boolean isAlmostBlank();
 
     /**
      * The amount of effort (roughly, keypresses) required to create this slot's content
      *
      * See the documentation of Frame.calculateEffort for more information.
      */
-    public int calculateEffort();
+    int calculateEffort();
 
-    public static enum TopLevelMenu { EDIT, VIEW }
+    enum TopLevelMenu { EDIT, VIEW }
 
     // This is an ordering across all menus
-    public static enum MenuItemOrder
+    enum MenuItemOrder
     {
         // The integer is a block number, which is used to group and add dividers.
         // The ordering of the block numbers doesn't matter, it just needs to be a different number for each block,
@@ -162,10 +167,10 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
         }
     }
 
-    public static class SortedMenuItem
+    class SortedMenuItem
     {
         private final MenuItem item;
-        private MenuItemOrder sortOrder;
+        private final MenuItemOrder sortOrder;
 
         private SortedMenuItem(MenuItem item, MenuItemOrder sortOrder)
         {
@@ -233,7 +238,7 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * for the menu containing the items being shown or hidden, override the class and implement
      * onShowing/onHidden.
      */
-    public static class MenuItems
+    class MenuItems
     {
         protected final ObservableList<SortedMenuItem> items;
         
@@ -303,7 +308,7 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * @param contextMenu Whether this is a context menu or top level
      * @return The menu items
      */
-    default public Map<TopLevelMenu, MenuItems> getMenuItems(boolean contextMenu) { return Collections.emptyMap(); }
+    default Map<TopLevelMenu, MenuItems> getMenuItems(boolean contextMenu) { return Collections.emptyMap(); }
 
     /**
      * Gets the relevant graphical node related to the given error, used for scrolling to the error.
@@ -312,7 +317,7 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * @return The Node where the error is
      */
     @Override
-    default public Node getRelevantNodeForError(CodeError err)
+    default Node getRelevantNodeForError(CodeError err)
     {
         return getComponents().stream().findFirst().orElse(null);
     }
@@ -321,15 +326,13 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * Adds the given error to the slot
      * @param error The error to add
      */
-    @OnThread(Tag.FXPlatform)
-    public void addError(CodeError error);
+    @OnThread(Tag.FXPlatform) void addError(CodeError error);
 
     /**
      * Removes any errors that were present during previous calls to flagErrorsAsOld,
      * and have not since been added with addError
      */
-    @OnThread(Tag.FXPlatform)
-    public void removeOldErrors();
+    @OnThread(Tag.FXPlatform) void removeOldErrors();
 
     /**
      * Flags all errors as old.  Generally, the pattern is:
@@ -340,31 +343,29 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * This avoids an annoying blinking out/in of errors that happens if we just did removeAll/add;
      * this way, an error that is still present, never gets removed
      */
-    @OnThread(Tag.FXPlatform)
-    public void flagErrorsAsOld();
+    @OnThread(Tag.FXPlatform) void flagErrorsAsOld();
 
     /**
      * Gets any errors currently on the slot
      * @return A stream of errors
      */
-    @OnThread(Tag.FXPlatform)
-    public Stream<CodeError> getCurrentErrors();
+    @OnThread(Tag.FXPlatform) Stream<CodeError> getCurrentErrors();
 
     /**
      * Gets the JavaFragment of code that corresponds to this slot
      * @return The Java fragment
      */
-    public JavaFragment getSlotElement();
+    JavaFragment getSlotElement();
 
     /**
      * Makes the slots editable/non-editable, e.g. in the case that the surrounding frame is disabled.
      * @param editable True to make this editable
      */
-    public void setEditable(boolean editable);
+    void setEditable(boolean editable);
 
     /**
      * Checks whether the slot is editable (see setEditable, setView), e.g. for determining where to place focus next.
      * @return True if this is editable
      */
-    public boolean isEditable();
+    boolean isEditable();
 }

@@ -21,8 +21,9 @@
  */
 package greenfoot.sound;
 
-import javax.sound.sampled.Clip;
 import java.util.LinkedList;
+
+import javax.sound.sampled.Clip;
 
 /**
  * On OpenJDK/IcedTea (pulseaudio, 2012-03-26) it seems that clips take a long time to close
@@ -33,7 +34,7 @@ import java.util.LinkedList;
  */
 public class ClipCloserThread implements Runnable
 {
-    private LinkedList<Clip> clips = new LinkedList<Clip>();
+    private final LinkedList<Clip> clips = new LinkedList<Clip>();
     
     private Thread thread;
     

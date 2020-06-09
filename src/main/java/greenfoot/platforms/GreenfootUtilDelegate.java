@@ -26,6 +26,7 @@ import greenfoot.UserInfo;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.awt.Component;
 import java.net.URL;
 import java.util.List;
 
@@ -41,8 +42,7 @@ public interface GreenfootUtilDelegate
     /**
      * Get some resource from the project, specified by a relative path.
      */
-    @OnThread(Tag.Any)
-    public URL getResource(String path);
+    @OnThread(Tag.Any) URL getResource(String path);
     
     /**
      * Gets a list of sound files (as plain names, e.g. "foo.wav") that
@@ -55,51 +55,49 @@ public interface GreenfootUtilDelegate
      * and you should not rely on it being accurate (e.g. if files were just added/removed in the sounds directory,
      * or the JAR has been modified since export). 
      */
-    @OnThread(Tag.Any)
-    public Iterable<String> getSoundFiles();
+    @OnThread(Tag.Any) Iterable<String> getSoundFiles();
 
     /**
      * Get the project-relative path of the Greenfoot logo.
      */
-    @OnThread(Tag.Any)
-    public String getGreenfootLogoPath();
+    @OnThread(Tag.Any) String getGreenfootLogoPath();
 
     /**
      * Find out whether storage is supported in the current setting
      */
-    public boolean isStorageSupported();
+    boolean isStorageSupported();
 
     /**
      * null if an error or not supported, blank values if no previous storage
      */
-    public UserInfo getCurrentUserInfo();
+    UserInfo getCurrentUserInfo();
 
     /**
      * returns whether it was successful
      */
-    public boolean storeCurrentUserInfo(UserInfo data);
+    boolean storeCurrentUserInfo(UserInfo data);
 
     /**
      * null if problem, empty list if simply no data
      * 
      * Returns highest data when sorted by integer index 0
      */
-    public List<UserInfo> getTopUserInfo(int limit);
+    List<UserInfo> getTopUserInfo(int limit);
 
     /**
      * returns null if storage not supported or if there was an error.
      */
-    public GreenfootImage getUserImage(String userName);
+    GreenfootImage getUserImage(String userName);
 
     /**
      * returns null if storage is not supported (or there was an error)
      */
-    public String getUserName();
+    String getUserName();
 
     /**
      * null if problem, empty list if simply no data.
      * 
      * Returns data near the current player when sorted by integer index 0
      */
-    public List<UserInfo> getNearbyUserInfo(int maxAmount);
+    List<UserInfo> getNearbyUserInfo(int maxAmount);
 }

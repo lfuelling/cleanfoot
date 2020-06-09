@@ -27,22 +27,14 @@ import bluej.utility.Debug;
 import bluej.utility.FXWorker;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
-import greenfoot.export.ScenarioSaver;
+
+import static greenfoot.export.Exporter.ExportFunction;
 import greenfoot.export.mygame.ExistingScenarioChecker;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.MyGameClient;
 import greenfoot.export.mygame.ScenarioInfo;
-import javafx.beans.binding.BooleanBinding;
-import javafx.geometry.HPos;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.layout.*;
-import org.apache.http.conn.ConnectTimeoutException;
-import threadchecker.OnThread;
-import threadchecker.Tag;
+import greenfoot.export.ScenarioSaver;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +42,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static greenfoot.export.Exporter.ExportFunction;
+import javafx.beans.binding.BooleanBinding;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
+import org.apache.http.conn.ConnectTimeoutException;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import javax.swing.*;
 
 /**
  * Pane used for exporting to Greenfoot Gallery
@@ -96,9 +111,9 @@ public class ExportPublishTab extends ExportTab
     private ScrollPane updatePane;
     private ScrollPane description;
 
-    private CheckBox[] popTags = new CheckBox[7];
+    private final CheckBox[] popTags = new CheckBox[7];
     private TextArea tagArea;
-    private Project project;
+    private final Project project;
     private boolean firstActivation = true;
 
     private String publishedUserName;
@@ -108,9 +123,9 @@ public class ExportPublishTab extends ExportTab
     private final ExportDialog exportDialog;
     private final ScenarioSaver scenarioSaver;
 
-    private BooleanBinding userNameValidity;
-    private BooleanBinding passwordValidity;
-    private BooleanBinding titleValidity;
+    private final BooleanBinding userNameValidity;
+    private final BooleanBinding passwordValidity;
+    private final BooleanBinding titleValidity;
 
     /**
      * Creates a new instance of ExportPublishTab
@@ -123,7 +138,7 @@ public class ExportPublishTab extends ExportTab
     public ExportPublishTab(Project project, ExportDialog exportDialog,
                             ScenarioSaver scenarioSaver, ScenarioInfo scenarioInfo)
     {
-        super(scenarioInfo, "images/export-publish.png");
+        super(scenarioInfo, "export-publish.png");
         this.project = project;
         this.exportDialog = exportDialog;
         this.scenarioSaver = scenarioSaver;

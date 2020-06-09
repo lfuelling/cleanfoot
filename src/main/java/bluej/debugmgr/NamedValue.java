@@ -35,7 +35,7 @@ public interface NamedValue
     /**
      * Get the name of the named value.
      */
-    public String getName();
+    String getName();
 
     /**
      * Check whether the value has been initialized. This is used to
@@ -43,15 +43,15 @@ public interface NamedValue
      * initialized by the user. If it returns false, the value is not yet
      * available.
      */
-    public boolean isInitialized();
+    boolean isInitialized();
     
     /**
      * Check whether the value of this named value can be modified.
      */
-    public boolean isFinal();
+    boolean isFinal();
     
     /**
      * Get the nominated type of this value.
      */
-    public JavaType getGenType();
+    JavaType getGenType();
 }

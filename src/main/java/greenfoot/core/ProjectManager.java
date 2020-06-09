@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2005-2015,2017,2018  Poul Henriksen and Michael Kolling
+ Copyright (C) 2005-2015,2017,2018,2019  Poul Henriksen and Michael Kolling
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,6 +21,14 @@
  */
 package greenfoot.core;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
 import bluej.Boot;
 import bluej.Config;
 import bluej.compiler.CompileReason;
@@ -32,9 +40,9 @@ import bluej.editor.Editor;
 import bluej.extensions.BlueJ;
 import bluej.extensions.SourceType;
 import bluej.pkgmgr.DocPathEntry;
-import bluej.pkgmgr.Project;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.ClassTarget;
+import bluej.pkgmgr.Project;
+import bluej.pkgmgr.target.ClassTarget;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import greenfoot.core.GreenfootMain.VersionCheckInfo;
@@ -44,14 +52,6 @@ import greenfoot.vmcomm.GreenfootDebugHandler;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * The ProjectManager is on the BlueJ-VM. It monitors pacakage events from BlueJ
@@ -65,13 +65,13 @@ public class ProjectManager
     private static ProjectManager instance;
     
     /** The class that will be instantiated in the greenfoot VM to launch the project */
-    private String launchClass = GreenfootLauncherDebugVM.class.getName();
+    private final String launchClass = GreenfootLauncherDebugVM.class.getName();
     private static final String launcherName = "greenfootLauncher";
     
     private static volatile boolean launchFailed = false;
     
     /** Filter that matches class files */
-    private static FilenameFilter classFilter = new FilenameFilter() {
+    private static final FilenameFilter classFilter = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name)
         {
@@ -167,7 +167,7 @@ public class ProjectManager
 
                 String language = Config.getPropString("bluej.language");
 
-                if (! language.equals("labels/english"))
+                if (! language.equals("english"))
                 {
                     // Add the native language sources first
                     File langlib = new File(Config.getBlueJLibDir(), language);
@@ -175,7 +175,7 @@ public class ProjectManager
                     sourcePath.add(new DocPathEntry(apiDir, ""));
                 }
 
-                File langlib = new File(Config.getBlueJLibDir(), "labels/english");
+                File langlib = new File(Config.getBlueJLibDir(), "english");
                 File apiDir = new File(new File(langlib, "greenfoot"), "api");
                 sourcePath.add(new DocPathEntry(apiDir, ""));
                 
@@ -218,7 +218,8 @@ public class ProjectManager
      * update the project to the current version of the API and present the user
      * with a dialog with instructions on what to do if there are changes in API
      * version that requires manual modifications of the API.
-     *
+     * 
+     * @param projectDir Directory of the project.
      * @return one of GreenfootMain.VERSION_OK, VERSION_UPDATED or VERSION_BAD
      */
     @OnThread(Tag.FXPlatform)
@@ -249,7 +250,7 @@ public class ProjectManager
                 // "Would you like to try to automatically update your code?";
                 message += "\n";
                 removeAWTImports = DialogManager.askQuestionFX(null, "greenfoot-importfix-question",
-                        message) == 1;
+                        message) == 0;
             }
             else
             {

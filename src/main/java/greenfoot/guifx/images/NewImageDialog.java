@@ -25,8 +25,13 @@ import bluej.Config;
 import bluej.utility.DialogManager;
 import bluej.utility.javafx.FXCustomizedDialog;
 import greenfoot.util.ExternalAppLauncher;
+
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
@@ -37,8 +42,8 @@ import threadchecker.Tag;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.io.File;
 
 /**
  * A new image dialog, used for specifying the properties of an image before its
@@ -60,9 +65,9 @@ public class NewImageDialog extends FXCustomizedDialog<File>
     private Spinner width;
     private Spinner height;
 
-    private File projImagesDir;
-    private int imageWidth;
-    private int imageHeight;
+    private final File projImagesDir;
+    private final int imageWidth;
+    private final int imageHeight;
 
     /**
      * Create a new image dialog. This is used for specifying the properties for

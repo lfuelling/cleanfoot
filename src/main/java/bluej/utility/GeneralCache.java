@@ -21,7 +21,11 @@
  */
 package bluej.utility;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A general cache, which caches a fixed number of key/value combinations, and which
@@ -31,9 +35,9 @@ import java.util.*;
  */
 public class GeneralCache<K,V>
 {
-    private Map<K,V> cacheMap = new HashMap<K,V>();
-    private List<K> cachedKeys = new LinkedList<K>();
-    private int cacheSize;
+    private final Map<K,V> cacheMap = new HashMap<K,V>();
+    private final List<K> cachedKeys = new LinkedList<K>();
+    private final int cacheSize;
     
     /**
      * Construct a cache to cache the given number of items.

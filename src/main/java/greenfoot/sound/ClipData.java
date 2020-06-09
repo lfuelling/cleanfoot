@@ -30,11 +30,11 @@ import javax.sound.sampled.AudioFormat;
  */
 public class ClipData
 {
-    private String url;
-    private byte[] buffer;
-    private AudioFormat format;
+    private final String url;
+    private final byte[] buffer;
+    private final AudioFormat format;
     private int activeUsers;
-    private int length; // length in sample frames
+    private final int length; // length in sample frames
     
     /**
      * Construct a ClipData with a single active user.

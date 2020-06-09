@@ -21,12 +21,12 @@
  */
 package bluej.parser;
 
+import java.util.Arrays;
+import java.util.List;
+
 import bluej.stride.generic.InteractionManager.Kind;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class PrimitiveTypeCompletion extends AssistContent
 {

@@ -21,12 +21,12 @@
  */
 package bluej.debugmgr;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.ExceptionDescription;
 import bluej.debugger.gentype.JavaType;
 import bluej.pkgmgr.Package;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * Event class that holds all the relevant information about
@@ -58,7 +58,7 @@ public class ExecutionEvent
     private String[] parameters;
     private String result;
     private String command;
-    private Package pkg;
+    private final Package pkg;
     private DebuggerObject resultObject;   // If there is a result object it goes here.
     private ExceptionDescription exception;  // If an exception occurred, this is it.
 

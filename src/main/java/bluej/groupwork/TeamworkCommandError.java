@@ -21,14 +21,14 @@
  */
 package bluej.groupwork;
 
-import bluej.utility.Debug;
-import bluej.utility.DialogManager;
-
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
+
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
 
 /**
  * A teamwork command result representing a general error during command
@@ -40,8 +40,8 @@ import java.util.TreeMap;
  */
 public class TeamworkCommandError extends TeamworkCommandResult
 {
-    private String errMsg;
-    private String localizedErrMsg;
+    private final String errMsg;
+    private final String localizedErrMsg;
     
     // Map of known error messages. Populated below.
     private static final Map<String, String> messageIdMap = new TreeMap<String, String>();
@@ -124,7 +124,7 @@ public class TeamworkCommandError extends TeamworkCommandResult
             // Look for the key in the map
             Set<Entry<String, String>> entries = messageIdMap.entrySet();
             for (Iterator<Entry<String, String>> iterator = entries.iterator(); iterator.hasNext();) {
-                Entry<String, String> entry = (Entry<String, String>) iterator.next();
+                Entry<String, String> entry = iterator.next();
                 if (trimmedInput.startsWith(entry.getKey()) || trimmedInput.endsWith(entry.getKey())) {
                     betterMsg = entry.getValue();
                     break;

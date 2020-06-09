@@ -21,10 +21,10 @@
  */
 package bluej.stride.framedjava.convert;
 
+import java.util.List;
+
 import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.elements.CodeElement;
-
-import java.util.List;
 
 /**
  * An interface for building up a type definition (e.g. class or interface declaration)
@@ -32,28 +32,28 @@ import java.util.List;
 interface TypeDefHandler
 {
     // Called when the type definition has begun
-    public void typeDefBegun(LocatableToken start);
+    void typeDefBegun(LocatableToken start);
 
     // Called when the type definition has ended
-    public void typeDefEnd(LocatableToken end);
+    void typeDefEnd(LocatableToken end);
 
     // Called with the name of the type definition
-    public void gotName(String name);
+    void gotName(String name);
 
     // Called when we know we have started a class declaration
-    public void startedClass(List<Modifier> modifiers, String doc);
+    void startedClass(List<Modifier> modifiers, String doc);
 
     // Called when we know we have started an interface declaration
-    public void startedInterface(List<Modifier> modifiers, String doc);
+    void startedInterface(List<Modifier> modifiers, String doc);
 
     // Called with the content of the type definition body
-    public void gotContent(List<CodeElement> content);
+    void gotContent(List<CodeElement> content);
 
     // Called when we get a type after the extends.
     // If there are several in a type list, this is called once for each type.
-    public void typeDefExtends(String type);
+    void typeDefExtends(String type);
 
     // Called when we get a type after the implements.
     // If there are several in a type list, this is called once for each type.
-    public void typeDefImplements(String type);
+    void typeDefImplements(String type);
 }

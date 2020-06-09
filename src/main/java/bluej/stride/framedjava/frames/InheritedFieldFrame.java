@@ -21,13 +21,13 @@
  */
 package bluej.stride.framedjava.frames;
 
+import java.util.Collections;
+import java.util.List;
+
 import bluej.stride.framedjava.ast.AccessPermission;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
 import bluej.stride.operations.FrameOperation;
-
-import java.util.Collections;
-import java.util.List;
 
 public class InheritedFieldFrame extends SingleLineFrame
 {

@@ -75,7 +75,6 @@ classmgr.prefpaneltitle=Bibliotheken
 classmgr.userlibraries=Benutzerbibliotheken
 classmgr.userliblibraries=Benutzerbibliotheken aus
 classmgr.addFile=Datei hinzuf\u00fcgen
-classmgr.addDir=Ordner hinzuf\u00fcgen
 classmgr.delete=L\u00f6schen
 classmgr.statuscolumn=Status
 classmgr.statusgood=Geladen
@@ -122,7 +121,6 @@ prefmgr.edit.colortransparency=Strukturhervorhebung
 prefmgr.edit.usesyntaxhilighting=Syntaxhervorhebung verwenden
 prefmgr.edit.autoindent=Auto-Einr\u00fccken (Eingabe- und Tab-Tasten)
 prefmgr.edit.displaylinenumbers=Zeilennummern anzeigen
-prefmgr.edit.makeBackup=Sicherungskopien der Quelltexte machen
 prefmgr.edit.matchBrackets=Zusammengeh\u00f6rende Klammern
 prefmgr.edit.keybindingstitle=Tastaturbelegung
 prefmgr.edit.highlightLighter=Heller
@@ -196,7 +194,6 @@ editor.helpLabel=_Hilfe
 
 # item labels (can be omitted if same as action name)
 editor.saveLabel=Speichern
-editor.reloadLabel=Neu laden
 editor.printLabel=Drucken...
 editor.closeLabel=Schlie\u00dfen
 
@@ -314,8 +311,6 @@ editor.info.version=Moe-Version
 editor.info.errorSaving=Fehler beim Speichern der Datei!
 editor.info.compiled=Klasse \u00fcbersetzt - keine Syntaxfehler
 editor.info.noChanges=Keine \u00c4nderungen zu speichern
-editor.info.cannotReload=Neu laden nicht m\u00f6glich - dieser Text wurde nie gespeichert!
-editor.info.reload=("Neu laden" l\u00e4dt den zuletzt gesicherten Zustand von der Datei.)
 editor.info.emptySearchString=Leeres Suchargument.
 editor.info.notFound=Nicht gefunden (nochmals suchen, um am Anfang zu beginnen).
 editor.info.compiling=\u00dcbersetzen...

@@ -21,24 +21,30 @@
  */
 package bluej.utility;
 
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.pkgmgr.Package;
-import bluej.utility.filefilter.DirectoryFilter;
-import bluej.utility.filefilter.JavaSourceFilter;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import javax.swing.*;
-import javax.swing.plaf.FileChooserUI;
-import javax.swing.plaf.basic.BasicFileChooserUI;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.plaf.FileChooserUI;
+import javax.swing.plaf.basic.BasicFileChooserUI;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.pkgmgr.Package;
+import bluej.utility.filefilter.DirectoryFilter;
+import bluej.utility.filefilter.JavaSourceFilter;
 
 /**
  * A file chooser for opening packages.
@@ -204,8 +210,8 @@ class PackageChooser extends JFileChooser
                 return;
 
             int maxDisplay = 3;
-            File subDirs[] = displayDir.listFiles(new DirectoryFilter());
-            File srcFiles[] = displayDir.listFiles(new JavaSourceFilter());
+            File[] subDirs = displayDir.listFiles(new DirectoryFilter());
+            File[] srcFiles = displayDir.listFiles(new JavaSourceFilter());
             List<String> listVec = new ArrayList<String>();
 
             // headerLines is 3
@@ -237,7 +243,7 @@ class PackageChooser extends JFileChooser
                     listVec.add(subDirs[i].getName());
 
                     // now display sub sub dirs
-                    File subSubDirs[] = subDirs[i].listFiles(new DirectoryFilter());
+                    File[] subSubDirs = subDirs[i].listFiles(new DirectoryFilter());
 
                     if (subSubDirs != null) {
                         for(int j=0; j<subSubDirs.length; j++) {

@@ -22,6 +22,7 @@
 package bluej.debugger;
 
 import bluej.Config;
+import bluej.pkgmgr.Project;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

@@ -21,23 +21,6 @@
  */
 package bluej.pkgmgr;
 
-import bluej.BlueJTheme;
-import bluej.Config;
-import bluej.classmgr.ClassMgrPrefPanel;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.UnfocusableScrollPane;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,6 +29,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import bluej.utility.javafx.UnfocusableScrollPane;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+
+import bluej.BlueJTheme;
+import bluej.Config;
+import bluej.classmgr.ClassMgrPrefPanel;
+import bluej.prefmgr.PrefMgrDialog;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Dialog for exporting the project to a jar file. Here, the jar
@@ -71,7 +73,7 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
     private final CheckBox pkgFilesBox;
     private final List<UserLibInfo> userLibs = new ArrayList<>();
 
-    private GridPane userLibPanel;
+    private final GridPane userLibPanel;
     
     @OnThread(Tag.Any)
     public static class ExportInfo

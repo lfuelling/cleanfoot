@@ -27,9 +27,10 @@ import greenfoot.World;
 import greenfoot.WorldCreator;
 import greenfoot.core.Simulation;
 import greenfoot.util.GreenfootUtil;
-import junit.framework.TestCase;
 
 import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * Tests whether the collision checker works correctly when dealing with sub classes.

@@ -21,12 +21,12 @@
  */
 package bluej.testmgr.record;
 
-import bluej.debugger.DebuggerObject;
-import bluej.pkgmgr.PkgMgrFrame;
+import java.util.ArrayList;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
+import bluej.debugger.DebuggerObject;
+import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * Records a single user interaction with the object
@@ -49,7 +49,7 @@ public abstract class InvokerRecord
      * A collection of assertion skeletons made about the invoker
      * record.
      */
-    private ArrayList<String> assertions = new ArrayList<String>();
+    private final ArrayList<String> assertions = new ArrayList<String>();
     private DebuggerObject resultObject;
     
     private static int nextUniqueIdentifier = 1;
@@ -173,7 +173,7 @@ public abstract class InvokerRecord
     
     public String getAssertion(int i)
     {
-        return (String) assertions.get(i);
+        return assertions.get(i);
     }
     
     /**

@@ -30,8 +30,8 @@ import java.util.List;
  */
 public class MethodDocs
 {
-    private String javaDoc;
-    private List<String> paramNames;
+    private final String javaDoc;
+    private final List<String> paramNames;
     
     public MethodDocs(String javaDoc, List<String> paramNames)
     {

@@ -21,14 +21,8 @@
  */
 package bluej.utility;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
+import java.io.*;
 
 /**
  * A properties object which outputs its entries in sorted order

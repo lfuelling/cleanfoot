@@ -31,8 +31,8 @@ import java.io.File;
  */
 public class DocPathEntry
 {
-    private File file;
-    private String pathPrefix;
+    private final File file;
+    private final String pathPrefix;
     
     /**
      * Create a new DocPathEntry, for the given file (either a jar, zip, or a directory), and

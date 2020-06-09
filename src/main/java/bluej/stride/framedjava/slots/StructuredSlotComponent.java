@@ -21,17 +21,19 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import bluej.stride.generic.Frame.View;
 import bluej.stride.generic.InteractionManager;
 import bluej.utility.javafx.SharedTransition;
+
+import javafx.beans.value.ObservableStringValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * An expression slot has a hierarchy of InfixStructured items, starting with

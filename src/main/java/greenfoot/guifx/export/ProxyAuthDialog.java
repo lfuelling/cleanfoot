@@ -23,11 +23,13 @@ package greenfoot.guifx.export;
 
 import bluej.Config;
 import bluej.utility.javafx.FXCustomizedDialog;
+
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import threadchecker.OnThread;
@@ -86,8 +88,8 @@ public class ProxyAuthDialog extends FXCustomizedDialog<ProxyAuthDialog.ProxyAut
      */
     public class ProxyAuthInfo
     {
-        private String username;
-        private String password;
+        private final String username;
+        private final String password;
 
         private ProxyAuthInfo(String username, String password)
         {

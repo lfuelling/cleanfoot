@@ -37,13 +37,13 @@ import java.util.Set;
 public class SoundCollection implements SimulationListener, SoundPlaybackListener
 {
     /** Sounds currently playing or paused by this SoundCollection. */
-    private Set<Sound> playingSounds = new HashSet<Sound>();
+    private final Set<Sound> playingSounds = new HashSet<Sound>();
     
     /** Sounds paused by the user code. */
-    private Set<Sound> pausedSounds = new HashSet<Sound>(); 
+    private final Set<Sound> pausedSounds = new HashSet<Sound>();
     
     /** Sounds closed by the user code. */
-    private Set<Sound> stoppedSounds = new HashSet<Sound>();     
+    private final Set<Sound> stoppedSounds = new HashSet<Sound>();
     
     private volatile boolean ignoreEvents = false;
     

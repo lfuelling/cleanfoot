@@ -21,20 +21,68 @@
  */
 package threadchecker;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
-import com.sun.tools.javac.tree.JCTree;
-
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.type.UnionType;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
+
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.JavacTask;
+import com.sun.source.util.SimpleTreeVisitor;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * A visitor class that visits the whole AST and does checks against the
@@ -237,19 +285,6 @@ class TCScanner extends TreePathScanner<Void, Void>
         
         // AWT events are dispatched from the Swing thread:
         methodAnns.add(new MethodRef("java.awt.DefaultKeyboardFocusManager", "processKeyEvent", new LocatedTag(Tag.Swing, false, false, "<AWT events>")));
-
-        try
-        {
-            methodAnns.add(new MethodRef("com.apple.eawt.PreferencesHandler", "handlePreferences", new LocatedTag(Tag.Swing, false, false, "<EAWT>")));
-            methodAnns.add(new MethodRef("com.apple.eawt.AboutHandler", "handleAbout", new LocatedTag(Tag.Swing, false, false, "<EAWT>")));
-            methodAnns.add(new MethodRef("com.apple.eawt.QuitHandler", "handleQuitRequestWith", new LocatedTag(Tag.Swing, false, false, "<EAWT>")));
-            methodAnns.add(new MethodRef("com.apple.eawt.OpenFilesHandler", "openFiles", new LocatedTag(Tag.Swing, false, false, "<EAWT>")));
-        }
-        catch (NoSuchMethodException e)
-        {
-            // This happens on Windows, because the Mac methods are unknown.  It's fine, just continue on our way.
-        }
-        
     }
     
     private static String typeToName(PathAnd<ClassTree> t)
@@ -359,7 +394,7 @@ class TCScanner extends TreePathScanner<Void, Void>
      * @return Returns the effective tag of the method
      */
     private LocatedTag checkAgainstOverridden(Name methodName, LocatedTag methodTag,
-                                              TypeMirror methodType, Collection<? extends TypeMirror> superTypes, boolean invocation, Tree errorLocation)
+            TypeMirror methodType, Collection<? extends TypeMirror> superTypes, boolean invocation, Tree errorLocation)
     {
         boolean subTagWasPackage = false;
         LocatedTag subTag = methodTag;
@@ -426,7 +461,7 @@ class TCScanner extends TreePathScanner<Void, Void>
                 appliedTags.put(st.toString(), superClassTag);
             }
             
-            boolean methodNameIsInit = methodName == null ? false : methodName.toString().equals("<init>");
+            boolean methodNameIsInit = methodName != null && methodName.toString().equals("<init>");
             
             for (Element superMember : types.asElement(st).getEnclosedElements())
             {
@@ -675,7 +710,7 @@ class TCScanner extends TreePathScanner<Void, Void>
             }
             
             final TypeMirror tmFinal = invokeTargetType;
-            List<LocatedTag> candidateDirectTags = candidates.stream().map(e ->
+            List<LocatedTag> candidateDirectTags = candidates.stream().map(e -> 
                 getRemoteTag(e, () -> tmFinal.toString() + "." + e.getSimpleName().toString(), errorLocation)
             ).distinct().collect(Collectors.toList());
             
@@ -840,7 +875,8 @@ class TCScanner extends TreePathScanner<Void, Void>
 
     private void issueError(String errorMsg, Tree errorLocation)
     {
-        String link = cu.getLineMap() == null ? "" : cu.getSourceFile().getName() + ":" + cu.getLineMap().getLineNumber(((JCTree)errorLocation).getStartPosition()) + ": error:"; // [line added as IntelliJ location link]";
+        long startPosition = trees.getSourcePositions().getStartPosition(cu, errorLocation);
+        String link = cu.getLineMap() == null ? "" : cu.getSourceFile().getName() + ":" + cu.getLineMap().getLineNumber(startPosition) + ": error:"; // [line added as IntelliJ location link]";
         trees.printMessage(Kind.ERROR, "\n" + link + errorMsg, errorLocation, cu);
     }
 
@@ -857,7 +893,7 @@ class TCScanner extends TreePathScanner<Void, Void>
     }
     
     private Optional<LocatedTag> getCurrentTag(Collection<? extends TypeMirror> superTypes,
-                                               Tree errorLocation)
+            Tree errorLocation)
     {
         // If if we are an initializer block, also look at the outer method/class:
         Name methodName;
@@ -914,7 +950,7 @@ class TCScanner extends TreePathScanner<Void, Void>
         
         LocatedTag inheritedTag = methodScopeStack.isEmpty() ? null : checkAgainstOverridden(methodName, methodAnn, methodType, superTypes, false, errorLocation);
         PackageElement pkg = (PackageElement)trees.getElement(typeScopeStack.getFirst().path).getEnclosingElement();
-        LocatedTag packageAnn = getRemoteTag(pkg, () -> pkg.getQualifiedName().toString() + " package", errorLocation);
+        LocatedTag packageAnn = getRemoteTag(pkg, () -> pkg.getQualifiedName().toString() + " package", errorLocation);  
                 //cu.getPackageAnnotations().stream().map(t -> getSourceTag(t, cu.getPackageName().toString() + " package")).filter(t -> t != null).findFirst().orElse(null);
         
         LocatedTag lambdaAnn = null;
@@ -976,7 +1012,7 @@ class TCScanner extends TreePathScanner<Void, Void>
     
     private LocatedTag fromSpecial(String typeName, String call, Optional<LocatedTag> calledFrom_, Tree errorLocation)
     {
-        Tag calledFrom = calledFrom_.map(lt -> lt.tag).orElse(Tag.Any);
+        Tag calledFrom = calledFrom_.map(lt -> lt.tag).orElse(Tag.Any); 
         if (Arrays.asList("Platform.runLater").contains(call))
         {
             if (calledFrom == Tag.FXPlatform || calledFrom == Tag.FX)
@@ -1056,7 +1092,7 @@ class TCScanner extends TreePathScanner<Void, Void>
             boolean requireSynchronized = false;
             for (String s : a.getArguments().stream().map(Object::toString).collect(Collectors.toList()))
             {
-                for (Tag t : Arrays.asList(Tag.values()))
+                for (Tag t : Tag.values())
                 {
                     if (s.equals("value = " + enumToQual(t)))
                     {
@@ -1093,7 +1129,7 @@ class TCScanner extends TreePathScanner<Void, Void>
         boolean requireSynchronized = false;
         for (String s : stringValues)
         {
-            for (Tag t : Arrays.asList(Tag.values()))
+            for (Tag t : Tag.values())
             {
                 if (s.equals("value() = " + Tag.class.getCanonicalName() + "." + t.toString()))
                 {

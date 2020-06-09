@@ -38,7 +38,7 @@ import threadchecker.Tag;
 @OnThread(Tag.FXPlatform)
 public final class StatusLabel extends VBox
 {
-    public static enum Status
+    public enum Status
     {
         READONLY("editor.state.readOnly"),
         SAVED("editor.state.saved"),
@@ -46,7 +46,7 @@ public final class StatusLabel extends VBox
 
         private final String displayText;
 
-        private Status(String displayKey)
+        Status(String displayKey)
         {
             this.displayText = Config.getString(displayKey);
         }

@@ -216,7 +216,7 @@ public class Import
         Iterator<File> i = dirs.iterator();
 
         while(i.hasNext()) {
-            File f = (File) i.next();
+            File f = i.next();
             try {
                 PackageFileFactory.getPackageFile(f).create();
             }

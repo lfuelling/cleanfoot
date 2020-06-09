@@ -21,12 +21,13 @@
  */
 package bluej.debugger.gentype;
 
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.List;
+
 import bluej.parser.ConstructorOrMethodReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Modifier;
-import java.util.List;
 
 /**
  * Represents a method from a reflective.

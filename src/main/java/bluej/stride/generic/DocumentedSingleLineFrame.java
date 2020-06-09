@@ -21,8 +21,9 @@
  */
 package bluej.stride.generic;
 
-import bluej.utility.javafx.SharedTransition;
 import javafx.scene.Node;
+
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

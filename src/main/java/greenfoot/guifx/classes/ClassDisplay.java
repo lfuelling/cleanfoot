@@ -22,6 +22,8 @@
 package greenfoot.guifx.classes;
 
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

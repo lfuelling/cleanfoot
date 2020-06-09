@@ -21,19 +21,22 @@
  */
 package bluej.stride.framedjava.errors;
 
-import bluej.compiler.Diagnostic.DiagnosticOrigin;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.errors.Correction.CorrectionInfo;
-import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.FXPlatformConsumer;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import bluej.compiler.Diagnostic.DiagnosticOrigin;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.errors.Correction.CorrectionInfo;
+import bluej.stride.framedjava.slots.TypeSlot;
+import bluej.stride.generic.AssistContentThreadSafe;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Debug;
+import bluej.utility.javafx.FXPlatformConsumer;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class UnknownTypeError extends DirectSlotError
 {
@@ -57,7 +60,7 @@ public class UnknownTypeError extends DirectSlotError
     @OnThread(Tag.Any)
     public UnknownTypeError(SlotFragment slotFragment, String typeName, FXPlatformConsumer<String> replace, InteractionManager editor, Stream<AssistContentThreadSafe> possibleCorrections, Stream<AssistContentThreadSafe> possibleImports)
     {
-        super(slotFragment);
+        super(slotFragment, DiagnosticOrigin.STRIDE_LATE);
         this.typeName = typeName;
         this.editor = editor;
         
@@ -71,7 +74,7 @@ public class UnknownTypeError extends DirectSlotError
     @OnThread(Tag.Any)
     private static class TypeCorrectionInfo implements CorrectionInfo
     {
-        private AssistContentThreadSafe ac;
+        private final AssistContentThreadSafe ac;
         public TypeCorrectionInfo(AssistContentThreadSafe ac) { this.ac = ac; }
         public String getCorrection() { return ac.getName(); }
         public String getDisplay()

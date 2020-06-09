@@ -21,15 +21,16 @@
  */
 package greenfoot.collision;
 
-import greenfoot.TestObject;
 import greenfoot.TestUtilDelegate;
 import greenfoot.World;
+import greenfoot.TestObject;
 import greenfoot.WorldCreator;
 import greenfoot.core.Simulation;
 import greenfoot.util.GreenfootUtil;
-import junit.framework.TestCase;
 
 import java.util.Collection;
+
+import junit.framework.TestCase;
 
 /**
  * Tests the World's and Actor's getObjectsInRange method.

@@ -22,11 +22,13 @@
 package bluej.groupwork.ui;
 
 import bluej.groupwork.HistoryInfo;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

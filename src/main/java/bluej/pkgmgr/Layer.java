@@ -10,5 +10,5 @@ import bluej.extensions.painter.ExtensionClassTargetPainter;
  */
 public enum Layer
 {
-    BACKGROUND, FOREGROUND;
+    BACKGROUND, FOREGROUND
 }

@@ -25,8 +25,7 @@ import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Comment class - the source information associated with a class or field
@@ -37,7 +36,7 @@ public final class Comment
 {
     private String target;  // identifies what this comment is for
     private String text;
-    private String paramnames[];
+    private String[] paramnames;
 
     public void load(Properties p, String prefix)
     {
@@ -89,7 +88,7 @@ public final class Comment
         if (paramnames == null)
             return null;
         
-        return (String[]) paramnames.clone();
+        return paramnames.clone();
     }
 
     @OnThread(Tag.FXPlatform)

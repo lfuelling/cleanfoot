@@ -50,7 +50,7 @@ public class Parse15Test extends junit.framework.TestCase
      */
     private File getFile(String name)
     {
-        URL url = getClass().getResource("/" + name);
+        URL url = getClass().getResource("/bluej/parser/ast/data/" + name);
         
         if (url == null || url.getFile().equals(""))
             return null;
@@ -111,14 +111,14 @@ public class Parse15Test extends junit.framework.TestCase
         Iterator<Selection> i = l.iterator();
         i.next();
         
-        testSel = (Selection) i.next();
+        testSel = i.next();
         assertEquals(5, testSel.getLine());
         assertEquals(16, testSel.getColumn());
         assertEquals(5, testSel.getEndLine());
         assertEquals(28, testSel.getEndColumn());
         
         i.next();
-        testSel = (Selection) i.next();
+        testSel = i.next();
         assertEquals(5, testSel.getLine());
         assertEquals(30, testSel.getColumn());
         assertEquals(5, testSel.getEndLine());

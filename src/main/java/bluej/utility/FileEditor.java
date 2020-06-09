@@ -21,14 +21,15 @@
  */
 package bluej.utility;
 
-import bluej.parser.symtab.Selection;
-import threadchecker.OnThread;
-import threadchecker.Tag;
+import java.io.*;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
-import java.io.*;
+
+import bluej.parser.symtab.Selection;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * An object which allows (semi) direct editing of files on
@@ -40,7 +41,7 @@ import java.io.*;
 @OnThread(Tag.SwingIsFX) // We should just remove this whole class
 public class FileEditor extends PlainDocument
 {
-    private File fileToEdit;
+    private final File fileToEdit;
 
 	/**
 	 * Construct a FileEditor object which allows "editor" style

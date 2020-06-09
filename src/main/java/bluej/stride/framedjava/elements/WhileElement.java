@@ -21,18 +21,24 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.WhileFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.ast.JavaContainerDebugHandler;
+import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.WhileFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
 
 public class WhileElement extends ContainerCodeElement implements JavaSingleLineDebugHandler, JavaContainerDebugHandler
 {

@@ -22,14 +22,14 @@
 package bluej.debugmgr;
 
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+
 import bluej.views.TypeParamView;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /** 
  * Manages an invocation history of arguments used in a package when objects 
@@ -45,7 +45,7 @@ public class CallHistory
     private List<String> objectParams = null;
     private Map<String,List<String>> typeParams = null;
 
-    private int historyLength;
+    private final int historyLength;
 
     static final int DEFAULT_LENGTH = 6;
 

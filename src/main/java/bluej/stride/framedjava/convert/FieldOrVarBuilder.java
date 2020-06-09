@@ -24,6 +24,8 @@ package bluej.stride.framedjava.convert;
 import java.util.ArrayList;
 import java.util.List;
 
+import bluej.parser.lexer.LocatableToken;
+
 /**
  * A simple class to keep track of the details of a field/local var declaration set being parsed
  */

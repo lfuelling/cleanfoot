@@ -30,9 +30,9 @@ public class LocatableToken
     private int beginLine, beginColumn;
     private int endLine, endColumn;
     private LocatableToken hiddenBefore;
-    private int type;
+    private final int type;
     private int position, length; // position and length in original source
-    private String text;
+    private final String text;
     
     public LocatableToken(int t, String txt)
     {

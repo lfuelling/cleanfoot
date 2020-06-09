@@ -23,7 +23,7 @@ package greenfoot;
 
 import greenfoot.platforms.GreenfootUtilDelegate;
 
-import java.awt.*;
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -50,7 +50,7 @@ public class TestUtilDelegate implements GreenfootUtilDelegate
 
     public String getGreenfootLogoPath()
     {
-        return "images/greenfoot-icon-16.png";
+        return "resources/images/greenfoot-icon-16.png";
     }
 
     public String getNewProjectName(Component parent)

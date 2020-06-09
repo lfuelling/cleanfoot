@@ -22,21 +22,23 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.frames.IfFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SandwichCanvasesFrame;
-import nu.xom.Element;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+
+import bluej.stride.framedjava.ast.ExpressionSlotFragment;
+import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.frames.IfFrame;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SandwichCanvasesFrame;
+import bluej.stride.generic.Frame;
+
+import nu.xom.Element;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class IfElement extends SandwichCanvasesElement
 {
@@ -122,7 +124,7 @@ public class IfElement extends SandwichCanvasesElement
     @OnThread(Tag.FX)
     @Override
     protected SandwichCanvasesFrame buildFrame(InteractionManager editor, List<Frame> firstCanvasFrames,
-                                               List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable)
+                        List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable)
     {
         frame = new IfFrame(editor, condition, firstCanvasFrames, elseIfConditions, intermediateCanvasFrames,
                                 tailCanvasFrames, enable);

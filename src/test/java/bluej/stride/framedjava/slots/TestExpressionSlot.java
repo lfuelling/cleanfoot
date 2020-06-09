@@ -58,7 +58,7 @@ public class TestExpressionSlot
     // sort of test:
     private static class CompareWrapper
     {
-        private String s;
+        private final String s;
         public CompareWrapper(String s) { this.s = s; }
         @Override public boolean equals(Object o) { if (o instanceof CompareWrapper) return s.equals(((CompareWrapper)o).s); else return false; }
         @Override public String toString() { return s; }
@@ -195,8 +195,8 @@ public class TestExpressionSlot
     
     private static class CPM
     {
-        private int stringPos;
-        private CaretPos caretPos;
+        private final int stringPos;
+        private final CaretPos caretPos;
         public CPM(int stringPos, CaretPos caretPos)
         {
             this.stringPos = stringPos;
@@ -288,7 +288,7 @@ public class TestExpressionSlot
         // Quote in a string, escaped:
         testInsert("\"\\\"\"", "{}_\"\\\"\"_{$}");
         // Escaped single quote:
-        testInsert("\"\\\'\"", "{}_\"\\\'\"_{$}");
+        testInsert("\"\\'\"", "{}_\"\\'\"_{$}");
         // Unescaped single quote:
         testInsert("\"'\"", "{}_\"'\"_{$}");
         
@@ -321,7 +321,7 @@ public class TestExpressionSlot
         
         // Example found while pasting from BlueJ (double escaped here)
         testInsert("c == '\\\\' || c == '\"' || c == '\\''",
-            "{c}=={}_\'\\\\\'_{}||{c}=={}_'\"'_{}||{c}=={}_'\\''_{$}");
+                "{c}=={}_'\\\'_{}||{c}=={}_'\"'_{}||{c}=={}_'''_{$}");
 
         // Deletion:
         testBackspace("\"a\bb\"", "{}_\"$b\"_{}");
@@ -502,10 +502,10 @@ public class TestExpressionSlot
         testSelectionInsert('(', "a{b+}+", "{a}_({b}+{})_{$}+{}");
         
         testSelectionInsert('\"', "a{bc}d", "{a}_\"bc\"_{$d}");
-        testSelectionInsert('\'', "a{bc}d", "{a}_\'bc\'_{$d}");
+        testSelectionInsert('\'', "a{bc}d", "{a}_'bc'_{$d}");
         testInsert("ab+cd", "{ab}+{cd$}");
         testSelectionInsert('\"', "a{b+c}d", "{a}_\"b+c\"_{$d}");
-        testSelectionInsert('\'', "a{b+c}d", "{a}_\'b+c\'_{$d}");
+        testSelectionInsert('\'', "a{b+c}d", "{a}_'b+c'_{$d}");
         
         testInsert("a+\"hello\"+c", "{a}+{}_\"hello\"_{}+{c$}");
         testSelectionInsert('\"', "a+\"h{ell}o\"+c", "{a}+{}_\"hell$o\"_{}+{c}");

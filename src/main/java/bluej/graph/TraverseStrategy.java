@@ -21,9 +21,10 @@
  */
 package bluej.graph;
 
-import bluej.pkgmgr.Package;
-import bluej.pkgmgr.t4rget.Target;
 import javafx.scene.input.KeyCode;
+
+import bluej.pkgmgr.Package;
+import bluej.pkgmgr.target.Target;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -44,5 +45,5 @@ public interface TraverseStrategy
      * @param key  The key that was pressed.
      * @return     A vertex that should be selected now.
      */
-    public Target findNextVertex(Package graph, Target currentVertex, KeyCode key);
+    Target findNextVertex(Package graph, Target currentVertex, KeyCode key);
 }

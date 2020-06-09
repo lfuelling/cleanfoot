@@ -21,14 +21,15 @@
  */
 package bluej.stride.framedjava.errors;
 
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 class Correction extends FixSuggestion
 {
@@ -75,18 +76,18 @@ class Correction extends FixSuggestion
     }
 
     @OnThread(Tag.Any)
-    public static interface CorrectionInfo
+    public interface CorrectionInfo
     {
         // The actual String to correct to (used for edit distance calculation):
-        public String getCorrection();
+        String getCorrection();
         // The text to display to the user in the fix list:
-        public String getDisplay();
+        String getDisplay();
     }
 
     @OnThread(Tag.Any)
     public static class SimpleCorrectionInfo implements CorrectionInfo
     {
-        private String correction;
+        private final String correction;
         public SimpleCorrectionInfo(String correction)
         {
             this.correction = correction;

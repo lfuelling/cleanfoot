@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2018  Poul Henriksen and Michael Kolling
+ Copyright (C) 2018,2019  Poul Henriksen and Michael Kolling
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -25,6 +25,8 @@ import bluej.Config;
 import bluej.utility.DialogManager;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
+
+import java.io.File;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -33,10 +35,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * Export dialog's tab for exporting to a local file (project or standalone application).
@@ -50,7 +51,7 @@ public abstract class ExportLocalTab extends ExportTab
     private final String extension;
 
     private final Window parent;
-    private TextField targetDirField;
+    protected TextField targetDirField;
 
     /**
      * Creates a new instance of an Export Local Tab.
@@ -105,7 +106,11 @@ public abstract class ExportLocalTab extends ExportTab
         exportLocationPane.setAlignment(Pos.BASELINE_LEFT);
         exportLocationPane.getStyleClass().add("location-pane");
 
-        setContent(new VBox(new Label(Config.getString("export." + type + ".help")), exportLocationPane));
+        Label helpLabel = new Label(Config.getString("export." + type + ".help"));
+        helpLabel.setWrapText(true);
+        VBox vBox = new VBox(helpLabel, exportLocationPane);
+        vBox.setPrefWidth(400.0);
+        setContent(vBox);
     }
 
     /**

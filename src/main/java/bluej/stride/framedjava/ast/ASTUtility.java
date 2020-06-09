@@ -21,6 +21,19 @@
  */
 package bluej.stride.framedjava.ast;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.FXPlatformConsumer;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 import bluej.parser.AssistContent.CompletionKind;
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
 import bluej.stride.framedjava.elements.CodeElement;
@@ -29,14 +42,7 @@ import bluej.stride.framedjava.elements.ContainerCodeElement;
 import bluej.stride.framedjava.elements.MethodWithBodyElement;
 import bluej.stride.framedjava.elements.TopLevelCodeElement;
 import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.FXPlatformConsumer;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import bluej.utility.javafx.FXConsumer;
 
 public class ASTUtility
 {

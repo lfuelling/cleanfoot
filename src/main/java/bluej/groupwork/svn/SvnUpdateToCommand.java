@@ -21,16 +21,39 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.*;
-import bluej.utility.Debug;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import javafx.application.Platform;
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.ConflictDescriptor;
+import org.tigris.subversion.javahl.ConflictResult;
+import org.tigris.subversion.javahl.Depth;
+import org.tigris.subversion.javahl.NodeKind;
+import org.tigris.subversion.javahl.Notify2;
+import org.tigris.subversion.javahl.NotifyAction;
+import org.tigris.subversion.javahl.NotifyInformation;
+import org.tigris.subversion.javahl.NotifyStatus;
+import org.tigris.subversion.javahl.PropertyData;
 import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.*;
+import org.tigris.subversion.javahl.SVNClientInterface;
+import org.tigris.subversion.javahl.Status;
+import org.tigris.subversion.javahl.StatusCallback;
+import org.tigris.subversion.javahl.SubversionException;
+
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.UpdateListener;
+import bluej.groupwork.UpdateResults;
+import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
-import java.util.*;
 
 /**
  * Subversion command to update to a particular revision.
@@ -39,12 +62,12 @@ import java.util.*;
  */
 public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
 {
-    private long version;
-    private Set<File> files;
-    private Set<File> forceFiles;
-    private UpdateListener listener;
-    private List<File> conflicts = new ArrayList<File>();
-    private Set<File> binaryConflicts = new HashSet<File>();
+    private final long version;
+    private final Set<File> files;
+    private final Set<File> forceFiles;
+    private final UpdateListener listener;
+    private final List<File> conflicts = new ArrayList<File>();
+    private final Set<File> binaryConflicts = new HashSet<File>();
     
     public SvnUpdateToCommand(SvnRepository repository, UpdateListener listener,
             long version, Set<File> files, Set<File> forceFiles)
@@ -168,7 +191,7 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
             if (! conflicts.isEmpty()) {
                 Iterator<File> i;
                 for (i = conflicts.iterator(); i.hasNext(); ) {
-                    File file = (File) i.next();
+                    File file = i.next();
                     try {
                         PropertyData pdata = client.propertyGet(
                                 file.getAbsolutePath(), "svn:mime-type", Revision.getInstance(version));

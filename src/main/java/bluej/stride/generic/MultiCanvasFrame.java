@@ -21,16 +21,17 @@
  */
 package bluej.stride.generic;
 
-import bluej.stride.operations.FrameOperation;
-import bluej.stride.operations.PullUpContentsOperation;
-import bluej.utility.javafx.FXConsumer;
-import javafx.geometry.Bounds;
-import javafx.scene.Node;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.operations.PullUpContentsOperation;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
+
+import bluej.utility.javafx.FXConsumer;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public abstract class MultiCanvasFrame extends Frame implements CanvasParent
 {

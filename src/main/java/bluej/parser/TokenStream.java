@@ -31,5 +31,5 @@ import bluej.parser.lexer.LocatableToken;
  */
 public interface TokenStream
 {
-    public LocatableToken nextToken();
+    LocatableToken nextToken();
 }

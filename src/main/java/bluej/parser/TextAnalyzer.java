@@ -21,21 +21,47 @@
  */
 package bluej.parser;
 
-import bluej.debugger.gentype.*;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.debugger.gentype.BadInheritanceChainException;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.GenTypeTpar;
+import bluej.debugger.gentype.GenTypeWildcard;
+import bluej.debugger.gentype.IntersectionType;
+import bluej.debugger.gentype.JavaPrimitiveType;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.MethodReflective;
+import bluej.debugger.gentype.Reflective;
 import bluej.debugmgr.NamedValue;
 import bluej.debugmgr.ValueCollection;
 import bluej.debugmgr.codepad.DeclaredVar;
-import bluej.parser.entity.*;
+import bluej.parser.entity.ConstantFloatValue;
+import bluej.parser.entity.ConstantIntValue;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.PackageEntity;
+import bluej.parser.entity.PackageOrClass;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.ValueEntity;
 import bluej.utility.Debug;
 import bluej.utility.JavaNames;
 import bluej.utility.JavaReflective;
 import bluej.utility.JavaUtils;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.*;
 
 /**
  * Parsing routines for the code pad.<p>
@@ -47,15 +73,15 @@ import java.util.*;
  */
 public class TextAnalyzer
 {
-    private EntityResolver parentResolver;
-    private String packageScope;  // evaluation package
-    private ValueCollection objectBench;
+    private final EntityResolver parentResolver;
+    private final String packageScope;  // evaluation package
+    private final ValueCollection objectBench;
 
     private List<DeclaredVar> declVars; // variables declared in the parsed statement block
     private String amendedCommand;  // command string amended with initializations for
                                     // all variables
     
-    private ImportsCollection imports;
+    private final ImportsCollection imports;
     private String importCandidate; // any import candidates.
     
     /**
@@ -96,7 +122,7 @@ public class TextAnalyzer
         amendedCommand = command;
         declVars = Collections.emptyList();
         
-        EntityResolver resolver = getResolver();
+        EntityResolver resolver = getResolver(); 
         
         Reflective accessRef = new DummyReflective(JavaNames.combineNames(packageScope, "$SHELL"));
         TypeEntity accessType = new TypeEntity(accessRef);
@@ -597,7 +623,7 @@ public class TextAnalyzer
      * @return   A record with information about the method call
      * @throws RecognitionException
      */
-    private static MethodCallDesc isMethodApplicable(GenTypeClass targetType, List<GenTypeParameter> targs, MethodReflective m, JavaType[] args)
+    private static MethodCallDesc isMethodApplicable(GenTypeClass targetType, List<GenTypeParameter> targs, MethodReflective m, JavaType [] args)
     {
         boolean methodIsVarargs = m.isVarArgs();
         MethodCallDesc rdesc = null;
@@ -629,7 +655,7 @@ public class TextAnalyzer
      * @throws RecognitionException
      */
     private static MethodCallDesc isMethodApplicable(GenTypeClass targetType,
-                                                     List<GenTypeParameter> targs, MethodReflective m, JavaType[] args, boolean varargs)
+            List<GenTypeParameter> targs, MethodReflective m, JavaType [] args, boolean varargs)
     {
         boolean rawTarget = targetType.isRaw();
         boolean boxingRequired = false;
@@ -663,7 +689,7 @@ public class TextAnalyzer
         List<GenTypeDeclTpar> tparams = Collections.emptyList();
         if ((! rawTarget) || m.isStatic()) {
             tparams = m.getTparTypes();
-            tparams = (tparams != null) ? tparams : Collections.<GenTypeDeclTpar>emptyList();
+            tparams = (tparams != null) ? tparams : Collections.emptyList();
         }
         
         // Number of type parameters supplied must match number declared, unless either
@@ -675,10 +701,10 @@ public class TextAnalyzer
         
         // Set up a map we can use to put actual/inferred type arguments. Initialise it
         // with the target type's arguments.
-        Map<String, GenTypeParameter> tparMap;
+        Map<String,GenTypeParameter> tparMap;
         if (rawTarget) {
             if (m.isStatic()) {
-                tparMap = new HashMap<String, GenTypeParameter>();
+                tparMap = new HashMap<String,GenTypeParameter>();
             }
             else {
                 tparMap = null;
@@ -699,8 +725,8 @@ public class TextAnalyzer
             
             // lower bound, equality, and upper bound constraints on type parameters:
             Map<String,Set<GenTypeSolid>> tlbConstraints = new HashMap<String,Set<GenTypeSolid>>();
-            Map<String, GenTypeSolid> teqConstraints = new HashMap<String, GenTypeSolid>();
-            Map<String, GenTypeSolid> tubConstraints = new HashMap<String, GenTypeSolid>();
+            Map<String,GenTypeSolid> teqConstraints = new HashMap<String,GenTypeSolid>();
+            Map<String,GenTypeSolid> tubConstraints = new HashMap<String,GenTypeSolid>();
             
             // Time for some type inference
             for (int i = 0; i < mparams.size(); i++) {
@@ -726,8 +752,8 @@ public class TextAnalyzer
                 if (eqConstraint == null) {
                     Set<GenTypeSolid> lbConstraintSet = tlbConstraints.get(tparName);
                     if (lbConstraintSet != null) {
-                        GenTypeSolid[] lbounds = lbConstraintSet.toArray(new GenTypeSolid[lbConstraintSet.size()]);
-                        eqConstraint = GenTypeSolid.lub(lbounds);
+                        GenTypeSolid [] lbounds = lbConstraintSet.toArray(new GenTypeSolid[lbConstraintSet.size()]);
+                        eqConstraint = GenTypeSolid.lub(lbounds); 
                     }
                     else {
                         // no equality or lower bound constraints: use the upper
@@ -753,7 +779,7 @@ public class TextAnalyzer
                 
                 // first we check that the argument type is a subtype of the
                 // declared type.
-                GenTypeSolid[] formalUbounds = formalTpar.upperBounds();
+                GenTypeSolid [] formalUbounds = formalTpar.upperBounds();
                 for (int i = 0; i < formalUbounds.length; i++) {
                     formalUbounds[i] = (GenTypeSolid) formalUbounds[i].mapTparsToTypes(tparMap);
                     if (formalUbounds[i].isAssignableFrom(argTpar))
@@ -808,9 +834,9 @@ public class TextAnalyzer
      * @param teqConstraints   equality constraints (a Map to GenTypeSolid)
      */
     private static void processAtoFConstraint(JavaType a, GenTypeSolid f,
-                                              Map<String,Set<GenTypeSolid>> tlbConstraints,
-                                              Map<String, GenTypeSolid> teqConstraints,
-                                              Map<String, GenTypeSolid> tubConstraints)
+            Map<String,Set<GenTypeSolid>> tlbConstraints,
+            Map<String,GenTypeSolid> teqConstraints,
+            Map<String,GenTypeSolid> tubConstraints)
     {
         a = boxType(a);
         if (a == null) {
@@ -843,13 +869,13 @@ public class TextAnalyzer
         // If F is of the form G<...> and A is convertible to the same form...
         else {
             GenTypeClass cf = f.asClass();
-            Map<String, GenTypeParameter> fMap = cf.getMap();
+            Map<String,GenTypeParameter> fMap = cf.getMap();
             if (fMap != null && a.asSolid() != null) {
-                GenTypeClass[] asts = a.asSolid().getReferenceSupertypes();
+                GenTypeClass [] asts = a.asSolid().getReferenceSupertypes();
                 for (int i = 0; i < asts.length; i++) {
                     try {
                         GenTypeClass aMapped = asts[i].mapToSuper(cf.classloaderName());
-                        Map<String, GenTypeParameter> aMap = aMapped.getMap();
+                        Map<String,GenTypeParameter> aMap = aMapped.getMap();
                         if (aMap != null) {
                             Iterator<String> j = fMap.keySet().iterator();
                             while (j.hasNext()) {
@@ -871,8 +897,8 @@ public class TextAnalyzer
      * Process type parameters from a type inference constraint A convertible-to F.
      */
     private static void processAtoFtpar(GenTypeParameter aPar, GenTypeParameter fPar,
-                                        Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String, GenTypeSolid> teqConstraints,
-                                        Map<String, GenTypeSolid> tubConstraints)
+            Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String,GenTypeSolid> teqConstraints,
+            Map<String,GenTypeSolid> tubConstraints)
     {
         if (fPar instanceof GenTypeSolid) {
             if (aPar instanceof GenTypeSolid) {
@@ -891,8 +917,8 @@ public class TextAnalyzer
                 }
             } else {
                 // F-par is of form "? extends ..."
-                GenTypeSolid[] fubounds = fPar.getUpperBound().asSolid().getIntersectionTypes();
-                GenTypeSolid[] aubounds = aPar.getUpperBound().asSolid().getIntersectionTypes();
+                GenTypeSolid [] fubounds = fPar.getUpperBound().asSolid().getIntersectionTypes();
+                GenTypeSolid [] aubounds = aPar.getUpperBound().asSolid().getIntersectionTypes();
                 if (fubounds.length > 0 && aubounds.length > 0) {
                     // recurse with aubounds << fubounds[0]
                     processAtoFConstraint(IntersectionType.getIntersection(aubounds), fubounds[0],
@@ -906,7 +932,7 @@ public class TextAnalyzer
      * Process a type inference constraint of the form "A is equal to F".
      */
     private static void processAeqFConstraint(GenTypeSolid a, GenTypeSolid f,
-                                              Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String, GenTypeSolid> teqConstraints)
+            Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String,GenTypeSolid> teqConstraints)
     {
         if (f instanceof GenTypeTpar) {
             // The constraint T == A is implied.
@@ -917,7 +943,7 @@ public class TextAnalyzer
         else if (f.getArrayComponent() instanceof GenTypeSolid) {
             // "If F = U[] ... if A is an array type V[], or a type variable with an
             // upper bound that is an array type V[]..."
-            GenTypeSolid[] asts;
+            GenTypeSolid [] asts;
             if (a instanceof GenTypeDeclTpar)
                 asts = ((GenTypeDeclTpar) a).upperBounds();
             else
@@ -936,8 +962,8 @@ public class TextAnalyzer
             GenTypeClass af = a.asClass();
             if (af != null && cf != null) {
                 if (cf.classloaderName().equals(af.classloaderName())) {
-                    Map<String, GenTypeParameter> fMap = cf.getMap();
-                    Map<String, GenTypeParameter> aMap = af.getMap();
+                    Map<String,GenTypeParameter> fMap = cf.getMap();
+                    Map<String,GenTypeParameter> aMap = af.getMap();
                     if (fMap != null && aMap != null) {
                         Iterator<String> j = fMap.keySet().iterator();
                         while (j.hasNext()) {
@@ -965,14 +991,14 @@ public class TextAnalyzer
      * Process type parameters from a type inference constraint A equal-to F.
      */
     private static void processAeqFtpar(GenTypeParameter aPar, GenTypeParameter fPar,
-                                        Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String, GenTypeSolid> teqConstraints)
+            Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String,GenTypeSolid> teqConstraints)
     {
         if (aPar instanceof GenTypeSolid && fPar instanceof GenTypeSolid) {
             processAeqFConstraint((GenTypeSolid) aPar, (GenTypeSolid) fPar, tlbConstraints, teqConstraints);
         }
         else if (aPar instanceof GenTypeWildcard && fPar instanceof GenTypeWildcard) {
             GenTypeSolid flBound = fPar.getLowerBound();
-            GenTypeSolid fuBound = getSolidUpperBound(fPar);
+            GenTypeSolid fuBound = getSolidUpperBound(fPar); 
             // F = ? super U,  A = ? super V
             if (flBound != null) {
                 GenTypeSolid alBound = aPar.getLowerBound();
@@ -993,8 +1019,8 @@ public class TextAnalyzer
      * Process a type inference constraint of the form "F is convertible to A".
      */
     private static void processFtoAConstraint(GenTypeSolid a, GenTypeSolid f,
-                                              Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String, GenTypeSolid> teqConstraints,
-                                              Map<String, GenTypeSolid> tubConstraints)
+            Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String,GenTypeSolid> teqConstraints,
+            Map<String,GenTypeSolid> tubConstraints)
     {
         // If F = T, then T <: A is implied:
         if (f instanceof GenTypeTpar) {
@@ -1013,7 +1039,7 @@ public class TextAnalyzer
         else if (f.getArrayComponent() instanceof GenTypeSolid) {
             // "If F = U[] ... if A is an array type V[], or a type variable with an
             // upper bound that is an array type V[]..."
-            GenTypeSolid[] asts;
+            GenTypeSolid [] asts;
             if (a instanceof GenTypeDeclTpar) {
                 asts = ((GenTypeDeclTpar) a).upperBounds();
             }
@@ -1036,8 +1062,8 @@ public class TextAnalyzer
             GenTypeClass af = a.asClass();
             try {
                 GenTypeClass fMapped = cf.mapToSuper(af.classloaderName());
-                Map<String, GenTypeParameter> aMap = af.getMap();
-                Map<String, GenTypeParameter> fMap = fMapped.getMap();
+                Map<String,GenTypeParameter> aMap = af.getMap();
+                Map<String,GenTypeParameter> fMap = fMapped.getMap();
                 if (aMap != null && fMap != null) {
                     Iterator<String> j = fMap.keySet().iterator();
                     while (j.hasNext()) {
@@ -1056,8 +1082,8 @@ public class TextAnalyzer
      * Process type parameters from a type inference constraint F convertible-to A.
      */
     private static void processFtoAtpar(GenTypeParameter aPar, GenTypeParameter fPar,
-                                        Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String, GenTypeSolid> teqConstraints,
-                                        Map<String, GenTypeSolid> tubConstraints)
+            Map<String,Set<GenTypeSolid>> tlbConstraints, Map<String,GenTypeSolid> teqConstraints,
+            Map<String,GenTypeSolid> tubConstraints)
     {
         if (fPar instanceof GenTypeSolid) {
             if (aPar instanceof GenTypeSolid) {
@@ -1094,8 +1120,8 @@ public class TextAnalyzer
                     GenTypeSolid fuBound = fPar.getUpperBound().asSolid();
                     GenTypeSolid auBound = aPar.getUpperBound().asSolid();
                     if (fuBound != null && auBound != null) {
-                        GenTypeSolid[] fuBounds = fuBound.getIntersectionTypes();
-                        GenTypeSolid[] auBounds = auBound.getIntersectionTypes();
+                        GenTypeSolid [] fuBounds = fuBound.getIntersectionTypes();
+                        GenTypeSolid [] auBounds = auBound.getIntersectionTypes();
                         processFtoAConstraint(auBounds[0], fuBounds[0], tlbConstraints, teqConstraints, tubConstraints);
                     }
                 }
@@ -1117,8 +1143,8 @@ public class TextAnalyzer
      * @throws RecognitionException
      */
     public static ArrayList<MethodCallDesc> getSuitableMethods(String methodName,
-                                                               GenTypeSolid targetType, JavaType[] argumentTypes, List<GenTypeParameter> typeArgs,
-                                                               Reflective accessType)
+            GenTypeSolid targetType, JavaType [] argumentTypes, List<GenTypeParameter> typeArgs,
+            Reflective accessType)
     {
         ArrayList<MethodCallDesc> suitableMethods = new ArrayList<MethodCallDesc>();
         
@@ -1135,7 +1161,7 @@ public class TextAnalyzer
             GenTypeSolid topType = targetTypes.pop();
             GenTypeClass targetClass = topType.asClass();
             if (targetClass == null) {
-                GenTypeSolid[] bounds = topType.getUpperBounds();
+                GenTypeSolid [] bounds = topType.getUpperBounds();
                 for (int i = 0; i < bounds.length; i++) {
                     if (doneTypes.add(bounds[i])) {
                         targetTypes.push(bounds[i]);
@@ -1147,7 +1173,7 @@ public class TextAnalyzer
             // Check members of supertypes
             Reflective ref = targetClass.getReflective();
             List<GenTypeClass> supers = ref.getSuperTypes();
-            Map<String, GenTypeParameter> tparMap = targetClass.getMap();
+            Map<String,GenTypeParameter> tparMap = targetClass.getMap();
 
             for (GenTypeClass superType : supers) {
                 GenTypeClass mapped = superType.mapTparsToTypes(tparMap);

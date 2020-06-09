@@ -21,15 +21,19 @@
  */
 package bluej.stride.framedjava.frames;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCanvas;
 import bluej.stride.generic.FrameCursor;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.function.BiConsumer;
 
 public class FrameHelper
 {
@@ -57,13 +61,13 @@ public class FrameHelper
     }
 
     public static void processVarScopesAfter(FrameCanvas parentCanvas,
-                                             Frame afterFrame, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process)
+            Frame afterFrame, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process)
     {
         processVarScopesAfter(parentCanvas, afterFrame, new HashMap<>(), process);
     }
         
     private static void processVarScopesAfter(FrameCanvas parentCanvas,
-                                              Frame afterFrame, Map<String, List<Frame>> parentVars, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process)
+                Frame afterFrame, Map<String, List<Frame>> parentVars, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process)
     {
         // Must make a copy:
         Map<String, List<Frame>> vars = new HashMap<>(parentVars);

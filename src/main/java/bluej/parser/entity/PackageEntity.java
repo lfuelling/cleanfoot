@@ -21,12 +21,12 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * An entity representing a package. The entity is only presumed to be a package
@@ -36,8 +36,8 @@ import java.util.List;
  */
 public class PackageEntity extends PackageOrClass
 {
-    private String name;
-    private EntityResolver resolver;
+    private final String name;
+    private final EntityResolver resolver;
     
     public PackageEntity(String name, EntityResolver resolver)
     {

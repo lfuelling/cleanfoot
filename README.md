@@ -1,13 +1,11 @@
 # Cleanfoot
 
-This is a fork of Greenfoot 3.5.4 (the last version supporting Java 8) which was moved from Ant to Maven. 
-
-The goal of this project is to provide a Java 1.8 compatible, supported Greenfoot version with some fixes like:
- - a public `greenfoot.Font(java.awt.Font)` constructor 
+This is a fork of Greenfoot 3.6.1 which was moved from Ant to Maven and contains fixes like:
+ - removed [data collection](https://bluej.org/blackbox/#what_data)
+ - a public `greenfoot.Font(java.awt.Font)` constructor to easily integrate custom fonts 
  - cleaned up code
  - up to date dependencies 
- - libraries that are usable via Maven
- - removed [data collection](https://bluej.org/blackbox/#what_data)
+ - usable via Maven
 
 ## Usage
 
@@ -30,11 +28,11 @@ And the following dependency:
 <dependency>
     <groupId>sh.lrk</groupId>
     <artifactId>cleanfoot</artifactId>
-    <version>3.5.6</version>
+    <version>3.6.1</version>
 </dependency>
 ```
 
-### Gradle 
+### Gradle
 
 If you use Gradle, you can reference the repository like this:
 
@@ -47,7 +45,7 @@ repositories {
 and the dependency itself like this:
 
 ```groovy
-implementation 'sh.lrk:cleanfoot:3.5.6'
+implementation 'sh.lrk:cleanfoot:3.6.1'
 ```
 
 ### Code

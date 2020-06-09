@@ -21,21 +21,21 @@
  */
 package bluej.editor;
 
+import java.io.IOException;
+import java.util.List;
+
 import bluej.compiler.CompileType;
 import bluej.compiler.Diagnostic;
 import bluej.debugger.DebuggerThread;
+import bluej.prefmgr.PrefMgr.PrintSize;
 import bluej.editor.stride.FrameEditor;
 import bluej.parser.symtab.ClassInfo;
-import bluej.prefmgr.PrefMgr.PrintSize;
 import bluej.stride.framedjava.elements.CallElement;
 import bluej.stride.framedjava.elements.NormalMethodElement;
 import bluej.utility.javafx.FXPlatformConsumer;
 import bluej.utility.javafx.FXRunnable;
 import javafx.print.PrinterJob;
 import javafx.scene.image.Image;
-
-import java.io.IOException;
-import java.util.List;
 
 
 /**
@@ -58,8 +58,9 @@ public interface Editor
      * following: make visible, de-iconify, bring to front of window stack.
      * 
      * @param vis  true to make the editor visible, or false to hide it.
+     * @param openInNewWindow if this is true, the editor opens in a new window
      */
-    void setEditorVisible(boolean vis);
+    void setEditorVisible(boolean vis, boolean openInNewWindow);
 
     /**
      * True if the editor is open in the tabbed window.
@@ -123,8 +124,11 @@ public interface Editor
      * @param message     Message to be displayed (may be null)
      * @param isBreak     Thread execution was suspended at the given line (i.e. breakpoint/step/halt).
      * @param thread      The thread that was suspended/selected
+     *                    
+     * @return true if the debugger display is already taken care of, or
+     *         false if you still want to show the ExecControls window afterwards.
      */
-    void setStepMark(int lineNumber, String message, boolean isBreak, DebuggerThread thread);
+    boolean setStepMark(int lineNumber, String message, boolean isBreak, DebuggerThread thread);
     
     /**
      *  Display a message into the info area.
@@ -132,7 +136,7 @@ public interface Editor
      *  
      *  @param msg the message to display
      */
-    public void writeMessage(String msg);
+    void writeMessage(String msg);
 
     /**
      * Remove the step mark (the mark that shows the current line when

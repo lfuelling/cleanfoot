@@ -21,6 +21,8 @@
  */
 package bluej.stride.framedjava.slots;
 
+import java.util.Optional;
+
 import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.View;
@@ -29,15 +31,13 @@ import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.VariableNameDefTextSlot;
 import bluej.utility.javafx.SharedTransition;
 
-import java.util.Optional;
-
 public class EachExpressionSlot extends FilledExpressionSlot
 {
     private final TypeSlot loopVarTypeSlot;
     private final VariableNameDefTextSlot loopVarNameSlot;
 
     public EachExpressionSlot(InteractionManager editor, Frame parentFrame,
-                              CodeFrame<?> parentCodeFrame, FrameContentRow row, TypeSlot loopVarTypeSlot, VariableNameDefTextSlot loopVarNameSlot, String stylePrefix)
+            CodeFrame<?> parentCodeFrame, FrameContentRow row, TypeSlot loopVarTypeSlot, VariableNameDefTextSlot loopVarNameSlot, String stylePrefix)
     {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, FilledExpressionSlot.EACH_HINTS);
         this.loopVarTypeSlot = loopVarTypeSlot;

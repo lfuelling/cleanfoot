@@ -51,5 +51,5 @@ public interface ClassTargetListener
      * @param event
      *            A {@code ClassTargetEvent} object which describes the event.
      */
-    public void classTargetVisibilityChanged(ClassTargetEvent event);
+    void classTargetVisibilityChanged(ClassTargetEvent event);
 }

@@ -21,10 +21,10 @@
  */
 package bluej.terminal;
 
+import java.io.File;
+
 import bluej.extensions.SourceType;
 import bluej.pkgmgr.Package;
-
-import java.io.File;
 
 /**
  * A class that holds information about the location of an exception.
@@ -35,16 +35,16 @@ import java.io.File;
 public class ExceptionSourceLocation
 {
     /** The package */
-    private Package pkg;
+    private final Package pkg;
     /** The unqualified class name */
-    private String className;
+    private final String className;
     /** The line number */
-    private int lineNumber;
+    private final int lineNumber;
     
     /** The starting position in the document of the bit to be linked */
-    private int startPos;
+    private final int startPos;
     /** The ending position in the document of the bit to be linked */
-    private int endPos;
+    private final int endPos;
     
     public ExceptionSourceLocation(int startPos, int endPos,
             Package pkg, String className, int lineNumber)

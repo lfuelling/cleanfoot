@@ -58,7 +58,7 @@ public class TestTypeSlot
     // sort of test:
     private static class CompareWrapper
     {
-        private String s;
+        private final String s;
         public CompareWrapper(String s) { this.s = s; }
         @Override public boolean equals(Object o) { if (o instanceof CompareWrapper) return s.equals(((CompareWrapper)o).s); else return false; }
         @Override public String toString() { return s; }
@@ -195,8 +195,8 @@ public class TestTypeSlot
     
     private static class CPM
     {
-        private int stringPos;
-        private CaretPos caretPos;
+        private final int stringPos;
+        private final CaretPos caretPos;
         public CPM(int stringPos, CaretPos caretPos)
         {
             this.stringPos = stringPos;

@@ -24,11 +24,17 @@ package bluej.utility.javafx;
 import bluej.utility.Debug;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.css.CssMetaData;
+import javafx.css.SimpleStyleableDoubleProperty;
+import javafx.css.Styleable;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A VBox that behaves better with respect to sizing its children and

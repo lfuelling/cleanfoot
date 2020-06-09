@@ -1,7 +1,6 @@
-import greenfoot.GreenfootImage;
-
-import java.io.UnsupportedEncodingException;
+import greenfoot.*;
 import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 
 /**
  * A helper class that fetches a Google map for a specific location

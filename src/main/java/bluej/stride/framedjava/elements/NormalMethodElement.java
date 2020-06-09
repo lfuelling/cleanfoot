@@ -22,22 +22,30 @@
 package bluej.stride.framedjava.elements;
 
 
-import bluej.parser.AssistContent.ParamInfo;
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.NormalMethodFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Attribute;
-import nu.xom.Element;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Attribute;
+import nu.xom.Element;
+import bluej.parser.AssistContent.ParamInfo;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.ParamFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.ThrowsTypeFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.frames.NormalMethodFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 public class NormalMethodElement extends MethodWithBodyElement
 {
@@ -47,9 +55,9 @@ public class NormalMethodElement extends MethodWithBodyElement
     private final TypeSlotFragment returnType;
     private final NameDefSlotFragment name;
     
-    public NormalMethodElement(NormalMethodFrame frame, AccessPermissionFragment access, boolean staticModifier,
-                               boolean finalModifier, TypeSlotFragment returnType, NameDefSlotFragment name, List<ParamFragment> params,
-                               List<ThrowsTypeFragment> throwsTypes, List<CodeElement> contents, JavadocUnit documentation, boolean enabled)
+    public NormalMethodElement(NormalMethodFrame frame, AccessPermissionFragment access, boolean staticModifier, 
+            boolean finalModifier, TypeSlotFragment returnType, NameDefSlotFragment name, List<ParamFragment> params,
+            List<ThrowsTypeFragment> throwsTypes, List<CodeElement> contents, JavadocUnit documentation, boolean enabled)
     {
         super(frame, access, params, throwsTypes, contents, documentation, enabled);
         this.staticModifier = staticModifier;
@@ -178,7 +186,7 @@ public class NormalMethodElement extends MethodWithBodyElement
     protected Stream<SlotFragment> getDirectSlotFragments()
     {
         Stream<SlotFragment> s = params.stream().flatMap(p -> Stream.of(p.getParamType(), p.getParamName()));
-        return Stream.<SlotFragment>concat(Stream.<SlotFragment>concat(Stream.of(returnType, name), s), throwsTypes.stream().map(ThrowsTypeFragment::getJavaSource));
+        return Stream.concat(Stream.concat(Stream.of(returnType, name), s), throwsTypes.stream().map(ThrowsTypeFragment::getJavaSource));
     }
 
     public NormalMethodFrame getFrame()

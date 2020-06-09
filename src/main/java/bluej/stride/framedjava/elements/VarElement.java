@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2018 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,20 +21,29 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.VarFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Attribute;
-import nu.xom.Element;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Attribute;
+import nu.xom.Element;
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.VarFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
 
 public class VarElement extends CodeElement implements JavaSingleLineDebugHandler
 {
@@ -48,9 +57,9 @@ public class VarElement extends CodeElement implements JavaSingleLineDebugHandle
     private VarFrame frame;
     
     // varValue is optional and can be null
-    public VarElement(VarFrame frame, AccessPermissionFragment varAccess, boolean staticModifier,
-                      boolean finalModifier, TypeSlotFragment varType, NameDefSlotFragment varName,
-                      FilledExpressionSlotFragment varValue, boolean enabled)
+    public VarElement(VarFrame frame, AccessPermissionFragment varAccess, boolean staticModifier, 
+            boolean finalModifier, TypeSlotFragment varType, NameDefSlotFragment varName, 
+            FilledExpressionSlotFragment varValue, boolean enabled)
     {
         this.frame = frame;
         this.varAccess = varAccess;
@@ -80,7 +89,7 @@ public class VarElement extends CodeElement implements JavaSingleLineDebugHandle
         Attribute valueAttribute = el.getAttribute("value");
         varValue = (valueAttribute == null) ? null : new FilledExpressionSlotFragment(valueAttribute.getValue(), el.getAttributeValue("value-java"));
         
-        enable = new Boolean(el.getAttributeValue("enable"));
+        enable = Boolean.valueOf(el.getAttributeValue("enable"));
     }
 
     public VarElement(String access, String type, String name, String value)

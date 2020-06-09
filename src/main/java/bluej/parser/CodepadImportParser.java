@@ -21,17 +21,17 @@
  */
 package bluej.parser;
 
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import bluej.parser.entity.EntityResolver;
 import bluej.parser.entity.JavaEntity;
 import bluej.parser.entity.UnresolvedEntity;
 import bluej.parser.lexer.LocatableToken;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * A parser to handle "import" statements for the Code Pad.
@@ -41,7 +41,7 @@ import java.util.List;
 @OnThread(Tag.FXPlatform)
 public class CodepadImportParser extends JavaParser
 {
-    private EntityResolver resolver;
+    private final EntityResolver resolver;
  
     private boolean importIsStatic = false;
     private boolean importIsWildcard = false;

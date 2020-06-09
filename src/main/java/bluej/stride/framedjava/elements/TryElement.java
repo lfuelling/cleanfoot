@@ -22,6 +22,13 @@
 package bluej.stride.framedjava.elements;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.ast.JavaFragment;
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
 import bluej.stride.framedjava.ast.SlotFragment;
@@ -30,12 +37,11 @@ import bluej.stride.framedjava.frames.TryFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SandwichCanvasesFrame;
+
+import nu.xom.Attribute;
 import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Stream;
 
 public class TryElement extends SandwichCanvasesElement
 {
@@ -58,8 +64,8 @@ public class TryElement extends SandwichCanvasesElement
      *               an empty list indicates that there is a finally, but it is empty.
      */
     public TryElement(TryFrame frame, List<CodeElement> tryContents, List<TypeSlotFragment> catchTypes,
-                      List<NameDefSlotFragment> catchNames, List<List<CodeElement>> catchContents,
-                      List<CodeElement> finallyContents, boolean enabled)
+            List<NameDefSlotFragment> catchNames, List<List<CodeElement>> catchContents,
+            List<CodeElement> finallyContents, boolean enabled)
     {
         super(frame, ELEMENT, tryContents, CATCH_LABEL, CATCH_LABEL, catchContents, FINALLY_LABEL, finallyContents, enabled);
 
@@ -103,7 +109,7 @@ public class TryElement extends SandwichCanvasesElement
     @OnThread(Tag.FX)
     @Override
     protected SandwichCanvasesFrame buildFrame(InteractionManager editor, List<Frame> firstCanvasFrames,
-                                               List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable)
+                       List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable)
     {
         frame = new TryFrame(editor, firstCanvasFrames, catchTypes, catchNames, intermediateCanvasFrames,
                                 tailCanvasFrames, enable);
@@ -117,10 +123,10 @@ public class TryElement extends SandwichCanvasesElement
     }
 
     @Override
-    public List<CodeElement.LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
+    public List<LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
     {
         Optional<Integer> subCanvas = findDirectIntermediateChild(child);
         
-        return subCanvas.map(i -> Arrays.asList(new CodeElement.LocalParamInfo(catchTypes.get(i).getContent(), catchNames.get(i).getContent(), false, this))).orElse(Collections.emptyList());
+        return subCanvas.map(i -> Arrays.asList(new LocalParamInfo(catchTypes.get(i).getContent(), catchNames.get(i).getContent(), false, this))).orElse(Collections.emptyList());
     }
 }

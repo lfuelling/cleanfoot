@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -30,8 +30,10 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -55,8 +57,8 @@ public class Boot
     // The version numbers for BlueJ are changed in the BlueJ build.xml
     // and then the update-version target should be executed.
     public static final int BLUEJ_VERSION_MAJOR = 4;
-    public static final int BLUEJ_VERSION_MINOR = 1;
-    public static final int BLUEJ_VERSION_RELEASE = 3;
+    public static final int BLUEJ_VERSION_MINOR = 2;
+    public static final int BLUEJ_VERSION_RELEASE = 1;
     public static final String BLUEJ_VERSION_SUFFIX = "";
 
     // public static final int BLUEJ_VERSION_NUMBER = BLUEJ_VERSION_MAJOR * 1000 +
@@ -90,15 +92,16 @@ public class Boot
     public static final String[] GREENFOOT_EXPORT_JARS = {JLAYER_MP3_JAR, "lang-stride.jar"};
     private static final String[] greenfootUserJars = {"extensions" + File.separatorChar + "greenfoot.jar", 
         "bluejcore.jar", "bluejeditor.jar", "bluejext.jar",
-        "AppleJavaExtensions.jar", "junit-4.11.jar", "hamcrest-core-1.3.jar", "bluej.jar",
+        "junit-4.11.jar", "hamcrest-core-1.3.jar", "bluej.jar",
+        "classgraph-4.2.6.jar",
         "diffutils-1.2.1.jar", "commons-logging-api-1.1.2.jar",
         JLAYER_MP3_JAR, "opencsv-2.3.jar", "xom-1.2.9.jar",
         "lang-stride.jar",
         "nsmenufx-2.1.4.jar", "richtextfx-fat-0.9.0.jar",
-        "guava-17.0.jar", "javassist-3.18.0.jar", "commons-vfs2-2.0.jar",
+        "guava-17.0.jar",
         "httpclient-4.1.1.jar", "httpcore-4.1.jar", "httpmime-4.1.1.jar"};
     private static final int greenfootUserBuildJars = 4;
-    public static String GREENFOOT_VERSION = "3.5.4";
+    public static String GREENFOOT_VERSION = "3.6.1";
     public static String GREENFOOT_API_VERSION = "3.0.0";
     // A singleton boot object so the rest of BlueJ can pick up args etc.
     private static Boot instance;
@@ -106,9 +109,8 @@ public class Boot
     // The first lot are the ones to run BlueJ itself
     private static final String[] bluejJars = { "bluejcore.jar", "bluejeditor.jar", "bluejext.jar",
         "antlr-runtime-3.4.jar",
-        "AppleJavaExtensions.jar",
+        "classgraph-4.2.6.jar",
         "commons-logging-api-1.1.2.jar",
-        "commons-vfs2-2.0.jar",
         "diffutils-1.2.1.jar",
         "eddsa-0.2.0.jar",
         "guava-17.0.jar",
@@ -116,7 +118,6 @@ public class Boot
         "httpclient-4.1.1.jar",
         "httpcore-4.1.jar",
         "httpmime-4.1.1.jar",
-        "javassist-3.18.0.jar",
         "jbcrypt-1.0.0.jar",
         "jsch-0.1.53.jar",
         "junit-4.11.jar",
@@ -138,8 +139,16 @@ public class Boot
     private static int numBuildJars = bluejBuildJars;
     private static int numUserBuildJars = bluejUserBuildJars;
     
-    /** path of the JavaFX runtime Jar, if needed */
-    private static String jfxrtJar;
+    private static final String[] javafxJars = new String[] {
+        "javafx.base.jar",
+        "javafx.controls.jar",
+        "javafx.fxml.jar",
+        "javafx.graphics.jar",
+        "javafx.media.jar",
+        "javafx.properties.jar",
+        "javafx.swing.jar",
+        "javafx.web.jar"
+    };
     
     private static boolean isGreenfoot = false;
     private static File bluejLibDir;
@@ -198,11 +207,75 @@ public class Boot
         return macInitialProjects;
     }
 
-    @FunctionalInterface
-    private static interface FXPlatformSupplier<T>
+    /**
+     * Gets the URLs for JavaFX JARs to put on the classpath
+     */
+    public URL[] getJavaFXClassPath()
     {
-        @OnThread(Tag.FXPlatform)
-        public T get();
+        // Ubuntu names its JARs differently, so the entire set of paths is passed in as a command-line argument:
+        String javafxJarsProp = commandLineProps.getProperty("javafxjars", null);
+        if (javafxJarsProp != null)
+        {
+            return Arrays.stream(javafxJarsProp.split(":")).map(s -> {
+                try
+                {
+                    return new File(s).toURI().toURL();
+                }
+                catch (MalformedURLException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }).toArray(URL[]::new);
+        }
+
+        File javafxLibPath = getJavaFXLibDir();
+
+        URL[] urls = new URL[javafxJars.length];
+        for (int i = 0; i < javafxJars.length; i++)
+        {
+            try
+            {
+                urls[i] = new File(javafxLibPath, javafxJars[i]).toURI().toURL();
+            }
+            catch (MalformedURLException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        return urls;
+    }
+
+    public File getJavaFXLibDir()
+    {
+        String javafxPathProp = commandLineProps.getProperty("javafxpath", null);
+        File javafxPath;
+        if (javafxPathProp != null)
+        {
+            javafxPath = new File(javafxPathProp);
+        } else
+        {
+            // If no javafxpath property passed, assume JavaFX is bundled
+            javafxPath = new File(getBluejLibDir(), "javafx");
+        }
+
+        return new File(javafxPath, "lib");
+    }
+
+    /**
+     * Gets the path to the JavaFX src zip, which may or may not exist.
+     * @return
+     */
+    public File getJavaFXSourcePath()
+    {
+        File javafxLibPath = getJavaFXLibDir();
+        File javafxSrcPath = new File(javafxLibPath, "src.zip");
+        return javafxSrcPath;
+    }
+
+    @FunctionalInterface
+    private interface FXPlatformSupplier<T>
+    {
+        @OnThread(Tag.FXPlatform) T get();
     }
 
     @OnThread(Tag.Any)
@@ -217,8 +290,7 @@ public class Boot
             @OnThread(Tag.FXPlatform)
             public Image get()
             {
-                URL url = getClass().getClassLoader()
-                        .getResource(isGreenfoot ? "images/greenfoot-splash.png" : "images/bluej-splash.png");
+                URL url = getClass().getResource(isGreenfoot ? "gen-greenfoot-splash.png" : "gen-bluej-splash.png");
                 if (url != null)
                     return new Image(url.toString());
                 else
@@ -242,8 +314,6 @@ public class Boot
             numBuildJars = greenfootUserBuildJars;
             numUserBuildJars = greenfootUserBuildJars;
         }
-
-        jfxrtJar = commandLineProps.getProperty("jfxrt.jarpath");
         
         try {
             instance = new Boot(commandLineProps, image);
@@ -311,12 +381,15 @@ public class Boot
                 // above us to use
                 File startingDir = (new File(new URI(bootFullName)).getParentFile());
                 while((startingDir != null) &&
-                        !(new File(startingDir.getParentFile(), "labels").isDirectory())) {
+                        !(new File(startingDir.getParentFile(), "lib").isDirectory())) {
                     startingDir = startingDir.getParentFile();
                 }
-
-                if (startingDir != null) {
-                    bluejDir = startingDir.getParentFile();
+                
+                if (startingDir == null) {
+                    bluejDir = null;
+                }
+                else {
+                    bluejDir = new File(startingDir.getParentFile(), "lib");
                 }
             }
             else {
@@ -329,7 +402,7 @@ public class Boot
                 bluejDir = finalFile.getParentFile();
             }   
         } 
-        catch (URISyntaxException ignored) { }
+        catch (URISyntaxException use) { }
         
         return bluejDir;
     }
@@ -486,9 +559,10 @@ public class Boot
  
             // Construct a bluej.Main object. This starts BlueJ "proper".
             Class<?> mainClass = Class.forName("bluej.Main", true, runtimeLoader);
-            mainClass.newInstance();
+            mainClass.getDeclaredConstructor().newInstance();
             
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException exc) {
+        } catch (ClassNotFoundException | InstantiationException | NoSuchMethodException 
+                | InvocationTargetException | IllegalAccessException exc) {
             throw new RuntimeException(exc);
         }
     }
@@ -502,8 +576,8 @@ public class Boot
         javaHomeDir = new File(System.getProperty("java.home"));
 
         try {
-            runtimeClassPath = getKnownJars(getBluejLibDir(), runtimeJars, true, numBuildJars);
-            runtimeUserClassPath = getKnownJars(getBluejLibDir(), userJars, false, numUserBuildJars);
+            runtimeClassPath = getKnownJars(getBluejLibDir(), runtimeJars, false, numBuildJars);
+            runtimeUserClassPath = getKnownJars(getBluejLibDir(), userJars, true, numUserBuildJars);
         }
         catch (Exception exc) {
             exc.printStackTrace();
@@ -516,8 +590,7 @@ public class Boot
      * @param libDir  the BlueJ "lib" dir (where the jars are stored)
      * @param jars    the names of the jar files whose urls to add in the
      *                returned list
-     * @param isSystem  True if tools.jar should be included in the returned
-     *                  list, on systems that need it
+     * @param isForUserVM  True if any jar files required for the user VM should be included.
      * @param numBuildJars  The number of jar files in the jars array which
      *                  are built from the BlueJ source. If running from eclipse
      *                  these can be replaced with a single entry - the classes
@@ -526,7 +599,7 @@ public class Boot
      * @return  URLs of the required JAR files
      * @exception  MalformedURLException  for any problems with the URLs
      */
-    private URL[] getKnownJars(File libDir, String[] jars, boolean isSystem, int numBuildJars) 
+    private URL[] getKnownJars(File libDir, String[] jars, boolean isForUserVM, int numBuildJars) 
         throws MalformedURLException
     {
         boolean useClassesDir = commandLineProps.getProperty("useclassesdir", "false").equals("true");
@@ -571,59 +644,19 @@ public class Boot
                 urlList.add(toAdd.toURI().toURL());
         }
     
-        if (isSystem)
-        {
-            // We also need to add tools.jar on some systems
-            URL toolsURL = getToolsURL();
-            if(toolsURL != null)
-                urlList.add(toolsURL);
-        }
-        else
+        if (isForUserVM)
         {
             // Only need to specially add JavaFX for the user VM, it will
             // already be on classpath for server VM:
-            if (jfxrtJar != null && jfxrtJar.length() != 0) {
-                urlList.add(new File(jfxrtJar).toURI().toURL());
-            }
+            urlList.addAll(Arrays.asList(getJavaFXClassPath()));
         }
-        return (URL[]) urlList.toArray(new URL[0]);
+        return urlList.toArray(new URL[0]);
     }
     
     /**
-     * Get the URL of the  current tools.jar file
-     * Looks for lib/tools.jar in the current javaHome
-     * and in the parent of it.
-     * tools.jar is needed on many (but not all!) systems. Currently, 
-     * MacOS is the only system known to us without a tools URL, but 
-     * there may be others in the furure. This method returns null
-     * if tools.jar does not exist.
-     *
-     * @return   The URL of the tools.jar file for the current Java implementation, or null.
-     * @exception  MalformedURLException  for any problems with the URL
-     */
-    private URL getToolsURL() 
-        throws MalformedURLException
-    {
-        File toolsFile = new File(javaHomeDir, "lib/tools.jar");
-        if (toolsFile.canRead())
-            return toolsFile.toURI().toURL();
-
-        File parentDir = javaHomeDir.getParentFile();
-        toolsFile = new File(parentDir, "lib/tools.jar");
-        if (toolsFile.canRead())
-            return toolsFile.toURI().toURL();
-        else {
-            // on other systems where we don't find it, we just warn. We don't expect it
-            // to happen, but you never know...
-            System.err.println("class Boot: tools.jar not found. Potential problem for execution.  (Java Home: " + javaHomeDir.getAbsolutePath() + ")");
-            return null;
-        }
-    }
-    
-    /**
-     * Returns command line specified properties. <br>
+     * Returns command line specified properties.
      * 
-     * Properties can be specified with -... command line options. For example: -bluej.debug=true
+     * <p>Properties can be specified with -... command line options. For example: -bluej.debug=true
      * @return The command line specified properties
      */
     public Properties getCommandLineProperties()
@@ -631,7 +664,7 @@ public class Boot
         return commandLineProps;
     }
 
-    public static class App extends Application
+    public static class App extends javafx.application.Application
     {
         public App()
         {

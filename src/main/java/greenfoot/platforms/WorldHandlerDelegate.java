@@ -64,17 +64,17 @@ public interface WorldHandlerDelegate
     /**
      * An actor was added into the world (by any means, possibly programmatically). Called with the world locked.
      */
-    public void objectAddedToWorld(Actor actor);
+    void objectAddedToWorld(Actor actor);
 
     /**
      * Show a text prompt asking for input, with given prompt string
      */
-    public String ask(String prompt);
+    String ask(String prompt);
 
     /**
      * A world of the given class name is now being initialised.
      */
-    public default void initialisingWorld(String className) {};
+    default void initialisingWorld(String className) {}
 
     /**
      * Repaint the world.
@@ -92,5 +92,5 @@ public interface WorldHandlerDelegate
     /**
      * The world construction has completed.
      */
-    default void finishedInitialisingWorld() {};
+    default void finishedInitialisingWorld() {}
 }

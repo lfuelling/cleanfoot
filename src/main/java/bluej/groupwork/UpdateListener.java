@@ -21,10 +21,10 @@
  */
 package bluej.groupwork;
 
+import java.io.File;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * An interface for listening to changes performed to local files
@@ -38,21 +38,21 @@ public interface UpdateListener
     /**
      * A file was added or modified locally.
      */
-    public void fileModified(File f);
+    void fileModified(File f);
     
     /**
      * A file was removed locally.
      */
-    public void fileRemoved(File f);
+    void fileRemoved(File f);
     
     /**
      * A directory (and all files within) was removed.
      * The files within might not be individually reported.
      */
-    public void dirRemoved(File f);
+    void dirRemoved(File f);
     
     /**
      * Conflicts must be handled.
      */
-    public void handleConflicts(UpdateResults updateResults);
+    void handleConflicts(UpdateResults updateResults);
 }

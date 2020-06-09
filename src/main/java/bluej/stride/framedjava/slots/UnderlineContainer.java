@@ -22,6 +22,7 @@
 package bluej.stride.framedjava.slots;
 
 import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -31,15 +32,13 @@ import threadchecker.Tag;
 public interface UnderlineContainer
 {
     // For links, not error underlines
-    public static interface Underline
+    interface Underline
     {
-        public int getStartPosition();
-        public int getEndPosition();
-        public FXPlatformRunnable getOnClick();
+        int getStartPosition();
+        int getEndPosition();
+        FXPlatformRunnable getOnClick();
     }
 
-    @OnThread(Tag.FXPlatform)
-    public void addUnderline(Underline u);
-    @OnThread(Tag.FXPlatform)
-    public void removeAllUnderlines();
+    @OnThread(Tag.FXPlatform) void addUnderline(Underline u);
+    @OnThread(Tag.FXPlatform) void removeAllUnderlines();
 }

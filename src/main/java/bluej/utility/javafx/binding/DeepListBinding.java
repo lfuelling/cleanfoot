@@ -21,12 +21,15 @@
  */
 package bluej.utility.javafx.binding;
 
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.MultiListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class is useful when you want to bind one (observable) list to some function of another observable list

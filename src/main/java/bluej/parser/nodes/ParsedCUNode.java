@@ -42,7 +42,7 @@ import java.util.List;
 public class ParsedCUNode extends IncrementalParsingNode
 {
     private EntityResolver parentResolver;
-    private ImportsCollection imports = new ImportsCollection();
+    private final ImportsCollection imports = new ImportsCollection();
 
     private int size = 0;
     
@@ -116,8 +116,8 @@ public class ParsedCUNode extends IncrementalParsingNode
         
         params.parser.parseCUpart(state);
         return PP_OK;
-    };
-    
+    }
+
     @Override
     protected boolean isDelimitingNode(NodeAndPosition<ParsedNode> nap)
     {

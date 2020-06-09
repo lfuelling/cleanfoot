@@ -21,10 +21,10 @@
  */
 package bluej.parser;
 
+import java.util.List;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 @OnThread(Tag.FXPlatform)
 public class PrefixCompletionWrapper extends AssistContent

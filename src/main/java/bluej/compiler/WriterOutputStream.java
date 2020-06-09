@@ -39,8 +39,8 @@ import java.nio.charset.CodingErrorAction;
  */
 public class WriterOutputStream extends OutputStream
 {
-    private Charset cs = Charset.forName(System.getProperty("file.encoding"));
-    private CharsetDecoder decoder = cs.newDecoder();
+    private final Charset cs = Charset.forName(System.getProperty("file.encoding"));
+    private final CharsetDecoder decoder = cs.newDecoder();
     
     /*
      * We use two buffers, one is a byte buffer and the other is a character buffer.

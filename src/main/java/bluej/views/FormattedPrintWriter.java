@@ -21,11 +21,12 @@
  */
 package bluej.views;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  ** @author Michael Cahill

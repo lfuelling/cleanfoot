@@ -30,9 +30,12 @@ import greenfoot.core.WorldHandler;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
 
 
 /**
@@ -59,8 +62,8 @@ public abstract class World
 
     // private CollisionChecker collisionChecker = new GridCollisionChecker();
     // private CollisionChecker collisionChecker = new BVHInsChecker();
-    private CollisionChecker collisionChecker = new ColManager();
-
+    private final CollisionChecker collisionChecker = new ColManager();
+    
     //{
     //    collisionChecker = new CollisionProfiler(collisionChecker);
     //}
@@ -70,12 +73,12 @@ public abstract class World
     // ordering, the disordered set might be used for an ordered set. If two
     // orderings are used at the same time a new set will be created for the
     // second set.
-    private TreeActorSet objectsDisordered = new TreeActorSet();
-    private TreeActorSet objectsInPaintOrder;
+    private TreeActorSet objectsDisordered = new TreeActorSet(); 
+    private TreeActorSet objectsInPaintOrder;    
     private TreeActorSet objectsInActOrder;
-
+    
     // List of text labels displayed over the world
-    List<TextLabel> textLabels = new ArrayList<TextLabel>();
+    List<TextLabel> textLabels = new ArrayList<TextLabel>(); 
 
     /** The size of the cell in pixels. */
     final int cellSize;
@@ -86,17 +89,17 @@ public abstract class World
 
     /** Image painted in the background. */
     private GreenfootImage backgroundImage;
-
+    
     /** Whether the backgroundImage is the class image */
     private boolean backgroundIsClassImage = true;
-
+    
     /** Whether actors are bound to stay inside the world */
-    private boolean isBounded;
+    private final boolean isBounded;
 
     /**
      * Construct a new world. The size of the world (in number of cells) and the
      * size of each cell (in pixels) must be specified.
-     *
+     * 
      * @param worldWidth The width of the world (in cells).
      * @param worldHeight The height of the world (in cells).
      * @param cellSize Size of a cell in pixels.
@@ -111,7 +114,7 @@ public abstract class World
      * size of each cell (in pixels) must be specified. This constructor allows
      * the option of creating an unbounded world, which actors can move outside
      * the boundaries of.
-     *
+     * 
      * @param worldWidth  The width of the world (in cells).
      * @param worldHeight The height of the world (in cells).
      * @param cellSize    Size of a cell in pixels.
@@ -124,10 +127,10 @@ public abstract class World
         this.cellSize = cellSize;
         collisionChecker.initialize(worldWidth, worldHeight, cellSize, false);
         this.isBounded = bounded;
-
+        
         backgroundIsClassImage = true;
         setBackground(getClassImage());
-
+        
         // Now, the WorldHandler must be informed of the new world, so it can be
         // used immediately. This is important for actors that are created by
         // the world constructor, if the actors are accessing the world in their
@@ -143,12 +146,12 @@ public abstract class World
      * the world in pixels, it is clipped. If it is smaller than the world, it
      * is tiled. A pattern showing the cells can easily be shown by setting a
      * background image with a size equal to the cell size.
-     *
+     * 
      * @see #setBackground(String)
      * @param image The image to be shown
      */
     final public void setBackground(GreenfootImage image)
-    {
+    {        
         if (image != null) {
             int imgWidth = image.getWidth();
             int imgHeight = image.getHeight();
@@ -189,7 +192,7 @@ public abstract class World
      * the world in pixels, it is clipped. A pattern showing the cells can
      * easily be shown by setting a background image with a size equal to the
      * cell size.
-     *
+     * 
      * @see #setBackground(GreenfootImage)
      * @param filename The file holding the image to be shown
      * @throws IllegalArgumentException If the image can not be loaded.
@@ -204,7 +207,7 @@ public abstract class World
     /**
      * Return the world's background image. The image may be used to draw onto
      * the world's background.
-     *
+     * 
      * @return The background image
      */
     public GreenfootImage getBackground()
@@ -223,7 +226,7 @@ public abstract class World
         }
         return backgroundImage;
     }
-
+        
     /**
      * Return the color at the centre of the cell. To paint a color, you need to
      * get the background image for the world and paint on that.
@@ -255,21 +258,21 @@ public abstract class World
     public greenfoot.Color getColorAt(int x, int y)
     {
                 ensureWithinXBounds(x);
-        ensureWithinYBounds(y);
-
+        ensureWithinYBounds(y);       
+        
         int xPixel = (int) Math.floor(getCellCenter(x));
-        int yPixel = (int) Math.floor(getCellCenter(y));
-
+        int yPixel = (int) Math.floor(getCellCenter(y));        
+                
         if(xPixel >= backgroundImage.getWidth()) {
             return DEFAULT_BACKGROUND_COLOR;
         }
         if(yPixel >= backgroundImage.getHeight()) {
             return DEFAULT_BACKGROUND_COLOR;
-        }
-
+        }        
+        
         return backgroundImage.getColorAt(xPixel, yPixel);
     }
-
+    
     /**
      * Return the width of the world (in number of cells).
      *
@@ -303,9 +306,9 @@ public abstract class World
     /**
      * Set the paint order of objects in the world. Paint order is specified
      * by class: objects of one class will always be painted on top of objects
-     * of some other class. The order of objects of the same class cannot be
+     * of some other class. The order of objects of the same class cannot be 
      * specified.
-     * Objects of classes listed first in the parameter list will
+     * Objects of classes listed first in the parameter list will 
      * appear on top of all objects of classes listed later.
      * <p>
      * Objects of a class not explicitly specified effectively inherit the paint
@@ -313,7 +316,7 @@ public abstract class World
      * <p>
      * Objects of classes not listed will appear below the objects whose classes
      * have been specified.
-     *
+     * 
      * @param classes  The classes in desired paint order
      */
     @SuppressWarnings("unchecked")
@@ -333,7 +336,7 @@ public abstract class World
             objectsInPaintOrder = null;
             return;
         }
-
+        
         if (objectsInPaintOrder != null) {
             // Just reuse existing set
         }
@@ -352,22 +355,22 @@ public abstract class World
         }
         objectsInPaintOrder.setClassOrder(true, classes);
     }
-
+    
     /**
      * Set the act order of objects in the world. Act order is specified
      * by class: objects of one class will always act before objects
-     * of some other class. The order of objects of the same class cannot be
+     * of some other class. The order of objects of the same class cannot be 
      * specified.
-     *
-     * <p>Objects of classes listed first in the parameter list will
+     * 
+     * <p>Objects of classes listed first in the parameter list will 
      * act before any objects of classes listed later.
-     *
+     * 
      * <p>Objects of a class not explicitly specified inherit the act
      * order from their superclass.
-     *
+     * 
      * <p>Objects of classes not listed will act after all objects whose classes
      * have been specified.
-     *
+     * 
      * @param classes
      *            The classes in desired act order
      */
@@ -388,7 +391,7 @@ public abstract class World
             objectsInActOrder = null;
             return;
         }
-
+        
         if (objectsInActOrder != null) {
             // Just reuse existing set
         }
@@ -407,10 +410,10 @@ public abstract class World
         }
         objectsInActOrder.setClassOrder(false, classes);
     }
-
+    
     /**
      * Add an Actor to the world.
-     *
+     * 
      * @param object The new object to add.
      * @param x The x coordinate of the location where the object is added.
      * @param y The y coordinate of the location where the object is added.
@@ -423,7 +426,7 @@ public abstract class World
             }
             object.world.removeObject(object);
         }
-
+        
         objectsDisordered.add(object);
         addInPaintOrder(object);
         addInActOrder(object);
@@ -431,10 +434,10 @@ public abstract class World
         // Note we must call this before adding the object to the collision checker,
         // so that the cached bounds are cleared:
         object.addToWorld(x, y, this);
-
+        
         collisionChecker.addObject(object);
         object.addedToWorld(this);
-
+        
         WorldHandler whInstance = WorldHandler.getInstance();
         if (whInstance != null) {
             WorldHandler.getInstance().objectAddedToWorld(object);
@@ -443,7 +446,7 @@ public abstract class World
 
     /**
      * Remove an object from the world.
-     *
+     * 
      * @param object the object to remove
      */
     public void removeObject(Actor object)
@@ -451,7 +454,7 @@ public abstract class World
         if (object == null || object.world != this) {
             return;
         }
-
+        
         objectsDisordered.remove(object);
         collisionChecker.removeObject(object);
         if (objectsDisordered != objectsInActOrder && objectsInActOrder != null) {
@@ -465,7 +468,7 @@ public abstract class World
 
     /**
      * Remove a list of objects from the world.
-     *
+     * 
      * @param objects A list of Actors to remove.
      */
     @SuppressWarnings("unchecked")
@@ -485,14 +488,14 @@ public abstract class World
      *
      * @param <A> The type of objects to look for
      * @param cls Class of objects to look for ('null' will find all objects).
-     *
+     * 
      * @return A list of objects.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public <A> List<A> getObjects(Class<A> cls)
     {
         List result = new ArrayList();
-
+        
         Iterator<Actor> i = objectsDisordered.iterator();
         while (i.hasNext()) {
             Actor actor = i.next();
@@ -500,33 +503,33 @@ public abstract class World
                 result.add(actor);
             }
         }
-
+        
         return result;
     }
-
+    
     /**
      * Get the number of actors currently in the world.
-     *
+     * 
      * @return The number of actors
      */
     public int numberOfObjects()
     {
         return objectsDisordered.size();
     }
-
+    
     /**
-     * Repaints the world.
+     * Repaints the world. 
      */
-    public void repaint()
-    {
+    public void repaint() 
+    {   
         WorldHandler.getInstance().repaintAndWait();
     }
-
+        
     /**
      * Act method for world. The act method is called by the greenfoot framework
      * at each action step in the environment. The world's act method is called
      * before the act method of any objects in the world.<p>
-     *
+     * 
      * This method does nothing. It should be overridden in subclasses to
      * implement an world's action.
      */
@@ -545,8 +548,8 @@ public abstract class World
     public void started()
     {
         // by default, do nothing
-    }
-
+    }   
+    
     /**
      * This method is called by the Greenfoot system when the execution has
      * stopped. This method can be overridden to implement custom behaviour when
@@ -557,8 +560,8 @@ public abstract class World
     public void stopped()
     {
         // by default, do nothing
-    }
-
+    }   
+    
     // =================================================
     //
     // COLLISION STUFF
@@ -568,7 +571,7 @@ public abstract class World
     /**
      * Return all objects at a given cell.
      * <p>
-     *
+     * 
      * An object is defined to be at that cell if its graphical representation
      * overlaps the center of the cell.
      *
@@ -588,7 +591,7 @@ public abstract class World
      * Show some text centred at the given position in the world. The text will be
      * displayed in front of any actors. Any previous text shown at the same location will
      * first be removed.
-     *
+     *  
      * @param text   The text to display; can be null to show no text
      * @param x      X-coordinate of the text
      * @param y      Y-coordinate of the text
@@ -607,7 +610,7 @@ public abstract class World
                 break;
             }
         }
-
+        
         if (text != null && text.length() != 0) {
             textLabels.add(new TextLabel(text, x, y));
         }
@@ -621,16 +624,16 @@ public abstract class World
 
     /**
      * Return the world's background image but without initialising it first
-     *
+     * 
      * @return The background image or null if not initialised yet.
      */
     GreenfootImage getBackgroundNoInit()
     {
         return backgroundImage;
     }
-
+    
     /**
-     * Test whether this world is bounded.
+     * Test whether this world is bounded. 
      */
     boolean isBounded()
     {
@@ -640,7 +643,7 @@ public abstract class World
     /**
      * Return all the objects that intersect the given object. This takes the
      * graphical extent of objects into consideration.
-     *
+     * 
      * @param actor An Actor in the world
      * @param cls Class of objects to look for (null or Object.class will find
      *            all classes)
@@ -654,7 +657,7 @@ public abstract class World
      * Returns all objects with the logical location within the specified
      * circle. In other words an object A is within the range of an object B if
      * the distance between the centre of the two objects is less than r.
-     *
+     * 
      * @param x Centre of the cirle
      * @param y Centre of the cirle
      * @param r Radius of the cirle
@@ -689,7 +692,7 @@ public abstract class World
     /**
      * Return all objects that intersect a straight line from the location at a
      * specified angle. The angle is clockwise.
-     *
+     * 
      * @param x x-coordinate
      * @param y y-coordinate
      * @param angle The angle relative to current rotation of the object.
@@ -721,7 +724,7 @@ public abstract class World
 
     /**
      * Converts the pixel location into a cell, rounding up.
-     */
+     */    
     int toCellCeil(int pixel)
     {
         return (int) Math.ceil((double) pixel / cellSize);
@@ -734,7 +737,7 @@ public abstract class World
     int toCellFloor(int pixel)
     {
         return (int) Math.floor((double) pixel / cellSize);
-    }
+    }        
 
     /**
      * Returns the centre of the cell. It should be rounded down with Math.floor() if the integer version is needed.
@@ -746,7 +749,7 @@ public abstract class World
         double cellCenter = l * cellSize + cellSize / 2.;
         return cellCenter;
     }
-
+    
     Collection<Actor> getObjectsAtPixel(int x, int y)
     {
         // This is a very naive and slow way of getting the objects at a given
@@ -756,7 +759,7 @@ public abstract class World
         // It will be very slow with a lot of rotated objects. It is only used
         // when using the mouse to select objects, which is not a time-critical
         // task.
-
+        
         List<Actor> result = new LinkedList<Actor>();
         TreeActorSet objects = getObjectsListInPaintOrder();
         for (Actor actor : objects) {
@@ -766,8 +769,8 @@ public abstract class World
                    result.add(actor);
                 }
             }
-        }
-
+        } 
+      
         return result;
     }
 
@@ -784,7 +787,7 @@ public abstract class World
     /**
      * Used to indicate the start of an animation sequence. For use in the
      * collision checker.
-     *
+     * 
      * @see greenfoot.collision.CollisionChecker#startSequence()
      */
     void startSequence()

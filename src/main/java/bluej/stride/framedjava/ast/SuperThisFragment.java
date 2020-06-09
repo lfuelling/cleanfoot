@@ -21,20 +21,20 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.ErrorShower;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.frames.ConstructorFrame;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.slots.ChoiceSlot;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
+
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.frames.ConstructorFrame;
+import bluej.stride.generic.InteractionManager;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.slots.ChoiceSlot;
 
 public class SuperThisFragment extends ChoiceSlotFragment
 {
@@ -102,8 +102,7 @@ public class SuperThisFragment extends ChoiceSlotFragment
     }
 
     @Override
-    public @OnThread(Tag.FX)
-    ErrorShower getErrorShower()
+    public @OnThread(Tag.FX) ErrorShower getErrorShower()
     {
         if (paramsSlot != null)
             return paramsSlot;

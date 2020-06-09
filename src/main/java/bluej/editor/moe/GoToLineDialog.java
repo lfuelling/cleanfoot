@@ -21,9 +21,10 @@
  */
 package bluej.editor.moe;
 
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.utility.javafx.dialog.InputDialog;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

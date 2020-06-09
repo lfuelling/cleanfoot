@@ -26,7 +26,18 @@ import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.ResizableCanvas;
-import greenfoot.sound.*;
+import greenfoot.sound.MemoryAudioInputStream;
+import greenfoot.sound.Sound;
+import greenfoot.sound.SoundPlaybackListener;
+import greenfoot.sound.SoundRecorder;
+import greenfoot.sound.SoundStream;
+
+import java.io.File;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
@@ -42,12 +53,6 @@ import javafx.stage.Stage;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.io.File;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicReference;
-
 
 /**
  * The GUI class for the sound recorder.
@@ -58,8 +63,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @OnThread(Tag.FXPlatform)
 public class SoundRecorderControls extends Stage
 {
-    private Player player = new Player();
-    private SoundRecorder recorder = new SoundRecorder();
+    private final Player player = new Player();
+    private final SoundRecorder recorder = new SoundRecorder();
 
     // Indicates whether the selection is currently in use (and should be displayed/used)
     // If the selection is zero width, this will be false
@@ -77,8 +82,8 @@ public class SoundRecorderControls extends Stage
     private boolean recording = false;
     // Reference will be only be valid when "recording" is true:
     private AtomicReference<List<byte[]>> currentRecording;
-    private SoundPanel soundPanel = new SoundPanel();
-    private SaveState saveState = new SaveState(this, recorder);
+    private final SoundPanel soundPanel = new SoundPanel();
+    private final SaveState saveState = new SaveState(this, recorder);
 
     private final String playLabel = Config.getString("soundRecorder.play");
     private final String playSelectionLabel = Config.getString("soundRecorder.playSelection");
@@ -86,9 +91,9 @@ public class SoundRecorderControls extends Stage
     private final String recordLabel = Config.getString("soundRecorder.record");
     private final String stopRecordLabel = Config.getString("soundRecorder.stopRecord");
 
-    private Button trim = new Button(Config.getString("soundRecorder.trim"));
-    private Button playStop = new Button(playLabel);
-    private Button recordStop = new Button(recordLabel);
+    private final Button trim = new Button(Config.getString("soundRecorder.trim"));
+    private final Button playStop = new Button(playLabel);
+    private final Button recordStop = new Button(recordLabel);
 
     private final SimpleBooleanProperty showingProperty = new SimpleBooleanProperty(false);
 

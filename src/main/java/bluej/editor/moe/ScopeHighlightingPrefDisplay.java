@@ -21,9 +21,6 @@
  */
 package bluej.editor.moe;
 
-import bluej.Config;
-import bluej.prefmgr.PrefMgr;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.ObjectExpression;
@@ -31,10 +28,15 @@ import javafx.scene.Node;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
+
+import bluej.Config;
+import bluej.prefmgr.PrefMgr;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

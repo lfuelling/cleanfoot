@@ -21,18 +21,24 @@
  */
 package greenfoot.mouse;
 
-import greenfoot.*;
+import greenfoot.Actor;
+import greenfoot.MouseInfo;
+import greenfoot.TestObject;
+import greenfoot.TestUtilDelegate;
+import greenfoot.World;
+import greenfoot.WorldCreator;
+import greenfoot.WorldVisitor;
 import greenfoot.core.Simulation;
 import greenfoot.gui.input.mouse.MousePollingManager;
 import greenfoot.gui.input.mouse.WorldLocator;
 import greenfoot.util.GreenfootUtil;
-import javafx.scene.input.MouseButton;
-import junit.framework.TestCase;
 
-import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import javafx.scene.input.MouseButton;
+import javax.swing.JPanel;
 
+import junit.framework.TestCase;
 /**
  * Tests of the implementation of the Greenfoot mouse support. 
  * TODO drags on boundaries
@@ -46,10 +52,10 @@ import java.util.Collection;
  */
 public class MousePollTest extends TestCase
 {
-    private MousePollingManager mouseMan;
+    private MousePollingManager mouseMan; 
     
     /** Panel used to simulate events on */
-    private JPanel panel = new JPanel();
+    private final JPanel panel = new JPanel();
 
     private World world;
     private TestObject actorAtClick;

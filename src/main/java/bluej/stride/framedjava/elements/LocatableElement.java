@@ -21,7 +21,14 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.ExpressionSlotFragment;
+import bluej.stride.framedjava.ast.FrameFragment;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.StructuredSlotFragment;
+import bluej.stride.framedjava.ast.SuperThisFragment;
+import bluej.stride.framedjava.ast.TextSlotFragment;
+import bluej.stride.framedjava.slots.StructuredSlot;
 import nu.xom.Attribute;
 import nu.xom.Element;
 import nu.xom.Elements;
@@ -78,10 +85,10 @@ public class LocatableElement extends Element
         addAttribute(new Attribute(name, content.getContent()));
     }
 
-    public static interface LocationMap
+    public interface LocationMap
     {
-        public String locationFor(JavaFragment fragment);
-        public String locationFor(CodeElement element);
+        String locationFor(JavaFragment fragment);
+        String locationFor(CodeElement element);
     }
 
     /**

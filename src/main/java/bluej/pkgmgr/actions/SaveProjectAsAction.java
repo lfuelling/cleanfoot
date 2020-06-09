@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2012,2014,2016,2018  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2012,2014,2016,2018,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,6 +21,9 @@
  */
 package bluej.pkgmgr.actions;
 
+import java.io.File;
+import java.io.IOException;
+
 import bluej.Config;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
@@ -29,9 +32,6 @@ import bluej.pkgmgr.ProjectUtils;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import bluej.utility.FileUtility;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * User chooses "save project as". This allows saving the project under a
@@ -55,7 +55,7 @@ final public class SaveProjectAsAction extends PkgMgrAction
     public void saveAs(PkgMgrFrame frame, Project project)
     {
         // get a file name to save under
-        File newName = FileUtility.getSaveProjectFX(frame.getFXWindow(), Config.getString("pkgmgr.saveAs.title"));
+        File newName = FileUtility.getSaveProjectFX(project, frame.getFXWindow(), Config.getString("pkgmgr.saveAs.title"));
 
         if (newName == null)
         {

@@ -21,7 +21,7 @@
  */
 package bluej.debugmgr.objectbench;
 
-import java.util.EventListener;
+import java.util.*;
 
 /**
  * The listener for ObjectBench events.

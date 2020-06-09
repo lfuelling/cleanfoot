@@ -36,7 +36,7 @@ public class GenTypeSuper extends GenTypeWildcard
      */
     public GenTypeSuper()
     {
-        super((GenTypeSolid) null, (GenTypeSolid) null);
+        super(null, null);
     }
     
     /**

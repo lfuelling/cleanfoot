@@ -30,6 +30,5 @@ import threadchecker.Tag;
 @FunctionalInterface
 public interface FXBiConsumer<T, U>
 {
-    @OnThread(Tag.FX)
-    public void accept(T t, U u);
+    @OnThread(Tag.FX) void accept(T t, U u);
 }

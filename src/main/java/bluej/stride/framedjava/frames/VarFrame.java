@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016,2017,2018 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2017,2018,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,34 +22,56 @@
 package bluej.stride.framedjava.frames;
 
 
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.elements.VarElement;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.framedjava.slots.FilledExpressionSlot;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.operations.FrameOperation;
-import bluej.stride.operations.ToggleBooleanProperty;
-import bluej.stride.slots.*;
-import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import bluej.stride.generic.FrameCursor;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Duration;
+
+import bluej.stride.framedjava.ast.AccessPermission;
+import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.elements.VarElement;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.framedjava.slots.FilledExpressionSlot;
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameFactory;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.operations.FrameOperation;
+import bluej.stride.operations.ToggleBooleanProperty;
+import bluej.stride.slots.AccessPermissionSlot;
+import bluej.stride.slots.EditableSlot;
+import bluej.stride.slots.ChoiceSlot;
+import bluej.stride.slots.Focus;
+import bluej.stride.slots.FocusParent;
+import bluej.stride.slots.HeaderItem;
+import bluej.stride.slots.SlotLabel;
+import bluej.stride.slots.SlotTraversalChars;
+import bluej.stride.slots.SlotValueListener;
+import bluej.stride.slots.VariableNameDefTextSlot;
+
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * A variable/object declaration block (with optional init)
@@ -155,13 +177,13 @@ public class VarFrame extends SingleLineFrame
 
         
 
-        getHeaderRow().bindContentsConcat(FXCollections.<ObservableList<? extends HeaderItem>>observableArrayList(
+        getHeaderRow().bindContentsConcat(FXCollections.observableArrayList(
                 FXCollections.observableArrayList(headerCaptionLabel),
                 JavaFXUtil.listBool(accessModifier, access),
                 JavaFXUtil.listBool(staticModifier, staticLabel),
                 JavaFXUtil.listBool(finalModifier, finalLabel),
                 FXCollections.observableArrayList(slotType, slotName),
-                JavaFXUtil.listBool(showingValue, assignLabel, slotValue),
+                JavaFXUtil.listBool(showingValue, List.of(assignLabel, slotValue)),
                 FXCollections.observableArrayList(previewSemi)
         ));
 
@@ -185,7 +207,7 @@ public class VarFrame extends SingleLineFrame
     // If varValue is null, that means the slot is not shown
     // If accessValue is null, that means the slot is not shown
     public VarFrame(InteractionManager editor, AccessPermissionFragment accessValue, boolean staticModifier, boolean finalModifier,
-                    TypeSlotFragment varType, NameDefSlotFragment varName, FilledExpressionSlotFragment varValue, boolean enabled)
+            TypeSlotFragment varType, NameDefSlotFragment varName, FilledExpressionSlotFragment varValue, boolean enabled)
     {
         this(editor, finalModifier, staticModifier);
         accessModifier.set(accessValue != null);
@@ -333,7 +355,8 @@ public class VarFrame extends SingleLineFrame
     {
         if (parentCanvas == null) {
             // This means that the frame is being deleted, so it has no parent.
-            // This shouldn't be reachable but it's not harmful. See: http://bugs.bluej.org/browse/BLUEJ-1068
+            // This can happen if we arrive here in the middle of an undo operation while updating the cheat sheet,
+            // but in that case just return arbitrary value, and cheat sheet will be updated again later:
             return false;
         }
         return parentCanvas.getParent().getChildKind(parentCanvas) == CanvasParent.CanvasKind.FIELDS;

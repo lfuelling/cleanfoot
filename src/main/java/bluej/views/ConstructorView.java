@@ -21,14 +21,14 @@
  */
 package bluej.views;
 
-import bluej.debugger.gentype.GenTypeDeclTpar;
+import java.lang.reflect.Constructor;
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.lang.reflect.Constructor;
-import java.util.List;
 
 /**
  * A representation of a Java constructor in BlueJ

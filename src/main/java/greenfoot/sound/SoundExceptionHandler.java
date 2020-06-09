@@ -21,12 +21,16 @@
  */
 package greenfoot.sound;
 
-import bluej.Config;
+import greenfoot.core.WorldHandler;
+import greenfoot.util.GreenfootUtil;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+
+import bluej.Config;
 
 /**
  * This class should be forwarded some of the common sound exceptions. It keeps

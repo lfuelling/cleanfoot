@@ -21,11 +21,17 @@
  */
 package bluej.utility;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * A multi-line Label-like AWT component.
@@ -103,7 +109,7 @@ public class MultiLineLabel extends JPanel
             add(Box.createVerticalStrut(spacing));
         }
 
-        String strs[] = Utility.splitLines(text);
+        String[] strs = Utility.splitLines(text);
         JLabel l;
         Font font = new Font("SansSerif", fontAttributes, size);
 

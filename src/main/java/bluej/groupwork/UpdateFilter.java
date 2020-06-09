@@ -61,12 +61,9 @@ public class UpdateFilter
             // Update will succeed if forced (for bluej.pkg files)
             return true;
         }
-        
-        if (remoteStat == Status.NEEDS_UPDATE) { //REMOTE_STATUS_MODIFIED
-            return true;
-        }
-    
-        return false;
+
+        //REMOTE_STATUS_MODIFIED
+        return remoteStat == Status.NEEDS_UPDATE;
     }
     
     /**
@@ -101,9 +98,6 @@ public class UpdateFilter
         if (statusInfo.getStatus() == Status.REMOVED || remoteStatus == Status.REMOVED) {
             return true;
         }
-        if (statusInfo.getStatus() == Status.CONFLICT_LMRD || remoteStatus == Status.CONFLICT_LMRD) {
-            return true;
-        }
-        return false;
+        return statusInfo.getStatus() == Status.CONFLICT_LMRD || remoteStatus == Status.CONFLICT_LMRD;
     }
 }

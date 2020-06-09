@@ -21,8 +21,11 @@
  */
 package bluej.utility;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+
+import javax.swing.Icon;
 
 /**
  * Return a filled oval as an Icon
@@ -31,7 +34,7 @@ import java.awt.*;
  */
 public class OvalIcon implements Icon
 {
-    private Color color;
+    private final Color color;
     private static OvalIcon redIcon;
     private static OvalIcon blankIcon;
 

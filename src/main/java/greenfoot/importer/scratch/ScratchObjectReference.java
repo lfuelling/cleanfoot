@@ -36,7 +36,7 @@ import java.util.ArrayList;
 class ScratchObjectReference extends ScratchObject
 {
     // The one-based index into the object table
-    private int index;
+    private final int index;
     
     public ScratchObjectReference(int i)
     {

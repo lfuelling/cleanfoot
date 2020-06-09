@@ -21,9 +21,9 @@
  */
 package bluej.extmgr;
 
-import bluej.extensions.MenuGenerator;
+import javax.swing.JMenuItem;
 
-import javax.swing.*;
+import bluej.extensions.MenuGenerator;
 
 /**
  * This interface provides methods for retrieving custom menu entries of an

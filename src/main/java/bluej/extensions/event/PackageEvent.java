@@ -21,7 +21,7 @@
  */
 package bluej.extensions.event;
 
-import bluej.extensions.BPackage;
+import bluej.extensions.*;
 import bluej.pkgmgr.Package;
 
 /**
@@ -42,8 +42,8 @@ public class PackageEvent implements ExtensionEvent
      */ 
     public static final int PACKAGE_CLOSING = 2;
 
-    private int eventId;
-    private Package thisPackage;
+    private final int eventId;
+    private final Package thisPackage;
 
     /**
      * Constructor for the PackageEvent.

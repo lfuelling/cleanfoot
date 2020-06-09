@@ -115,12 +115,8 @@ public class Circle
         int dySq = dy * dy;
         
         int  circleDistSq = (dxSq + dySq);
-        
-        if( (r1 + r2) * (r1 + r2) >= circleDistSq) {
-            return true;
-        } else {
-            return false;
-        }            
+
+        return (r1 + r2) * (r1 + r2) >= circleDistSq;
     }
 
     /**

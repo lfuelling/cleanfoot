@@ -21,7 +21,13 @@
  */
 package bluej.debugger.gentype;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 
 /**
@@ -85,7 +91,7 @@ public abstract class GenTypeSolid extends JavaType
      *  Implement methods from GenTypeParameterizable
      */
     
-    public GenTypeSolid[] getUpperBounds()
+    public GenTypeSolid [] getUpperBounds()
     {
         return getIntersectionTypes();
     }
@@ -129,7 +135,7 @@ public abstract class GenTypeSolid extends JavaType
      * means, calculate the most specific type to which all the given types are
      * convertible.<p>
      */
-    public static GenTypeSolid lub(GenTypeSolid[] ubounds)
+    public static GenTypeSolid lub(GenTypeSolid [] ubounds)
     {
         Stack<GenTypeClass[]> btstack = new Stack<GenTypeClass[]>();
         return lub(ubounds, btstack);
@@ -142,7 +148,7 @@ public abstract class GenTypeSolid extends JavaType
     /**
      * lub workhorse method, uses a stack backtrace to avoid infinite recursion.
      */
-    private static GenTypeSolid lub(GenTypeSolid[] ubounds, Stack<GenTypeClass[]> lubBt)
+    private static GenTypeSolid lub(GenTypeSolid [] ubounds, Stack<GenTypeClass[]> lubBt)
     {
         // "lowest(/least) upper bound"?
         
@@ -152,7 +158,7 @@ public abstract class GenTypeSolid extends JavaType
             l.add(Candidate(mec[i], ubounds, lubBt));
         }
         
-        GenTypeSolid[] intersecting = l.toArray(new GenTypeSolid[l.size()]);
+        GenTypeSolid [] intersecting = l.toArray(new GenTypeSolid[l.size()]);
         return IntersectionType.getIntersection(intersecting);
     }
     
@@ -165,7 +171,7 @@ public abstract class GenTypeSolid extends JavaType
      * @param lubBt    A backtrace used to avoid infinite recursion
      * @return  The candidate type
      */
-    private static GenTypeClass Candidate(Reflective t, GenTypeSolid[] ubounds, Stack<GenTypeClass[]> lubBt)
+    private static GenTypeClass Candidate(Reflective t, GenTypeSolid [] ubounds, Stack<GenTypeClass[]> lubBt)
     {
         GenTypeClass [] ri = relevantInvocations(t, ubounds);
         return leastContainingInvocation(ri, lubBt);
@@ -189,7 +195,7 @@ public abstract class GenTypeSolid extends JavaType
         boolean breakRecursion = false;
         Iterator<GenTypeClass[]> si = lubBt.iterator();
         while (si.hasNext()) {
-            GenTypeSolid[] sbounds = si.next();
+            GenTypeSolid [] sbounds = si.next();
             int i;
             for (i = 0; i < sbounds.length; i++) {
                 if (! sbounds[i].equals(types[i])) {
@@ -247,8 +253,8 @@ public abstract class GenTypeSolid extends JavaType
         // lci(G<X1,...,Xn>, G<Y1,...,Yn>) =
         //       G<lcta(X1,Y1), ..., lcta(Xn,Yn)>
         while (i.hasNext()) {
-            GenTypeParameter atype = (GenTypeParameter) i.next();
-            GenTypeParameter btype = (GenTypeParameter) j.next();
+            GenTypeParameter atype = i.next();
+            GenTypeParameter btype = j.next();
             GenTypeParameter rtype;
             if (! breakRecursion)
                 rtype = leastContainingTypeArgument(atype, btype, lubBt);
@@ -284,7 +290,7 @@ public abstract class GenTypeSolid extends JavaType
             if (ac.equals(bc))
                 return ac;
             else
-                return new GenTypeWildcard(lub(new GenTypeSolid[] {ac, bc}, lubBt), null);
+                return new GenTypeWildcard(lub(new GenTypeSolid [] {ac, bc}, lubBt), null);
         }
         
         if (ac != null || bc != null) {
@@ -319,7 +325,7 @@ public abstract class GenTypeSolid extends JavaType
         // The only option left is lcta(? extends U, ? extends V)
         GenTypeSolid uboundsa = a.getUpperBound().asSolid();
         GenTypeSolid uboundsb = b.getUpperBound().asSolid();
-        GenTypeSolid[] args = new GenTypeSolid[2];
+        GenTypeSolid [] args = new GenTypeSolid[2];
         args[0] = uboundsa;
         args[1] = uboundsb;
         return lub(args);
@@ -335,7 +341,7 @@ public abstract class GenTypeSolid extends JavaType
      * @param types   The types for which to find the MEC.
      * @return        The MEC as an array of Reflective.
      */
-    private static Reflective [] minimalErasedCandidateSet(GenTypeSolid[] types)
+    private static Reflective [] minimalErasedCandidateSet(GenTypeSolid [] types)
     {
         // have to find *intersection* of all sets and remove redundant types
         
@@ -359,10 +365,10 @@ public abstract class GenTypeSolid extends JavaType
         Iterator<Reflective> i = rset.iterator();
         while (i.hasNext()) {
             Iterator<Reflective> j = rset.iterator();
-            Reflective ri = (Reflective) i.next();
+            Reflective ri = i.next();
             
             while (j.hasNext()) {
-                Reflective ji = (Reflective) j.next();
+                Reflective ji = j.next();
                 if (ri == ji)
                     continue;
                 
@@ -390,7 +396,7 @@ public abstract class GenTypeSolid extends JavaType
      * @param ubounds The parameter list to search
      * @return        A list of generic types all based on the class r
      */
-    private static GenTypeClass [] relevantInvocations(Reflective r, GenTypeSolid[] ubounds)
+    private static GenTypeClass [] relevantInvocations(Reflective r, GenTypeSolid [] ubounds)
     {
         ArrayList<GenTypeClass> rlist = new ArrayList<GenTypeClass>();
         for (int i = 0; i < ubounds.length; i++) {

@@ -21,12 +21,11 @@
  */
 package bluej.utility;
 
-import bluej.Config;
-
+import java.util.*;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Dictionary;
-import java.util.StringTokenizer;
+
+import bluej.Config;
 
 /**
  * BlueJFileReader - a (static) class grouping all functions to read and write
@@ -110,9 +109,8 @@ public class BlueJFileReader
             }
         }
         catch(IOException e) {
-            // This used to show a dialog, but showing a dialog involves reading the
+            // This use to show a dialog, but showing a dialog involves reading the
             // help file... infinite recursion! just ignore and return null
-            e.printStackTrace();
         }
         finally {
             if(in != null) {

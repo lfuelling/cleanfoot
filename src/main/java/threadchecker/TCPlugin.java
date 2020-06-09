@@ -1,16 +1,17 @@
 package threadchecker;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 
-import java.io.File;
-import java.util.Arrays;
-
 public class TCPlugin implements Plugin
 {
-    private File tagsDump = new File("found-tags.txt");
+    private final File tagsDump = new File("found-tags.txt");
     
     public TCPlugin()
     {
@@ -32,25 +33,33 @@ public class TCPlugin implements Plugin
     
     private class TCTaskListener implements TaskListener
     {
-        private TCScanner scanner;
-        
+        private TCScanner scanner = null;
+        private final JavacTask task;
+        private final String[] ignorePackages;
+
         public TCTaskListener(JavacTask task, String[] ignorePackages)
         {
-            try
-            {
-                this.scanner = new TCScanner(task, Arrays.asList(ignorePackages));
-            }
-            catch (NoSuchMethodException e)
-            {
-                e.printStackTrace();
-            }
+            this.task = task;
+            this.ignorePackages = ignorePackages;
         }
-        
+
         @Override
         public void finished(TaskEvent evt)
         {
             if (evt.getKind() == TaskEvent.Kind.ANALYZE)
             {
+                if (scanner == null)
+                {
+                    try
+                    {
+                        this.scanner = new TCScanner(task, Arrays.asList(ignorePackages));
+                    }
+                    catch (NoSuchMethodException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
                 scanner.scan(evt.getCompilationUnit(), null);
                 // Uncomment to get tags dump:
                 /*
@@ -69,8 +78,8 @@ public class TCPlugin implements Plugin
         @Override
         public void started(TaskEvent arg0)
         {
-            
+
         }
-        
+
     }
 }

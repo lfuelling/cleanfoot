@@ -25,7 +25,7 @@ import javafx.scene.input.KeyCode;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -222,7 +222,7 @@ public class KeyboardManager
             case BACK_SPACE:
                 return "backspace";
             case QUOTE:
-                return "\'";
+                return "'";
             case CONTROL:
                 return "control";
             default:

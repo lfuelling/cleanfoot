@@ -21,11 +21,11 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaPrimitiveType;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
-
-import java.util.List;
 
 /**
  * The "null" entity. This represents the "null" value (literal).

@@ -21,11 +21,11 @@
  */
 package bluej.pkgmgr;
 
+import java.io.File;
+
 import bluej.Config;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.io.File;
 
 /**
  * Factory for creating package files.

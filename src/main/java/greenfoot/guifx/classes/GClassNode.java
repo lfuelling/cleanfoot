@@ -21,9 +21,18 @@
  */
 package greenfoot.guifx.classes;
 
+import bluej.Config;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.FXRunnable;
 import greenfoot.guifx.GreenfootStage;
+import greenfoot.guifx.classes.GClassDiagram.GClassType;
+import javafx.beans.binding.ObjectExpression;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +64,7 @@ public abstract class GClassNode
      * @param selectionManager The central manager for class selection.
      */
     protected GClassNode(Image image,
-                         List<GClassNode> subClasses, ClassDisplaySelectionManager selectionManager)
+            List<GClassNode> subClasses, ClassDisplaySelectionManager selectionManager)
     {
         this.selectionManager = selectionManager;
         this.image = image;

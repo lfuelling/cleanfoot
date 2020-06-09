@@ -21,10 +21,10 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
-
-import java.util.List;
 
 /**
  * An entity representing an erroneous expression in a Java program. This is sometimes

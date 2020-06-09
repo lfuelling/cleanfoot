@@ -22,13 +22,13 @@
 package bluej.parser.lexer;
 
 
-import bluej.parser.EscapedUnicodeReader;
-import bluej.parser.TokenStream;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+
+import bluej.parser.EscapedUnicodeReader;
+import bluej.parser.TokenStream;
 
 
 /**
@@ -38,15 +38,15 @@ import java.util.Map;
  */
 public final class JavaLexer implements TokenStream
 {
-    private StringBuffer textBuffer = new StringBuffer(); // text of current token
-    private EscapedUnicodeReader reader;
+    private final StringBuffer textBuffer = new StringBuffer(); // text of current token
+    private final EscapedUnicodeReader reader;
     private int rChar; 
     private int beginColumn, beginLine, beginPosition;
     private int endColumn, endLine, endPosition;
     private boolean generateWhitespaceTokens = false;
     private boolean handleComments = true; // When false, doesn't recognise /*..*/ or //..\n as comments (for frames)
     
-    private static Map<String,Integer> keywords = new HashMap<String,Integer>();
+    private static final Map<String,Integer> keywords = new HashMap<String,Integer>();
     
     static {
         keywords.put("abstract", JavaTokenTypes.ABSTRACT);
@@ -261,12 +261,8 @@ public final class JavaLexer implements TokenStream
         if (ch >= 'a' && ch <= 'f') {
             return true;
         }
-        
-        if (ch >= 'A' && ch <= 'F') {
-            return true;
-        }
-        
-        return false;
+
+        return ch >= 'A' && ch <= 'F';
     }
     
     /**
@@ -573,7 +569,7 @@ public final class JavaLexer implements TokenStream
 
     private int getBXORType()
     {
-        char validChars[]=new char[1];
+        char[] validChars =new char[1];
         validChars[0]='='; 
         int rval=readNextChar();
         if (rval != '=') {
@@ -587,7 +583,7 @@ public final class JavaLexer implements TokenStream
 
     private int getAndType()
     {
-        char validChars[]=new char[2];
+        char[] validChars =new char[2];
         validChars[0]='=';
         validChars[1]='&';        
         int rval=readNextChar();

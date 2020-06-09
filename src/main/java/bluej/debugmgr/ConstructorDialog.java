@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2010,2013,2014,2015,2016,2017  Michael Kolling and John Rosenberg
+ Copyright (C) 2010,2013,2014,2015,2016,2017,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,6 +21,16 @@
  */
 package bluej.debugmgr;
 
+import javax.swing.SwingUtilities;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
+
 import bluej.Config;
 import bluej.debugmgr.objectbench.ObjectBenchInterface;
 import bluej.utility.JavaNames;
@@ -30,23 +40,14 @@ import bluej.views.CallableView;
 import bluej.views.ConstructorView;
 import bluej.views.TypeParamView;
 import bluej.views.View;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import javax.swing.*;
 
 @OnThread(Tag.FXPlatform)
 public class ConstructorDialog extends CallDialog
 {
     // Window Titles
-    private static final String appName = Config.getApplicationName();
+    private static final String appName = Config.getApplicationName(); 
     private static final String wCreateTitle = appName + ":  " + Config.getString("pkgmgr.methodCall.titleCreate");
     // MD_CREATE Specific
     static final String sNameOfInstance = Config.getString("pkgmgr.methodCall.namePrompt");
@@ -145,7 +146,7 @@ public class ConstructorDialog extends CallDialog
      */
     private Pane createTypeParameterPanel(String prefix)
     {
-        TypeParamView formalTypeParams[] = getFormalTypeParams(constructor);
+        TypeParamView[] formalTypeParams = getFormalTypeParams(constructor);
 
         typeParameterList = new ParameterList(formalTypeParams.length, defaultParamValue, f -> this.focusedTextField = f, this::fireOK);
         for (TypeParamView formalTypeParam : formalTypeParams)
@@ -190,7 +191,7 @@ public class ConstructorDialog extends CallDialog
         else
         {
             setWaitCursor(true);
-            SwingUtilities.invokeLater(invoker::callDialogOK);
+            invoker.callDialogOK();
         }
     }
     

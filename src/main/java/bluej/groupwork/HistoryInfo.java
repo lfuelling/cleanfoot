@@ -30,11 +30,11 @@ package bluej.groupwork;
  */
 public class HistoryInfo
 {
-    private String [] files;
-    private String revision;
-    private String date;
-    private String user;
-    private String comment;
+    private final String [] files;
+    private final String revision;
+    private final String date;
+    private final String user;
+    private final String comment;
     
     public HistoryInfo(String [] files, String revision, String date, String user, String comment)
     {

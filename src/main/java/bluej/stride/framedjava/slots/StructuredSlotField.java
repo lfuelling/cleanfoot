@@ -21,14 +21,10 @@
  */
 package bluej.stride.framedjava.slots;
 
-import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
-import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.View;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.slots.EditableSlot.MenuItems;
-import bluej.stride.slots.TextSlot;
-import bluej.utility.javafx.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -45,12 +41,21 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
+
+import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
+import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.View;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.EditableSlot.MenuItems;
+import bluej.utility.javafx.DelegableScalableTextField;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * A single text field in an expression slot.  This usually features
@@ -534,6 +539,13 @@ class StructuredSlotField implements StructuredSlotComponent
     @Override
     public Stream<Node> makeDisplayClone(InteractionManager editor)
     {
-        return TextSlot.makeDisplayClone(editor, field);
+        TextField f = new TextField();
+        f.textProperty().bind(field.textProperty());
+        f.prefWidthProperty().bind(field.prefWidthProperty());
+        JavaFXUtil.bindList(f.getStyleClass(), field.getStyleClass());
+        JavaFXUtil.bindPseudoclasses(f, field.getPseudoClassStates());
+        JavaFXUtil.setPseudoclass("bj-pinned", true, f);
+        f.styleProperty().bind(field.styleProperty().concat(editor.getFontCSS()));
+        return Stream.of(f);
     }
 }

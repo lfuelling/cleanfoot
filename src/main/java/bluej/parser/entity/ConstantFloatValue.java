@@ -30,7 +30,7 @@ import bluej.debugger.gentype.JavaType;
  */
 public class ConstantFloatValue extends ValueEntity
 {
-    private double value;
+    private final double value;
     
     /**
      * Construct a floating-point constant value entity

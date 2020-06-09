@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2012,2014,2015,2016,2018  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2011,2012,2014,2015,2016,2018,2019  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,7 +21,13 @@
  */
 package bluej.utility;
 
-import bluej.debugger.gentype.*;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.JavaPrimitiveType;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -29,7 +35,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,7 +169,7 @@ public abstract class JavaUtils
                 outBuf.append("\\\\");
             }
             else if (c == '\"') {
-                outBuf.append('\"');
+                outBuf.append("\\\"");
             }
             else if (c < 32) {
                 String uescape = Integer.toHexString(c);
@@ -294,7 +307,7 @@ public abstract class JavaUtils
      * @param cl  The class for which to find the interfaces
      * @return    An array of interfaces
      */
-    abstract public GenTypeClass[] getInterfaces(Class<?> cl) throws ClassNotFoundException;
+    abstract public GenTypeClass [] getInterfaces(Class<?> cl) throws ClassNotFoundException;
     
     /**
      * Gets an array of nicely formatted strings with the types of the parameters.
@@ -342,9 +355,9 @@ public abstract class JavaUtils
      * @param tparams   A list of GenTypeDeclTpar
      * @return          A map (String -> GenTypeSolid)
      */
-    public static Map<String, GenTypeSolid> TParamsToMap(List<GenTypeDeclTpar> tparams)
+    public static Map<String,GenTypeSolid> TParamsToMap(List<GenTypeDeclTpar> tparams)
     {
-        Map<String, GenTypeSolid> rmap = new HashMap<String, GenTypeSolid>();
+        Map<String,GenTypeSolid> rmap = new HashMap<String,GenTypeSolid>();
         for( Iterator<GenTypeDeclTpar> i = tparams.iterator(); i.hasNext(); ) {
             GenTypeDeclTpar n = i.next();
             rmap.put(n.getTparName(), n.getBound().mapTparsToTypes(rmap).getUpperBound().asSolid());
@@ -457,7 +470,7 @@ public abstract class JavaUtils
             boolean typePrinted = false;
             if (isVarArgs && j == paramTypes.length - 1) {
                 if (includeTypeNames || paramNames == null || paramNames[j] == null) {
-                    sb.append(paramTypes[j].substring(0, paramTypes[j].length() - 2));
+                    sb.append(paramTypes[j], 0, paramTypes[j].length() - 2);
                     sb.append(" ");
                 }
                 sb.append("...");

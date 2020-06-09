@@ -21,10 +21,10 @@
  */
 package bluej.debugmgr.codepad;
 
-import bluej.debugger.gentype.JavaType;
-import bluej.debugmgr.NamedValue;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugmgr.NamedValue;
 
 /**
  * A class to represent a variable declared by a statement. This contains
@@ -34,8 +34,8 @@ import threadchecker.Tag;
 public class DeclaredVar implements NamedValue
 {
     private boolean isVarInit = false;
-    private JavaType declVarType;
-    private String varName;
+    private final JavaType declVarType;
+    private final String varName;
     private boolean isFinal = false;
     
     public DeclaredVar(boolean isVarInit, boolean isFinal, JavaType varType, String varName)

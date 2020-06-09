@@ -21,11 +21,11 @@
  */
 package bluej.debugmgr;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** 
  * History objects maintain a history of text strings. This serves as a
@@ -39,7 +39,7 @@ public class History
 {
     protected List<String> history = null;
     protected int maxLength;
-    private boolean blankAtStart;
+    private final boolean blankAtStart;
     
     /**
      * Create a empty history limited to a given maximum
@@ -93,7 +93,7 @@ public class History
             }
             else {
                 // remove empty entry at front
-                if(((String)history.get(0)).length() == 0)
+                if(history.get(0).length() == 0)
                     history.remove(0);
                 history.add(0, newString);
             }

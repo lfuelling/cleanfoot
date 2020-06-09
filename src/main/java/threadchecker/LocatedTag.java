@@ -54,9 +54,7 @@ class LocatedTag
         if (obj == null || !(obj instanceof LocatedTag))
             return false;
         LocatedTag other = (LocatedTag) obj;
-        if (tag != other.tag)
-            return false;
-        return true;
+        return tag == other.tag;
     }
 
     @Override

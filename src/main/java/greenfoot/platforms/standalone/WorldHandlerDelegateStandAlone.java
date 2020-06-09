@@ -48,7 +48,7 @@ public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate
 {
     @OnThread(Tag.Any)
     private final GreenfootScenarioViewer viewer;
-    private boolean lockScenario;
+    private final boolean lockScenario;
     private final WorldRenderer worldRenderer = new WorldRenderer();
     // Time last frame was painted, from System.nanoTime
     private long lastFramePaint;

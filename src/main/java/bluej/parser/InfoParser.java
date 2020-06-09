@@ -21,8 +21,32 @@
  */
 package bluej.parser;
 
-import bluej.debugger.gentype.*;
-import bluej.parser.entity.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
+import bluej.parser.entity.ClassLoaderResolver;
+import bluej.parser.entity.EntityResolver;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.PackageResolver;
+import bluej.parser.entity.PositionedResolver;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.UnresolvedArray;
+import bluej.parser.entity.UnresolvedEntity;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.parser.nodes.JavaParentNode;
@@ -31,13 +55,6 @@ import bluej.parser.symtab.ClassInfo;
 import bluej.parser.symtab.Selection;
 import bluej.pkgmgr.Package;
 import bluej.utility.JavaNames;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.io.*;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * The main BlueJ parser, which extracts various information from source code including:
@@ -70,7 +87,7 @@ public class InfoParser extends EditorParser
     private List<LocatableToken> lastTypespecToks;
     private boolean modPublic = false;
     private boolean modAbstract = false;
-    private List<MethodDesc> methodDescs = new LinkedList<MethodDesc>();
+    private final List<MethodDesc> methodDescs = new LinkedList<MethodDesc>();
     private MethodDesc currentMethod;
     
     private JavaEntity superclassEntity;
@@ -97,8 +114,8 @@ public class InfoParser extends EditorParser
         int accessPosition;
     }
     
-    private List<JavaEntity> typeReferences = new LinkedList<JavaEntity>();
-    private List<UnresolvedVal> valueReferences = new LinkedList<UnresolvedVal>();
+    private final List<JavaEntity> typeReferences = new LinkedList<JavaEntity>();
+    private final List<UnresolvedVal> valueReferences = new LinkedList<UnresolvedVal>();
     private UnresolvedVal currentUnresolvedVal;
     
     private boolean gotExtends; // next type spec is the superclass/superinterfaces
@@ -140,9 +157,7 @@ public class InfoParser extends EditorParser
         try {
             fis.close();
         }
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+        catch (IOException ioe) {}
         return info;
     }
     

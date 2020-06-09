@@ -21,12 +21,17 @@
  */
 package bluej.parser.entity;
 
-import bluej.debugger.gentype.*;
-import bluej.utility.JavaUtils;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import bluej.debugger.gentype.FieldReflective;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.debugger.gentype.GenTypeParameter;
+import bluej.debugger.gentype.GenTypeSolid;
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
+import bluej.utility.JavaUtils;
 
 /**
  * Represents a value entity - an unspecified value with a known type.
@@ -45,7 +50,7 @@ import java.util.Map;
 public class ValueEntity extends JavaEntity
 {
     private String name;
-    private JavaType type;
+    private final JavaType type;
     
     /**
      * Construct a value entity representing a value of the given type.

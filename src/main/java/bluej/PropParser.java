@@ -127,10 +127,7 @@ public class PropParser
             || cc == '$' || cc == '(' || cc == ')' || cc == ' ' || cc == ':') {
             return false;
         }
-        if (cc == ',') {
-            return false;
-        }
-        return true;
+        return cc != ',';
     }
     
     private static void processVar(StringIter iter, StringBuffer outBuffer, Properties subvars, int depth)
@@ -292,9 +289,9 @@ public class PropParser
      */
     private static class StringIter
     {
-        private String string;
+        private final String string;
         private int curpos;
-        private int limit;
+        private final int limit;
         
         StringIter(String string)
         {

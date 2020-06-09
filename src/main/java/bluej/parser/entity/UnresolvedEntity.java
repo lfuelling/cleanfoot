@@ -21,12 +21,12 @@
  */
 package bluej.parser.entity;
 
+import java.util.List;
+
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 /**
  * Represents a java entity whose nature (value or type) is not yet known,
@@ -36,10 +36,10 @@ import java.util.List;
  */
 public class UnresolvedEntity extends JavaEntity
 {
-    private EntityResolver resolver;
-    private String name;
-    private List<TypeArgumentEntity> typeArguments;
-    private Reflective querySource;
+    private final EntityResolver resolver;
+    private final String name;
+    private final List<TypeArgumentEntity> typeArguments;
+    private final Reflective querySource;
     
     /**
      * Get an entity whose type (value or class) is not yet known. The returned entity
@@ -51,7 +51,7 @@ public class UnresolvedEntity extends JavaEntity
     }
     
     protected UnresolvedEntity(EntityResolver resolver, String name, Reflective querySource,
-                               List<TypeArgumentEntity> typeArgs)
+            List<TypeArgumentEntity> typeArgs)
     {
         this.resolver = resolver;
         this.name = name;

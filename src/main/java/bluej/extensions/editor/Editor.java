@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2013,2014,2015  Michael Kolling and John Rosenberg
+ Copyright (C) 1999-2009,2013,2014,2015,2018  Michael Kolling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,9 +21,10 @@
  */
 package bluej.extensions.editor;
 
-import bluej.parser.SourceLocation;
-
 import java.io.IOException;
+
+
+import bluej.parser.SourceLocation;
 
 /**
  * Proxy object that allows interaction with the BlueJ Editor for a
@@ -35,7 +36,7 @@ import java.io.IOException;
 
 public class Editor
 {
-    private bluej.editor.TextEditor bjEditor;
+    private final bluej.editor.TextEditor bjEditor;
 
 
     /**
@@ -82,7 +83,7 @@ public class Editor
      */
     public void setVisible(boolean visible)
     {
-        bjEditor.setEditorVisible(visible);
+        bjEditor.setEditorVisible(visible, false);
     }
 
 

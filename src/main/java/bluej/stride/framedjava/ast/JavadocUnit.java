@@ -21,12 +21,12 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.utility.Utility;
-import nu.xom.Element;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import nu.xom.Element;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.utility.Utility;
 
 public class JavadocUnit
 {

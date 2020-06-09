@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 1999-2009,2011,2013,2014  Michael Kolling and John Rosenberg 
+ Copyright (C) 1999-2009,2011,2013,2014,2019  Michael Kolling and John Rosenberg 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -24,9 +24,14 @@ package bluej.parser.nodes;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.Reflective;
 import bluej.editor.moe.MoeSyntaxDocument;
-import bluej.parser.CodeSuggestions;
+import bluej.parser.ExpressionTypeInfo;
 import bluej.parser.JavaParser;
-import bluej.parser.entity.*;
+import bluej.parser.entity.JavaEntity;
+import bluej.parser.entity.PackageOrClass;
+import bluej.parser.entity.ParsedReflective;
+import bluej.parser.entity.TparEntity;
+import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.ValueEntity;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.parser.nodes.NodeTree.NodeAndPosition;
@@ -37,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 
 
+
 /**
  * A node representing a parsed type (class, interface, enum)
  * 
@@ -45,13 +51,13 @@ import java.util.List;
 public class ParsedTypeNode extends IncrementalParsingNode
 {
     private String name;
-    private String prefix;
+    private final String prefix;
     private TypeInnerNode inner;
     private List<TparEntity> typeParams;
     private List<JavaEntity> extendedTypes;
     private List<JavaEntity> implementedTypes;
-    private int modifiers;
-    private ParsedTypeNode containingClass;
+    private final int modifiers;
+    private final ParsedTypeNode containingClass;
     
     private int type; // one of JavaParser.TYPEDEF_CLASS, INTERFACE, ENUM, ANNOTATION
     
@@ -363,7 +369,7 @@ public class ParsedTypeNode extends IncrementalParsingNode
     }
     
     @Override
-    public CodeSuggestions getExpressionType(int pos, int nodePos, JavaEntity defaultType, MoeSyntaxDocument document)
+    public ExpressionTypeInfo getExpressionType(int pos, int nodePos, JavaEntity defaultType, MoeSyntaxDocument document)
     {
         valueEntityCache.clear();
         pocEntityCache.clear();

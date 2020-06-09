@@ -27,7 +27,7 @@ import java.util.Set;
 
 public class GenTypeTpar extends GenTypeSolid
 {
-    private String name;
+    private final String name;
     
     public GenTypeTpar(String parname)
     {
@@ -117,7 +117,7 @@ public class GenTypeTpar extends GenTypeSolid
         // If the other type has an upper bound which is this tpar, it's assignable
         GenTypeSolid ubound = t.getUpperBound().asSolid();
         if (ubound != null) {
-            GenTypeSolid[] ubounds = ubound.getIntersectionTypes();
+            GenTypeSolid [] ubounds = ubound.getIntersectionTypes();
             for (int i = 0; i < ubounds.length; i++) {
                 if (ubounds[i] == this) {
                     return true;
@@ -145,7 +145,7 @@ public class GenTypeTpar extends GenTypeSolid
         throw new UnsupportedOperationException();
     }
 
-    public GenTypeClass[] getReferenceSupertypes()
+    public GenTypeClass [] getReferenceSupertypes()
     {
         throw new UnsupportedOperationException();
     }

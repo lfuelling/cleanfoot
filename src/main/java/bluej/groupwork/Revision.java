@@ -28,9 +28,9 @@ package bluej.groupwork;
  */
 public class Revision
 {
-    private String author;
-    private String date;
-    private String comment;
+    private final String author;
+    private final String date;
+    private final String comment;
     
     public Revision(String author, String date, String comment)
     {

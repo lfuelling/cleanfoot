@@ -27,15 +27,15 @@ import greenfoot.World;
 import greenfoot.core.ImageCache;
 import greenfoot.core.Simulation;
 import greenfoot.core.WorldHandler;
+import greenfoot.vmcomm.VMCommsSimulation;
+import greenfoot.vmcomm.VMCommsSimulation.PaintWhen;
 import greenfoot.platforms.WorldHandlerDelegate;
 import greenfoot.record.GreenfootRecorder;
 import greenfoot.util.GreenfootUtil;
-import greenfoot.vmcomm.VMCommsSimulation;
-import greenfoot.vmcomm.VMCommsSimulation.PaintWhen;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.*;
+import java.awt.Color;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -138,7 +138,7 @@ public class WorldHandlerDelegateIDE
         final Class<? extends World> icls = cls;
         Simulation.getInstance().runLater(() -> {
             try {
-                Constructor<?> cons = icls.getConstructor(new Class<?>[0]);
+                Constructor<?> cons = icls.getConstructor();
                 WorldHandler.getInstance().clearWorldSet();
                 World newWorld = (World) Simulation.newInstance(cons);
                 if (! WorldHandler.getInstance().checkWorldSet()) {
@@ -183,7 +183,7 @@ public class WorldHandlerDelegateIDE
                     return cls.asSubclass(World.class);
                 }
             }
-            catch (ClassNotFoundException cnfe)
+            catch (java.lang.ClassNotFoundException cnfe)
             {
                 // couldn't load: that's ok, we return null
                 // cnfe.printStackTrace();

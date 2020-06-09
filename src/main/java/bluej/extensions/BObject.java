@@ -21,17 +21,14 @@
  */
 package bluej.extensions;
 
-import bluej.debugger.DebuggerObject;
-import bluej.debugmgr.objectbench.ObjectBench;
-import bluej.debugmgr.objectbench.ObjectWrapper;
+import bluej.debugger.*;
+import bluej.debugmgr.objectbench.*;
+import bluej.pkgmgr.*;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.pkgmgr.Project;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import com.sun.jdi.ObjectReference;
+import bluej.pkgmgr.target.ClassTarget;
+import com.sun.jdi.*;
+import java.util.*;
 import javafx.application.Platform;
-
-import java.util.HashMap;
 
 /**
  * A wrapper for an object on the BlueJ object bench.
@@ -49,7 +46,7 @@ public class BObject
     private ObjectWrapper objectWrapper;
     
     /** An identifier for the class of this object */
-    private Identifier wrapperId;
+    private final Identifier wrapperId;
 
 
     /**
@@ -76,7 +73,7 @@ public class BObject
      * Returns the package this object belongs to.
      *
      * @return                            The package value
-     * @throws ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
+     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
      * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
      */
     public BPackage getPackage()
@@ -93,7 +90,7 @@ public class BObject
      * This will also remove it from the view of the object bench.
      * Once the object is removed from the bench it will not be available again.
      *
-     * @throws ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
+     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
      * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
      */
     public void removeFromBench()
@@ -118,7 +115,7 @@ public class BObject
      *
      *
      * @param  instanceName               The name you want this object to have on the bench.
-     * @throws ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
+     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
      * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
      */
     public void addToBench(String instanceName)
@@ -171,7 +168,7 @@ public class BObject
      * avoids a clash with <code>java.lang.Object.getClass()</code>
      *
      * @return                           The bClass value
-     * @throws ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
+     * @throws  ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
      * @throws  ClassNotFoundException   if the class has been deleted by the user.
      * @throws  PackageNotFoundException if the Package has been deleted by the user.
      */
@@ -197,7 +194,7 @@ public class BObject
      * Should remain visible only to package members.
      *
      * @return                            The packageFrame value
-     * @throws ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
+     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
      * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
      */
     PkgMgrFrame getPackageFrame()
@@ -253,7 +250,7 @@ public class BObject
     }
 
 
-    private static HashMap<String,String> primiMap;
+    private static final HashMap<String,String> primiMap;
 
     static {
         // This will be executed once when this class is loaded
@@ -293,7 +290,7 @@ public class BObject
             return className;
         }
 
-        String replace = (String) primiMap.get(className);
+        String replace = primiMap.get(className);
 
         // If I can substitute the name I will do it
         if (replace != null) {

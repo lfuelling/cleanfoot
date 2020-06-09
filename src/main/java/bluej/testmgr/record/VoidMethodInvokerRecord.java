@@ -37,7 +37,7 @@ import threadchecker.Tag;
 public class VoidMethodInvokerRecord extends InvokerRecord
 {
     protected String command;
-    private String [] argumentValues;
+    private final String [] argumentValues;
     
     public VoidMethodInvokerRecord(String command, String [] argVals)
     {

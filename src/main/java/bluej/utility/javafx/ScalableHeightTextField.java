@@ -31,6 +31,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 
+import bluej.stride.generic.Frame;
+
 /**
  * A class that is a Label with the added capability of scaling its vertical height
  * from a factor of 0.0 (i.e. hidden) up to 1.0 (i.e. full size for the label).

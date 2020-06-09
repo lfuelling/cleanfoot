@@ -21,20 +21,21 @@
  */
 package bluej.stride.generic;
 
-import bluej.Config;
-import bluej.editor.stride.CodeOverlayPane;
-import bluej.stride.generic.InteractionManager.ShortcutKey;
-import bluej.utility.javafx.FXRunnable;
-import bluej.utility.javafx.JavaFXUtil;
+import java.util.IdentityHashMap;
+
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+import bluej.Config;
+import bluej.editor.stride.CodeOverlayPane;
+import bluej.stride.generic.InteractionManager.ShortcutKey;
+import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.IdentityHashMap;
 
 public class SuggestedFollowUpDisplay
 {

@@ -25,8 +25,8 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 public class ArrayElementInspectorRecord extends InvokerRecord
 {
-    private InvokerRecord parentIr;
-    private int element;
+    private final InvokerRecord parentIr;
+    private final int element;
     
     public ArrayElementInspectorRecord(InvokerRecord parentIr, int element)
     {

@@ -32,18 +32,18 @@ import threadchecker.Tag;
 @OnThread(Tag.Any)
 public class TeamSettings
 {
-    private TeamworkProvider provider;
-    private String protocol;
-    private String server;
-    private String prefix;
-    private String group;
-    private String username;
-    private String password;
+    private final TeamworkProvider provider;
+    private final String protocol;
+    private final String server;
+    private final String prefix;
+    private final String group;
+    private final String username;
+    private final String password;
     private String yourName;
     private String yourEmail;
     
     public TeamSettings(TeamworkProvider provider, String protocol, String server,
-                        String prefix, String group, String username, String password)
+            String prefix, String group, String username, String password)
     {
         this.provider = provider;
         this.protocol = protocol;

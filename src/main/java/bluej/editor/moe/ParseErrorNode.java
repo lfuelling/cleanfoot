@@ -30,8 +30,8 @@ import bluej.parser.nodes.RBTreeNode;
  */
 public class ParseErrorNode extends RBTreeNode<ParseErrorNode>
 {
-    private Object highlightTag;
-    private String errCode;
+    private final Object highlightTag;
+    private final String errCode;
     
     /**
      * Construct a ParseErrorNode for the given highlight tag and the given error code / message.

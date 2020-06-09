@@ -1,6 +1,6 @@
 /*
  This file is part of the BlueJ program. 
- Copyright (C) 2014,2015,2016 Michael Kölling and John Rosenberg
+ Copyright (C) 2014,2015,2016,2019 Michael Kölling and John Rosenberg
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -21,35 +21,46 @@
  */
 package bluej.stride.framedjava.elements;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+
+import java.util.stream.Stream;
+
 import bluej.debugger.gentype.ConstructorReflective;
-import bluej.editor.moe.MoeSyntaxDocument;
-import bluej.parser.CodeSuggestions;
-import bluej.parser.entity.EntityResolver;
-import bluej.parser.entity.PackageResolver;
-import bluej.stride.framedjava.ast.*;
-import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.ast.FrameFragment;
 import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.frames.InterfaceFrame;
-import bluej.stride.framedjava.frames.TopLevelFrame;
-import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.Frame.ShowReason;
 import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
 import javafx.application.Platform;
 import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.*;
-import java.util.stream.Stream;
+import bluej.editor.moe.MoeSyntaxDocument;
+import bluej.parser.ExpressionTypeInfo;
+import bluej.parser.entity.EntityResolver;
+import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.JavadocUnit;
+import bluej.stride.framedjava.ast.NameDefSlotFragment;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.frames.InterfaceFrame;
+import bluej.stride.framedjava.frames.TopLevelFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.utility.Utility;
 
 public class InterfaceElement extends DocumentContainerCodeElement implements TopLevelCodeElement
 {
     public static final String ELEMENT = "interface";
     private final NameDefSlotFragment interfaceName;   
     private final List<TypeSlotFragment> extendsTypes;
-    private JavadocUnit documentation;
+    private final JavadocUnit documentation;
 
     /** The package name (will not be null, but package name within may be blank */
     private final String packageName;
@@ -85,12 +96,11 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
      */
     private final HashMap<String, DocAndPositions> documentCache = new HashMap<>();
     public InterfaceElement(InterfaceFrame frame, EntityResolver projectResolver, NameDefSlotFragment interfaceName,
-                            List<TypeSlotFragment> extendsTypes, List<CodeElement> fields, List<CodeElement> methods,
-                            JavadocUnit documentation, String packageName, List<ImportElement> imports, boolean enabled)
+                List<TypeSlotFragment> extendsTypes, List<CodeElement> fields, List<CodeElement> methods,
+                JavadocUnit documentation, String packageName, List<ImportElement> imports, boolean enabled)
     {
         this.frame = frame;
         this.interfaceName = interfaceName;
-        //TODO
         this.extendsTypes = extendsTypes == null ? new ArrayList<>() : new ArrayList<>(extendsTypes);
         this.documentation = documentation != null ? documentation : new JavadocUnit("");
 
@@ -108,20 +118,22 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
         this.projectResolver = projectResolver;
     }
 
-    public InterfaceElement(Element el, EntityResolver projectResolver)
+    public InterfaceElement(Element el, EntityResolver projectResolver, String packageName)
     {
         this.projectResolver = projectResolver;
         interfaceName = new NameDefSlotFragment(el.getAttributeValue("name"));
         Element javadocEL = el.getFirstChildElement("javadoc");
-        if (javadocEL != null) {
+        if (javadocEL != null)
+        {
             documentation = new JavadocUnit(javadocEL);
         }
-        if (documentation == null) {
+        else
+        {
             documentation = new JavadocUnit("");
         }
         extendsTypes = TopLevelCodeElement.xmlToTypeList(el, "extends", "extendstype", "type");
 
-        packageName = (projectResolver instanceof PackageResolver) ? ((PackageResolver)projectResolver).getPkg() : "";
+        this.packageName = packageName;
 
         imports = Utility.mapList(TopLevelCodeElement.fillChildrenElements(this, el, "imports"), e -> (ImportElement)e);
         fields = TopLevelCodeElement.fillChildrenElements(this, el, "fields");
@@ -140,11 +152,11 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
     }
 
     @Override
-    public CodeSuggestions getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing)
+    public ExpressionTypeInfo getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing)
     {
-        // Must get document before asking for position:
+        // Must get document before asking for completions:
         MoeSyntaxDocument doc = getSourceDocument(completing);
-        return doc.getParser().getExpressionType(0 /* TODO */, getSourceDocument(completing));
+        return doc.getParser().getExpressionType(pos.offset, getSourceDocument(completing));
     }
 
     @Override
@@ -203,7 +215,7 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
         JavaSource java = new JavaSource(null, header);
         java.prependJavadoc(documentation.getJavaCode());
 
-        java.prependLine(Arrays.asList((JavaFragment) f(frame, "")), null);
+        java.prependLine(Arrays.asList(f(frame, "")), null);
         Utility.backwards(CodeElement.toJavaCodes(imports)).forEach(imp -> java.prepend(imp));
         java.prependLine(Collections.singletonList(f(frame, "import lang.stride.*;")), null);
 
@@ -214,7 +226,7 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
         java.appendLine(Arrays.asList(openingCurly), null);
         fields.stream().filter(f -> f.isEnable()).forEach(f -> java.addIndented(f.toJavaSource()));
         methods.stream().filter(m -> m.isEnable()).forEach(m -> {
-            java.appendLine(Arrays.asList((JavaFragment) f(frame, "")), null);
+            java.appendLine(Arrays.asList(f(frame, "")), null);
             java.addIndented(m.toJavaSource());
         });
 
@@ -345,7 +357,7 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
     @Override
     protected Stream<SlotFragment> getDirectSlotFragments()
     {
-        return Stream.<SlotFragment>concat(Stream.<SlotFragment>of(interfaceName), extendsTypes.stream()).filter(s -> s != null);
+        return Stream.concat(Stream.<SlotFragment>of(interfaceName), extendsTypes.stream()).filter(s -> s != null);
     }
 
     @Override
@@ -372,7 +384,7 @@ public class InterfaceElement extends DocumentContainerCodeElement implements To
     {
         public final JavaSource java;
         public final IdentityHashMap<JavaFragment, Integer> fragmentPositions;
-        private String src;
+        private final String src;
         private MoeSyntaxDocument document;
 
         public DocAndPositions(String src, JavaSource java, IdentityHashMap<JavaFragment, Integer> fragmentPositions)

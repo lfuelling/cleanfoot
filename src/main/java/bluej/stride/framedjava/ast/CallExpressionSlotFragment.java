@@ -21,18 +21,23 @@
  */
 package bluej.stride.framedjava.ast;
 
-import bluej.stride.framedjava.errors.EmptyError;
-import bluej.stride.framedjava.errors.FixSuggestion;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.frames.*;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.generic.Frame;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+
+import bluej.stride.framedjava.errors.EmptyError;
+import bluej.stride.framedjava.errors.FixSuggestion;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.frames.IfFrame;
+import bluej.stride.framedjava.frames.ReturnFrame;
+import bluej.stride.framedjava.frames.SwitchFrame;
+import bluej.stride.framedjava.frames.ThrowFrame;
+import bluej.stride.framedjava.frames.WhileFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.Frame;
+import threadchecker.OnThread;
 
 /**
  * Created by neil on 04/12/2015.

@@ -21,15 +21,16 @@
  */
 package bluej.groupwork.svn;
 
-import bluej.groupwork.TeamworkCommandAborted;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
+import java.io.File;
+
 import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.Depth;
 import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.SVNClientInterface;
 
-import java.io.File;
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
 
 /**
  * Subversion "checkout" command.
@@ -38,8 +39,8 @@ import java.io.File;
  */
 public class SvnCheckoutCommand extends SvnCommand
 {
-    private File checkoutPath;
-    private String moduleName;
+    private final File checkoutPath;
+    private final String moduleName;
     
     public SvnCheckoutCommand(SvnRepository repository, File projectPath)
     {

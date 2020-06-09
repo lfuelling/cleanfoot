@@ -1,14 +1,21 @@
 package bluej.utility.javafx.dialog;
 
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.animation.RotateTransition;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
+
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -25,9 +32,9 @@ public class DialogPaneAnimateError extends DialogPane
     /** The jiggle animation.  Null when not running */
     private RotateTransition animation = null;
     /** The error label to animate */
-    private Node errorLabel;
+    private final Node errorLabel;
     /** Whether the error label is empty */
-    private SimpleBooleanProperty errorLabelEmpty = new SimpleBooleanProperty(true);
+    private final SimpleBooleanProperty errorLabelEmpty = new SimpleBooleanProperty(true);
     /** The actual OK button */
     private Button okButton;
 

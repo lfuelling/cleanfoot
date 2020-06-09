@@ -1,6 +1,6 @@
 /*
  This file is part of the Greenfoot program. 
- Copyright (C) 2010  Poul Henriksen and Michael Kolling 
+ Copyright (C) 2010,2018  Poul Henriksen and Michael Kolling 
  
  This program is free software; you can redistribute it and/or 
  modify it under the terms of the GNU General Public License 
@@ -22,20 +22,27 @@
 package greenfoot.importer.scratch;
 
 
-import bluej.pkgmgr.PackageFile;
-import bluej.pkgmgr.PackageFileFactory;
-import bluej.utility.Debug;
 import greenfoot.core.GreenfootMain;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Properties;
+import java.util.Set;
+
+import bluej.pkgmgr.PackageFile;
+import bluej.pkgmgr.PackageFileFactory;
+import bluej.utility.Debug;
 
 public class ScratchImport
 {   
@@ -46,7 +53,7 @@ public class ScratchImport
     {
         byte[] b = new byte[num];
         input.read(b);
-        return new String(b, Charset.forName("US-ASCII"));
+        return new String(b, StandardCharsets.US_ASCII);
     }
     
     /**
@@ -56,7 +63,7 @@ public class ScratchImport
     {
         byte[] b = new byte[num];
         input.read(b);
-        return new String(b, Charset.forName("UTF-8"));
+        return new String(b, StandardCharsets.UTF_8);
     }
     
     /**
@@ -161,7 +168,7 @@ public class ScratchImport
         case 1: return null; //Undefined -- is null okay?
         case 2: // True 
         case 3: // False
-            return new ScratchPrimitive(new Boolean(id == 2));
+            return new ScratchPrimitive(Boolean.valueOf(id == 2));
         case 4: //4-byte integer
             return new ScratchPrimitive(new BigDecimal(readInt(input, 4)));
         case 5: //2-byte integer 

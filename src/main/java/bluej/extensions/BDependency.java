@@ -21,11 +21,12 @@
  */
 package bluej.extensions;
 
+import javafx.application.Platform;
+
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.t4rget.ClassTarget;
-import javafx.application.Platform;
+import bluej.pkgmgr.target.ClassTarget;
 
 /**
  * A wrapper for a dependency (edge) in the class diagram of BlueJ.
@@ -55,12 +56,12 @@ public class BDependency
         EXTENDS,
 
         /** Represents an implements-dependency */
-        IMPLEMENTS;
+        IMPLEMENTS
     }
 
     private Identifier originId;
     private Identifier targetId;
-    private Type type;
+    private final Type type;
 
     /**
      * Constructor. Creates a new {@link BDependency} from the given origin and
@@ -96,7 +97,7 @@ public class BDependency
     /**
      * Notification that the name of the underlying class of the origin of this
      * dependency has changed.
-     *
+     * 
      * @param newOriginName
      *            The new class name, fully qualified.
      */
@@ -119,7 +120,7 @@ public class BDependency
     /**
      * Notification that the name of the underlying class of the target of this
      * dependency has changed.
-     *
+     * 
      * @param newTargetName
      *            The new class name, fully qualified.
      */
@@ -143,7 +144,7 @@ public class BDependency
      * Returns the type of this dependency (one of the constants in
      * {@link BDependency.Type}). May be used by extensions to determine the art
      * of the dependency represented by this proxy object.
-     *
+     * 
      * @return The type of this dependency. If the dependency represented by
      *         this proxy object is no longer valid,
      *         {@link BDependency.Type#UNKNOWN} is returned.
@@ -221,7 +222,7 @@ public class BDependency
     public boolean isVisible() throws ProjectNotOpenException, PackageNotFoundException
     {
         Dependency dependency = originId.getDependency(targetId, type);
-        return (dependency != null) ? dependency.isVisible() : false;
+        return (dependency != null) && dependency.isVisible();
     }
 
     /**

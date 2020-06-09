@@ -21,13 +21,13 @@
  */
 package bluej.parser.entity;
 
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.Reflective;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
 
 /**
  * Represents an unresolved sequence of names from an import statement, which should
@@ -37,15 +37,15 @@ import java.util.stream.Collectors;
  */
 public class ImportedEntity extends JavaEntity
 {
-    private EntityResolver resolver;
-    private List<String> names;
-    private Reflective querySource;
+    private final EntityResolver resolver;
+    private final List<String> names;
+    private final Reflective querySource;
     
     /**
      * Create an ImportEntity with the given attributes.
      */
     public ImportedEntity(EntityResolver resolver, List<String> names,
-                          Reflective querySource)
+            Reflective querySource)
     {
         this.resolver = resolver;
         this.names = names;

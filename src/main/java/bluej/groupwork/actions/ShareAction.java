@@ -21,17 +21,6 @@
  */
 package bluej.groupwork.actions;
 
-import bluej.Config;
-import bluej.groupwork.*;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.pkgmgr.Project;
-import bluej.utility.Debug;
-import bluej.utility.DialogManager;
-import bluej.utility.Utility;
-import javafx.application.Platform;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -40,6 +29,22 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import javafx.application.Platform;
+
+import bluej.Config;
+import bluej.groupwork.Repository;
+import bluej.groupwork.TeamSettingsController;
+import bluej.groupwork.TeamUtils;
+import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.pkgmgr.Project;
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
+import bluej.utility.Utility;
+
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * An action to share a project into a repository.

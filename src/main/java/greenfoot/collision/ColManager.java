@@ -24,9 +24,14 @@ package greenfoot.collision;
 import greenfoot.Actor;
 import greenfoot.collision.ibsp.IBSPColChecker;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 
@@ -41,13 +46,13 @@ public class ColManager implements CollisionChecker
 {
 
     /** Map from classes to objects that are not part of the collision checking (yet). */
-    private Map<Class<? extends Actor>, LinkedList<Actor>> freeObjects = new HashMap<Class<? extends Actor>, LinkedList<Actor>>();
+    private final Map<Class<? extends Actor>, LinkedList<Actor>> freeObjects = new HashMap<Class<? extends Actor>, LinkedList<Actor>>();
     
     /** Classes that are part of the collision checking. */
-    private Set<Class<? extends Actor>> collisionClasses = new HashSet<Class<? extends Actor>>();
+    private final Set<Class<? extends Actor>> collisionClasses = new HashSet<Class<? extends Actor>>();
     
     /** The actual collision checker. */
-    private CollisionChecker collisionChecker = new IBSPColChecker();
+    private final CollisionChecker collisionChecker = new IBSPColChecker();
 
     /**
      * Ensures that objects of this class are in the collision checker

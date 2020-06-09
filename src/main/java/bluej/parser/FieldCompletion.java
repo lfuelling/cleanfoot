@@ -21,10 +21,10 @@
  */
 package bluej.parser;
 
+import java.util.List;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
-
-import java.util.List;
 
 
 public class FieldCompletion extends AssistContent

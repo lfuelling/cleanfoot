@@ -21,11 +21,11 @@
  */
 package bluej.pkgmgr;
 
-import bluej.parser.InfoParser;
-import bluej.parser.symtab.ClassInfo;
-
 import java.io.File;
 import java.io.FileNotFoundException;
+
+import bluej.parser.InfoParser;
+import bluej.parser.symtab.ClassInfo;
 
 /**
  * A container holding information about a class's source file. The
