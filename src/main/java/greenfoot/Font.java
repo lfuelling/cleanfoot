@@ -37,7 +37,7 @@ public class Font
      *
      * @param font
      */
-    Font(java.awt.Font font)
+    public Font(java.awt.Font font)
     {
         this.font = font;
     }
