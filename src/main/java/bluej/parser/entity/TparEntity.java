@@ -21,8 +21,6 @@
  */
 package bluej.parser.entity;
 
-import java.util.List;
-
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.GenTypeSolid;
 import bluej.debugger.gentype.JavaType;
@@ -30,24 +28,24 @@ import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.List;
+
 /**
  * A JavaEntity subclass for representing type parameters. In particular this avoids
  * the problems associated with recursive definitions such as:
- * 
+ *
  * <blockquote>
- *     <code>class Sort<T extends Comparable<T>> {  }</code></dt>
+ * <code>class Sort<T extends Comparable<T>> {  }</code></dt>
  * </blockquote>
- * 
+ *
  * @author Davin McCall
  */
-public class TparEntity extends JavaEntity
-{
+public class TparEntity extends JavaEntity {
     private JavaEntity bounds;
     private GenTypeDeclTpar tpar;
     private final String name;
-    
-    public TparEntity(String name, JavaEntity bounds)
-    {
+
+    public TparEntity(String name, JavaEntity bounds) {
         super();
         this.name = name;
         this.tpar = new GenTypeDeclTpar(name);
@@ -56,56 +54,48 @@ public class TparEntity extends JavaEntity
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public GenTypeDeclTpar getType()
-    {
+    public GenTypeDeclTpar getType() {
         if (bounds != null) {
             JavaEntity boundsCopy = bounds;
             bounds = null; // prevent infinite recursion
-            
+
             TypeEntity tent = boundsCopy.resolveAsType();
             if (tent != null) {
                 GenTypeSolid boundType = tent.getType().asSolid();
                 if (boundType != null) {
                     tpar.setBounds(boundType.getUpperBounds());
-                }
-                else {
+                } else {
                     tpar = null;
                 }
-            }
-            else {
+            } else {
                 tpar = null;
             }
         }
         return tpar;
     }
-    
+
     @Override
-    public TypeEntity resolveAsType()
-    {
+    public TypeEntity resolveAsType() {
         JavaType myType = getType();
         if (myType != null) {
             return new TypeEntity(myType);
-        }
-        else {
+        } else {
             return null;
         }
     }
-    
+
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
-    
+
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return null;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 }

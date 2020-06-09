@@ -21,7 +21,8 @@
  */
 package bluej.stride.slots;
 
-import javafx.animation.FadeTransition;
+import bluej.utility.javafx.FXPlatformConsumer;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -30,14 +31,8 @@ import javafx.scene.control.ListCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.util.Duration;
 
-import bluej.utility.javafx.FXPlatformConsumer;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ScalableHeightLabel;
-
-class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> implements ChangeListener<Object>
-{
+class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> implements ChangeListener<Object> {
     private final Label special;
     private final Label type;
     private final Label prefix;
@@ -48,8 +43,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
     private final BorderPane pane;
     private final HBox hbox;
 
-    public SuggestionCell(DoubleExpression typeWidth, FXPlatformConsumer<SuggestionList.SuggestionListItem> clickListener)
-    {
+    public SuggestionCell(DoubleExpression typeWidth, FXPlatformConsumer<SuggestionList.SuggestionListItem> clickListener) {
         this.special = new Label();
         this.type = new Label();
         this.type.minWidthProperty().bind(typeWidth);
@@ -73,7 +67,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         // Suffix will be abbreviated if we run out of space:
         suffix.setMinWidth(0.0);
         fixedPostSuffix.setMinWidth(0.0);
-        
+
         special.setMaxWidth(9999.0);
         special.setText("Related:");
         JavaFXUtil.addStyleClass(special, "suggestion-similar-heading");
@@ -81,7 +75,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         hbox = new HBox();
         hbox.getChildren().addAll(this.type, prefix, matching, next, suffix, fixedPostSuffix);
         hbox.setSpacing(0);
-        
+
         // By using a BorderPane, buttonHint will always appear,
         // and hbox will shrink if needed (shrinking suffix)
         pane = new BorderPane();
@@ -91,8 +85,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         pane.setOnMouseClicked(e -> clickListener.accept(itemProperty().get()));
 
         itemProperty().addListener((_obs, oldItem, item) -> {
-            if (oldItem != null)
-            {
+            if (oldItem != null) {
                 oldItem.eligibleAt.removeListener(this);
                 oldItem.eligibleLength.removeListener(this);
                 oldItem.eligibleCanTab.removeListener(this);
@@ -101,8 +94,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
 
             update(item);
 
-            if (item != null)
-            {
+            if (item != null) {
                 item.eligibleAt.addListener(this);
                 item.eligibleLength.addListener(this);
                 item.eligibleCanTab.addListener(this);
@@ -113,40 +105,29 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         setGraphic(pane);
     }
 
-    private void update(SuggestionList.SuggestionListItem item)
-    {
-        if (item != null && item.index == -1)
-        {
+    private void update(SuggestionList.SuggestionListItem item) {
+        if (item != null && item.index == -1) {
             pane.setCenter(special);
             pane.setRight(null);
-        }
-        else
-        {
+        } else {
             pane.setCenter(hbox);
         }
 
-        if (item != null && item.index != -1)
-        {
+        if (item != null && item.index != -1) {
 
             update(item.getDetails().choice, item.getDetails().suffix, item.getDetails().type, item.typeMatch, item.direct, item.eligibleAt.get(), item.eligibleLength.get(), item.eligibleCanTab.get(), item.highlighted.get());
-        }
-        else
-        {
+        } else {
             update("", "", "", false, true, 0, 0, false, false);
         }
     }
 
-    private void update(String text, String unmatchableSuffix, String type, boolean typeMatch, boolean direct, int at, int len, boolean canTab, boolean highlighted)
-    {
+    private void update(String text, String unmatchableSuffix, String type, boolean typeMatch, boolean direct, int at, int len, boolean canTab, boolean highlighted) {
         this.type.setText(type);
         JavaFXUtil.setPseudoclass("bj-match", typeMatch, this.type);
-        if (text.length() >= 1)
-        {
+        if (text.length() >= 1) {
             this.next.setText(text.substring(0, 1));
             this.suffix.setText(text.substring(1));
-        }
-        else
-        {
+        } else {
             this.next.setText("");
             this.suffix.setText("");
         }
@@ -154,18 +135,15 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
         JavaFXUtil.setPseudoclass("bj-suggestion-similar", !direct, pane);
 
         JavaFXUtil.setPseudoclass("bj-suggestion-highlight", highlighted, pane);
-        
+
         prefix.setText(text.substring(0, at));
         int end = Math.min(at + len, text.length());
         matching.setText(text.substring(at, end));
         String rest = text.substring(end);
-        if (rest.length() >= 1)
-        {
+        if (rest.length() >= 1) {
             next.setText(rest.substring(0, 1));
             suffix.setText(rest.substring(1));
-        }
-        else
-        {
+        } else {
             next.setText("");
             suffix.setText("");
         }
@@ -174,8 +152,7 @@ class SuggestionCell extends ListCell<SuggestionList.SuggestionListItem> impleme
     // We are a change listener on several properties, to update the item each time.
     // Rather than pick out what changed, we just do a full update:
     @Override
-    public void changed(ObservableValue<?> observable, Object oldValue, Object newValue)
-    {
+    public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
         update(itemProperty().get());
     }
 }

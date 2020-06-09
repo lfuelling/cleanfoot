@@ -21,33 +21,26 @@
  */
 package bluej.debugger.jdi;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
 import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.IOException;
+import java.net.*;
+
 /**
  * A network test which logs diagnostics information.
- *  
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class NetworkTest
-{
-    public static void doTest()
-    {
+public class NetworkTest {
+    public static void doTest() {
         Debug.message("Commencing network test...");
-        
+
         InetAddress lhost = null;
         InetAddress[] lhostByName = new InetAddress[0];
-        
+
         try {
             lhost = InetAddress.getLocalHost();
             Debug.message("Local host address = " + lhost.getHostAddress());
@@ -59,115 +52,106 @@ public class NetworkTest
                 Debug.message(" -> " + name.getHostAddress());
             }
             Debug.message("(end of list).");
-        }
-        catch (UnknownHostException uhe) {
+        } catch (UnknownHostException uhe) {
             Debug.message("(!!) UnknownHostException when getting local host address!");
         }
-        
+
         Debug.message("Creating unbound server socket...");
         try {
             ServerSocket ss = new ServerSocket();
             Debug.message("Successful.");
             try {
                 ss.close();
+            } catch (IOException ioe) {
             }
-            catch (IOException ioe) {}
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             Debug.message("(!!) Creation of server socket failed; message=" + ioe.getMessage());
             Debug.message("(!!) Exception class: " + ioe.getClass().getName());
         }
 
         InetAddress loop4addr = null;
         InetAddress loop6addr = null;
-        
+
         try {
-            loop4addr = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+            loop4addr = InetAddress.getByAddress(new byte[]{127, 0, 0, 1});
             testServerAddress(loop4addr);
-        }
-        catch (UnknownHostException uhe) {
+        } catch (UnknownHostException uhe) {
             Debug.message("(!!) 127.0.0.1 is unknown host: " + uhe.getMessage());
         }
 
         try {
-            loop6addr = InetAddress.getByAddress(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            loop6addr = InetAddress.getByAddress(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 1});
             testServerAddress(loop6addr);
-        }
-        catch (UnknownHostException uhe) {
+        } catch (UnknownHostException uhe) {
             Debug.message("(!!) ::1 is unknown host: " + uhe.getMessage());
         }
-        
+
         if (lhost != null && !lhost.equals(loop4addr) && !lhost.equals(loop6addr)) {
             testServerAddress(lhost);
         }
-        
+
         for (InetAddress name : lhostByName) {
             if (!name.equals(loop4addr) && !name.equals(loop6addr) && !name.equals(lhost)) {
                 testServerAddress(name);
             }
-        }        
-        
+        }
+
         Debug.message("Network test complete.");
     }
-    
+
     /**
      * Try to listen on a particular address, and connect to the server socket.
      */
-    private static void testServerAddress(final InetAddress loopAddr)
-    {
+    private static void testServerAddress(final InetAddress loopAddr) {
         Debug.message("Creating server socket bound to " + loopAddr.getHostAddress() + "...");
         try {
             final ServerSocket ss = new ServerSocket(0, 50, loopAddr);
             Debug.message("Successful.");
-            
+
             Thread t = new Thread() {
                 @Override
                 @OnThread(Tag.Worker)
-                public void run()
-                {
+                public void run() {
                     try {
                         Debug.message("Attempting to connect to " + loopAddr.getHostAddress() + ":" + ss.getLocalPort() + " with NO_PROXY...");
                         Socket s = new Socket(Proxy.NO_PROXY);
                         s.setSoTimeout(300);
                         s.connect(new InetSocketAddress(loopAddr, ss.getLocalPort()));
                         Debug.message("Successful.");
-                        
+
                         Debug.message("Attempting to connect to " + loopAddr.getHostAddress() + ":" + ss.getLocalPort() + "...");
                         s = new Socket();
                         s.setSoTimeout(300);
                         s.connect(new InetSocketAddress(loopAddr, ss.getLocalPort()));
                         Debug.message("Successful.");
-                    }
-                    catch (IOException ioe) {
+                    } catch (IOException ioe) {
                         Debug.message("(!!) Couldn't connect to local address: " + ioe.getMessage());
                         Debug.message("(!!) Exception class: " + ioe.getClass().getName());
                     }
                 }
             };
-            
+
             t.start();
             ss.setSoTimeout(500); // wait for half a second max
             try {
                 ss.accept();
                 ss.accept();
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 Debug.message("(!!) Couldn't accept connection: " + ioe.getMessage());
                 Debug.message("(!!) Exception class: " + ioe.getClass().getName());
             }
-            
+
             try {
                 t.join(500);
+            } catch (InterruptedException ie) {
             }
-            catch (InterruptedException ie) {}
-            
+
             try {
                 ss.close();
+            } catch (IOException ioe) {
             }
-            catch (IOException ioe) {}
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             Debug.message("(!!) Creation of server socket failed; message=" + ioe.getMessage());
             Debug.message("(!!) Exception class: " + ioe.getClass().getName());
         }

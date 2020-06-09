@@ -25,25 +25,21 @@ import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.Effect;
 
-public class FrameEffects
-{
+public class FrameEffects {
     private static Effect disabledEffect;
     private static Effect dragSourceEffect;
     private static Effect dragSourceAndDisabledEffect;
-    
-    public static Effect getDisabledEffect()
-    {
-        if (disabledEffect == null)
-        {
+
+    public static Effect getDisabledEffect() {
+        if (disabledEffect == null) {
             ColorAdjust adj = new ColorAdjust(0, -0.5, 0.3, 0.0);
             adj.setInput(new BoxBlur(2, 2, 5));
             disabledEffect = adj;
         }
         return disabledEffect;
     }
-    
-    private static Effect getDragSourceEffect(Effect input)
-    {
+
+    private static Effect getDragSourceEffect(Effect input) {
         BoxBlur bb = new BoxBlur();
         bb.setWidth(4);
         bb.setHeight(4);
@@ -51,16 +47,14 @@ public class FrameEffects
         bb.setInput(input);
         return bb;
     }
-    
-    public static Effect getDragSourceEffect()
-    {
+
+    public static Effect getDragSourceEffect() {
         if (dragSourceEffect == null)
             dragSourceEffect = getDragSourceEffect(null);
         return dragSourceEffect;
     }
-    
-    public static Effect getDragSourceAndDisabledEffect()
-    {
+
+    public static Effect getDragSourceAndDisabledEffect() {
         if (dragSourceAndDisabledEffect == null)
             dragSourceAndDisabledEffect = getDragSourceEffect(getDisabledEffect());
         return dragSourceAndDisabledEffect;

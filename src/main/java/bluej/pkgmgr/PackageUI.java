@@ -29,29 +29,28 @@ import threadchecker.Tag;
 
 /**
  * An interface for UI actions on a package.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public interface PackageUI
-{
+public interface PackageUI {
     /**
      * Get the Stage associated with the Package UI.
      */
     Stage getStage();
-    
+
     /**
      * Initiate an interactive call to a static method or a constructor. The UI should prompt for
      * call parameters (if applicable) and then execute the call.
-     * 
-     * @param view  the view representing the method/constructor to call.
+     *
+     * @param view the view representing the method/constructor to call.
      */
     void callStaticMethodOrConstructor(CallableView view);
 
     /**
      * Highlights the given object, and clears highlights on all
      * other objects.
-     * 
+     *
      * @param currentObject The object to highlight (may be null,
      *                      to just clear all existing highlights)
      */

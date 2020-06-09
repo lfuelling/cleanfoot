@@ -21,38 +21,32 @@
  */
 package bluej.utility.javafx.binding;
 
-import java.util.stream.Stream;
-
 import javafx.collections.ObservableList;
+
+import java.util.stream.Stream;
 
 /**
  * Binds a destination list to the concatenation of an observable list of observable lists.
- * 
  */
-public class ConcatListBinding<T> extends DeepListBinding<T>
-{
+public class ConcatListBinding<T> extends DeepListBinding<T> {
     private final ObservableList<ObservableList<? extends T>> src;
 
-    public static <T> void bind(ObservableList<T> dest, ObservableList<ObservableList<? extends T>> src)
-    {
+    public static <T> void bind(ObservableList<T> dest, ObservableList<ObservableList<? extends T>> src) {
         new ConcatListBinding<>(dest, src).startListening();
     }
-    
-    private ConcatListBinding(ObservableList<T> dest, ObservableList<ObservableList<? extends T>> src)
-    {
+
+    private ConcatListBinding(ObservableList<T> dest, ObservableList<ObservableList<? extends T>> src) {
         super(dest);
         this.src = src;
     }
 
     @Override
-    protected Stream<ObservableList<?>> getListenTargets()
-    {
-        return Stream.concat(Stream.of((ObservableList<?>)src), src.stream());
+    protected Stream<ObservableList<?>> getListenTargets() {
+        return Stream.concat(Stream.of((ObservableList<?>) src), src.stream());
     }
 
     @Override
-    protected Stream<T> calculateValues()
-    {
+    protected Stream<T> calculateValues() {
         return src.stream().flatMap(ObservableList::stream);
     }
 

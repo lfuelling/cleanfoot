@@ -26,31 +26,30 @@ import threadchecker.Tag;
 
 /**
  * Observer interface for classes that are interested in compilation.
- *
+ * <p>
  * All events will be received on the event dispatch thread.
- *
+ * <p>
  * Note this is no longer an exact copy of CompileObserver.  That class returns void
  * from the compilerMessage method, because none of the CompileObserver callers actually care.
  * The only observer which cares is the data collection observer, which implements
  * FXCompileObserver (this class), so only this class returns something from compilerMessage.
  *
- * @author  Michael Cahill
+ * @author Michael Cahill
  */
 @OnThread(Tag.FXPlatform)
-public interface FXCompileObserver
-{
+public interface FXCompileObserver {
     /**
      * A compilation job has started.
      */
     void startCompile(CompileInputFile[] sources, CompileReason reason, CompileType type, int compilationSequence);
-    
+
     /**
      * An error or warning message occurred during compilation
-     * 
+     * <p>
      * Returns whether or not the error was shown to the user (for data collection purposes)
      */
     boolean compilerMessage(Diagnostic diagnostic, CompileType type);
-    
+
     /**
      * A Compilation job finished.
      */

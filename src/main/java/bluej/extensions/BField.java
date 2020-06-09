@@ -21,8 +21,6 @@
  */
 package bluej.extensions;
 
-import java.util.List;
-
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
@@ -34,45 +32,31 @@ import bluej.utility.Debug;
 import bluej.utility.Utility;
 import bluej.views.FieldView;
 import bluej.views.View;
-
-import com.sun.jdi.ArrayReference;
-import com.sun.jdi.BooleanValue;
-import com.sun.jdi.ByteValue;
-import com.sun.jdi.CharValue;
-import com.sun.jdi.DoubleValue;
-import com.sun.jdi.Field;
-import com.sun.jdi.FloatValue;
-import com.sun.jdi.IntegerValue;
-import com.sun.jdi.LongValue;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.ShortValue;
-import com.sun.jdi.StringReference;
-import com.sun.jdi.Value;
+import com.sun.jdi.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.List;
 
 /**
  * A wrapper for a field of a BlueJ class.
  * Behaviour is similar to the Reflection API.
- * 
+ *
  * @author Damiano Bolla, University of Kent at Canterbury, 2003
  * @author Clive Miller, University of Kent at Canterbury, 2002
  */
-public class BField
-{
+public class BField {
     private final FieldView bluej_view;
     private final Identifier parentId;
 
 
     /**
-     *Constructor for the BField object
+     * Constructor for the BField object
      *
-     * @param  aParentId     Description of the Parameter
-     * @param  i_bluej_view  Description of the Parameter
+     * @param aParentId    Description of the Parameter
+     * @param i_bluej_view Description of the Parameter
      */
-    BField(Identifier aParentId, FieldView i_bluej_view)
-    {
+    BField(Identifier aParentId, FieldView i_bluej_view) {
         parentId = aParentId;
         bluej_view = i_bluej_view;
     }
@@ -80,15 +64,14 @@ public class BField
 
     /**
      * Check to see if the field name matches the given one.
-     * 
+     *
      * <p>This method is deprecated. Use "getName().equals(fieldName)" instead.
      *
-     * @param  fieldName  the field name to compare with
-     * @return            true if it does, false otherwise
+     * @param fieldName the field name to compare with
+     * @return true if it does, false otherwise
      */
     @Deprecated
-    public boolean matches(String fieldName)
-    {
+    public boolean matches(String fieldName) {
         return getName().equals(fieldName);
     }
 
@@ -97,10 +80,9 @@ public class BField
      * Return the name of the field.
      * Similar to reflection API.
      *
-     * @return    The name value
+     * @return The name value
      */
-    public String getName()
-    {
+    public String getName() {
         return bluej_view.getName();
     }
 
@@ -109,10 +91,9 @@ public class BField
      * Return the type of the field.
      * Similar to Reflection API.
      *
-     * @return    The type value
+     * @return The type value
      */
-    public Class<?> getType()
-    {
+    public Class<?> getType() {
         return bluej_view.getType().getViewClass();
     }
 
@@ -122,39 +103,36 @@ public class BField
      * Use this method when you need more information about the Field than
      * is provided by the BField interface. E.g.:
      * What is the declaring class of this Field?
-     *
+     * <p>
      * Note that this is for information only. If you want to interact with BlueJ you must
      * use the methods provided in BField.
-     * 
-     * @return    The java.lang.reflect.Field providing extra information about this BField.
+     *
+     * @return The java.lang.reflect.Field providing extra information about this BField.
      */
-    public java.lang.reflect.Field getJavaField()
-    {
+    public java.lang.reflect.Field getJavaField() {
         return bluej_view.getField();
     }
-    
+
     /**
      * Returns the modifiers of this field.
      * The <code>java.lang.reflect.Modifier</code> class can be used to decode the modifiers.
      * Similar to reflection API
      *
-     * @return    The modifiers value
+     * @return The modifiers value
      */
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return bluej_view.getModifiers();
     }
 
     /**
      * When you are inspecting a static field use this one.
      *
-     * @return                            The staticField value
-     * @throws  ProjectNotOpenException   if the project to which this field belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this field belongs has been deleted by the user.
+     * @return The staticField value
+     * @throws ProjectNotOpenException  if the project to which this field belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this field belongs has been deleted by the user.
      */
     @OnThread(Tag.SwingIsFX)
-    private Object getStaticField() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    private Object getStaticField() throws ProjectNotOpenException, PackageNotFoundException {
         Package bluejPkg = parentId.getBluejPackage();
         PkgMgrFrame aFrame = parentId.getPackageFrame();
         String wantFieldName = getName();
@@ -167,8 +145,7 @@ public class BField
         DebuggerClass debuggerClass;
         try {
             debuggerClass = bluejPkg.getDebugger().getClass(className, true).get();
-        }
-        catch (java.lang.ClassNotFoundException cnfe) {
+        } catch (java.lang.ClassNotFoundException cnfe) {
             // This may not be an error, the class name may be wrong...
             Debug.message("BField.getStaticField: Class=" + className + " Field=" + wantFieldName + " WARNING: cannod get debuggerClass");
             return null;
@@ -203,33 +180,31 @@ public class BField
     /**
      * Return the value of this field of the given object.
      * This is similar to Reflection API.
-     *
+     * <p>
      * In the case that the field is of primitive type (<code>int</code> etc.),
      * the return value is of the appropriate Java wrapper type (<code>Integer</code> etc.).
      * In the case that the field contains an object then
      * an appropriate BObject will be returned.
-     *
+     * <p>
      * The main reason that this method is on a field (derived from a class),
      * rather than directly on an object, is to allow for the retrieval of
      * static field values without having to create an object of the appropriate type.
-     *
+     * <p>
      * As in the Relection API, in order to get the value of a static field pass
      * null as the parameter to this method.
      *
-     * @param  onThis                     Description of the Parameter
-     * @return                            The value value
-     * @throws  ProjectNotOpenException   if the project to which the field belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which the field belongs has been deleted by the user.
+     * @param onThis Description of the Parameter
+     * @return The value value
+     * @throws ProjectNotOpenException  if the project to which the field belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which the field belongs has been deleted by the user.
      */
     public Object getValue(BObject onThis)
-        throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         return getValue(onThis, false);
     }
 
     Object getValue(BObject onThis, boolean unpackArray)
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         // If someone gives me a null it means that he wants a static field
         if (onThis == null) {
             return getStaticField();
@@ -254,13 +229,12 @@ public class BField
      * that is usable. The real important thing here is to return a BObject for objects
      * that can be put into the bench.
      *
-     * @param  packageFrame  Description of the Parameter
-     * @param  instanceName  Description of the Parameter
-     * @param  val           Description of the Parameter
-     * @return               Description of the Return Value
+     * @param packageFrame Description of the Parameter
+     * @param instanceName Description of the Parameter
+     * @param val          Description of the Parameter
+     * @return Description of the Return Value
      */
-    private static Object doGetVal(PkgMgrFrame packageFrame, String instanceName, Value val, boolean unpackArray)
-    {
+    private static Object doGetVal(PkgMgrFrame packageFrame, String instanceName, Value val, boolean unpackArray) {
         if (val == null) {
             return null;
         }
@@ -293,9 +267,8 @@ public class BField
             return Short.valueOf(((ShortValue) val).value());
         }
 
-        if (unpackArray && val instanceof ArrayReference)
-        {
-            return Utility.mapList(((ArrayReference)val).getValues(), v -> doGetVal(packageFrame, instanceName, v, false));
+        if (unpackArray && val instanceof ArrayReference) {
+            return Utility.mapList(((ArrayReference) val).getValues(), v -> doGetVal(packageFrame, instanceName, v, false));
         }
 
         if (val instanceof ObjectReference) {
@@ -307,8 +280,7 @@ public class BField
         return val.toString();
     }
 
-    static Object doGetVal(PkgMgrFrame packageFrame, String instanceName, Value val)
-    {
+    static Object doGetVal(PkgMgrFrame packageFrame, String instanceName, Value val) {
         return doGetVal(packageFrame, instanceName, val, false);
     }
 }

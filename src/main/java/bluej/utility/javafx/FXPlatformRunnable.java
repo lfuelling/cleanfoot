@@ -21,14 +21,11 @@
  */
 package bluej.utility.javafx;
 
-import javafx.application.Platform;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @FunctionalInterface
 @OnThread(Tag.FXPlatform)
-public interface FXPlatformRunnable
-{
+public interface FXPlatformRunnable {
     @OnThread(Tag.FXPlatform) void run();
 }

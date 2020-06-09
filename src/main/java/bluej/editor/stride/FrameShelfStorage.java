@@ -21,16 +21,11 @@
  */
 package bluej.editor.stride;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.IdentityHashMap;
-import javafx.collections.ListChangeListener;
-
 import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.Frame;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
+import javafx.collections.ListChangeListener;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -38,13 +33,17 @@ import nu.xom.ParsingException;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.IdentityHashMap;
+
 /**
  * The central storage (one per project) for frame shelf contents.  Each GUI FXTabbedWindow
  * has its own instance of FrameShelf.  This class is the authoritative storage for the GUI
  * shelves, and copies any changes in one shelf across to the other editor windows.
  */
-public class FrameShelfStorage
-{
+public class FrameShelfStorage {
     private final IdentityHashMap<FrameShelf, ListChangeListener<Frame>> shelves = new IdentityHashMap<>();
     /**
      * A <frames>...</frames> XML element with the content of the shelf.
@@ -54,46 +53,36 @@ public class FrameShelfStorage
     private boolean updatingShelves = false;
 
     @OnThread(Tag.Any)
-    public FrameShelfStorage(File projectDir)
-    {
+    public FrameShelfStorage(File projectDir) {
         shelfFilename = new File(projectDir, "shelf.xml");
-        try
-        {
+        try {
             Document xml = new Builder().build(shelfFilename);
             contentXML = xml.getRootElement();
-            if (!contentXML.getLocalName().equals("frames"))
-            {
+            if (!contentXML.getLocalName().equals("frames")) {
                 throw new IOException("XML top-level element not \"frames\" as expected");
             }
-        }
-        catch (ParsingException | IOException e)
-        {
+        } catch (ParsingException | IOException e) {
             //Debug.reportError(e);
             // If there was a problem, make a frames element with no children:
             contentXML = new Element("frames");
         }
     }
 
-    public void registerShelf(FrameShelf shelfInterface)
-    {
+    public void registerShelf(FrameShelf shelfInterface) {
         ListChangeListener<Frame> listener = c -> pullFrom(shelfInterface);
         shelves.put(shelfInterface, listener);
         shelfInterface.setContent(contentXML);
         shelfInterface.getContent().addListener(listener);
     }
 
-    public void deregisterShelf(FrameShelf shelfInterface)
-    {
-        if (shelves.get(shelfInterface) != null)
-        {
+    public void deregisterShelf(FrameShelf shelfInterface) {
+        if (shelves.get(shelfInterface) != null) {
             shelfInterface.getContent().removeListener(shelves.remove(shelfInterface));
         }
     }
 
-    private void pullFrom(FrameShelf changed)
-    {
-        if (updatingShelves)
-        {
+    private void pullFrom(FrameShelf changed) {
+        if (updatingShelves) {
             // We are seeing an update because we are setting content, further down
             // this method.  Ignore
             return;
@@ -111,13 +100,10 @@ public class FrameShelfStorage
         updatingShelves = false;
     }
 
-    private void save()
-    {
+    private void save() {
         try (FileOutputStream os = new FileOutputStream(shelfFilename)) {
             Utility.serialiseCodeTo(contentXML, os);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Debug.reportError("Cannot save shelf contents", e);
         }
     }

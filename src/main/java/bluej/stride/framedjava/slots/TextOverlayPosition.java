@@ -21,83 +21,76 @@
  */
 package bluej.stride.framedjava.slots;
 
+import javafx.geometry.Point2D;
+import javafx.scene.Node;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
-
 /**
  * Represents a text location on the overlay pane.  You can think of it as representing the
  * graphical area of a caret -- it has one X position, but a y-range that matches the height of the
  * text.  This is useful for working out where to draw text selections.
- * 
+ * <p>
  * The constructors are private to avoid confusion about scene vs node coordinates.
  * Use the explicit nodeToOverlay or fromScene static methods to construct.
  */
-public class TextOverlayPosition
-{
-    /** The StructuredSlotField in which this location lies.  May be null. */
+public class TextOverlayPosition {
+    /**
+     * The StructuredSlotField in which this location lies.  May be null.
+     */
     private final StructuredSlotField src;
     // All coordinates are in terms of scene:
     private final double x;
     private final double topY;
     private final double baselineY;
     private final double bottomY;
-    
+
     // src can be null
-    private TextOverlayPosition(StructuredSlotField src, double x, double topY, double baselineY, double bottomY)
-    {
+    private TextOverlayPosition(StructuredSlotField src, double x, double topY, double baselineY, double bottomY) {
         this.src = src;
         this.x = x;
         this.topY = topY;
         this.baselineY = baselineY;
         this.bottomY = bottomY;
     }
-    
-    private TextOverlayPosition(double x, double topY, double baselineY, double bottomY)
-    {
+
+    private TextOverlayPosition(double x, double topY, double baselineY, double bottomY) {
         this(null, x, topY, baselineY, bottomY);
     }
-    
-    public double getSceneX()
-    {
+
+    public double getSceneX() {
         return x;
     }
-    
-    public double getSceneTopY()
-    {
+
+    public double getSceneTopY() {
         return topY;
     }
-    
-    public double getSceneBaselineY()
-    {
+
+    public double getSceneBaselineY() {
         return baselineY;
     }
-    
-    public double getSceneBottomY()
-    {
+
+    public double getSceneBottomY() {
         return bottomY;
     }
-    
-    public String toString()
-    {
-        return "(" + x + ", " + topY + " -> " + bottomY + ")"; 
+
+    public String toString() {
+        return "(" + x + ", " + topY + " -> " + bottomY + ")";
     }
 
     /**
      * Given a Node and some node-local coordinates, transforms them into scene
      * coordinates to form the returned TextOverlayPosition.
      */
-    public static TextOverlayPosition nodeToOverlay(Node node, double x, double topY, double baselineY, double bottomY)
-    {
+    public static TextOverlayPosition nodeToOverlay(Node node, double x, double topY, double baselineY, double bottomY) {
         Point2D topLeft = node.localToScene(x, topY);
         Point2D baselineLeft = node.localToScene(x, baselineY);
         Point2D bottomLeft = node.localToScene(x, bottomY);
         return new TextOverlayPosition(topLeft.getX(), topLeft.getY(), baselineLeft.getY(), bottomLeft.getY());
-        
+
     }
 
     /**
@@ -106,26 +99,36 @@ public class TextOverlayPosition
      * items, and once it becomes long enough to hit the right-hand edge of the pane
      * and wraps around, you'll get multiple lines.
      */
-    public static class Line
-    {
-        /** The list of all positions in this horizontal line, in ascending X order */
+    public static class Line {
+        /**
+         * The list of all positions in this horizontal line, in ascending X order
+         */
         public final List<TextOverlayPosition> positions = new ArrayList<>();
-        /** The starting X position of the line (in scene) */
+        /**
+         * The starting X position of the line (in scene)
+         */
         public double startX;
-        /** The ending X position of the line (in scene) */
+        /**
+         * The ending X position of the line (in scene)
+         */
         public double endX;
-        /** The highest Y position on the line (i.e. lowest numeric value of Y) */
+        /**
+         * The highest Y position on the line (i.e. lowest numeric value of Y)
+         */
         public double topY;
-        /** The lowest/bottom Y position on the line (i.e. highest numeric value of Y) */
+        /**
+         * The lowest/bottom Y position on the line (i.e. highest numeric value of Y)
+         */
         public double bottomY;
 
-        /** Transforms this line's points by applying the given transformation function
-         *  to the top-left and bottom-right */
-        public void transform(Function<Point2D, Point2D> trans)
-        {
+        /**
+         * Transforms this line's points by applying the given transformation function
+         * to the top-left and bottom-right
+         */
+        public void transform(Function<Point2D, Point2D> trans) {
             Point2D topLeft = trans.apply(new Point2D(startX, topY));
             Point2D bottomRight = trans.apply(new Point2D(endX, bottomY));
-            
+
             startX = topLeft.getX();
             endX = bottomRight.getX();
             topY = topLeft.getY();
@@ -142,39 +145,31 @@ public class TextOverlayPosition
          * sense if you are adding the components in order as you go
          * through the flow pane, from top left to bottom right.
          */
-        public boolean add(TextOverlayPosition p)
-        {
-            if (positions.size() == 0)
-            {
+        public boolean add(TextOverlayPosition p) {
+            if (positions.size() == 0) {
                 topY = p.topY;
                 bottomY = p.bottomY;
                 startX = p.x;
                 endX = p.x;
                 positions.add(p);
                 return true;
-            }
-            else
-            {
-                if (p.topY < bottomY)
-                {
+            } else {
+                if (p.topY < bottomY) {
                     topY = Math.min(topY, p.topY);
                     bottomY = Math.max(bottomY, p.bottomY);
                     endX = p.x;
                     positions.add(p);
                     return true;
-                }
-                else
+                } else
                     return false;
             }
         }
 
-        public TextOverlayPosition getStart()
-        {
+        public TextOverlayPosition getStart() {
             return positions.get(0);
         }
 
-        public TextOverlayPosition getEnd()
-        {
+        public TextOverlayPosition getEnd() {
             return positions.get(positions.size() - 1);
         }
     }
@@ -182,21 +177,18 @@ public class TextOverlayPosition
     /**
      * Groups the list of text overlay positions (assumed to be in order from a set
      * of flow pane components) into a list of lines (@see {@link Line}).
-     * 
+     * <p>
      * The lines will be in increasing Y order (i.e. graphically highest line with lowest
      * Y first, down to lowest line with highest Y).
      */
-    public static LinkedList<Line> groupIntoLines(List<TextOverlayPosition> positions)
-    {
+    public static LinkedList<Line> groupIntoLines(List<TextOverlayPosition> positions) {
         LinkedList<Line> r = new LinkedList<>();
         if (positions.size() == 0)
             return r;
         r.add(new Line());
         // Go through rest of list:
-        for (TextOverlayPosition p : positions)
-        {
-            if (!r.getLast().add(p))
-            {
+        for (TextOverlayPosition p : positions) {
+            if (!r.getLast().add(p)) {
                 r.add(new Line());
                 r.getLast().add(p);
             }
@@ -208,15 +200,13 @@ public class TextOverlayPosition
      * Creates a TextOverlayPosition using the given scene coordinates.
      */
     public static TextOverlayPosition fromScene(double x,
-            double topY, double baselineY, double bottomY,
-            StructuredSlotField expressionSlotField)
-    {
+                                                double topY, double baselineY, double bottomY,
+                                                StructuredSlotField expressionSlotField) {
         return new TextOverlayPosition(expressionSlotField, x, topY, baselineY, bottomY);
     }
 
-    public StructuredSlotField getSource()
-    {
+    public StructuredSlotField getSource() {
         return src;
     }
-    
+
 }

@@ -21,18 +21,17 @@
  */
 package bluej.parser;
 
-import java.util.Collections;
-import java.util.List;
-
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Created by neil on 08/09/15.
  */
-public class ConstructorOrMethodReflective
-{
+public class ConstructorOrMethodReflective {
     protected Reflective declaringType;
     protected int modifiers;
     protected List<GenTypeDeclTpar> tparTypes;
@@ -42,8 +41,7 @@ public class ConstructorOrMethodReflective
     protected String javaDoc;
 
 
-    public Reflective getDeclaringType()
-    {
+    public Reflective getDeclaringType() {
         return declaringType;
     }
 
@@ -52,8 +50,7 @@ public class ConstructorOrMethodReflective
      * Get the method parameter types. For a varargs method, the last parameter type returned is
      * the element type, not the array type.
      */
-    public List<JavaType> getParamTypes()
-    {
+    public List<JavaType> getParamTypes() {
         return paramTypes;
     }
 
@@ -61,8 +58,7 @@ public class ConstructorOrMethodReflective
      * Get the method type parameters. If the method has no type parameters,
      * returns an empty list.
      */
-    public List<GenTypeDeclTpar> getTparTypes()
-    {
+    public List<GenTypeDeclTpar> getTparTypes() {
         return tparTypes == null ? Collections.emptyList() : tparTypes;
     }
 
@@ -72,23 +68,21 @@ public class ConstructorOrMethodReflective
      *
      * @see java.lang.reflect.Modifier
      */
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return modifiers;
     }
 
-    public boolean isVarArgs()
-    {
+    public boolean isVarArgs() {
         return isVarArgs;
     }
 
     /**
      * Get the parameter names for this method, if known.
+     *
      * @return A list of the parameter names in order, or null if the parameter names are
-     *         not known.
+     * not known.
      */
-    public List<String> getParamNames()
-    {
+    public List<String> getParamNames() {
         return paramNames;
     }
 
@@ -96,8 +90,7 @@ public class ConstructorOrMethodReflective
     /**
      * Set the javadoc for this method.
      */
-    public void setJavaDoc(String javaDoc)
-    {
+    public void setJavaDoc(String javaDoc) {
         this.javaDoc = javaDoc;
     }
 
@@ -105,18 +98,17 @@ public class ConstructorOrMethodReflective
      * Get the javadoc for this method. Returns null if not available
      * (if it has not been set).
      */
-    public String getJavaDoc()
-    {
+    public String getJavaDoc() {
         return javaDoc;
     }
 
     /**
      * Set the parameter names for this method.
-     * @param paramNames  A list of parameter names. The MethodReflective takes ownership
-     *                    of the given list (it should not be later modified).
+     *
+     * @param paramNames A list of parameter names. The MethodReflective takes ownership
+     *                   of the given list (it should not be later modified).
      */
-    public void setParamNames(List<String> paramNames)
-    {
+    public void setParamNames(List<String> paramNames) {
         this.paramNames = paramNames;
     }
 }

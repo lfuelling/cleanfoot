@@ -27,19 +27,16 @@ import bluej.pkgmgr.PkgMgrFrame;
  * "Project Documentation" command. Generate the documentation for all classes
  * using javadoc. Attempt to display the generated documentation using a web
  * browser.
- * 
+ *
  * @author Davin McCall
  * @version $Id: GenerateDocsAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class GenerateDocsAction extends PkgMgrAction
-{
-    public GenerateDocsAction(PkgMgrFrame pmf)
-    {
+final public class GenerateDocsAction extends PkgMgrAction {
+    public GenerateDocsAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.generateDoc");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.generateProjectDocumentation();
     }

@@ -21,94 +21,89 @@
  */
 package bluej.testmgr.record;
 
-import java.util.ArrayList;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugger.DebuggerObject;
 import bluej.pkgmgr.PkgMgrFrame;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.ArrayList;
 
 /**
  * Records a single user interaction with the object
  * construction/method call mechanisms of BlueJ.
- * 
+ * <p>
  * Also contains static methods to help deal with the
  * construction and maintenance of assertion data.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public abstract class InvokerRecord
-{
+public abstract class InvokerRecord {
     final static String statementEnd = ";\n";
-    
+
     final static String fieldDeclarationStart = "private ";
 
     // -------------- instance fields ----------------
-    
+
     /**
      * A collection of assertion skeletons made about the invoker
      * record.
      */
     private final ArrayList<String> assertions = new ArrayList<String>();
     private DebuggerObject resultObject;
-    
+
     private static int nextUniqueIdentifier = 1;
     private final int uniqueIdentifier;
-    
+
     // -------------- instance methods -----------------
-    
-    public InvokerRecord()
-    {
+
+    public InvokerRecord() {
         uniqueIdentifier = nextUniqueIdentifier++;
     }
-    
+
     /**
      * If this invoker record represents a method or constructor call,
      * this method returns the argument values used in the call.
      * Otherwise it returns null.
      */
-    public String [] getArgumentValues()
-    {
+    public String[] getArgumentValues() {
         return null;
     }
-    
+
     /**
      * If the result of this invocation is to be consigned to the object bench, get
      * its name (otherwise returns null).
      */
-    public String getResultName()
-    {
+    public String getResultName() {
         return null;
     }
-    
+
     /**
-     * Get the (static, compile time) result type of the invocation, if known. 
+     * Get the (static, compile time) result type of the invocation, if known.
      */
-    public String getResultTypeString()
-    {
+    public String getResultTypeString() {
         return null;
     }
-    
+
     /**
      * Check whether this record represents an invocation that has no result.
      */
     public abstract boolean hasVoidResult();
-    
+
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return a String representing the object declaration
-     *         src or null if there is none.
-     */    
+     * src or null if there is none.
+     */
     public abstract String toFixtureDeclaration(String firstIndent);
 
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String reprenting the object initialisation
-     *         src or null if there is none. 
+     * src or null if there is none.
      */
     @OnThread(Tag.FXPlatform)
     public abstract String toFixtureSetup(String secondIndent);
@@ -116,7 +111,7 @@ public abstract class InvokerRecord
     /**
      * Construct a portion of a test method for this
      * invoker record.
-     * 
+     *
      * @return a String representing the test method src
      */
     @OnThread(Tag.FXPlatform)
@@ -127,67 +122,62 @@ public abstract class InvokerRecord
      * by semicolon or line breaks. It is typically used by other InvokerRecords
      * to created "chained" invocation records. The returned string should not
      * include any indentation.
-     * 
+     *
      * @return a String representing the expression (or null if this record cannot
-     *         be represented as an expression)
+     * be represented as an expression)
      */
     public abstract String toExpression();
-    
+
     /**
      * Construct a statement. This returns a Java-language string which should be
      * appropriately terminated by a semicolon.
-     * 
-     * @return  A String representing the statement (or null if this record cannot
-     *          be used as a statement)
+     *
+     * @return A String representing the statement (or null if this record cannot
+     * be used as a statement)
      */
-    public String toStatement()
-    {
+    public String toStatement() {
         return toExpression() + ";";
     }
-    
+
     /**
      * Set the name of this result as saved on the object bench.
-     * @param benchName  The name of the object (on the Object Bench).
-     * @param benchType  The type of the object as known to the bench.
+     *
+     * @param benchName The name of the object (on the Object Bench).
+     * @param benchType The type of the object as known to the bench.
      */
-    public void setBenchName(String benchName, String benchType)
-    {
+    public void setBenchName(String benchName, String benchType) {
         // By default do nothing.
     }
-    
+
     /**
      * Add the skeleton of an assertion statement to our list of
      * assertions made about this invoker record.
-     * 
+     *
      * @param assertion
      */
-    public void addAssertion(String assertion)
-    {
-        assertions.add(assertion);  
+    public void addAssertion(String assertion) {
+        assertions.add(assertion);
     }
-    
-    public int getAssertionCount()
-    {
+
+    public int getAssertionCount() {
         return assertions.size();
     }
-    
-    public String getAssertion(int i)
-    {
+
+    public String getAssertion(int i) {
         return assertions.get(i);
     }
-    
+
     /**
      * Returns a statement representing this assertion
      * with an @@ at the point where code needs to be
      * inserted.
-     * 
+     * <p>
      * This case is for when there is only a single argument
      * for the assertion.
-
+     *
      * @return a String of the assertion statement.
      */
-    public static String makeAssertionStatement(String assertName)
-    {
+    public static String makeAssertionStatement(String assertName) {
         StringBuffer sb = new StringBuffer();
         sb.append(assertName);
         sb.append("(@@)");
@@ -198,48 +188,46 @@ public abstract class InvokerRecord
      * Returns a statement representing this assertion
      * with an @@ at the point where code needs to be
      * inserted.
-     * 
+     * <p>
      * This case is for when there are two arguements
      * for the assertion.
-     * 
+     * <p>
      * For example, if the user has selected equals and
      * has put a value of
-     * 
+     * <p>
      * new X(a,b)
-     * 
+     * <p>
      * in the edit box, we return the string
-     * 
-     * "assertEquals(new X(a,b), @@)"  
-     *  
+     * <p>
+     * "assertEquals(new X(a,b), @@)"
+     *
      * @return a String of the assertion statement.
-     * 
+     * <p>
      * There is a danger here if the characters @@ appear
      * in the user input. This is considered unlikely, but
      * when searching for the @@ location, the _last_ @@
      * in this string should be found.
      */
-    public static String makeAssertionStatement(String assertName, String userData)
-    {
+    public static String makeAssertionStatement(String assertName, String userData) {
         StringBuffer sb = new StringBuffer();
         sb.append(assertName);
         sb.append("(");
         sb.append(userData);
         sb.append(", @@)");
-        return sb.toString();    
+        return sb.toString();
     }
 
     /**
      * Returns a statement representing this assertion
      * with an @@ at the point where a statement needs to be
      * inserted.
-     * 
+     * <p>
      * This case is for when we have floating point or
      * double assertions with assertEquals()
      *
      * @return a String of the assertion statement.
      */
-    public static String makeAssertionStatement(String assertName, String userData, String deltaData)
-    {
+    public static String makeAssertionStatement(String assertName, String userData, String deltaData) {
         StringBuffer sb = new StringBuffer();
         sb.append(assertName);
         sb.append("(");
@@ -247,35 +235,34 @@ public abstract class InvokerRecord
         sb.append(", @@, ");
         sb.append(deltaData);
         sb.append(")");
-        return sb.toString();    
+        return sb.toString();
     }
 
     /**
      * Insert a command into an assertion.
-     * 
+     * <p>
      * Our assertions have an @@ wherever the command needs to go. We
      * find this and insert the string there.
-     * 
-     * @param  assertion   a String representing the assertion in the
-     *                     form "assertXXXX(YYYY, @@)"
-     * @param  command     a String representing the statement to make the
-     *                     assertion against ie foo.bar(5,6) 
-     * @return the combined string representing original assertion with the 
-     *         insertion of the command or reference to bench object.
-     *         ie assertXXXX(YYYY, foo.bar(5,6)) 
+     *
+     * @param assertion a String representing the assertion in the
+     *                  form "assertXXXX(YYYY, @@)"
+     * @param command   a String representing the statement to make the
+     *                  assertion against ie foo.bar(5,6)
+     * @return the combined string representing original assertion with the
+     * insertion of the command or reference to bench object.
+     * ie assertXXXX(YYYY, foo.bar(5,6))
      */
-    public static String insertCommandIntoAssertionStatement(String assertion, String command)
-    {
+    public static String insertCommandIntoAssertionStatement(String assertion, String command) {
         StringBuffer assertCommand = new StringBuffer(assertion);
         // search for the _last_ @@ in case the user has input some of these
         // @@ characters in the assertion
         int insertionSpot = assertion.lastIndexOf("@@");
 
-        if(insertionSpot == -1)
+        if (insertionSpot == -1)
             throw new IllegalArgumentException("the assertion must have an @@");
 
         assertCommand.replace(insertionSpot, insertionSpot + 2, command);
-            
+
         return assertCommand.toString();
     }
 
@@ -283,43 +270,41 @@ public abstract class InvokerRecord
      * If a result is related to this invoker record, it can be set here. This
      * is mostly here for the MethodInvokerRecord, so that we can refer to the
      * object by a unique name, by adding it to the object bench.
-     * 
+     *
      * @param resultObject Result object or null
      */
-    public void setResultObject(DebuggerObject resultObject)
-    {
+    public void setResultObject(DebuggerObject resultObject) {
         this.resultObject = resultObject;
     }
-    
+
     /**
      * Get the result object.
-     * 
+     *
      * @return The result object or null.
      */
-    protected DebuggerObject getResultObject() 
-    {
+    protected DebuggerObject getResultObject() {
         return resultObject;
     }
-    
+
     /**
      * Call when using this invoker record as a parent for another invoker
-     * record. This implementation does nothing - overide for subclasses 
+     * record. This implementation does nothing - overide for subclasses
      * that need this.
      */
-    public void incUsageCount()
-    {
+    public void incUsageCount() {
     }
-    
+
     /**
      * Gets the original command.  Used by the Data Collection mechanism.
      */
-    public String getOriginalCommand() { return null; }
+    public String getOriginalCommand() {
+        return null;
+    }
 
     /**
      * Gets a unique identifier for this invoker.  For data collection purposes.
      */
-    public int getUniqueIdentifier()
-    {
+    public int getUniqueIdentifier() {
         return uniqueIdentifier;
     }
 }

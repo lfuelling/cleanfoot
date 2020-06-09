@@ -22,38 +22,19 @@
 package bluej.groupwork.ui;
 
 import bluej.Config;
+import bluej.groupwork.*;
+import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.groupwork.actions.CommitAction;
 import bluej.groupwork.actions.PushAction;
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusHandle;
-import bluej.groupwork.StatusListener;
-import bluej.groupwork.TeamStatusInfo;
-import bluej.groupwork.TeamStatusInfo.Status;
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
 import bluej.pkgmgr.BlueJPackageFile;
 import bluej.pkgmgr.Project;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.NoMultipleSelectionModel;
-import bluej.utility.Utility;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -61,21 +42,19 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A user interface to commit and push. Used by DCVS systems, like Git.
@@ -84,8 +63,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements CommitAndPushInterface
-{
+public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements CommitAndPushInterface {
     private final Project project;
     private Repository repository;
 
@@ -107,8 +85,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
     private boolean pushNeeded = false;
     private boolean updateNeeded = false;
 
-    public CommitAndPushFrame(Project proj)
-    {
+    public CommitAndPushFrame(Project proj) {
         super(null, "team.commit.dcvs.title", "team-commit-push");
         project = proj;
         repository = project.getTeamSettingsController().trytoEstablishRepository(false);
@@ -119,8 +96,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
     /**
      * Create the user-interface for the error display dialog.
      */
-    private Pane makeMainPane()
-    {
+    private Pane makeMainPane() {
         ListView<TeamStatusInfo> commitFiles = new ListView<>(commitListModel);
         commitFiles.setPlaceholder(new Label(Config.getString("team.nocommitfiles")));
         commitFiles.setCellFactory(param -> new TeamStatusInfoCell(project));
@@ -195,8 +171,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
     /**
      * Prepare the button panel with a close button
      */
-    private void prepareButtonPane()
-    {
+    private void prepareButtonPane() {
         getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
         this.setOnCloseRequest(event -> {
             if (commitAndPushWorker != null) {
@@ -211,8 +186,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setVisible(boolean show)
-    {
+    public void setVisible(boolean show) {
         if (show) {
             // we want to set comments and commit action to disabled
             // until we know there is something to commit
@@ -244,39 +218,33 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
                 if (!isShowing()) {
                     show();
                 }
-            }
-            else {
+            } else {
                 hide();
             }
-        }
-        else {
+        } else {
             hide();
         }
     }
 
-    public void setComment(String newComment)
-    {
+    public void setComment(String newComment) {
         commitText.setText(newComment);
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         commitListModel.clear();
         pushListModel.clear();
         setComment("");
         progressBar.setMessage("");
     }
 
-    private void removeModifiedLayouts()
-    {
+    private void removeModifiedLayouts() {
         // remove modified layouts from list of files shown for commit
         commitListModel.removeAll(changedLayoutFiles);
     }
 
     @Override
-    public String getComment()
-    {
+    public String getComment() {
         return commitText.getText();
     }
 
@@ -286,8 +254,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
      * @return
      */
     @Override
-    public Set<File> getChangedLayoutFiles()
-    {
+    public Set<File> getChangedLayoutFiles() {
         return changedLayoutFiles.stream().map(info -> info.getFile()).collect(Collectors.toSet());
     }
 
@@ -297,19 +264,16 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
      * @return the set of the layout files which have changed.
      */
     @Override
-    public Set<TeamStatusInfo> getChangedLayoutInfo()
-    {
+    public Set<TeamStatusInfo> getChangedLayoutInfo() {
         return changedLayoutFiles;
     }
 
     @Override
-    public boolean includeLayout()
-    {
+    public boolean includeLayout() {
         return includeLayout != null && includeLayout.isSelected();
     }
 
-    private void addModifiedLayouts()
-    {
+    private void addModifiedLayouts() {
         // add diagram layout files to list of files to be committed
         Set<File> displayedLayouts = new HashSet<>();
         for (TeamStatusInfo info : changedLayoutFiles) {
@@ -326,8 +290,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
      */
     @Override
     @OnThread(Tag.FXPlatform)
-    public void startProgress()
-    {
+    public void startProgress() {
         progressBar.setRunning(true);
     }
 
@@ -336,27 +299,23 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
      */
     @Override
     @OnThread(Tag.Any)
-    public void stopProgress()
-    {
+    public void stopProgress() {
         JavaFXUtil.runNowOrLater(() -> progressBar.setRunning(false));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public Project getProject()
-    {
+    public Project getProject() {
         return project;
     }
 
     @OnThread(Tag.FXPlatform)
-    public void displayMessage(String msg)
-    {
+    public void displayMessage(String msg) {
         progressBar.setMessage(msg);
     }
 
     @OnThread(Tag.FXPlatform)
-    public Window asWindow()
-    {
+    public Window asWindow() {
         Scene scene = getDialogPane().getScene();
         if (scene == null)
             return null;
@@ -367,28 +326,24 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
     /**
      * Gets the list of files that would be pushed by a push.
      */
-    public List<File> getFilesToPush()
-    {
+    public List<File> getFilesToPush() {
         return Utility.mapList(pushListModel, s -> s.getFile());
     }
 
-    class CommitAndPushWorker extends FXWorker implements StatusListener
-    {
+    class CommitAndPushWorker extends FXWorker implements StatusListener {
         List<TeamStatusInfo> response;
         TeamworkCommand command;
         TeamworkCommandResult result;
         private boolean aborted, isPushAvailable;
 
-        public CommitAndPushWorker()
-        {
+        public CommitAndPushWorker() {
             super();
             response = new ArrayList<>();
             FileFilter filter = project.getTeamSettingsController().getFileFilter(true, false);
             command = repository.getStatus(this, filter, false);
         }
 
-        public boolean isPushAvailable()
-        {
+        public boolean isPushAvailable() {
             return this.isPushAvailable;
         }
 
@@ -397,8 +352,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
          */
         @OnThread(Tag.Any)
         @Override
-        public void gotStatus(TeamStatusInfo info)
-        {
+        public void gotStatus(TeamStatusInfo info) {
             response.add(info);
         }
 
@@ -407,8 +361,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
          */
         @OnThread(Tag.Worker)
         @Override
-        public void statusComplete(StatusHandle statusHandle)
-        {
+        public void statusComplete(StatusHandle statusHandle) {
             commitAction.setStatusHandle(statusHandle);
             pushNeeded = statusHandle.pushNeeded();
             updateNeeded = statusHandle.pullNeeded();
@@ -417,31 +370,24 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
 
         @OnThread(Tag.Worker)
         @Override
-        public Object construct()
-        {
+        public Object construct() {
             result = command.getResult();
             return response;
         }
 
-        public void abort()
-        {
+        public void abort() {
             command.cancel();
             aborted = true;
         }
 
         @Override
-        public void finished()
-        {
+        public void finished() {
             stopProgress();
-            if (!aborted)
-            {
-                if (result.isError())
-                {
+            if (!aborted) {
+                if (result.isError()) {
                     TeamUtils.handleServerResponseFX(result, CommitAndPushFrame.this.asWindow());
                     CommitAndPushFrame.this.hide();
-                }
-                else if (response != null)
-                {
+                } else if (response != null) {
                     Set<File> filesToCommit = new HashSet<>();
                     Set<File> filesToAdd = new LinkedHashSet<>();
                     Set<File> filesToDelete = new HashSet<>();
@@ -450,7 +396,7 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
                     getCommitFileSets(info, filesToCommit, filesToAdd, filesToDelete, changedLayoutFiles);
 
                     includeLayout.setDisable(changedLayoutFiles.isEmpty());
-                    
+
                     commitAction.setFiles(filesToCommit);
                     commitAction.setNewFiles(filesToAdd);
                     commitAction.setDeletedFiles(filesToDelete);
@@ -458,14 +404,11 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
                     updateListModel(commitListModel, filesToAdd, info);
                     updateListModel(commitListModel, filesToDelete, info);
 
-                    if (updateNeeded)
-                    {
+                    if (updateNeeded) {
                         // It's not possible to push if the remote branch is ahead
                         pushListModel.clear();
                         isPushAvailable = false;
-                    }
-                    else
-                    {
+                    } else {
                         // populate files ready to push:
                         Set<File> filesToPush = new HashSet<>();
                         getPushFileSets(info, filesToPush);
@@ -476,23 +419,16 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
                     pushAction.setEnabled(this.isPushAvailable);
                 }
 
-                if (!commitListModel.isEmpty())
-                {
+                if (!commitListModel.isEmpty()) {
                     commitText.requestFocus();
                 }
 
-                if (pushListModel.isEmpty())
-                {
-                    if (isPushAvailable)
-                    {
+                if (pushListModel.isEmpty()) {
+                    if (isPushAvailable) {
                         pushFiles.setPlaceholder(new Label(Config.getString("team.pushNeeded")));
-                    }
-                    else if (updateNeeded)
-                    {
+                    } else if (updateNeeded) {
                         pushFiles.setPlaceholder(new Label(Config.getString("team.pullNeeded")));
-                    }
-                    else
-                    {
+                    } else {
                         pushFiles.setPlaceholder(new Label(Config.getString("team.nopushfiles")));
                     }
                 }
@@ -504,107 +440,80 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
          * of those which are to be added (i.e. which aren't in the repository)
          * and which are to be removed.
          *
-         * @param info The list of files with status (List of TeamStatusInfo)
-         * @param filesToCommit The set to store the files to commit in
-         * @param filesToAdd The set to store the files to be added in
-         * @param filesToRemove The set to store the files to be removed in
-         * @param mergeConflicts The set to store files with merge conflicts in.
+         * @param info            The list of files with status (List of TeamStatusInfo)
+         * @param filesToCommit   The set to store the files to commit in
+         * @param filesToAdd      The set to store the files to be added in
+         * @param filesToRemove   The set to store the files to be removed in
+         * @param mergeConflicts  The set to store files with merge conflicts in.
          * @param deleteConflicts The set to store files with conflicts in, which need to be
          *                        resolved by first deleting the local file
-         * @param otherConflicts The set to store files with "locally deleted" conflicts (locally
-         *                       deleted, remotely modified).
-         * @param needsMerge The set of files which are updated locally as well as in the
-         *                   repository (required merging).
-         * @param conflicts The set to store unresolved conflicts in
-         *
-         * @param remote false if this is a non-distributed repository.
+         * @param otherConflicts  The set to store files with "locally deleted" conflicts (locally
+         *                        deleted, remotely modified).
+         * @param needsMerge      The set of files which are updated locally as well as in the
+         *                        repository (required merging).
+         * @param conflicts       The set to store unresolved conflicts in
+         * @param remote          false if this is a non-distributed repository.
          */
         private void getCommitFileSets(List<TeamStatusInfo> info, Set<File> filesToCommit,
-                Set<File> filesToAdd, Set<File> filesToRemove,
-                Set<TeamStatusInfo> modifiedLayoutFiles)
-        {
-            for (TeamStatusInfo statusInfo : info)
-            {
+                                       Set<File> filesToAdd, Set<File> filesToRemove,
+                                       Set<TeamStatusInfo> modifiedLayoutFiles) {
+            for (TeamStatusInfo statusInfo : info) {
                 File file = statusInfo.getFile();
                 boolean isPkgFile = BlueJPackageFile.isPackageFileName(file.getName());
                 Status status = statusInfo.getStatus(true);
-                
-                if (status == Status.NEEDS_ADD || status == Status.CONFLICT_ADD)
-                {
+
+                if (status == Status.NEEDS_ADD || status == Status.CONFLICT_ADD) {
                     filesToAdd.add(file);
                     filesToCommit.add(file);
                     statusInfo.setStatus(Status.NEEDS_ADD);
-                }
-                else if (status == Status.DELETED)
-                {
+                } else if (status == Status.DELETED) {
                     filesToRemove.add(file);
                     filesToCommit.add(file);
-                }
-                else if (status == Status.CONFLICT_LDRM)
-                {
+                } else if (status == Status.CONFLICT_LDRM) {
                     filesToCommit.add(file);
-                }
-                else if (status == Status.CONFLICT_LMRD)
-                {
-                    if (file.exists())
-                    {
+                } else if (status == Status.CONFLICT_LMRD) {
+                    if (file.exists()) {
                         statusInfo.setStatus(Status.NEEDS_MERGE);
                         filesToCommit.add(file);
-                    }
-                    else
-                    {
+                    } else {
                         statusInfo.setStatus(Status.DELETED);
                         filesToRemove.add(file);
                         filesToCommit.add(file);
                     }
-                }
-                else if (status == Status.HAS_CONFLICTS)
-                {
+                } else if (status == Status.HAS_CONFLICTS) {
                     // don't allow commit? Is this possible?
-                }
-                else if (status == Status.NEEDS_MERGE)
-                {
+                } else if (status == Status.NEEDS_MERGE) {
                     filesToAdd.add(file);
                     filesToCommit.add(file);
-                }
-                else if (status == Status.NEEDS_COMMIT)
-                {
-                    if (isPkgFile)
-                    {
+                } else if (status == Status.NEEDS_COMMIT) {
+                    if (isPkgFile) {
                         modifiedLayoutFiles.add(statusInfo);
-                    }
-                    else
-                    {
+                    } else {
                         filesToCommit.add(file);
                     }
-                }
-                else if (status != Status.UP_TO_DATE)
-                {
+                } else if (status != Status.UP_TO_DATE) {
                     Debug.message("Commit and push: unhandled file status: " + status + " (for " + file + ")");
                 }
             }
 
             includeLayout.setDisable(changedLayoutFiles.isEmpty());
         }
-        
+
         /**
          * Go through the status list, and figure out which files to commit, and
          * of those which are to be added (i.e. which aren't in the repository)
          * and which are to be removed.
          *
-         * @param info The list of files with status (List of TeamStatusInfo)
+         * @param info        The list of files with status (List of TeamStatusInfo)
          * @param filesToPush The set to store the files that will be pushed
          */
-        private void getPushFileSets(List<TeamStatusInfo> info, Set<File> filesToPush)
-        {
-            for (TeamStatusInfo statusInfo : info)
-            {
+        private void getPushFileSets(List<TeamStatusInfo> info, Set<File> filesToPush) {
+            for (TeamStatusInfo statusInfo : info) {
                 File file = statusInfo.getFile();
                 Status status = statusInfo.getStatus(false);
 
                 if (status != Status.UP_TO_DATE && status != Status.NEEDS_CHECKOUT
-                        && status != Status.NEEDS_UPDATE)
-                {
+                        && status != Status.NEEDS_UPDATE) {
                     filesToPush.add(file);
                 }
             }
@@ -612,12 +521,12 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
 
         /**
          * Update the list model with a file list.
+         *
          * @param fileSet
          * @param info
          */
         private void updateListModel(ObservableList<TeamStatusInfo> listModel, Set<File> fileSet,
-                List<TeamStatusInfo> info)
-        {
+                                     List<TeamStatusInfo> info) {
             listModel.addAll(fileSet.stream().map(file -> getTeamStatusInfoFromFile(file, info))
                     .filter(Objects::nonNull)
                     .filter(statusInfo -> !listModel.contains(statusInfo))
@@ -629,14 +538,13 @@ public class CommitAndPushFrame extends FXCustomizedDialog<Void> implements Comm
          *
          * @param file     The file which its status info is needed.
          * @param infoList The list which contains files info.
-         * @return         The team status info for the file, or null if the list doesn't
-         *                 include information about it.
+         * @return The team status info for the file, or null if the list doesn't
+         * include information about it.
          */
-        private TeamStatusInfo getTeamStatusInfoFromFile(File file, List<TeamStatusInfo> infoList)
-        {
+        private TeamStatusInfo getTeamStatusInfoFromFile(File file, List<TeamStatusInfo> infoList) {
             Optional<TeamStatusInfo> statusInfo = infoList.stream().filter(
                     info -> info.getFile().equals(file)
-                ).findFirst();
+            ).findFirst();
             return statusInfo.isPresent() ? statusInfo.get() : null;
         }
     }

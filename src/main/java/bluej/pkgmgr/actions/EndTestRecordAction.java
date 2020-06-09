@@ -21,8 +21,6 @@
  */
 package bluej.pkgmgr.actions;
 
-import javax.swing.SwingUtilities;
-
 import bluej.Config;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.utility.javafx.JavaFXUtil;
@@ -34,27 +32,23 @@ import threadchecker.Tag;
  * End a recording of a test method. Creates a new test case class and
  * compiles it. Removes objects from the bench which were created since
  * recording began.
- * 
+ *
  * @author Davin McCall
  * @version $Id: EndTestRecordAction.java 16606 2016-09-27 12:30:05Z nccb $
  */
-final public class EndTestRecordAction extends PkgMgrAction
-{
+final public class EndTestRecordAction extends PkgMgrAction {
     @OnThread(Tag.Any)
-    public EndTestRecordAction(PkgMgrFrame pmf)
-    {
+    public EndTestRecordAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.end");
         shortDescription = Config.getString("tooltip.test.end");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.doEndTest();
     }
 
     @Override
-    public Button makeButton()
-    {
+    public Button makeButton() {
         Button b = super.makeButton();
         JavaFXUtil.addStyleClass(b, "pmf-test-end-button");
         return b;

@@ -21,25 +21,22 @@
  */
 package bluej.graph;
 
-import java.util.*;
-
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.target.Target;
-import bluej.utility.Debug;
-import javafx.application.Platform;
 import javafx.scene.shape.Rectangle;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+
 /**
  * The diagram's marquee (a rectangular drag area for selecting graph elements).
- * 
+ *
  * @author fisker
  * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public final class Marquee
-{
+public final class Marquee {
     private final Package graph;
     private int drag_start_x, drag_start_y;
     private final Rectangle currentRect;
@@ -50,8 +47,7 @@ public final class Marquee
     /**
      * Create a marquee for a given graph.
      */
-    public Marquee(Package graph, SelectionSet selection)
-    {
+    public Marquee(Package graph, SelectionSet selection) {
         this.graph = graph;
         this.selected = selection;
         currentRect = new Rectangle();
@@ -61,8 +57,7 @@ public final class Marquee
     /**
      * Start a marquee selection at point x, y.
      */
-    public void start(int x, int y)
-    {
+    public void start(int x, int y) {
         previouslySelected.clear();
         previouslySelected.addAll(selected.getSelected());
         drag_start_x = x;
@@ -78,13 +73,12 @@ public final class Marquee
     /**
      * Place the marquee from its starting point to the coordinate (drag_x,
      * drag_y). The marquee must have been started before this method is called.
-     * 
-     * @param drag_x  The x coordinate of the current drag position 
-     * @param drag_y  The y coordinate of the current drag position 
-     * @return  The set of graph elements selected by this marquee
+     *
+     * @param drag_x The x coordinate of the current drag position
+     * @param drag_y The y coordinate of the current drag position
+     * @return The set of graph elements selected by this marquee
      */
-    public void move(int drag_x, int drag_y)
-    {
+    public void move(int drag_x, int drag_y) {
         int x = drag_start_x;
         int y = drag_start_y;
         int w = drag_x - drag_start_x;
@@ -100,20 +94,18 @@ public final class Marquee
         currentRect.setY(y);
         currentRect.setWidth(w);
         currentRect.setHeight(h);
-        if (w != 0 || h != 0)
-        {
+        if (w != 0 || h != 0) {
             currentRect.setVisible(true);
         }
 
         findSelectedVertices(x, y, w, h);
     }
 
-    
+
     /**
      * Find, and add, all vertices that intersect the specified area.
      */
-    private void findSelectedVertices(int x, int y, int w, int h)
-    {
+    private void findSelectedVertices(int x, int y, int w, int h) {
         //clear the currently selected
         selected.clear();
         selected.addAll(previouslySelected);
@@ -124,7 +116,7 @@ public final class Marquee
                 selected.add(v);
             }
         }
-        
+
         // If none of them are focused, focus one, otherwise keyboard
         // actions won't work:
         if (!selected.isEmpty() && !selected.getSelected().stream().anyMatch(Target::isFocused))
@@ -134,8 +126,7 @@ public final class Marquee
     /**
      * Stop a current marquee selection.
      */
-    public void stop()
-    {
+    public void stop() {
         currentRect.setVisible(false);
         active = false;
     }
@@ -143,19 +134,17 @@ public final class Marquee
     /**
      * Tell whether this marquee is currently active.
      */
-    public boolean isActive()
-    {
+    public boolean isActive() {
         return active;
     }
-    
+
     /**
      * Return the currently visible rectangle of this marquee.
      * If the marquee is not currently drawn, return null.
-     * 
+     *
      * @return The marquee's rectangle, or null if not visible.
      */
-    public Rectangle getRectangle()
-    {
+    public Rectangle getRectangle() {
         return currentRect;
     }
 }

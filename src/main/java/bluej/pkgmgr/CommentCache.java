@@ -21,20 +21,18 @@
  */
 package bluej.pkgmgr;
 
-import java.util.Properties;
-
 import bluej.utility.GeneralCache;
+
+import java.util.Properties;
 
 /**
  * A cache for class comments (javadoc/parameter names). Adding new entries to the cache
  * will purge old entries, if there are too many.
- * 
+ *
  * @author Davin McCall
  */
-public class CommentCache extends GeneralCache<String,Properties>
-{
-    public CommentCache()
-    {
+public class CommentCache extends GeneralCache<String, Properties> {
+    public CommentCache() {
         super(20);
     }
 }

@@ -25,24 +25,23 @@ import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.pkgmgr.BlueJPackageFile;
 
 /**
- * Class to filter CVS StatusInformation to calculate those classes that will 
- * be changed when we next commit. It should include files that are locally 
+ * Class to filter CVS StatusInformation to calculate those classes that will
+ * be changed when we next commit. It should include files that are locally
  * modified, remotely modified, locally deleted and remotely removed.
  *
  * @author bquig
  */
-public class CommitFilter
-{
+public class CommitFilter {
     /**
-     * Filter to identify which files in a repository will be altered at 
+     * Filter to identify which files in a repository will be altered at
      * the next commit.
+     *
      * @param statusInfo the statusInfo to be filtered
-     * @param local if the commit is between working copy and local tree or 
-     *              between local tree and remote tree.
-     * @return 
+     * @param local      if the commit is between working copy and local tree or
+     *                   between local tree and remote tree.
+     * @return
      */
-    public boolean accept(TeamStatusInfo statusInfo, boolean local)
-    {
+    public boolean accept(TeamStatusInfo statusInfo, boolean local) {
         Status stat = statusInfo.getStatus(local);
 
         switch (stat) {

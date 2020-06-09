@@ -27,33 +27,30 @@ import java.util.Iterator;
 
 /**
  * An array (well, collection) of ScratchObjects.
- * 
+ * <p>
  * This needs its own class, rather than using ScratchPrimitive, because resolve
  * calls must recurse into the array in case there are object-references in the array
  * (in fact, this is almost always the case).
- * 
+ * <p>
  * It is possible for entries in the array to be null, although the array
  * itself should not be null.
- * 
+ *
  * @author neil
  */
-class ScratchObjectArray extends ScratchObject implements Iterable<ScratchObject>
-{
+class ScratchObjectArray extends ScratchObject implements Iterable<ScratchObject> {
     private final ScratchObject[] value;
 
-    public ScratchObjectArray(ScratchObject[] value)
-    {
+    public ScratchObjectArray(ScratchObject[] value) {
         this.value = value;
     }
-    
-    @Override public ScratchObject[] getValue()
-    {
+
+    @Override
+    public ScratchObject[] getValue() {
         return value;
     }
 
     @Override
-    public ScratchObject resolve(ArrayList<ScratchObject> objects)
-    {
+    public ScratchObject resolve(ArrayList<ScratchObject> objects) {
         for (int i = 0; i < value.length; i++) {
             if (value[i] != null) {
                 value[i] = value[i].resolve(objects);
@@ -63,8 +60,7 @@ class ScratchObjectArray extends ScratchObject implements Iterable<ScratchObject
     }
 
     @Override
-    public Iterator<ScratchObject> iterator()
-    {
+    public Iterator<ScratchObject> iterator() {
         return Arrays.asList(value).iterator();
     }
 }

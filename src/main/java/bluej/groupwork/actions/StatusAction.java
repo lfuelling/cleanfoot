@@ -31,40 +31,34 @@ import javafx.stage.Window;
 
 /**
  * Action to show status.
- * 
+ *
  * @author bquig
  */
-public class StatusAction extends TeamAction
-{
-    /** Creates a new instance of StatusAction */
-    public StatusAction()
-    {
+public class StatusAction extends TeamAction {
+    /**
+     * Creates a new instance of StatusAction
+     */
+    public StatusAction() {
         super("team.status", false);
         shortDescription = Config.getString("tooltip.status");
     }
 
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+    public void actionPerformed(PkgMgrFrame pmf) {
         // save all bluej.pkg files first
         Project project = pmf.getProject();
         project.saveAll();
         doStatus(pmf);
     }
 
-    private void doStatus(PkgMgrFrame pmf)
-    {
+    private void doStatus(PkgMgrFrame pmf) {
         if (pmf.getProject().getTeamSettingsController().initRepository()) {
             StatusFrame status = pmf.getProject().getStatusWindow();
-            if (! status.isShowing())
-            {
+            if (!status.isShowing()) {
                 status.setLocationRelativeTo(pmf.getFXWindow());
                 status.show();
-            }
-            else
-            {
+            } else {
                 Window window = status.asWindow();
-                if (window instanceof Stage)
-                {
+                if (window instanceof Stage) {
                     ((Stage) window).toFront();
                 }
             }

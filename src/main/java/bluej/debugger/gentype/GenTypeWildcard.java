@@ -26,80 +26,72 @@ import java.util.Map;
 
 /**
  * A wildcard type with an upper and/or lower bound.
- * 
+ *
  * <p>Note that both an upper and lower bound is allowed. This type doesn't occur
  * naturally- it can't be specified in the Java language. But in some cases we
  * can deduce the type of some object to be this.
  *
  * @author Davin McCall
  */
-public class GenTypeWildcard extends GenTypeParameter
-{
+public class GenTypeWildcard extends GenTypeParameter {
     GenTypeSolid upperBound; // ? extends upperBound
     GenTypeSolid lowerBound; // ? super lowerBound
-    
+
     /**
      * Constructor for a wildcard with a specific upper and lower bound, either of
      * which may be null.
      */
-    public GenTypeWildcard(GenTypeSolid upper, GenTypeSolid lower)
-    {
+    public GenTypeWildcard(GenTypeSolid upper, GenTypeSolid lower) {
         upperBound = upper;
         lowerBound = lower;
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return toString(false);
     }
-        
+
     @Override
-    public String toString(NameTransform nt)
-    {
+    public String toString(NameTransform nt) {
         if (lowerBound != null) {
             return "? super " + lowerBound.toString(nt);
-        }
-        else if (upperBound != null) {
+        } else if (upperBound != null) {
             String uboundStr = upperBound.toString();
-            if (! uboundStr.equals("java.lang.Object"))
+            if (!uboundStr.equals("java.lang.Object"))
                 return "? extends " + upperBound.toString(nt);
         }
         return "?";
     }
-    
+
     @Override
-    public String toTypeArgString(NameTransform nt)
-    {
+    public String toTypeArgString(NameTransform nt) {
         return toString(nt);
     }
-    
+
     @Override
-    public GenTypeWildcard mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams)
-    {
+    public GenTypeWildcard mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams) {
         GenTypeSolid newUpper = null;
         GenTypeSolid newLower = null;
-        
+
         // Find new upper bounds
         if (upperBound != null) {
             ArrayList<GenTypeSolid> newUppers = new ArrayList<GenTypeSolid>();
-            GenTypeSolid [] upperBounds = upperBound.getUpperBounds();
-            
+            GenTypeSolid[] upperBounds = upperBound.getUpperBounds();
+
             // find the new upper bounds
             for (int i = 0; i < upperBounds.length; i++) {
                 GenTypeParameter newBound = upperBounds[i].mapTparsToTypes(tparams);
                 if (newBound instanceof GenTypeWildcard) {
                     GenTypeWildcard newWcBound = (GenTypeWildcard) newBound;
                     newUppers.add(newWcBound.upperBound);
-                }
-                else {
+                } else {
                     newUppers.add((GenTypeSolid) newBound);
                 }
             }
-            GenTypeSolid [] newUppersA = newUppers.toArray(new GenTypeSolid[newUppers.size()]);
+            GenTypeSolid[] newUppersA = newUppers.toArray(new GenTypeSolid[newUppers.size()]);
             newUpper = IntersectionType.getIntersection(newUppersA);
         }
-        
+
         // find the new lower bounds
         // This is easier. If the lower bound is an intersection type, it comes from
         // lub() and therefore contains no immediate type parameters.
@@ -107,62 +99,56 @@ public class GenTypeWildcard extends GenTypeParameter
             GenTypeParameter newLowerP = lowerBound.mapTparsToTypes(tparams);
             newLower = newLowerP.getLowerBound();
         }
-        
+
         return new GenTypeWildcard(newUpper, newLower);
     }
-    
+
     @Override
-    public boolean equals(GenTypeParameter other)
-    {
+    public boolean equals(GenTypeParameter other) {
         if (this == other)
             return true;
-        
-        if (! other.isWildcard()) {
+
+        if (!other.isWildcard()) {
             return false;
         }
-        
+
         GenTypeSolid otherLower = other.getLowerBound();
         JavaType otherUpper = other.getUpperBound();
-        
-        if (upperBound != null && ! upperBound.equals(otherUpper)) {
+
+        if (upperBound != null && !upperBound.equals(otherUpper)) {
             return false;
         }
         if (upperBound == null && otherUpper != null) {
             return false;
         }
-        if (lowerBound != null && ! lowerBound.equals(otherLower)) {
+        if (lowerBound != null && !lowerBound.equals(otherLower)) {
             return false;
         }
         return lowerBound != null || otherLower == null;
     }
-    
+
     @Override
-    public JavaType getErasedType()
-    {
+    public JavaType getErasedType() {
         return upperBound.getErasedType();
     }
-    
+
     @Override
-    public boolean isWildcard()
-    {
+    public boolean isWildcard() {
         return true;
     }
-    
+
     @Override
-    public GenTypeSolid getUpperBound()
-    {
+    public GenTypeSolid getUpperBound() {
         return upperBound;
     }
-    
+
     @Override
-    public GenTypeSolid getLowerBound()
-    {
+    public GenTypeSolid getLowerBound() {
         return lowerBound;
     }
-        
+
     @Override
-    public JavaType getTparCapture()
-    {
+    public JavaType getTparCapture() {
         return new GenTypeCapture(this);
     }
 }

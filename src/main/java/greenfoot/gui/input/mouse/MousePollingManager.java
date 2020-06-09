@@ -22,13 +22,11 @@
 package greenfoot.gui.input.mouse;
 
 import greenfoot.MouseInfo;
-import greenfoot.gui.input.mouse.MouseEventData;
-
-import java.awt.event.MouseEvent;
-
 import javafx.scene.input.MouseButton;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.awt.event.MouseEvent;
 
 /**
  * There are two ways that the mouse can be handled in Greenfoot. One is the
@@ -47,7 +45,7 @@ import threadchecker.Tag;
  * into current mouseInfo and the creation of a new future mouse data object is
  * started.
  * <p>
- * 
+ * <p>
  * If several events happen in the same frame the events are prioritized like
  * this: <br>
  * Priorities with highest priority first:
@@ -58,7 +56,7 @@ import threadchecker.Tag;
  * <li> drag </li>
  * <li> move </li>
  * </ul>
- * 
+ * <p>
  * In general only one event can happen in a frame, the only exception is click
  * and press which could happen in the same frame if a mouse is clicked in one
  * frame. <br>
@@ -68,24 +66,23 @@ import threadchecker.Tag;
  * undefined. Maybe we should define it so that button1 always have higher
  * priority than button2 and button2 always higher than button3. But not
  * necessarily documenting this to the user.
- * 
+ *
  * @author Poul Henriksen
  */
-public class MousePollingManager
-{
+public class MousePollingManager {
     /*
      * Methods in this class are called from two threads: the simulation thread and the
      * GUI even thread. Some methods are called by one and some by the other; the GUI produces
      * the data while the simulation consumes it.
-     * 
+     *
      * A small number of fields can be accessed be either thread and so access to them must
      * be synchronized. Other fields are accessed by only one thread or the other.
      */
-    
+
     /**
      * The current mouse data This will be the mouse info returned for the rest
      * of this act loop.
-     * 
+     *
      * <p>Accessed only from the simulation thread.
      */
     private MouseEventData currentData = new MouseEventData();
@@ -95,21 +92,21 @@ public class MousePollingManager
      * first time the user requested mouse info in this act loop, until the user
      * requests again in the next act-loop, at which point the future will
      * become the current.
-     * 
+     *
      * <p>Access to this field must be synchronized.
      */
     private MouseEventData futureData = new MouseEventData();
-    
+
     /**
      * Used to collect data if we already have a highest priority dragEnded
      * collected. We need this in order to collect data for a potential new
      * dragEnd since we want to report the latest dragEnd in case there are more
      * than one.
-     * 
+     *
      * <p>Access to this field must be synchronized.
      */
     private MouseEventData potentialNewDragData = new MouseEventData();
-    
+
     /**
      * Locates the actors in the world (read only field, requires no synchronization).
      */
@@ -119,56 +116,52 @@ public class MousePollingManager
      * Keeps track of where a drag started. This should never be explicitly set
      * to null, because it might result in exceptions when doing undefined
      * things like dragging with two buttons down at the same time.
-     * 
+     *
      * <p>Accessed only from the GUI thread.
      */
     private MouseEventData dragStartData = new MouseEventData();
 
     /**
      * Track whether the mouse is currently being dragged.
-     * 
+     *
      * <p>Accessed only from the GUI thread.
      */
     private boolean isDragging;
 
     /**
      * Whether we have received more mouse data since we last gave data to the simulation.
-     * 
+     *
      * <p>Access to this field must be synchronized.
      */
     private boolean gotNewEvent;
     private boolean gotNewDragStartEvent;
-    
+
 
     /**
      * Creates a new mouse manager. The mouse manager should be notified
      * whenever a new act round starts by calling {@link #newActStarted()}.
-     * 
-     * @param locator
-     *            Used to locate things (actors and coordinates) within the
-     *            World. May be null, but in that case the locator must be set
-     *            later.
+     *
+     * @param locator Used to locate things (actors and coordinates) within the
+     *                World. May be null, but in that case the locator must be set
+     *                later.
      */
     @OnThread(Tag.Any)
-    public MousePollingManager(WorldLocator locator) 
-    {
+    public MousePollingManager(WorldLocator locator) {
         this.locator = locator;
     }
-    
+
     /**
      * Set the locator to be used by this mouse polling manager.
      */
-    public void setWorldLocator(WorldLocator locator)
-    {
+    public void setWorldLocator(WorldLocator locator) {
         this.locator = locator;
     }
-    
+
     /**
      * This method should be called when a new act-loop is started.
      */
     @OnThread(Tag.Simulation)
-    public synchronized void newActStarted()
-    {
+    public synchronized void newActStarted() {
         // The current data was already polled, or we have a new event since;
         // use futureData as our current data. (If there's been no event, i.e. if
         // gotNewEvent is false, futureData will contain no events).
@@ -179,8 +172,7 @@ public class MousePollingManager
             futureData = newData;
             potentialNewDragData = new MouseEventData();
 
-            if (gotNewDragStartEvent)
-            {
+            if (gotNewDragStartEvent) {
                 dragStartData.setActors(locator);
                 // We need to also set the actor on the drag-ended if it both
                 // started this frame (true if gotNewDragStartEvent was true) and
@@ -188,11 +180,10 @@ public class MousePollingManager
                 currentData.setDragStartActor(dragStartData);
                 gotNewDragStartEvent = false;
             }
-            
+
             // Indicate that we have processed all current events.
             gotNewEvent = false;
-        }
-        else {
+        } else {
             currentData.init();
         }
     }
@@ -201,15 +192,13 @@ public class MousePollingManager
      * This method should be called every time we receive a mouse event. It is
      * used to keep track of whether any events have been occurring in this
      * frame.
-     * 
+     *
      * <p>This must be called from a synchronized context.
      */
-    private void registerEventRecieved()
-    {
+    private void registerEventRecieved() {
         gotNewEvent = true;
     }
-    
-    
+
 
     // ************************************
     // Methods available to the user
@@ -224,13 +213,12 @@ public class MousePollingManager
      * only if the mouse was pressed outside the boundaries of all Actors. If
      * the parameter is null, then it will return true no matter where the mouse
      * was pressed as long as it is inside the world boundaries.
-     * 
+     *
      * @param obj Typically one of Actor, World or null
      * @return True if the mouse has been pressed as explained above
      */
     @OnThread(Tag.Simulation)
-    public boolean isMousePressed(Object obj)
-    {
+    public boolean isMousePressed(Object obj) {
         return currentData.isMousePressedOn(obj);
     }
 
@@ -243,13 +231,12 @@ public class MousePollingManager
      * clicked outside the boundaries of all Actors. If the parameter is null,
      * then it will return true no matter where the mouse was clicked as long as
      * it is inside the world boundaries.
-     * 
+     *
      * @param obj Typically one of Actor, World or null
      * @return True if the mouse has been clicked as explained above
      */
     @OnThread(Tag.Simulation)
-    public boolean isMouseClicked(Object obj)
-    {
+    public boolean isMouseClicked(Object obj) {
         return currentData.isMouseClickedOn(obj);
     }
 
@@ -265,13 +252,12 @@ public class MousePollingManager
      * boundaries of all Actors. If the parameter is null, then it will return
      * true no matter where the drag was started as long as it is inside the
      * world boundaries.
-     * 
+     *
      * @param obj Typically one of Actor, World or null
      * @return True if the mouse has been pressed as explained above
      */
     @OnThread(Tag.Simulation)
-    public boolean isMouseDragged(Object obj)
-    {
+    public boolean isMouseDragged(Object obj) {
         return currentData.isMouseDraggedOn(obj);
     }
 
@@ -286,14 +272,12 @@ public class MousePollingManager
      * boundaries of all Actors. If the parameter is null, then it will return
      * true no matter where the drag was started as long as it is inside the
      * world boundaries.
-     * 
-     * 
+     *
      * @param obj Typically one of Actor, World or null
      * @return True if the mouse has been pressed as explained above
      */
     @OnThread(Tag.Simulation)
-    public boolean isMouseDragEnded(Object obj)
-    {
+    public boolean isMouseDragEnded(Object obj) {
         return currentData.isMouseDragEndedOn(obj);
     }
 
@@ -309,13 +293,12 @@ public class MousePollingManager
      * boundaries of all Actors. If the parameter is null, then it will return
      * true no matter where the drag was started as long as it is inside the
      * world boundaries.
-     * 
+     *
      * @param obj Typically one of Actor, World or null
      * @return True if the mouse has been moved as explained above
      */
     @OnThread(Tag.Simulation)
-    public boolean isMouseMoved(Object obj)
-    {
+    public boolean isMouseMoved(Object obj) {
         return currentData.isMouseMovedOn(obj);
     }
 
@@ -323,48 +306,43 @@ public class MousePollingManager
      * Gets the mouse info with information about the current state of the
      * mouse. Within the same act-loop it will always return exactly the same
      * MouseInfo object with exactly the same contents.
-     * 
+     *
      * @return The info about the current state of the mouse; Null if the mouse is outside
-     *         the world boundaries (unless being dragged).
+     * the world boundaries (unless being dragged).
      */
     @OnThread(Tag.Simulation)
-    public MouseInfo getMouseInfo()
-    {
+    public MouseInfo getMouseInfo() {
         return currentData.getMouseInfo();
-    }   
+    }
 
     /**
      * The mouse got clicked at the given world location
-     * @param x The pixel location in the world (not cells)
-     * @param y The pixel location in the world (not cells)
-     * @param button The button reported by the original event.
+     *
+     * @param x          The pixel location in the world (not cells)
+     * @param y          The pixel location in the world (not cells)
+     * @param button     The button reported by the original event.
      * @param clickCount The click count recorded by the original event.
      */
     @OnThread(Tag.Any)
-    public void mouseClicked(int x, int y, MouseButton button, int clickCount)
-    {
-        if (locator == null)
-        {
+    public void mouseClicked(int x, int y, MouseButton button, int clickCount) {
+        if (locator == null) {
             return;
         }
-        
-        synchronized (this)
-        {
+
+        synchronized (this) {
             MouseEventData mouseData = futureData;
             // In case we already have a dragEnded and we get another
             // dragEnded, we need to start collection data for that.            
-            if (futureData.isMouseDragEnded())
-            {
+            if (futureData.isMouseDragEnded()) {
                 mouseData = potentialNewDragData;
             }
-            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_CLICKED, mouseData))
-            {
+            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_CLICKED, mouseData)) {
                 return;
             }
             registerEventRecieved();
             int tx = locator.getTranslatedX(x);
             int ty = locator.getTranslatedY(y);
-            
+
             mouseData.mouseClicked(tx, ty, x, y, getButton(button), clickCount);
             isDragging = false;
         }
@@ -373,10 +351,8 @@ public class MousePollingManager
     /**
      * Translates a JavaFX button to 1/2/3 as used by the Greenfoot API for left/middle/right.
      */
-    private int getButton(MouseButton button)
-    {
-        switch (button)
-        {
+    private int getButton(MouseButton button) {
+        switch (button) {
             case PRIMARY:
                 return 1;
             case MIDDLE:
@@ -392,36 +368,32 @@ public class MousePollingManager
      * The mouse left the world area.
      */
     @OnThread(Tag.Any)
-    public synchronized void mouseExited()
-    {
+    public synchronized void mouseExited() {
         futureData.mouseExited();
         registerEventRecieved();
     }
 
     /**
      * The mouse got pressed on the given world location
-     * @param x The pixel location in the world (not cells)
-     * @param y The pixel location in the world (not cells)
+     *
+     * @param x      The pixel location in the world (not cells)
+     * @param y      The pixel location in the world (not cells)
      * @param button The button reported by the original event.
      */
     @OnThread(Tag.Any)
-    public void mousePressed(int x, int y, MouseButton button)
-    {
-        if (locator == null)
-        {
+    public void mousePressed(int x, int y, MouseButton button) {
+        if (locator == null) {
             return;
         }
-        
-        synchronized(this)
-        {
+
+        synchronized (this) {
             MouseEventData mouseData = futureData;
             // In case we already have a dragEnded and we get another
             // dragEnded, we need to start collection data for that.
-            if (futureData.isMouseDragEnded())
-            {
+            if (futureData.isMouseDragEnded()) {
                 mouseData = potentialNewDragData;
             }
-        
+
             // This might be the beginning of a drag so we store it
             dragStartData = new MouseEventData();
             int tx = locator.getTranslatedX(x);
@@ -430,8 +402,7 @@ public class MousePollingManager
             gotNewDragStartEvent = true;
 
             // We only really want to register this event as a press if there is no higher priorities
-            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_PRESSED, mouseData))
-            {
+            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_PRESSED, mouseData)) {
                 return;
             }
             registerEventRecieved();
@@ -442,32 +413,27 @@ public class MousePollingManager
 
     /**
      * The mouse got released at the given world location
-     * @param x The pixel location in the world (not cells)
-     * @param y The pixel location in the world (not cells)
+     *
+     * @param x      The pixel location in the world (not cells)
+     * @param y      The pixel location in the world (not cells)
      * @param button The button reported by the original event.
      */
     @OnThread(Tag.Any)
-    public void mouseReleased(int x, int y, MouseButton button)
-    {
-        if (locator == null)
-        {
+    public void mouseReleased(int x, int y, MouseButton button) {
+        if (locator == null) {
             return;
         }
-        
-        synchronized(this)
-        {
+
+        synchronized (this) {
             // This might be the end of a drag
-            if(isDragging)
-            {
+            if (isDragging) {
                 // In case we already have a dragEnded and we get another
                 // dragEnded, should use the new one
-                if (futureData.isMouseDragEnded())
-                {
+                if (futureData.isMouseDragEnded()) {
                     futureData = potentialNewDragData;
                 }
-                
-                if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_RELEASED, futureData))
-                {
+
+                if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_RELEASED, futureData)) {
                     return;
                 }
                 registerEventRecieved();
@@ -475,7 +441,7 @@ public class MousePollingManager
                 int ty = locator.getTranslatedY(y);
 
                 futureData.mouseClicked(tx, ty, x, y, getButton(button), 1);
-                
+
                 futureData.mouseDragEnded(tx, ty, x, y, getButton(button), dragStartData);
                 isDragging = false;
                 potentialNewDragData = new MouseEventData();
@@ -485,28 +451,25 @@ public class MousePollingManager
 
     /**
      * The mouse got dragged to the given world location
-     * @param x The pixel location in the world (not cells)
-     * @param y The pixel location in the world (not cells)
+     *
+     * @param x      The pixel location in the world (not cells)
+     * @param y      The pixel location in the world (not cells)
      * @param button The button reported by the original event.
      */
     @OnThread(Tag.Any)
-    public void mouseDragged(int x, int y, MouseButton button)
-    {
-        if (locator == null)
-        {
+    public void mouseDragged(int x, int y, MouseButton button) {
+        if (locator == null) {
             return;
         }
-        
-        synchronized(this)
-        {
+
+        synchronized (this) {
             isDragging = true;
-            
-            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_DRAGGED, futureData))
-            {
+
+            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_DRAGGED, futureData)) {
                 return;
             }
             registerEventRecieved();
-            
+
             // Find and store the actor that relates to this drag.
             int tx = locator.getTranslatedX(x);
             int ty = locator.getTranslatedY(y);
@@ -516,22 +479,19 @@ public class MousePollingManager
 
     /**
      * The mouse got moved to the given world location
+     *
      * @param x The pixel location in the world (not cells)
      * @param y The pixel location in the world (not cells)
      */
     @OnThread(Tag.Any)
-    public void mouseMoved(int x, int y)
-    {
-        if (locator == null)
-        {
+    public void mouseMoved(int x, int y) {
+        if (locator == null) {
             // Not fully initialised yet, so no need to handle event:
             return;
         }
-        
-        synchronized(this)
-        {
-            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_MOVED, futureData))
-            {
+
+        synchronized (this) {
+            if (!PriorityManager.isHigherPriority(MouseEvent.MOUSE_MOVED, futureData)) {
                 return;
             }
             registerEventRecieved();
@@ -546,8 +506,7 @@ public class MousePollingManager
      * Called when the world starts running, to discard any
      * old mouse data that may have been accumulated while paused.
      */
-    public void startedRunning()
-    {
+    public void startedRunning() {
         futureData = new MouseEventData();
     }
 }

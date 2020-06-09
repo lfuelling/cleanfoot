@@ -30,116 +30,101 @@ import java.util.*;
  * down either axis to allow two child nodes. A BSP node area contains one or more
  * Actors (or parts of Actors); in implementation, this is represented as a map of
  * Actor to ActorNode.
- * 
+ *
  * @author Davin McCall
  */
-public final class BSPNode
-{
+public final class BSPNode {
     private final Map<Actor, ActorNode> actors;
-    
+
     private BSPNode parent;
     private Rect area;
     private int splitAxis;  // which axis is split
     private int splitPos;   // where it is split (absolute)
     private BSPNode left;
     private BSPNode right;
-    
+
     private boolean areaRipple; // area has been set, need to ripple
-        // down to children at some stage
-    
-    public BSPNode(Rect area, int splitAxis, int splitPos)
-    {
+    // down to children at some stage
+
+    public BSPNode(Rect area, int splitAxis, int splitPos) {
         this.area = area;
         this.splitAxis = splitAxis;
         this.splitPos = splitPos;
-        
+
         // actorNodes = new LinkedList<ActorNode>();
         actors = new HashMap<Actor, ActorNode>();
     }
-    
+
     /**
      * Set the child on either side. The child's area must be set
      * appropriately before calling this.
      */
-    public void setChild(int side, BSPNode child)
-    {
+    public void setChild(int side, BSPNode child) {
         if (side == IBSPColChecker.PARENT_LEFT) {
             left = child;
             if (child != null) {
                 child.parent = this;
             }
-        }
-        else {
+        } else {
             right = child;
             if (child != null) {
                 child.parent = this;
             }
         }
     }
-    
-    public void setArea(Rect area)
-    {
+
+    public void setArea(Rect area) {
         this.area = area;
         areaRipple = true;
     }
-    
-    public void setSplitAxis(int axis)
-    {
+
+    public void setSplitAxis(int axis) {
         if (axis != splitAxis) {
             splitAxis = axis;
             areaRipple = true;
         }
     }
-    
-    public void setSplitPos(int pos)
-    {
+
+    public void setSplitPos(int pos) {
         if (pos != splitPos) {
             splitPos = pos;
             areaRipple = true;
         }
     }
 
-    public int getSplitAxis()
-    {
+    public int getSplitAxis() {
         return splitAxis;
     }
-    
-    public int getSplitPos()
-    {
+
+    public int getSplitPos() {
         return splitPos;
     }
 
-    public Rect getLeftArea()
-    {
+    public Rect getLeftArea() {
         if (splitAxis == IBSPColChecker.X_AXIS) {
             return new Rect(area.getX(), area.getY(), splitPos - area.getX(), area.getHeight());
-        }
-        else {
+        } else {
             return new Rect(area.getX(), area.getY(), area.getWidth(), splitPos - area.getY());
         }
     }
-    
-    public Rect getRightArea()
-    {
+
+    public Rect getRightArea() {
         if (splitAxis == IBSPColChecker.X_AXIS) {
             return new Rect(splitPos, area.getY(), area.getRight() - splitPos, area.getHeight());
-        }
-        else {
+        } else {
             return new Rect(area.getX(), splitPos, area.getWidth(), area.getTop() - splitPos);
         }
     }
-    
+
     /**
      * Returns the area of this node. Careful! Modifying the returned Rect will modify the
      * node's area!
      */
-    public Rect getArea()
-    {
+    public Rect getArea() {
         return area;
     }
-    
-    private void resizeChildren()
-    {
+
+    private void resizeChildren() {
         if (left != null) {
             left.setArea(getLeftArea());
         }
@@ -147,61 +132,52 @@ public final class BSPNode
             right.setArea(getRightArea());
         }
     }
-    
-    public BSPNode getLeft()
-    {
+
+    public BSPNode getLeft() {
         if (areaRipple) {
             resizeChildren();
             areaRipple = false;
         }
         return left;
     }
-    
-    public BSPNode getRight()
-    {
+
+    public BSPNode getRight() {
         if (areaRipple) {
             resizeChildren();
             areaRipple = false;
         }
         return right;
     }
-    
-    public BSPNode getParent()
-    {
+
+    public BSPNode getParent() {
         return parent;
     }
-    
-    public void setParent(BSPNode parent)
-    {
+
+    public void setParent(BSPNode parent) {
         this.parent = parent;
     }
-    
-    public int getChildSide(BSPNode child)
-    {
+
+    public int getChildSide(BSPNode child) {
         if (left == child) {
             return IBSPColChecker.PARENT_LEFT;
-        }
-        else {
+        } else {
             return IBSPColChecker.PARENT_RIGHT;
         }
     }
-    
-    public String toString()
-    {
+
+    public String toString() {
         return "bsp" + hashCode();
     }
-    
-    public void addActor(Actor actor)
-    {
+
+    public void addActor(Actor actor) {
         actors.put(actor, new ActorNode(actor, this));
     }
-    
+
     /**
      * Check whether the actor is already listed in this node, and
-     * mark the ActorNode if this is the case. 
+     * mark the ActorNode if this is the case.
      */
-    public boolean containsActor(Actor actor)
-    {
+    public boolean containsActor(Actor actor) {
         ActorNode anode = actors.get(actor);
         if (anode != null) {
             anode.mark();
@@ -209,48 +185,40 @@ public final class BSPNode
         }
         return false;
     }
-    
-    public void actorRemoved(Actor actor)
-    {
+
+    public void actorRemoved(Actor actor) {
         actors.remove(actor);
     }
-    
-    public int numberActors()
-    {
+
+    public int numberActors() {
         return actors.size();
     }
-    
+
     /**
      * Check whether any actors are registered in this node.
      */
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return actors.isEmpty();
     }
-    
-    public Iterator<Map.Entry<Actor, ActorNode>> getEntriesIterator()
-    {
+
+    public Iterator<Map.Entry<Actor, ActorNode>> getEntriesIterator() {
         return actors.entrySet().iterator();
     }
-    
-    public Iterator<Actor> getActorsIterator()
-    {
+
+    public Iterator<Actor> getActorsIterator() {
         return actors.keySet().iterator();
     }
-    
-    public List<Actor> getActorsList()
-    {
+
+    public List<Actor> getActorsList() {
         return new ArrayList<Actor>(actors.keySet());
     }
-    
+
     // Blanks the node.  Used by BSPNodeCache 
-    void blankNode()
-    {
+    void blankNode() {
         actors.clear();
     }
-    
-    public void areaChanged()
-    {
+
+    public void areaChanged() {
         areaRipple = true;
     }
 }

@@ -27,37 +27,36 @@ import bluej.debugger.gentype.Reflective;
  * An EntityResolver, broadly speaking, resolves identifiers into packages, classes,
  * fields and variables. A resolver can be specific to a context; for instance a
  * resolver inside a package normally sees classes in that package without requiring
- * qualification. 
- * 
+ * qualification.
+ *
  * @author Davin McCall
  */
-public interface EntityResolver
-{
+public interface EntityResolver {
     /**
      * Resolve a package or class. If a class with the given name exists in the resolver's scope,
      * it is returned; otherwise a package is returned.
-     * 
-     * @param name  The package or class name. This must be an unqualified name.
-     * @param querySource  The source of the query (a fully qualified class name,
-     *            as would be returned by Class.getName()).
+     *
+     * @param name        The package or class name. This must be an unqualified name.
+     * @param querySource The source of the query (a fully qualified class name,
+     *                    as would be returned by Class.getName()).
      */
     PackageOrClass resolvePackageOrClass(String name, Reflective querySource);
-    
+
     /**
      * Resolve a class from its fully-qualified name. The supplied name should
      * be the same as would be returned by Class.getName() for the required type.
      */
     TypeEntity resolveQualifiedClass(String name);
-    
+
     /**
      * Resolve a value. If a local variable or field with the given name exists in the resolver's
      * scope (or if there is a static import of that name), it is returned; otherwise the effect is as if resolvePackageOrClass was called.
-     * 
+     *
      * <p>To resolve the final value entity, call resolveAsValue() on the returned entity.
-     * 
-     * @param name The name of the entity to access
+     *
+     * @param name        The name of the entity to access
      * @param querySource The source of the query (a fully qualified class name,
-     *            as would be returned by Class.getName()).
+     *                    as would be returned by Class.getName()).
      */
     JavaEntity getValueEntity(String name, Reflective querySource);
 }

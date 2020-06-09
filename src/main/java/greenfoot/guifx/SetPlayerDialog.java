@@ -21,9 +21,8 @@
  */
 package greenfoot.guifx;
 
-import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.Config;
-
+import bluej.utility.javafx.FXCustomizedDialog;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -37,19 +36,17 @@ import javafx.stage.Window;
  *
  * @author Amjad Altadmri
  */
-public class SetPlayerDialog extends FXCustomizedDialog<String>
-{
+public class SetPlayerDialog extends FXCustomizedDialog<String> {
     private final TextField playerNameTextField;
 
     /**
      * Construct a set player dialog with the current player name as the default
      * text in the name text field.
      *
-     * @param parent         The parent window.
-     * @param curPlayerName  The current player name.
+     * @param parent        The parent window.
+     * @param curPlayerName The current player name.
      */
-    public SetPlayerDialog(Window parent, String curPlayerName)
-    {
+    public SetPlayerDialog(Window parent, String curPlayerName) {
         super(parent, Config.getString("playername.dialog.title"), null);
         setResizable(false);
 

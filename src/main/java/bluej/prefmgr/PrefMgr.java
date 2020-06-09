@@ -21,28 +21,22 @@
  */
 package bluej.prefmgr;
 
-import java.awt.Font;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import bluej.Config;
+import bluej.editor.EditorManager;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.binding.StringExpression;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableIntegerValue;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.Config;
-import bluej.editor.EditorManager;
+
+import java.awt.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A class to manage the user editable preferences
@@ -51,11 +45,10 @@ import bluej.editor.EditorManager;
  * <p>Note that this is a singleton class. There can be only one
  * instance of PrefMgr at any time.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
 @OnThread(Tag.FXPlatform)
-public class PrefMgr
-{
+public class PrefMgr {
     // publicly accessible names for flags
     public static final String HIGHLIGHTING = "bluej.editor.syntaxHilighting";
     public static final String AUTO_INDENT = "bluej.editor.autoIndent";
@@ -67,7 +60,7 @@ public class PrefMgr
     public static final String SHOW_TEXT_EVAL = "bluej.startWithTextEval";
     public static final String SHOW_UNCHECKED = "bluej.compiler.showunchecked";
     public static final String SCOPE_HIGHLIGHTING_STRENGTH = "bluej.editor.scopeHilightingStrength";
-    public static final String NAVIVIEW_EXPANDED="bluej.naviviewExpanded.default";
+    public static final String NAVIVIEW_EXPANDED = "bluej.naviviewExpanded.default";
     public static final String ACCESSIBILITY_SUPPORT = "bluej.accessibility.support";
     public static final String NEWS_TESTING = "bluej.news.testing";
     public static final String START_WITH_SUDO = "bluej.startWithSudo";
@@ -80,7 +73,7 @@ public class PrefMgr
     // This is stored as 4,5,6 for small, standard, large in case we later want to add a tiny size.
     // (if we called it 0,1,2, tiny would be -1 which seems like a bad idea)
     public static final String PRINT_FONT_SIZE = "bluej.print.fontSize";
-    
+
     public static final int MIN_EDITOR_FONT_SIZE = 6;
     public static final int MAX_EDITOR_FONT_SIZE = 160;
     public static final int DEFAULT_STRIDE_FONT_SIZE = 11;
@@ -107,14 +100,16 @@ public class PrefMgr
     private static PrintSize printFontSize = PrintSize.STANDARD;
 
     // preference variables: (other than fonts)
-    
-    /** transparency of the scope highlighting */
+
+    /**
+     * transparency of the scope highlighting
+     */
     @OnThread(Tag.FXPlatform)
     private static final IntegerProperty highlightStrength = new SimpleIntegerProperty(0);
-    
+
     // last value of naviviewExpanded
-    private static boolean isNaviviewExpanded=true;
-    
+    private static boolean isNaviviewExpanded = true;
+
     // the current project directory
     @OnThread(Tag.Any)
     private static String projectDirectory;
@@ -122,10 +117,10 @@ public class PrefMgr
     // list of recently used projects
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private static final List<String> recentProjects;
-    
+
     // flags are all boolean preferences
     @OnThread(value = Tag.Any, requireSynchronized = true)
-    private static final HashMap<String,String> flags = new HashMap<String,String>();
+    private static final HashMap<String, String> flags = new HashMap<String, String>();
     // Flags have 0 or 1 properties.  Once requested for a flag, it
     // is shared between all uses of that property flag.
     @OnThread(Tag.FXPlatform)
@@ -144,66 +139,59 @@ public class PrefMgr
     /**
      * Private constructor to prevent instantiation
      */
-    private PrefMgr()
-    {
-        
+    private PrefMgr() {
+
     }
 
     @OnThread(Tag.Any)
-    public static File getProjectDirectory()
-    {
+    public static File getProjectDirectory() {
         File dir = new File(projectDirectory);
         if (dir.exists() && dir.isDirectory())
             return dir;
         else
             return new File(System.getProperty("user.home"));
     }
-    
+
     // ----- system interface to read or set prefences: -----
 
     @OnThread(Tag.Any)
-    public static void setProjectDirectory(String newDir)
-    {
+    public static void setProjectDirectory(String newDir) {
         projectDirectory = newDir;
         Config.putPropString("bluej.projectPath", newDir);
     }
 
     @OnThread(Tag.Any)
-    public static synchronized List<String> getRecentProjects()
-    {
+    public static synchronized List<String> getRecentProjects() {
         // Take copy to avoid race hazards:
         return new ArrayList<>(recentProjects);
     }
 
-    public static synchronized void addRecentProject(File projectDir)
-    {
+    public static synchronized void addRecentProject(File projectDir) {
         if (Config.isGreenfoot() && Config.isGreenfootStartupProject(projectDir))
             return; // Don't add startup project to recent projects
 
         String projectName = projectDir.getAbsolutePath();
 
         recentProjects.remove(projectName);
-        
-        if(recentProjects.size() == NUM_RECENT_PROJECTS)
-            recentProjects.remove(NUM_RECENT_PROJECTS-1);
-        
+
+        if (recentProjects.size() == NUM_RECENT_PROJECTS)
+            recentProjects.remove(NUM_RECENT_PROJECTS - 1);
+
         recentProjects.add(0, projectName);
-        
-        for(int i = 0; i < recentProjects.size(); i++) {
+
+        for (int i = 0; i < recentProjects.size(); i++) {
             Config.putPropString("bluej.recentProject" + i, recentProjects.get(i));
         }
     }
 
     @OnThread(Tag.Swing)
-    public static Font getStandoutMenuFont()
-    {
+    public static Font getStandoutMenuFont() {
         return italicMenuFont;
     }
 
     @OnThread(Tag.Swing)
-    public static Font getPopupMenuFont()
-    {
-        return popupMenuFont;   
+    public static Font getPopupMenuFont() {
+        return popupMenuFont;
     }
 
     /**
@@ -212,10 +200,9 @@ public class PrefMgr
      * constants in this class.
      */
     @OnThread(Tag.Any)
-    public static synchronized boolean getFlag(String flag)
-    {
+    public static synchronized boolean getFlag(String flag) {
         String value = flags.get(flag);
-        if(value == null){
+        if (value == null) {
             return false;
         }
         return value.equals("true");
@@ -225,8 +212,7 @@ public class PrefMgr
      * Provides a read-only observable view of a flag's value.
      */
     @OnThread(Tag.FXPlatform)
-    public static BooleanExpression flagProperty(String flagName)
-    {
+    public static BooleanExpression flagProperty(String flagName) {
         return flagProperties.computeIfAbsent(flagName, f -> new SimpleBooleanProperty(getFlag(f)));
     }
 
@@ -237,8 +223,7 @@ public class PrefMgr
      * @param enabled The new value of the flag
      */
     @OnThread(Tag.Any)
-    public static synchronized void setFlag(String flag, boolean enabled)
-    {
+    public static synchronized void setFlag(String flag, boolean enabled) {
         String value = String.valueOf(enabled);
         String systemDefault = Config.getDefaultPropString(flag, "");
 
@@ -256,13 +241,12 @@ public class PrefMgr
         });
     }
 
-    private static List<String> readRecentProjects()
-    {
+    private static List<String> readRecentProjects() {
         List<String> projects = new ArrayList<String>(NUM_RECENT_PROJECTS);
-        
-        for(int i = 0; i < NUM_RECENT_PROJECTS; i++) {
+
+        for (int i = 0; i < NUM_RECENT_PROJECTS; i++) {
             String projectName = Config.getPropString("bluej.recentProject" + i, "");
-            if(projectName.length() > 0)
+            if (projectName.length() > 0)
                 projects.add(projectName);
         }
         return projects;
@@ -271,53 +255,47 @@ public class PrefMgr
     /**
      * Set the editor font size preference to a particular point size
      *
-     * @param size  the size of the font
+     * @param size the size of the font
      */
-    public static void setEditorFontSize(int size)
-    {
+    public static void setEditorFontSize(int size) {
         if (size > 0) {
             initEditorFontSize(size);
             EditorManager.getEditorManager().refreshAll();
         }
     }
-    
+
     /**
      * Set up the editor font size, without informing various dependent components
      * of a size change.
      */
-    private static void initEditorFontSize(int size)
-    {
+    private static void initEditorFontSize(int size) {
         if (size > 0 && size != editorFontSize.get()) {
             editorFontSize.set(size);
 
             Config.putPropInteger(editorFontSizePropertyName, size);
 
             String font;
-            if(Config.isMacOS()) {
+            if (Config.isMacOS()) {
                 font = Config.getPropString(editorMacFontPropertyName, "Roboto Mono");
-            }
-            else {
+            } else {
                 font = Config.getPropString(editorFontPropertyName, "Roboto Mono");
             }
             editorStandardFont.set(font);
         }
     }
-    
+
     /**
      * Return the editor font size as an integer size
      * (use getStandardEditorFont() if access to the actual font is required)
      */
     @OnThread(Tag.FXPlatform)
-    public static IntegerProperty getEditorFontSize()
-    {
+    public static IntegerProperty getEditorFontSize() {
         return editorFontSize;
     }
 
     @OnThread(Tag.FXPlatform)
-    public static StringExpression getEditorFontCSS(boolean includeFamily)
-    {
-        if (editorFontCSS == null)
-        {
+    public static StringExpression getEditorFontCSS(boolean includeFamily) {
+        if (editorFontCSS == null) {
             editorFontSizeOnlyCSS = Bindings.concat(
                     "-fx-font-size: ", editorFontSize, "pt;");
             editorFontCSS = Bindings.concat(
@@ -333,71 +311,66 @@ public class PrefMgr
      * Note this can change later if the user changes style, so only
      * use this for an instant query (e.g. for printing)
      */
-    public static String getEditorFontFamilyCSS()
-    {
+    public static String getEditorFontFamilyCSS() {
         return "-fx-font-family: \"" + editorStandardFont.get() + "\", " + editorFallbackFont.get() + ";";
     }
 
     @OnThread(Tag.FXPlatform)
-    public static ObservableIntegerValue getScopeHighlightStrength()
-    {
+    public static ObservableIntegerValue getScopeHighlightStrength() {
         return highlightStrength;
     }
-    
+
     /**
      * Sets the highlight strength in the configs
+     *
      * @param strength representing light<->dark
      */
-    public static void setScopeHighlightStrength(int strength)
-    {
+    public static void setScopeHighlightStrength(int strength) {
         highlightStrength.set(strength);
         Config.putPropInteger(SCOPE_HIGHLIGHTING_STRENGTH, strength);
     }
 
     /**
      * Returns the value of whether the naviview is expanded/collapsed
+     *
      * @return true if expanded; false if not
      */
-    public static boolean getNaviviewExpanded()
-    {   
-        return isNaviviewExpanded;            
+    public static boolean getNaviviewExpanded() {
+        return isNaviviewExpanded;
     }
-    
+
     /**
-     * Sets the value of the naviview to expanded/collapsed 
+     * Sets the value of the naviview to expanded/collapsed
      * to the local variable and to the configs
+     *
      * @param expanded true if expanded; false if not
      */
-    public static void setNaviviewExpanded(boolean expanded)
-    {
-        isNaviviewExpanded=expanded;
+    public static void setNaviviewExpanded(boolean expanded) {
+        isNaviviewExpanded = expanded;
         Config.putPropString(NAVIVIEW_EXPANDED, String.valueOf(expanded));
     }
-    
+
     @OnThread(Tag.FX)
-    public static IntegerProperty strideFontSizeProperty()
-    {
-        if (strideFontSize == null)
-        {
+    public static IntegerProperty strideFontSizeProperty() {
+        if (strideFontSize == null) {
             String fontSizePropName = "bluej.stride.editor.fontSize";
-            int sizeFromConfig = Config.getPropInteger(fontSizePropName,DEFAULT_STRIDE_FONT_SIZE);
+            int sizeFromConfig = Config.getPropInteger(fontSizePropName, DEFAULT_STRIDE_FONT_SIZE);
             int clampedSize = Math.max(MIN_EDITOR_FONT_SIZE, Math.min(MAX_EDITOR_FONT_SIZE, sizeFromConfig));
             strideFontSize = new SimpleIntegerProperty(clampedSize);
-            
+
             strideFontSize.addListener((a, b, newVal) -> {
                 Config.putPropInteger(fontSizePropName, newVal.intValue());
             });
         }
-        
+
         return strideFontSize;
     }
-    
+
     /**
      * Get the property holding the player name, used for Greenfoot (set to determine what UserInfo
      * "current user" name will return).
      */
-    public static StringProperty getPlayerName()
-    {
+    public static StringProperty getPlayerName() {
         return playerName;
     }
 
@@ -413,7 +386,7 @@ public class PrefMgr
         //bluej menu font
         int menuFontSize = Config.getPropInteger("bluej.menu.fontsize", 12);
         Font menuFont = Config.getFont("bluej.menu.font", "SansSerif", menuFontSize);
-        
+
         // popup menus are not permitted to be bold (MIK style guide) at present
         // make popup menus same font as drop down menus
         italicMenuFont = menuFont.deriveFont(Font.ITALIC);
@@ -421,10 +394,10 @@ public class PrefMgr
 
         // preferences other than fonts:
         highlightStrength.set(Config.getPropInteger(SCOPE_HIGHLIGHTING_STRENGTH, 20));
-        
+
         projectDirectory = Config.getPropString("bluej.projectPath", System.getProperty("user.home"));
         recentProjects = readRecentProjects();
-        
+
         flags.put(HIGHLIGHTING, Config.getPropString(HIGHLIGHTING, "true"));
         flags.put(AUTO_INDENT, Config.getPropString(AUTO_INDENT, "false"));
         flags.put(LINENUMBERS, Config.getPropString(LINENUMBERS, "false"));
@@ -446,8 +419,7 @@ public class PrefMgr
         flags.put(PACKAGE_PRINT_SOURCE, Config.getPropString(PACKAGE_PRINT_SOURCE, "true"));
 
         // See comments on PRINT_FONT_SIZE:
-        switch (Config.getPropInteger(PRINT_FONT_SIZE, 4))
-        {
+        switch (Config.getPropInteger(PRINT_FONT_SIZE, 4)) {
             case 3:
                 printFontSize = PrintSize.SMALL;
                 break;
@@ -460,8 +432,7 @@ public class PrefMgr
                 break;
         }
 
-        if (Config.isGreenfoot())
-        {
+        if (Config.isGreenfoot()) {
             playerName = new SimpleStringProperty(Config.getPropString("greenfoot.player.name", "Player1"));
             JavaFXUtil.addChangeListener(playerName,
                     name -> Config.putPropString("greenfoot.player.name", name));
@@ -471,20 +442,17 @@ public class PrefMgr
     /**
      * Gets the saved preference for print font size.
      */
-    public static PrintSize getPrintFontSize()
-    {
+    public static PrintSize getPrintFontSize() {
         return printFontSize;
     }
 
     /**
      * Saves a new value for the preferred print font size
      */
-    public static void setPrintFontSize(PrintSize size)
-    {
+    public static void setPrintFontSize(PrintSize size) {
         printFontSize = size;
         // See comments on PRINT_FONT_SIZE:
-        switch (size)
-        {
+        switch (size) {
             case SMALL:
                 Config.putPropInteger(PRINT_FONT_SIZE, 3);
                 break;
@@ -497,16 +465,14 @@ public class PrefMgr
         }
     }
 
-    public enum PrintSize
-    {
+    public enum PrintSize {
         SMALL, STANDARD, LARGE;
 
 
         // The label to use when showing in the interface:
         @Override
         @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-        public String toString()
-        {
+        public String toString() {
             return Config.getString("editor.printDialog.fontSize." + this.name().toLowerCase());
         }
     }

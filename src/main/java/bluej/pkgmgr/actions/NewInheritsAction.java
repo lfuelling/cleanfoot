@@ -28,20 +28,17 @@ import bluej.pkgmgr.PkgMgrFrame;
  * "New 'inherits' relationship" command. User can select two classes to
  * create an inheritance relationship between them. The relationship is also
  * inserted into the code ("class A extends B"...).
- * 
+ *
  * @author Davin McCall
  * @version $Id: NewInheritsAction.java 6215 2009-03-30 13:28:25Z polle $
  */
-final public class NewInheritsAction extends PkgMgrAction
-{
-    public NewInheritsAction(PkgMgrFrame pmf)
-    {
+final public class NewInheritsAction extends PkgMgrAction {
+    public NewInheritsAction(PkgMgrFrame pmf) {
         super(pmf, "menu.edit.newInherits");
         shortDescription = Config.getString("tooltip.newExtends");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.clearStatus();
         pmf.doNewInherits();
     }

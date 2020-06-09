@@ -21,13 +21,13 @@
  */
 package bluej.debugmgr;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-/** 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
  * History objects maintain a history of text strings. This serves as a
  * superclass for various histories (see, for example, ClassHistory,
  * FreeCallHistory).
@@ -35,71 +35,65 @@ import threadchecker.Tag;
  * @author Michael Kolling
  */
 @OnThread(Tag.Any)
-public class History
-{
+public class History {
     protected List<String> history = null;
     protected int maxLength;
     private final boolean blankAtStart;
-    
+
     /**
      * Create a empty history limited to a given maximum
      * number of entries.
      *
-     * @param maxLength The maximum length of the hostory list. The
-     *                  list truncates its tail when growing longer.
+     * @param maxLength    The maximum length of the hostory list. The
+     *                     list truncates its tail when growing longer.
      * @param blankDefault If true, maintains an empty string as the
-     *                  first (most recent) entry.
+     *                     first (most recent) entry.
      */
-    protected History(int maxLength, boolean blankDefault)
-    {
+    protected History(int maxLength, boolean blankDefault) {
         this.maxLength = maxLength;
-        history = new ArrayList<String>(maxLength+1);
+        history = new ArrayList<String>(maxLength + 1);
         history.add("");
         blankAtStart = blankDefault;
     }
 
     /**
-     * Put an entry into the history list. This method is only for 
-     * initialisation through subclasses. It does not check for 
+     * Put an entry into the history list. This method is only for
+     * initialisation through subclasses. It does not check for
      * duplicates or maxlength.
      */
-    protected void put(String value)
-    {
+    protected void put(String value) {
         history.add(value);
     }
 
     /**
      * Return the history of used classes.
      */
-    public List<String> getHistory()
-    {
+    public List<String> getHistory() {
         return history;
     }
 
     /**
      * Add a string to the history of used strings.
-     * 
-     * @param newString  the new string to add
+     *
+     * @param newString the new string to add
      */
-    public void add(String newString)
-    {
-        if(newString != null && (newString.length() != 0)) {
+    public void add(String newString) {
+        if (newString != null && (newString.length() != 0)) {
 
             // remove at old position (if present) and add at front
             history.remove(newString);
 
-            if(blankAtStart) {
+            if (blankAtStart) {
                 history.add(1, newString);
-            }
-            else {
+            } else {
                 // remove empty entry at front
-                if(history.get(0).length() == 0)
+                if (history.get(0).length() == 0)
                     history.remove(0);
                 history.add(0, newString);
             }
 
             // don't let it grow too big
-            if(history.size() > maxLength)
+            if (history.size() > maxLength)
                 history.remove(maxLength);
         }
     }

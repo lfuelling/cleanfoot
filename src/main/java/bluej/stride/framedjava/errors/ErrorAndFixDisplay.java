@@ -21,11 +21,9 @@
  */
 package bluej.stride.framedjava.errors;
 
-import bluej.editor.EditorWatcher;
 import bluej.editor.stride.CodeOverlayPane;
 import bluej.editor.stride.CodeOverlayPane.WidthLimit;
 import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.scene.control.Label;

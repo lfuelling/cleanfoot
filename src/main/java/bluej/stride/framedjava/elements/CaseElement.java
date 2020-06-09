@@ -21,33 +21,26 @@
  */
 package bluej.stride.framedjava.elements;
 
+import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.frames.CaseFrame;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.frames.CaseFrame;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-
-public class CaseElement extends ContainerCodeElement implements JavaSingleLineDebugHandler
-{
+public class CaseElement extends ContainerCodeElement implements JavaSingleLineDebugHandler {
     public static final String ELEMENT = "case";
     private final FilledExpressionSlotFragment expression;
     private final List<CodeElement> contents;
     private CaseFrame frame;
-    
-    public CaseElement(CaseFrame frame, FilledExpressionSlotFragment condition, List<CodeElement> contents, boolean enabled)
-    {
+
+    public CaseElement(CaseFrame frame, FilledExpressionSlotFragment condition, List<CodeElement> contents, boolean enabled) {
         this.frame = frame;
         this.expression = condition;
         this.contents = contents;
@@ -56,20 +49,17 @@ public class CaseElement extends ContainerCodeElement implements JavaSingleLineD
     }
 
     @Override
-    public List<CodeElement> childrenUpTo(CodeElement c)
-    {
+    public List<CodeElement> childrenUpTo(CodeElement c) {
         return contents.subList(0, contents.indexOf(c));
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
-        return JavaSource.createCompoundStatement(frame, this, this, null, Arrays.asList(f(frame, "case "),  expression, f(frame, " :")), CodeElement.toJavaCodes(contents));
+    public JavaSource toJavaSource() {
+        return JavaSource.createCompoundStatement(frame, this, this, null, Arrays.asList(f(frame, "case "), expression, f(frame, " :")), CodeElement.toJavaCodes(contents));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement caseEl = new LocatableElement(this, ELEMENT);
         caseEl.addAttributeStructured("expression", expression);
         addEnableAttribute(caseEl);
@@ -78,9 +68,8 @@ public class CaseElement extends ContainerCodeElement implements JavaSingleLineD
         }
         return caseEl;
     }
-    
-    public CaseElement(Element el)
-    {
+
+    public CaseElement(Element el) {
         expression = new FilledExpressionSlotFragment(el.getAttributeValue("expression"), el.getAttributeValue("expression-java"));
         contents = new ArrayList<CodeElement>();
         for (int i = 0; i < el.getChildElements().size(); i++) {
@@ -93,8 +82,7 @@ public class CaseElement extends ContainerCodeElement implements JavaSingleLineD
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new CaseFrame(editor, expression, isEnable());
         for (CodeElement c : contents) {
             frame.getCanvas().insertBlockAfter(c.createFrame(editor), null);
@@ -103,26 +91,22 @@ public class CaseElement extends ContainerCodeElement implements JavaSingleLineD
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
     }
 
     @Override
-    public void show(ShowReason reason)
-    {
+    public void show(ShowReason reason) {
         frame.show(reason);
     }
 
     @Override
-    public Stream<CodeElement> streamContained()
-    {
+    public Stream<CodeElement> streamContained() {
         return streamContained(contents);
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.of(expression);
     }
 }

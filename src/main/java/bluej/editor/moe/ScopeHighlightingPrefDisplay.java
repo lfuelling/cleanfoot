@@ -21,6 +21,9 @@
  */
 package bluej.editor.moe;
 
+import bluej.Config;
+import bluej.prefmgr.PrefMgr;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.ObjectExpression;
@@ -28,29 +31,23 @@ import javafx.scene.Node;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.util.StringConverter;
-
-import bluej.Config;
-import bluej.prefmgr.PrefMgr;
-import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A manager for the components used to manipulate the scope highlighting strength
  * preference.
- * 
+ *
  * @author Marion Zalk
  */
 @OnThread(Tag.FXPlatform)
-public class ScopeHighlightingPrefDisplay
-{
-    public static final int MIN=0;
-    public static final int MAX=20;
+public class ScopeHighlightingPrefDisplay {
+    public static final int MIN = 0;
+    public static final int MAX = 20;
     Slider slider;
     ScopeColorsBorderPane colorPanel;
 
@@ -58,22 +55,19 @@ public class ScopeHighlightingPrefDisplay
      * Constructor that sets up the look and feel for the scope highlighting color slider
      * and the panel displaying the affects of changing the value of the slider
      */
-    public ScopeHighlightingPrefDisplay()
-    {
+    public ScopeHighlightingPrefDisplay() {
         //bg = MoeSyntaxDocument.getBackgroundColor();
         //initialises the slider functionality
         {
             //set the transparency value from the prefMgr
-            slider=new Slider(MIN, MAX, PrefMgr.getScopeHighlightStrength().get());
+            slider = new Slider(MIN, MAX, PrefMgr.getScopeHighlightStrength().get());
             //labels
             slider.setMajorTickUnit(MAX - MIN);
             slider.setShowTickLabels(true);
             slider.setShowTickMarks(true);
-            slider.setLabelFormatter(new StringConverter<Double>()
-            {
+            slider.setLabelFormatter(new StringConverter<Double>() {
                 @Override
-                public String toString(Double d)
-                {
+                public String toString(Double d) {
                     if (d == MIN)
                         return Config.getString("prefmgr.edit.highlightLighter");
                     else if (d == MAX)
@@ -83,8 +77,7 @@ public class ScopeHighlightingPrefDisplay
                 }
 
                 @Override
-                public Double fromString(String string)
-                {
+                public Double fromString(String string) {
                     return null;
                 }
             });
@@ -99,17 +92,16 @@ public class ScopeHighlightingPrefDisplay
             JavaFXUtil.addStyleClass(colorPanel, "prefmgr-scope-colour-container");
             VBox inner = JavaFXUtil.withStyleClass(new VBox(), "prefmgr-scope-colour-rectangles");
             inner.getChildren().addAll(
-                makeRectangle(colorPanel.scopeClassColorProperty(), colorPanel.scopeClassOuterColorProperty()),
-                makeRectangle(colorPanel.scopeMethodColorProperty(), colorPanel.scopeMethodOuterColorProperty()),
-                makeRectangle(colorPanel.scopeIterationColorProperty(), colorPanel.scopeIterationOuterColorProperty()),
-                makeRectangle(colorPanel.scopeSelectionColorProperty(), colorPanel.scopeSelectionOuterColorProperty())
+                    makeRectangle(colorPanel.scopeClassColorProperty(), colorPanel.scopeClassOuterColorProperty()),
+                    makeRectangle(colorPanel.scopeMethodColorProperty(), colorPanel.scopeMethodOuterColorProperty()),
+                    makeRectangle(colorPanel.scopeIterationColorProperty(), colorPanel.scopeIterationOuterColorProperty()),
+                    makeRectangle(colorPanel.scopeSelectionColorProperty(), colorPanel.scopeSelectionOuterColorProperty())
             );
             colorPanel.setCenter(inner);
         }
     }
 
-    private Rectangle makeRectangle(ObjectExpression<Color> body, ObjectExpression<Color> border)
-    {
+    private Rectangle makeRectangle(ObjectExpression<Color> body, ObjectExpression<Color> border) {
         Rectangle r = new Rectangle(100, 20);
         IntegerBinding sliderValue = Bindings.createIntegerBinding(this::getStrengthValue, slider.valueProperty());
         r.fillProperty().bind(colorPanel.getReducedColor(body, sliderValue));
@@ -120,24 +112,21 @@ public class ScopeHighlightingPrefDisplay
     /**
      * Returns the highlighter slider
      */
-    protected Node getHighlightStrengthSlider()
-    {  
+    protected Node getHighlightStrengthSlider() {
         return slider;
     }
 
     /**
      * Returns the color palette
      */
-    protected Node getColourPalette()
-    {
+    protected Node getColourPalette() {
         return colorPanel;
     }
 
     /**
      * The value of the slider
      */
-    protected int getStrengthValue()
-    {
-        return (int)Math.round(slider.getValue());   
+    protected int getStrengthValue() {
+        return (int) Math.round(slider.getValue());
     }
 }

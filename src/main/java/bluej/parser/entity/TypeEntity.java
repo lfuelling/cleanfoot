@@ -20,86 +20,73 @@
  */
 package bluej.parser.entity;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import bluej.debugger.gentype.FieldReflective;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeParameter;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.Reflective;
+import bluej.debugger.gentype.*;
 import bluej.utility.JavaReflective;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * An entity which essentially wraps a JavaType.
- * 
+ *
  * @author Davin McCall
  */
-public class TypeEntity extends PackageOrClass
-{
+public class TypeEntity extends PackageOrClass {
     private final JavaType thisType;
-    
-    public TypeEntity(JavaType type)
-    {
+
+    public TypeEntity(JavaType type) {
         thisType = type;
     }
-    
-    public TypeEntity(Reflective ref)
-    {
+
+    public TypeEntity(Reflective ref) {
         //thisRef = ref;
         thisType = new GenTypeClass(ref);
     }
-    
-    public TypeEntity(Class<?> c)
-    {
+
+    public TypeEntity(Class<?> c) {
         Reflective thisRef = new JavaReflective(c);
         thisType = new GenTypeClass(thisRef);
     }
-    
-    TypeEntity(Reflective r, GenTypeClass outer)
-    {
+
+    TypeEntity(Reflective r, GenTypeClass outer) {
         // thisRef = r;
         thisType = new GenTypeClass(r, Collections.emptyList(), outer);
     }
 
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return thisType;
     }
-    
-    public GenTypeClass getClassType()
-    {
+
+    public GenTypeClass getClassType() {
         return thisType.asClass();
     }
 
     @OnThread(Tag.FXPlatform)
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessor)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessor) {
         GenTypeClass thisClass = thisType.asClass();
         if (thisClass == null) {
             return null;
-        }
-        else if (thisClass.getArrayComponent() != null) {
+        } else if (thisClass.getArrayComponent() != null) {
             // Arrays have no static fields/subtypes
             return null;
         }
-        
+
         // subentity of a class could be a member type or field
         // Is it a field?
-        
+
         LinkedList<Reflective> stypes = new LinkedList<Reflective>();
         Reflective ctypeRef = thisClass.getReflective();
         stypes.add(ctypeRef);
-        
-        while (! stypes.isEmpty()) {
+
+        while (!stypes.isEmpty()) {
             ctypeRef = stypes.poll();
-            Map<String,FieldReflective> m = ctypeRef.getDeclaredFields();
+            Map<String, FieldReflective> m = ctypeRef.getDeclaredFields();
             FieldReflective field = m.get(name);
             if (field != null) {
                 boolean accessAllowed = JavaUtils.checkMemberAccess(ctypeRef,
@@ -116,23 +103,22 @@ public class TypeEntity extends PackageOrClass
         // Is it a member type?
         return getPackageOrClassMember(name);
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public TypeEntity getPackageOrClassMember(String name)
-    {
+    public TypeEntity getPackageOrClassMember(String name) {
         GenTypeClass thisClass = thisType.asClass();
         if (thisClass == null || thisClass.getArrayComponent() != null) {
             return null;
         }
-        
+
         // We need to check our own class, but also the superclasses, for
         // the requested member.
 
         LinkedList<Reflective> stypes = new LinkedList<Reflective>();
         stypes.add(thisClass.getReflective());
-        
-        while (! stypes.isEmpty()) {
+
+        while (!stypes.isEmpty()) {
             Reflective thisRef = stypes.poll();
             Reflective member = thisRef.getInnerClass(name);
             if (member != null) {
@@ -140,25 +126,23 @@ public class TypeEntity extends PackageOrClass
                 //boolean accessAllowed = JavaUtils.checkMemberAccess(thisRef,
                 //        thisClass, accessor, member.getModifiers(), true);
                 GenTypeClass inner = new GenTypeClass(member,
-                    Collections.emptyList(), thisClass);
+                        Collections.emptyList(), thisClass);
                 return new TypeEntity(inner);
             }
             stypes.addAll(thisRef.getSuperTypesR());
         }
-        
+
         return null;
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return getType().toString();
     }
-    
+
     /*
      * @see bluej.parser.entity.ClassEntity#setTypeParams(java.util.List)
      */
-    public TypeEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public TypeEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         GenTypeClass classType = thisType.asClass();
         if (classType == null) {
             return null;
@@ -172,13 +156,12 @@ public class TypeEntity extends PackageOrClass
             }
             ttparams.add(tparamType);
         }
-        
+
         return new TypeEntity(new GenTypeClass(classType.getReflective(), ttparams, outer));
     }
-    
+
     @Override
-    public TypeEntity resolveAsType()
-    {
+    public TypeEntity resolveAsType() {
         return this;
     }
 }

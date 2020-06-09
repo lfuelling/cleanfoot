@@ -21,31 +21,29 @@
  */
 package bluej.stride.framedjava.convert;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import bluej.parser.lexer.JavaLexer;
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.ast.OptionalExpressionSlotFragment;
-import bluej.stride.framedjava.ast.Parser;
 import bluej.stride.framedjava.ast.SuperThisParamsExpressionFragment;
 import bluej.stride.framedjava.convert.ConversionWarning.UnsupportedFeature;
 import bluej.stride.framedjava.elements.AssignElement;
 import bluej.stride.framedjava.elements.CallElement;
 import bluej.stride.framedjava.elements.CodeElement;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 /**
  * An expression.  Because expressions have different text in Stride versus Java
  * (because of instanceof), we must keep track of them seperately.
  */
-class Expression
-{
+class Expression {
     private final String stride;
     private final String java;
     /**
@@ -61,8 +59,7 @@ class Expression
     /**
      * @param src A java expression
      */
-    Expression(String src, List<Integer> incDec, Consumer<ConversionWarning> addWarning)
-    {
+    Expression(String src, List<Integer> incDec, Consumer<ConversionWarning> addWarning) {
         this.stride = uniformSpacing(src, true);
         this.java = uniformSpacing(src, false);
         this.incDec = new ArrayList<>(incDec);
@@ -71,10 +68,9 @@ class Expression
 
     /**
      * @param expressions A list of expressions to join
-     * @param join The string to put between each pair of adjacent expressions
+     * @param join        The string to put between each pair of adjacent expressions
      */
-    Expression(List<Expression> expressions, String join, Consumer<ConversionWarning> addWarning)
-    {
+    Expression(List<Expression> expressions, String join, Consumer<ConversionWarning> addWarning) {
         this.stride = expressions.stream().map(e -> e.stride).collect(Collectors.joining(join));
         this.java = expressions.stream().map(e -> e.java).collect(Collectors.joining(join));
         this.incDec = new ArrayList<>();
@@ -84,19 +80,17 @@ class Expression
 
     /**
      * Package-visible for testing
-     * 
-     * @param src Java source code
+     *
+     * @param src               Java source code
      * @param replaceInstanceof True to replace instanceof with <:
      * @return A version of src with a space between each consecutive token
      */
-    static String uniformSpacing(String src, boolean replaceInstanceof)
-    {
+    static String uniformSpacing(String src, boolean replaceInstanceof) {
         // It is a bit inefficient to re-lex the string, but
         // it's easiest this way and conversion is not particularly time sensitive:
         JavaLexer lexer = new JavaLexer(new StringReader(src));
         StringBuilder r = new StringBuilder();
-        while (true)
-        {
+        while (true) {
             LocatableToken token = lexer.nextToken();
             if (token.getType() == JavaTokenTypes.EOF)
                 return r.toString();
@@ -109,76 +103,63 @@ class Expression
         }
     }
 
-    FilledExpressionSlotFragment toFilled()
-    {
+    FilledExpressionSlotFragment toFilled() {
         warnIncDec();
         return new FilledExpressionSlotFragment(stride, java);
     }
-    
-    OptionalExpressionSlotFragment toOptional()
-    {
+
+    OptionalExpressionSlotFragment toOptional() {
         warnIncDec();
         return new OptionalExpressionSlotFragment(stride, java);
     }
 
-    SuperThisParamsExpressionFragment toSuperThis()
-    {
+    SuperThisParamsExpressionFragment toSuperThis() {
         warnIncDec();
         return new SuperThisParamsExpressionFragment(stride, java);
     }
 
-    public CodeElement toStatement()
-    {
+    public CodeElement toStatement() {
         // We look for increment and decrement at the beginning/end
         // Then if there are any other inc/dec, we warn that they are unsupported.
         boolean startInc = java.startsWith("++ ");
         boolean startDec = java.startsWith("-- ");
         boolean endInc = java.endsWith(" ++");
         boolean endDec = java.endsWith(" --");
-        if (startInc || startDec)
-        {
-            incDec.remove((Integer)(startInc ? JavaTokenTypes.INC : JavaTokenTypes.DEC));
+        if (startInc || startDec) {
+            incDec.remove((Integer) (startInc ? JavaTokenTypes.INC : JavaTokenTypes.DEC));
             warnIncDec();
             return new AssignElement(null, new FilledExpressionSlotFragment(stride.substring(3), java.substring(3)), new FilledExpressionSlotFragment(stride.substring(3) + " " + stride.substring(0, 1) + " 1", java.substring(3) + " " + java.substring(0, 1) + " 1"), true);
-        }
-        else if (endInc || endDec)
-        {
-            incDec.remove((Integer)(endInc ? JavaTokenTypes.INC : JavaTokenTypes.DEC));
+        } else if (endInc || endDec) {
+            incDec.remove((Integer) (endInc ? JavaTokenTypes.INC : JavaTokenTypes.DEC));
             warnIncDec();
             String choppedStride = stride.substring(0, stride.length() - 3);
             String choppedJava = java.substring(0, java.length() - 3);
             return new AssignElement(null, new FilledExpressionSlotFragment(choppedStride, choppedJava), new FilledExpressionSlotFragment(choppedStride + " " + stride.substring(stride.length() - 1) + " 1", choppedJava + " " + java.substring(java.length() - 1) + " 1"), true);
-        }
-        else
-        {
+        } else {
             warnIncDec();
             return new CallElement(null, new CallExpressionSlotFragment(stride, java), true);
         }
     }
 
-    private void warnIncDec()
-    {
+    private void warnIncDec() {
         if (!incDec.isEmpty())
             addWarning.accept(new UnsupportedFeature("++/-- in expression"));
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         // If we need to display to the user, display the original Java:
         return java;
     }
-    
-    public String getJava()
-    {
+
+    public String getJava() {
         return java;
     }
 
     /**
      * Is the expression an integer literal?  (Long literal will give false)
      */
-    public boolean isIntegerLiteral()
-    {
+    public boolean isIntegerLiteral() {
         JavaLexer lexer = new JavaLexer(new StringReader(java));
         if (lexer.nextToken().getType() != JavaTokenTypes.NUM_INT)
             return false;
@@ -189,8 +170,7 @@ class Expression
      * Given varName, is the expression of the exact form "varName < integer_literal"
      * or "varName <= integer_literal" ?
      */
-    public boolean lessThanIntegerLiteral(String varName)
-    {
+    public boolean lessThanIntegerLiteral(String varName) {
         JavaLexer lexer = new JavaLexer(new StringReader(java));
         LocatableToken token = lexer.nextToken();
         if (token.getType() != JavaTokenTypes.IDENT || !token.getText().equals(varName))
@@ -207,8 +187,7 @@ class Expression
      * Assuming lessThanIntegerLiteral has already returned true,
      * what is the inclusive upper bound on the condition?
      */
-    public String getUpperBound()
-    {
+    public String getUpperBound() {
         JavaLexer lexer = new JavaLexer(new StringReader(java));
         LocatableToken token = lexer.nextToken();
         if (token.getType() != JavaTokenTypes.IDENT)
@@ -220,11 +199,10 @@ class Expression
         if (token.getType() != JavaTokenTypes.NUM_INT)
             return "";
         // If it was < 10, we have to subtract one to get inclusive bound of 9:
-        return Integer.toString(Integer.decode(token.getText()) + (comparisonToken.getType() == JavaTokenTypes.LT ? -1 : 0)); 
+        return Integer.toString(Integer.decode(token.getText()) + (comparisonToken.getType() == JavaTokenTypes.LT ? -1 : 0));
     }
-    
-    public boolean isIncrementByOne(String varName)
-    {
+
+    public boolean isIncrementByOne(String varName) {
         // Four different possibilities:
         // varName++
         // ++varName
@@ -233,31 +211,23 @@ class Expression
         JavaLexer lexer = new JavaLexer(new StringReader(java));
         LocatableToken token = lexer.nextToken();
         // First token, can be varName, or ++
-        if (token.getType() == JavaTokenTypes.INC)
-        {
+        if (token.getType() == JavaTokenTypes.INC) {
             token = lexer.nextToken();
             if (token.getType() != JavaTokenTypes.IDENT || !token.getText().equals(varName))
                 return false;
             // Fall through to EOF check
-        }
-        else if (token.getType() == JavaTokenTypes.IDENT && token.getText().equals(varName))
-        {
+        } else if (token.getType() == JavaTokenTypes.IDENT && token.getText().equals(varName)) {
             // Was varName
             token = lexer.nextToken();
-            if (token.getType() == JavaTokenTypes.INC)
-            {
+            if (token.getType() == JavaTokenTypes.INC) {
                 // Increment; fall through to EOF check
-            }
-            else if (token.getType() == JavaTokenTypes.PLUS_ASSIGN)
-            {
+            } else if (token.getType() == JavaTokenTypes.PLUS_ASSIGN) {
                 // +=.  Needs to be 1 on RHS:
                 token = lexer.nextToken();
                 if (token.getType() != JavaTokenTypes.NUM_INT || !token.getText().equals("1"))
                     return false;
                 // Fall through to EOF check
-            }
-            else if (token.getType() == JavaTokenTypes.ASSIGN)
-            {
+            } else if (token.getType() == JavaTokenTypes.ASSIGN) {
                 // =.  Look for varName + 1 on RHS:
                 // (We could look for 1 + varName, etc, but we don't bother:
                 token = lexer.nextToken();
@@ -270,12 +240,10 @@ class Expression
                 if (token.getType() != JavaTokenTypes.NUM_INT || !token.getText().equals("1"))
                     return false;
                 // Fall through to EOF check
-            }
-            else
+            } else
                 return false;
-                    
-        }
-        else
+
+        } else
             return false;
 
         return lexer.nextToken().getType() == JavaTokenTypes.EOF;

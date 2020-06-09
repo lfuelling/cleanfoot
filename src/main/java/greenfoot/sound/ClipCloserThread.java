@@ -21,44 +21,39 @@
  */
 package greenfoot.sound;
 
-import java.util.LinkedList;
-
 import javax.sound.sampled.Clip;
+import java.util.LinkedList;
 
 /**
  * On OpenJDK/IcedTea (pulseaudio, 2012-03-26) it seems that clips take a long time to close
  * after they have finished playing. To prevent this from blocking us, we have a dedicated thread
  * (this class) to close old clips.
- * 
+ *
  * @author Davin McCall
  */
-public class ClipCloserThread implements Runnable
-{
+public class ClipCloserThread implements Runnable {
     private final LinkedList<Clip> clips = new LinkedList<Clip>();
-    
+
     private Thread thread;
-    
-    public ClipCloserThread()
-    {
+
+    public ClipCloserThread() {
     }
-    
-    public void addClip(Clip clip)
-    {
+
+    public void addClip(Clip clip) {
         synchronized (clips) {
             clips.add(clip);
             clips.notify();
-            
-            if (thread == null || ! thread.isAlive()) {
+
+            if (thread == null || !thread.isAlive()) {
                 thread = new Thread(this);
                 thread.setDaemon(true);
                 thread.start();
             }
         }
     }
-    
+
     @Override
-    public void run()
-    {
+    public void run() {
         try {
             while (true) {
                 Clip clip;
@@ -68,10 +63,10 @@ public class ClipCloserThread implements Runnable
                     }
                     clip = clips.removeFirst();
                 }
-                
+
                 clip.close();
             }
+        } catch (InterruptedException ie) {
         }
-        catch (InterruptedException ie) {}
     }
 }

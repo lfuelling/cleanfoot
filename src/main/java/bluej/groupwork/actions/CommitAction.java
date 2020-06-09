@@ -21,121 +21,105 @@
  */
 package bluej.groupwork.actions;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-
 import bluej.Config;
-import bluej.groupwork.StatusHandle;
-import bluej.groupwork.TeamStatusInfo;
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.*;
 import bluej.groupwork.ui.CommitAndPushInterface;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.FXWorker;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * An action to do an actual commit.
- * 
+ *
  * <p>This action should not be enabled until the following methods have
  * been called:
- * 
+ *
  * <ul>
  * <li>setNewFiles()
  * <li>setDeletedFiles()
  * <li>setFiles()
  * <li>setStatusHandle()
  * </ul>
- * 
+ *
  * @author Kasper
  */
 @OnThread(Tag.FXPlatform)
-public class CommitAction extends TeamAction
-{
+public class CommitAction extends TeamAction {
     private Set<File> newFiles; // which files are new files
     private Set<File> deletedFiles; // which files are to be removed
     private Set<File> files; // files to commit (includes both of above)
     private final CommitAndPushInterface commitCommentsFrame;
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private StatusHandle statusHandle;
-    
+
     private CommitWorker worker;
-    
-    public CommitAction(CommitAndPushInterface frame)
-    {
+
+    public CommitAction(CommitAndPushInterface frame) {
         super(Config.getString("team.commitButton"), false);
         commitCommentsFrame = frame;
     }
-    
+
     /**
      * Set the files which are new, that is, which aren't presently under
      * version management and which need to be added. If the version management
      * system versions directories, the set must be ordered and new directories
      * must precede any files they contain.
      */
-    public void setNewFiles(Set<File> newFiles)
-    {
+    public void setNewFiles(Set<File> newFiles) {
         this.newFiles = newFiles;
     }
-    
+
     /**
      * Set the files which have been deleted locally, and the deletion
      * needs to be propagated to the repository.
      */
-    public void setDeletedFiles(Set<File> deletedFiles)
-    {
+    public void setDeletedFiles(Set<File> deletedFiles) {
         this.deletedFiles = deletedFiles;
     }
-    
+
     /**
      * Set all files which are to be committed. This should include both
      * the new files and the deleted files, as well as any other files
      * which have been locally modified and need to be committed.
      */
-    public void setFiles(Set<File> files)
-    {
+    public void setFiles(Set<File> files) {
         this.files = files;
     }
-    
+
     /**
      * Set the status handle to use in order to perform the commit operation.
      */
     @OnThread(Tag.Worker)
-    public synchronized void setStatusHandle(StatusHandle statusHandle)
-    {
+    public synchronized void setStatusHandle(StatusHandle statusHandle) {
         this.statusHandle = statusHandle;
     }
-    
+
     @Override
-    protected void actionPerformed(Project project)
-    {
+    protected void actionPerformed(Project project) {
         commitCommentsFrame.startProgress();
-        if (project.getTeamSettingsController().isDVCS())
-        {
+        if (project.getTeamSettingsController().isDVCS()) {
             // if DVCS, display message on commit/push window.
             commitCommentsFrame.displayMessage(Config.getString("team.commit.statusMessage"));
-        }
-        else
-        {
+        } else {
             // if svn, display the message on the main BlueJ window.
             PkgMgrFrame.displayMessage(project, Config.getString("team.commit.statusMessage"));
         }
-        
+
         worker = new CommitWorker(project);
         worker.start();
     }
-    
+
     /**
      * Cancel the commit, if it is running.
      */
-    public void cancel()
-    {
-        if(worker != null) {
+    public void cancel() {
+        if (worker != null) {
             worker.abort();
             worker = null;
         }
@@ -143,24 +127,22 @@ public class CommitAction extends TeamAction
 
     /**
      * Worker thread to perform commit operation
-     * 
+     *
      * @author Davin McCall
      */
-    private class CommitWorker extends FXWorker
-    {
+    private class CommitWorker extends FXWorker {
         private final TeamworkCommand command;
         private TeamworkCommandResult result;
         private boolean aborted;
 
         @OnThread(Tag.FXPlatform)
-        public CommitWorker(Project project)
-        {
+        public CommitWorker(Project project) {
             String comment = commitCommentsFrame.getComment();
             Set<TeamStatusInfo> forceFiles = new HashSet<>();
-            
+
             //last step before committing is to add in modified diagram 
             //layouts if selected in commit comments dialog
-            if(commitCommentsFrame.includeLayout()) {
+            if (commitCommentsFrame.includeLayout()) {
                 forceFiles = commitCommentsFrame.getChangedLayoutInfo();
                 files.addAll(commitCommentsFrame.getChangedLayoutFiles());
             }
@@ -172,25 +154,22 @@ public class CommitAction extends TeamAction
         }
 
         @OnThread(Tag.Worker)
-        public Object construct()
-        {
+        public Object construct() {
             result = command.getResult();
             return result;
         }
-        
-        public void abort()
-        {
+
+        public void abort() {
             command.cancel();
             aborted = true;
         }
-        
-        public void finished()
-        {
+
+        public void finished() {
             final Project project = commitCommentsFrame.getProject();
-            
-            if (! aborted) {
+
+            if (!aborted) {
                 commitCommentsFrame.stopProgress();
-                if (! result.isError() && ! result.wasAborted()) {
+                if (!result.isError() && !result.wasAborted()) {
                     if (project.getTeamSettingsController().isDVCS()) {
                         //if DVCS, display message on commit/push window.
                         commitCommentsFrame.displayMessage(Config.getString("team.commit.statusDone"));
@@ -200,10 +179,10 @@ public class CommitAction extends TeamAction
                     }
                 }
             }
-            
+
             TeamUtils.handleServerResponseFX(result, commitCommentsFrame.asWindow());
-            
-            if (! aborted) {
+
+            if (!aborted) {
                 commitCommentsFrame.setVisible(project.getTeamSettingsController().isDVCS());
             }
         }

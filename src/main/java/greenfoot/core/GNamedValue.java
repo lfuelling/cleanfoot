@@ -26,37 +26,31 @@ import bluej.debugmgr.NamedValue;
 
 /**
  * A class to represent a simple named value.
- * 
+ *
  * @author Davin McCall
  */
-public class GNamedValue implements NamedValue
-{
+public class GNamedValue implements NamedValue {
     private final String name;
     private final JavaType type;
-    
-    public GNamedValue(String instanceName, JavaType type)
-    {
+
+    public GNamedValue(String instanceName, JavaType type) {
         name = instanceName;
         this.type = type;
     }
 
-    public JavaType getGenType()
-    {
+    public JavaType getGenType() {
         return type;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public boolean isFinal()
-    {
+    public boolean isFinal() {
         return true;
     }
 
-    public boolean isInitialized()
-    {
+    public boolean isInitialized() {
         return true;
-    }            
+    }
 }

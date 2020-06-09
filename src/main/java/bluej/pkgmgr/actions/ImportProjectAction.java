@@ -25,19 +25,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * Import external project (directory structure / jar file).
- * 
+ *
  * @author Davin McCall
- * @version $Id: ImportProjectAction.java 16081 2016-06-25 09:42:13Z nccb $ 
+ * @version $Id: ImportProjectAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class ImportProjectAction extends PkgMgrAction
-{
-    public ImportProjectAction(PkgMgrFrame pmf)
-    {
+final public class ImportProjectAction extends PkgMgrAction {
+    public ImportProjectAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.import");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doImport();
     }

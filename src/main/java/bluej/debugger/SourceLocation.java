@@ -27,11 +27,10 @@ import threadchecker.Tag;
 /**
  * This class holds a location in some source code
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
 @OnThread(Tag.Any)
-public final class SourceLocation
-{
+public final class SourceLocation {
     private final String classname;
     private final String filename;
     private final String methodname;
@@ -39,49 +38,45 @@ public final class SourceLocation
 
     /**
      * Construct a SourceLocation instance.
-     * @param classname   Name of the class
-     * @param filename    Name of the source file, relative to the source root (may be null)
-     * @param methodname  Name of the method
-     * @param lineNumber  Line number
+     *
+     * @param classname  Name of the class
+     * @param filename   Name of the source file, relative to the source root (may be null)
+     * @param methodname Name of the method
+     * @param lineNumber Line number
      */
-    public SourceLocation(String classname, String filename, 
-                          String methodname, int lineNumber)
-    {
+    public SourceLocation(String classname, String filename,
+                          String methodname, int lineNumber) {
         this.classname = classname;
         this.filename = filename;
         this.methodname = methodname;
         this.lineNumber = lineNumber;
     }
 
-    public String getClassName()
-    {
+    public String getClassName() {
         return classname;
     }
 
     /**
      * Get the name of the source file corresponding to this SourceLocation, if known.
-     * @return  The relative path to the source file, or null
+     *
+     * @return The relative path to the source file, or null
      */
-    public String getFileName()
-    {
+    public String getFileName() {
         return filename;
     }
 
-    public String getMethodName()
-    {
+    public String getMethodName() {
         return methodname;
     }
 
-    public int getLineNumber()
-    {
+    public int getLineNumber() {
         return lineNumber;
     }
-    
+
     /**
      * Return the location in the format "<class>.<method>"
      */
-    public String toString()
-    {
+    public String toString() {
         return classname + "." + methodname;
     }
 }

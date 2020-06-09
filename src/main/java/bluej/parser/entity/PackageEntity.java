@@ -21,34 +21,31 @@
  */
 package bluej.parser.entity;
 
-import java.util.List;
-
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.List;
+
 /**
  * An entity representing a package. The entity is only presumed to be a package
  * seeing as no class with the same name could be found.
- * 
+ *
  * @author Davin McCall
  */
-public class PackageEntity extends PackageOrClass
-{
+public class PackageEntity extends PackageOrClass {
     private final String name;
     private final EntityResolver resolver;
-    
-    public PackageEntity(String name, EntityResolver resolver)
-    {
+
+    public PackageEntity(String name, EntityResolver resolver) {
         this.name = name;
         this.resolver = resolver;
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public PackageOrClass getPackageOrClassMember(String name)
-    {
+    public PackageOrClass getPackageOrClassMember(String name) {
         String nname = this.name + "." + name;
         PackageOrClass rval = resolver.resolveQualifiedClass(nname);
         if (rval != null) {
@@ -58,26 +55,22 @@ public class PackageEntity extends PackageOrClass
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return getPackageOrClassMember(name);
     }
 
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return null;
     }
 
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
 }

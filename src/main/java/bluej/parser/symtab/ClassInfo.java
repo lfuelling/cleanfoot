@@ -21,33 +21,32 @@
  */
 package bluej.parser.symtab;
 
-import java.util.*;
-
 import bluej.utility.JavaUtils;
 import bluej.utility.SortedProperties;
+
+import java.util.*;
 
 /**
  * Information about a class found in a source file. The information is
  * gathered and stored in an object of this class by a parser.<p>
- * 
- * The information includes:<ul> 
+ * <p>
+ * The information includes:<ul>
  * <li>what is the name of this class or interface;
  * <li>is it a class or an interface or an enum;
  * <li>is it declared abstract;
  * <li>what classes are extended and interfaces are implemented;
  * <li>what are the type parameters;
  * <li>what other types are referenced from within this type;
- * <li>what javadoc comments are present; 
+ * <li>what javadoc comments are present;
  * <li>the selection (location in text) for the superclass, superinterfaces,
  * and various other things including type parameters.
  * </ul><p>
- * 
+ * <p>
  * Some other information, such as classes which are imported, is stored but
  * not used in BlueJ.
  */
-public final class ClassInfo
-{
-    private static final String[] unitTestClasses = { "junit.framework.TestCase" };
+public final class ClassInfo {
+    private static final String[] unitTestClasses = {"junit.framework.TestCase"};
 
     private boolean foundPublicClass = false;
 
@@ -58,7 +57,7 @@ public final class ClassInfo
     private final List<String> imported = new ArrayList<String>();
     private final List<String> used = new ArrayList<String>();
     private final List<SavedComment> comments = new LinkedList<SavedComment>();
-    
+
     private final List<String> typeParameterTexts = new ArrayList<String>();
     private Selection typeParametersSelection;
     private Selection extendsReplaceSelection;
@@ -70,24 +69,22 @@ public final class ClassInfo
     private boolean isAbstract = false;
     private boolean isUnitTest = false;
     private boolean isEnum = false;
-    
+
     private boolean hadParseError = false;
 
-    public class SavedComment
-    {
+    public class SavedComment {
         public final String target; // the method signature of the item we have a
-                                    // comment for. Can be class name or interface
-                                    // name in the case of a comment for a whole
-                                    // class/interface
+        // comment for. Can be class name or interface
+        // name in the case of a comment for a whole
+        // class/interface
 
         public final String comment;  // the actual text of the comment
 
         public final String paramnames;  // if this is a method or constructor, then
-                                         // this is a comma seperated list of name
-                                         // associated with the parameters
+        // this is a comma seperated list of name
+        // associated with the parameters
 
-        public SavedComment(String target, String comment, String paramnames)
-        {
+        public SavedComment(String target, String comment, String paramnames) {
             if (target == null)
                 throw new NullPointerException();
             this.target = target;
@@ -95,12 +92,11 @@ public final class ClassInfo
             this.paramnames = paramnames;
         }
 
-        public void save(Properties p, String prefix)
-        {
+        public void save(Properties p, String prefix) {
             p.put(prefix + ".target", target);
-            if(comment != null)
+            if (comment != null)
                 p.setProperty(prefix + ".text", comment);
-            if(paramnames != null)
+            if (paramnames != null)
                 p.setProperty(prefix + ".params", paramnames);
         }
     }
@@ -108,26 +104,23 @@ public final class ClassInfo
     /**
      * Check whether a public class (interface, enum) was found.
      */
-    public boolean foundPublicClass()
-    {
+    public boolean foundPublicClass() {
         return foundPublicClass;
     }
 
     /**
      * Set the name of the class/interface/enum.
      */
-    public void setName(String name, boolean pub)
-    {
+    public void setName(String name, boolean pub) {
         this.name = name;
 
-        if(pub) {
+        if (pub) {
             foundPublicClass = true;
         }
     }
 
-    public void setSuperclass(String name)
-    {
-        if(name.equals(this.name)) {
+    public void setSuperclass(String name) {
+        if (name.equals(this.name)) {
             return;
         }
 
@@ -135,42 +128,38 @@ public final class ClassInfo
         used.remove(name);
 
         for (int i = 0; i < unitTestClasses.length; i++) {
-            if(name.equals(unitTestClasses[i])) {
+            if (name.equals(unitTestClasses[i])) {
                 isUnitTest = true;
             }
         }
     }
-    
-    public void setEnum(boolean isEnum)
-    {
+
+    public void setEnum(boolean isEnum) {
         this.isEnum = isEnum;
     }
 
-    public void addImplements(String name)
-    {
-        if(name.equals(this.name)) {
+    public void addImplements(String name) {
+        if (name.equals(this.name)) {
             return;
         }
 
-        if(!implemented.contains(name)) {
+        if (!implemented.contains(name)) {
             implemented.add(name);
         }
     }
-    
-    public void addImported(String name)
-    {
-        if(name.equals(this.name)) {
+
+    public void addImported(String name) {
+        if (name.equals(this.name)) {
             return;
         }
-    
-        if(!imported.contains(name)) {
+
+        if (!imported.contains(name)) {
             imported.add(name);
         }
     }
 
-    public void addUsed(String name)
-    {
-        if(name.equals(this.name)) {
+    public void addUsed(String name) {
+        if (name.equals(this.name)) {
             return;
         }
 
@@ -179,12 +168,12 @@ public final class ClassInfo
         //    return;
 
         // don't add superclass
-        if(name.equals(superclass)) {
+        if (name.equals(superclass)) {
             return;
         }
 
         // don't add if already there
-        if(! used.contains(name)) {
+        if (!used.contains(name)) {
             used.add(name);
         }
     }
@@ -193,9 +182,9 @@ public final class ClassInfo
      * Add a method/constructor description (with optional javadoc comment) to this
      * class. The target specifies the method or constructor which the comment applies
      * to. It takes the form:<p>
-     * 
-     *  <code>&lt;type-pars&gt; return_type method_name(arg_type_1,arg_type2,arg_type3)</code>
-     * 
+     *
+     * <code>&lt;type-pars&gt; return_type method_name(arg_type_1,arg_type2,arg_type3)</code>
+     *
      * <p>Where:
      * <ul>
      * <li>type-pars are the type parameters, in the form
@@ -206,34 +195,30 @@ public final class ClassInfo
      * <li>arg_type_X is the generic parameter type, followed by "[]" if an array type
      *     (eg. List&lt;Thread&gt;[][]), followed by " ..." for a vararg parameter.
      * </ul>
-     * 
-     * @param target  The method/constructor the comment applies to (see description above)
-     * @param comment   The comment text (may be null)
-     * @param paramnames  The parameter names from the method definition, as a space-seperated
-     *                    list. May be null if there are no parameter names.
+     *
+     * @param target     The method/constructor the comment applies to (see description above)
+     * @param comment    The comment text (may be null)
+     * @param paramnames The parameter names from the method definition, as a space-seperated
+     *                   list. May be null if there are no parameter names.
      */
-    public void addComment(String target, String comment, String paramnames)
-    {
+    public void addComment(String target, String comment, String paramnames) {
         // remove asterisks (*) from beginning of comment
         comment = JavaUtils.javadocToString(comment);
         comments.add(new SavedComment(target, comment, paramnames));
     }
 
-    public void setInterface(boolean b)
-    {
+    public void setInterface(boolean b) {
         isInterface = b;
     }
 
-    public void setAbstract(boolean b)
-    {
+    public void setAbstract(boolean b) {
         isAbstract = b;
     }
 
-    public void setParseError(boolean err)
-    {
+    public void setParseError(boolean err) {
         hadParseError = err;
     }
-    
+
     /**
      * Where we would insert the string "extends" in a class/interface
      */
@@ -247,25 +232,23 @@ public final class ClassInfo
      * @param s the Selection object which records a location to
      *          insert the "extends" keyword or additional interface
      */
-    public void setExtendsInsertSelection(Selection s)
-    {
+    public void setExtendsInsertSelection(Selection s) {
         extendsInsertSelection = s;
     }
 
     /**
      * Returns where we would insert the string "extends" in a class/interface.
      * For a class which already extends another classes, returns null.
-     * 
+     * <p>
      * For an interface which extends no other interfaces, returns where to
      * insert "extends {super-interface-name}". For an interface which extends
      * one or more other interfaces already, returns where to insert
      * ", {additional-interface-name}".
      *
      * @returns s the Selection object which records a location to
-     *          insert the "extends" keyword
+     * insert the "extends" keyword
      */
-    public Selection getExtendsInsertSelection()
-    {
+    public Selection getExtendsInsertSelection() {
         return extendsInsertSelection;
     }
 
@@ -281,8 +264,7 @@ public final class ClassInfo
      * class has existing interfaces, where we would add a new one in
      * (as ", [interfacename]").
      */
-    public void setImplementsInsertSelection(Selection s)
-    {
+    public void setImplementsInsertSelection(Selection s) {
         implementsInsertSelection = s;
     }
 
@@ -291,41 +273,36 @@ public final class ClassInfo
      * class has existing interfaces, where we would add a new one in
      * (as ", [interfacename]").
      */
-    public Selection getImplementsInsertSelection()
-    {
+    public Selection getImplementsInsertSelection() {
         return implementsInsertSelection;
     }
 
     /**
      * Record how we would replace the string "extends" in a class.
      * (For an interface, this is the first selection in the
-     *  InterfaceSelections list - see setInterfaceSelections)
+     * InterfaceSelections list - see setInterfaceSelections)
      *
      * @param s the Section object which records the location of
      *          the "extends" keyword for a class
      */
-    public void setExtendsReplaceSelection(Selection s)
-    {
+    public void setExtendsReplaceSelection(Selection s) {
         extendsReplaceSelection = s;
     }
 
     /**
      * How we would replace the string "extends" in a class.
      * (For an interface, this is the first selection in the
-     *  InterfaceSelections list - see setInterfaceSelections)
+     * InterfaceSelections list - see setInterfaceSelections)
      */
-    public Selection getExtendsReplaceSelection()
-    {
+    public Selection getExtendsReplaceSelection() {
         return extendsReplaceSelection;
     }
 
-    public void setSuperReplaceSelection(Selection s)
-    {
+    public void setSuperReplaceSelection(Selection s) {
         superReplaceSelection = s;
     }
 
-    public Selection getSuperReplaceSelection()
-    {
+    public Selection getSuperReplaceSelection() {
         return superReplaceSelection;
     }
 
@@ -340,62 +317,56 @@ public final class ClassInfo
     /**
      * Set the selections for the interfaces, including the "implements" clause (or "extends"
      * for interfaces), the interfaces themselves, and the commas between them. Eg:
-     * 
+     * <p>
      * "extends"  "InterfaceA"  ","  "InterfaceB"
      */
-    public void setInterfaceSelections(List<Selection> selections)
-    {
+    public void setInterfaceSelections(List<Selection> selections) {
         interfaceSelections = selections;
     }
-    
-    public void addTypeParameterText(String typeParameterText)
-    {
+
+    public void addTypeParameterText(String typeParameterText) {
         typeParameterTexts.add(typeParameterText);
     }
-    
-    public List<String> getTypeParameterTexts()
-    {
+
+    public List<String> getTypeParameterTexts() {
         return typeParameterTexts;
     }
 
-    public List<Selection> getInterfaceSelections()
-    {
+    public List<Selection> getInterfaceSelections() {
         return interfaceSelections;
     }
 
-    public boolean hasInterfaceSelections()
-    {
+    public boolean hasInterfaceSelections() {
         return (interfaceSelections != null) &&
                 (interfaceSelections.size() > 0);
     }
 
     /**
      * Record the locations of the tokens in a source files "package" statement.
-     *
+     * <p>
      * These locations start off at the first line and column of a file.
      * If a package line exists, they are updated, otherwise they are
      * left pointing the very start of the file (which is where we would
      * want to insert a package line if we were to add one)
      */
     private boolean packageStatementExists = false;
-    private Selection packageStatementSelection = new Selection(1,1);
-    private Selection packageNameSelection = new Selection(1,1);
-    private Selection packageSemiSelection = new Selection(1,1);
+    private Selection packageStatementSelection = new Selection(1, 1);
+    private Selection packageNameSelection = new Selection(1, 1);
+    private Selection packageSemiSelection = new Selection(1, 1);
     private String packageName = "";
 
     /**
      * Set the selections for the "package" line of the source file, including the "pakage"
      * keyword (pkgStatement), the named package (pkgName), and the trailing semicolon
      * (pkgSemi).
-     * 
+     *
      * @param pkgStatement
      * @param pkgName
      * @param pkgNameText
      * @param pkgSemi
      */
     public void setPackageSelections(Selection pkgStatement, Selection pkgName, String pkgNameText,
-                                        Selection pkgSemi)
-    {
+                                     Selection pkgSemi) {
         packageStatementSelection = pkgStatement;
         packageNameSelection = pkgName;
         packageName = pkgNameText;
@@ -404,31 +375,25 @@ public final class ClassInfo
         packageStatementExists = true;
     }
 
-    public boolean hasPackageStatement()
-    {
+    public boolean hasPackageStatement() {
         return packageStatementExists;
     }
 
-    public Selection getPackageStatementSelection()
-    {
+    public Selection getPackageStatementSelection() {
         return packageStatementSelection;
     }
 
-    public Selection getPackageNameSelection()
-    {
+    public Selection getPackageNameSelection() {
         return packageNameSelection;
     }
 
-    public Selection getPackageSemiSelection()
-    {
+    public Selection getPackageSemiSelection() {
         return packageSemiSelection;
     }
 
-    public String getPackage()
-    {
+    public String getPackage() {
         return packageName;
     }
-
 
 
     // accessors:
@@ -438,13 +403,11 @@ public final class ClassInfo
      * Returns null if the superclass is not established or unspecified (i.e. is
      * "java.lang.Object").
      */
-    public String getSuperclass()
-    {
+    public String getSuperclass() {
         return superclass;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
@@ -452,95 +415,82 @@ public final class ClassInfo
      * Get a list of the (fully-qualified) interface names that the represented
      * class implements.
      */
-    public List<String> getImplements()
-    {
+    public List<String> getImplements() {
         return implemented;
     }
 
-    public void setTypeParametersSelection(Selection s)
-    {
+    public void setTypeParametersSelection(Selection s) {
         typeParametersSelection = s;
     }
-    
-    public boolean hasTypeParameter()
-    {
+
+    public boolean hasTypeParameter() {
         return (typeParametersSelection != null);
     }
-    
+
     /**
      * Get the list of referenced classes (a list of String).
      */
-    public List<String> getUsed()
-    {
+    public List<String> getUsed() {
         return used;
     }
 
-    public Properties getComments()
-    {
+    public Properties getComments() {
         Properties props = new SortedProperties();
         props.setProperty("numComments", String.valueOf(comments.size()));
         Iterator<SavedComment> it = comments.iterator();
-        for(int i = 0; it.hasNext(); i++)
-        {
+        for (int i = 0; it.hasNext(); i++) {
             SavedComment c = it.next();
             c.save(props, "comment" + i);
         }
         return props;
     }
-    
-    public List<SavedComment> getCommentsAsList()
-    {
+
+    public List<SavedComment> getCommentsAsList() {
         return Collections.unmodifiableList(comments);
     }
 
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return this.isInterface;
     }
 
-    public boolean isAbstract()
-    {
+    public boolean isAbstract() {
         return this.isAbstract;
     }
-    
-    public boolean isUnitTest()
-    {
+
+    public boolean isUnitTest() {
         return this.isUnitTest;
     }
-    
-    public boolean isEnum()
-    {
+
+    public boolean isEnum() {
         return this.isEnum;
     }
 
-    public boolean hadParseError()
-    {
+    public boolean hadParseError() {
         return hadParseError;
     }
 
-    public void print()
-    {
+    public void print() {
         System.out.println();
         System.out.println("superclass: " + superclass);
 
         System.out.println();
         System.out.println("implements:");
         Iterator<String> it = implemented.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             System.out.println("   " + it.next());
         }
 
         System.out.println();
         System.out.println("uses:");
         it = used.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             System.out.println("   " + it.next());
         }
 
         System.out.println();
         System.out.println("imports:");
         it = imported.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             System.out.println("   " + it.next());
         }
     }

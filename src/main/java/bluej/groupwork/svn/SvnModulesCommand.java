@@ -21,64 +21,51 @@
  */
 package bluej.groupwork.svn;
 
-import java.util.List;
-
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Depth;
-import org.tigris.subversion.javahl.DirEntry;
-import org.tigris.subversion.javahl.ListCallback;
-import org.tigris.subversion.javahl.Lock;
-import org.tigris.subversion.javahl.NodeKind;
-import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.SVNClientInterface;
-
 import bluej.groupwork.TeamworkCommandAborted;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
+import org.tigris.subversion.javahl.*;
+
+import java.util.List;
 
 /**
  * A command to retrieve a list of modules from a subversion repository.
- * 
+ *
  * @author Davin McCall
  */
-public class SvnModulesCommand extends SvnCommand
-{
+public class SvnModulesCommand extends SvnCommand {
     private final List<String> modulesList;
-    
-    public SvnModulesCommand(SvnRepository repository, List<String> modulesList)
-    {
+
+    public SvnModulesCommand(SvnRepository repository, List<String> modulesList) {
         super(repository);
         this.modulesList = modulesList;
     }
-    
-    protected TeamworkCommandResult doCommand()
-    {
+
+    protected TeamworkCommandResult doCommand() {
         SVNClientInterface client = getClient();
-        
+
         try {
-            if (! isCancelled()) {
+            if (!isCancelled()) {
                 client.list(getRepository().getReposUrl(), Revision.HEAD, Revision.HEAD, Depth.immediates,
                         DirEntry.Fields.nodeKind, false,
                         new ListCallback() {
-                      
+
                             @Override
-                            public void doEntry(DirEntry entry, Lock arg1)
-                            {
+                            public void doEntry(DirEntry entry, Lock arg1) {
                                 if (entry.getNodeKind() == NodeKind.dir) {
                                     modulesList.add(entry.getPath());
                                 }
                             }
-                });
+                        });
 
                 return new TeamworkCommandResult();
-              }
-        }
-        catch (ClientException ce) {
-            if (! isCancelled()) {
+            }
+        } catch (ClientException ce) {
+            if (!isCancelled()) {
                 return new TeamworkCommandError(ce.getMessage(), ce.getLocalizedMessage());
             }
         }
-        
+
         return new TeamworkCommandAborted();
     }
 }

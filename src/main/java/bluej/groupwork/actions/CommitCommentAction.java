@@ -36,30 +36,23 @@ import javafx.stage.Window;
  * @author Kasper
  * @author Bruce Quig
  */
-public class CommitCommentAction extends TeamAction
-{
-    public CommitCommentAction(String label)
-    {
+public class CommitCommentAction extends TeamAction {
+    public CommitCommentAction(String label) {
         super(label, true);
         shortDescription = Config.getString("tooltip.commit");
     }
 
     @Override
-    public void actionPerformed(PkgMgrFrame frame)
-    {
+    public void actionPerformed(PkgMgrFrame frame) {
         Project project = frame.getProject();
         CommitAndPushInterface dialog = project.getCommitCommentsDialog();
 
         Window dialogWin = dialog.asWindow();
-        if (dialog.isShowing())
-        {
-            if (dialogWin instanceof Stage)
-            {
-                ((Stage)dialogWin).toFront();
+        if (dialog.isShowing()) {
+            if (dialogWin instanceof Stage) {
+                ((Stage) dialogWin).toFront();
             }
-        }
-        else
-        {
+        } else {
             dialog.reset();
             dialog.setLocationRelativeTo(frame.getFXWindow());
             dialog.setVisible(true);

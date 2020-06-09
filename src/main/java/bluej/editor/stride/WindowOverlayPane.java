@@ -24,7 +24,6 @@ package bluej.editor.stride;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableDoubleValue;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -36,32 +35,24 @@ import javafx.scene.layout.Region;
  * the pinned method header mechanism.  If you want an overlay fixed with respect to
  * an item inside the scroll pane (e.g. a tooltip or autocomplete beneath a slot),
  * use CodeOverlayPane instead.
- *
  */
-public class WindowOverlayPane
-{
+public class WindowOverlayPane {
     private final Pane pane = new Pane();
-    
-    public WindowOverlayPane()
-    {
+
+    public WindowOverlayPane() {
         // Make overlay pane look at shapes not bounds for capturing mouse events:
         pane.pickOnBoundsProperty().set(false);
     }
 
-    public void addOverlay(Node node, ObservableDoubleValue x, ObservableDoubleValue y)
-    {
+    public void addOverlay(Node node, ObservableDoubleValue x, ObservableDoubleValue y) {
         addOverlay(node, x, y, false);
     }
-    
-    public void addOverlay(Node node, ObservableDoubleValue x, ObservableDoubleValue y, boolean moveLeftIfNeeded)
-    {
+
+    public void addOverlay(Node node, ObservableDoubleValue x, ObservableDoubleValue y, boolean moveLeftIfNeeded) {
         pane.getChildren().add(node);
-        if (moveLeftIfNeeded)
-        {
-             node.layoutXProperty().bind(Bindings.min(x, pane.widthProperty().subtract(((Region)node).widthProperty())));
-        }
-        else
-        {
+        if (moveLeftIfNeeded) {
+            node.layoutXProperty().bind(Bindings.min(x, pane.widthProperty().subtract(((Region) node).widthProperty())));
+        } else {
             node.layoutXProperty().bind(x);
         }
         node.layoutYProperty().bind(y);
@@ -69,28 +60,23 @@ public class WindowOverlayPane
 
     }
 
-    public void removeOverlay(Node node)
-    {
-        pane.getChildren().remove(node);        
+    public void removeOverlay(Node node) {
+        pane.getChildren().remove(node);
     }
 
-    public double sceneXToWindowOverlayX(double sceneX)
-    {
+    public double sceneXToWindowOverlayX(double sceneX) {
         return pane.sceneToLocal(sceneX, 0).getX();
     }
 
-    public double sceneYToWindowOverlayY(double sceneY)
-    {
+    public double sceneYToWindowOverlayY(double sceneY) {
         return pane.sceneToLocal(0, sceneY).getY();
     }
-    
-    public Node getNode()
-    {
+
+    public Node getNode() {
         return pane;
     }
 
-    public boolean contains(Node node)
-    {
+    public boolean contains(Node node) {
         return pane.getChildren().contains(node);
     }
 }

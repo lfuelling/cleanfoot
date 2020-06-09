@@ -21,55 +21,50 @@
  */
 package bluej.groupwork.svn;
 
-import java.io.File;
-
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
 import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.Depth;
 import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.SVNClientInterface;
 
-import bluej.groupwork.TeamworkCommandAborted;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
+import java.io.File;
 
 /**
  * Subversion "checkout" command.
- * 
+ *
  * @author Davin McCall
  */
-public class SvnCheckoutCommand extends SvnCommand
-{
+public class SvnCheckoutCommand extends SvnCommand {
     private final File checkoutPath;
     private final String moduleName;
-    
-    public SvnCheckoutCommand(SvnRepository repository, File projectPath)
-    {
+
+    public SvnCheckoutCommand(SvnRepository repository, File projectPath) {
         super(repository);
         this.checkoutPath = projectPath.getAbsoluteFile();
         moduleName = projectPath.getName();
     }
-    
-    protected TeamworkCommandResult doCommand()
-    {
+
+    protected TeamworkCommandResult doCommand() {
         //set local working copy's svn version to 1.6. this is a working around
         //the broken 1.7 local working copy versioning of SVNKit.
         System.setProperty("svnkit.wc.17", "false");
         SVNClientInterface client = getClient();
         String reposUrl = getRepository().getReposUrl();
         reposUrl += "/" + moduleName;
-        
+
         try {
             client.checkout(reposUrl, checkoutPath.getAbsolutePath(),
-                Revision.HEAD, Revision.HEAD, Depth.infinity, true, true);
+                    Revision.HEAD, Revision.HEAD, Depth.infinity, true, true);
             //set local working copy's svn version back to 1.7. This is just
             //to put things back the way they used to be.
             System.setProperty("svnkit.wc.17", "true");
-            if (! isCancelled()) {
+            if (!isCancelled()) {
                 return new TeamworkCommandResult();
             }
-        }
-        catch (ClientException ce) {
-            if (! isCancelled()) {
+        } catch (ClientException ce) {
+            if (!isCancelled()) {
                 return new TeamworkCommandError(ce.getMessage(), ce.getLocalizedMessage());
             }
         }

@@ -22,41 +22,26 @@
 package bluej.groupwork.git;
 
 import bluej.Config;
-import bluej.groupwork.Repository;
-import bluej.groupwork.TeamSettings;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.groupwork.TeamworkCommandUnsupportedSetting;
-import bluej.groupwork.TeamworkProvider;
-import bluej.groupwork.UnsupportedSettingException;
+import bluej.groupwork.*;
 import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.transport.SshTransport;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.*;
+import java.util.Arrays;
 
 /**
  * Teamwork provider for Git.
@@ -64,41 +49,34 @@ import threadchecker.Tag;
  * @author Fabio Hedayioglu
  */
 @OnThread(Tag.Any)
-public class GitProvider implements TeamworkProvider 
-{
+public class GitProvider implements TeamworkProvider {
 
     private String gitUrlString;
-    
+
     @Override
-    public String getProviderName() 
-    {
+    public String getProviderName() {
         return "Git";
     }
 
     @Override
-    public String[] getProtocols() 
-    {
+    public String[] getProtocols() {
         // 'file' protocol has been removed as it is not supported currently
         return new String[]{"https", "http", "ssh", "git"};
     }
 
     @Override
-    public String getProtocolKey(int protocol) 
-    {
+    public String getProtocolKey(int protocol) {
         return getProtocols()[protocol];
     }
 
     @Override
-    public String getProtocolLabel(String protocolKey) 
-    {
+    public String getProtocolLabel(String protocolKey) {
         return protocolKey;
     }
 
     @Override
-    public TeamworkCommandResult checkConnection(TeamSettings settings) 
-    {
-        try
-        {
+    public TeamworkCommandResult checkConnection(TeamSettings settings) {
+        try {
             gitUrlString = makeGitUrl(settings);
             //perform a lsRemote on the remote git repo.
             LsRemoteCommand lsRemoteCommand = Git.lsRemoteRepository();
@@ -110,59 +88,48 @@ public class GitProvider implements TeamworkProvider
 
             //It seems that ssh host fingerprint check is not working properly. 
             //Disable it in a ssh connection.
-            if (gitUrlString.startsWith("ssh"))
-            {
+            if (gitUrlString.startsWith("ssh")) {
                 SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
                     @Override
-                    protected void configure(OpenSshConfig.Host host, Session sn)
-                    {
+                    protected void configure(OpenSshConfig.Host host, Session sn) {
                         java.util.Properties config = new java.util.Properties();
                         config.put("StrictHostKeyChecking", "no");
                         sn.setConfig(config);
                     }
 
                     @Override
-                    protected JSch createDefaultJSch(FS fs) throws JSchException
-                    {
+                    protected JSch createDefaultJSch(FS fs) throws JSchException {
                         return super.createDefaultJSch(fs);
                     }
                 };
-                
+
                 lsRemoteCommand.setTransportConfigCallback((Transport t) -> {
                     SshTransport sshTransport = (SshTransport) t;
                     sshTransport.setSshSessionFactory(sshSessionFactory);
                 });
             }
-            
+
             lsRemoteCommand.call(); //executes the lsRemote commnand.
-        }
-        catch (GitAPIException ex)
-        {
-            if (ex instanceof TransportException)
-            {
+        } catch (GitAPIException ex) {
+            if (ex instanceof TransportException) {
                 // There was a problem in the connection. Proceed to diagnosis.
                 TeamworkCommandResult diagnosis = connectionDiagnosis(gitUrlString);
-                if (!diagnosis.isError())
-                {
+                if (!diagnosis.isError()) {
                     // We can connect to the server.
-                    if (ex.getLocalizedMessage().contains("access denied or repository not exported"))
-                    {
+                    if (ex.getLocalizedMessage().contains("access denied or repository not exported")) {
                         return new TeamworkCommandError(DialogManager.getMessage("team-denied-invalidUser"),
                                 DialogManager.getMessage("team-denied-invalidUser"));
                     }
-                    if (ex.getLocalizedMessage().contains("Auth fail"))
-                    {
+                    if (ex.getLocalizedMessage().contains("Auth fail")) {
                         return new TeamworkCommandError(DialogManager.getMessage("team-denied-invalidUser"),
                                 DialogManager.getMessage("team-denied-invalidUser"));
                     }
-                    if (ex.getLocalizedMessage().contains("does not appear to be a git repository"))
-                    {
+                    if (ex.getLocalizedMessage().contains("does not appear to be a git repository")) {
                         String message = DialogManager.getMessage("team-noRepository-uri", ex.getLocalizedMessage());
-                        return new TeamworkCommandError( message, message);
+                        return new TeamworkCommandError(message, message);
                     }
                     // http, https and git protocols do not need username nor password.
-                    if (settings.getProtocol().contains("file") || settings.getProtocol().contains("http") || settings.getProtocol().contains("git"))
-                    {
+                    if (settings.getProtocol().contains("file") || settings.getProtocol().contains("http") || settings.getProtocol().contains("git")) {
                         String message = DialogManager.getMessage("team-noRepository-uri", ex.getLocalizedMessage());
                         return new TeamworkCommandError(message, message);
                     }
@@ -170,23 +137,19 @@ public class GitProvider implements TeamworkProvider
                 return diagnosis;
             }
             return new TeamworkCommandError(ex.getMessage(), ex.getLocalizedMessage());
-        }
-        catch (UnsupportedSettingException ex)
-        {
+        } catch (UnsupportedSettingException ex) {
             return new TeamworkCommandUnsupportedSetting(ex.getLocalizedMessage());
-        } 
+        }
         //if we got here, it means the command was successful.
         return new TeamworkCommandResult();
     }
-    
+
     @Override
-    public Repository getRepository(File projectDir, TeamSettings settings) throws UnsupportedSettingException
-    {
+    public Repository getRepository(File projectDir, TeamSettings settings) throws UnsupportedSettingException {
         try {
             return new GitRepository(projectDir, settings.getProtocol(), makeGitUrl(settings),
                     settings.getUserName(), settings.getPassword(), settings.getYourName(), settings.getYourEmail());
-        }
-        catch (UnsupportedSettingException e) {
+        } catch (UnsupportedSettingException e) {
             Debug.reportError("Unsupported Git Repository Settings " + e.getMessage());
             throw new UnsupportedSettingException(e.getLocalizedMessage());
         }
@@ -196,38 +159,37 @@ public class GitProvider implements TeamworkProvider
      * Construct a git URL based on the given team settings
      *
      * @param settings the teamwork settings to build the connection string
-     * from.
+     *                 from.
      * @return the git-compatible connection string
      * @throws bluej.groupwork.UnsupportedSettingException
      */
     @OnThread(Tag.Any)
     protected String makeGitUrl(TeamSettings settings)
-            throws UnsupportedSettingException 
-    {
+            throws UnsupportedSettingException {
         String protocol = settings.getProtocol();
         //check if the protocol is a valid one.
-        if (protocol == null || !Arrays.asList(settings.getProvider().getProtocols()).contains(protocol)){
+        if (protocol == null || !Arrays.asList(settings.getProvider().getProtocols()).contains(protocol)) {
             //the protocol is not valid. 
             throw new UnsupportedSettingException(Config.getString("team.error.unknownProtocol"));
         }
-        
+
         String server = settings.getServer();
-        if ((server == null || server.isEmpty()) /*&& !protocol.equals("file") // file protocol is unsupported currently*/ ){
+        if ((server == null || server.isEmpty()) /*&& !protocol.equals("file") // file protocol is unsupported currently*/) {
             throw new UnsupportedSettingException(Config.getString("team.error.cannotParseServer"));
         }
-        
+
         String prefix = settings.getPrefix();
-        if (prefix == null || prefix.isEmpty()){
+        if (prefix == null || prefix.isEmpty()) {
             throw new UnsupportedSettingException(Config.getString("team.error.cannotParsePath"));
         }
-        
+
         String gitUrl = protocol + "://";
-        
+
         //There is a bug in jGit where the username is ignored in a ssh connection.
         //the workaround is to inject the username in the url string.
-        
-        if (protocol.contains("ssh")){
-            gitUrl += settings.getUserName()+"@";
+
+        if (protocol.contains("ssh")) {
+            gitUrl += settings.getUserName() + "@";
         }
 
         if (server != null)
@@ -239,7 +201,7 @@ public class GitProvider implements TeamworkProvider
 
         return gitUrl;
     }
-    
+
     /**
      * This method creates a connection to the server and then diagnose
      * the possible causes. This method detects the following connection
@@ -247,16 +209,15 @@ public class GitProvider implements TeamworkProvider
      * unknown host
      * wrong protocol
      * malformed uri.
-     * 
+     *
      * @param gitUrlString the string containing the connection uri;
      * @return A {@link TeamworkCommandResult} with a useful error if the problem
-     *         is that we cannot connect at all to the server, but a successful
-     *         result if we can connect to the server.  The username/password is not
-     *         checked, and neither is the server type.  We only open a socket,
-     *         no more.
+     * is that we cannot connect at all to the server, but a successful
+     * result if we can connect to the server.  The username/password is not
+     * checked, and neither is the server type.  We only open a socket,
+     * no more.
      */
-    public static TeamworkCommandResult connectionDiagnosis(String gitUrlString)
-    {
+    public static TeamworkCommandResult connectionDiagnosis(String gitUrlString) {
         try {
             URI uri = new URI(gitUrlString);
             if (uri.getScheme().equals("file"))
@@ -300,70 +261,57 @@ public class GitProvider implements TeamworkProvider
     }
 
     @Override
-    public boolean needsEmail()
-    {
+    public boolean needsEmail() {
         return true;
     }
 
     @Override
-    public boolean needsName()
-    {
+    public boolean needsName() {
         return true;
     }
-    
+
     /**
      * Find the user email as configured for the repository, if any.
-     * 
+     *
      * @param projectPath path to the BlueJ project
      * @return the stored name, if any, or null
      */
     @Override
-    public String getYourNameFromRepo(File projectPath) 
-    {
+    public String getYourNameFromRepo(File projectPath) {
         String result = null;
-        try
-        {
-            try (Git repo = Git.open(projectPath))
-            {
+        try {
+            try (Git repo = Git.open(projectPath)) {
                 StoredConfig repoConfig = repo.getRepository().getConfig();
                 result = repoConfig.getString("user", null, "name");
             }
-        }
-        catch (IOException ex)
-        {
+        } catch (IOException ex) {
             Debug.reportError("Git: Could not get user name from repository", ex);
         }
         return result;
     }
-    
+
     /**
      * Find the user email as configured for the repository, if any.
-     * 
+     *
      * @param projectPath path to the BlueJ project
      * @return the stored email address, if any, or null
      */
     @Override
-    public String getYourEmailFromRepo(File projectPath) 
-    {
+    public String getYourEmailFromRepo(File projectPath) {
         String result = null;
-        try
-        {
-            try (Git repo = Git.open(projectPath))
-            {
+        try {
+            try (Git repo = Git.open(projectPath)) {
                 StoredConfig repoConfig = repo.getRepository().getConfig();
                 result = repoConfig.getString("user", null, "email");
             }
-        }
-        catch (IOException ex)
-        {
+        } catch (IOException ex) {
             Debug.reportError("Git: Could not get user email from repository", ex);
         }
         return result;
     }
 
     @Override
-    public boolean isDVCS()
-    {
+    public boolean isDVCS() {
         return true;
     }
 }

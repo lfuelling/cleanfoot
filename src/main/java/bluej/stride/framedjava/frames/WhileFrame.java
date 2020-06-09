@@ -26,10 +26,6 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.ast.HighlightedBreakpoint;
@@ -39,14 +35,8 @@ import bluej.stride.framedjava.elements.WhileElement;
 import bluej.stride.framedjava.frames.BreakFrame.BreakEncloser;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
-import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SingleCanvasFrame;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.SlotLabel;
@@ -55,29 +45,31 @@ import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Container-block representing a while loop.
+ *
  * @author Fraser McKay
  */
 public class WhileFrame extends SingleCanvasFrame
-  implements CodeFrame<WhileElement>, DebuggableParentFrame
-{
+        implements CodeFrame<WhileElement>, DebuggableParentFrame {
     private final ExpressionSlot<FilledExpressionSlotFragment> paramCondition;
     private WhileElement element;
 
     /**
      * Default constructor.
      */
-    private WhileFrame(InteractionManager editor)
-    {
+    private WhileFrame(InteractionManager editor) {
         super(editor, "while", "while-");
 
         //Parameters
         paramCondition = new FilledExpressionSlot(editor, this, this, getHeaderRow(), "while-") {
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean backspaceAtStart()
-            {
+            public boolean backspaceAtStart() {
                 if (isAlmostBlank()) {
                     new PullUpContentsOperation(editor).activate(getFrame());
                     return true;
@@ -122,20 +114,18 @@ public class WhileFrame extends SingleCanvasFrame
         */
         paramCondition.onTextPropertyChange(updateSidebarCurried("while "));
     }
-    
-    public WhileFrame(InteractionManager editor, ExpressionSlotFragment condition, boolean enabled)
-    {
+
+    public WhileFrame(InteractionManager editor, ExpressionSlotFragment condition, boolean enabled) {
         this(editor);
         paramCondition.setText(condition);
         frameEnabledProperty.set(enabled);
     }
-    
-    public WhileFrame(InteractionManager editor, List<Frame> contents)
-    {
+
+    public WhileFrame(InteractionManager editor, List<Frame> contents) {
         this(editor);
         getCanvas().getFirstCursor().insertFramesAfter(contents);
     }
-    
+
     /**
      * Replace statement with a "for" loop, transferring over loop body and header.
      */
@@ -167,41 +157,34 @@ public class WhileFrame extends SingleCanvasFrame
         replaceWith(i);
     }
     */
-
     @Override
     @OnThread(Tag.FXPlatform)
-    public List<FrameOperation> getContextOperations()
-    {
+    public List<FrameOperation> getContextOperations() {
         List<FrameOperation> r = super.getContextOperations();
         r.add(new PullUpContentsOperation(getEditor()));
         return r;
     }
 
-    public static FrameFactory<WhileFrame> getFactory()
-    {
+    public static FrameFactory<WhileFrame> getFactory() {
         return new FrameFactory<WhileFrame>() {
             @Override
-            public WhileFrame createBlock(InteractionManager editor)
-            {
+            public WhileFrame createBlock(InteractionManager editor) {
                 return new WhileFrame(editor);
             }
-            
+
             @Override
-            public WhileFrame createBlock(InteractionManager editor, List<Frame> contents)
-            {
+            public WhileFrame createBlock(InteractionManager editor, List<Frame> contents) {
                 return new WhileFrame(editor, contents);
             }
-                        
+
             @Override
-            public Class<WhileFrame> getBlockClass()
-            {
-                return WhileFrame.class; 
+            public Class<WhileFrame> getBlockClass() {
+                return WhileFrame.class;
             }
         };
     }
-    
-    private List<CodeElement> getContents()
-    {
+
+    private List<CodeElement> getContents() {
         List<CodeElement> contents = new ArrayList<CodeElement>();
         canvas.getBlocksSubtype(CodeFrame.class).forEach(f -> {
             f.regenerateCode();
@@ -209,51 +192,44 @@ public class WhileFrame extends SingleCanvasFrame
         });
         return contents;
     }
-    
+
     @Override
-    public FrameCanvas createCanvas(InteractionManager editor, String stylePrefix)
-    {
+    public FrameCanvas createCanvas(InteractionManager editor, String stylePrefix) {
         return new JavaCanvas(editor, this, stylePrefix, false);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
         return ((JavaCanvas) getCanvas()).showDebugBefore(null, debug);
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         element = new WhileElement(this, paramCondition.getSlotElement(), getContents(), frameEnabledProperty.get());
     }
 
     @Override
-    public WhileElement getCode()
-    {
+    public WhileElement getCode() {
         return element;
     }
 
     @Override
-    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas)
-    {
+    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas) {
         return Utility.concat(super.getAvailableExtensions(canvas, cursorInCanvas),
                 Arrays.asList(new ExtensionDescription('\b', "Remove loop, keep contents", () ->
                         new PullUpContentsOperation(getEditor()).activate(this), false, ExtensionSource.INSIDE_FIRST)));
     }
-    
+
     @Override
-    public BreakEncloser asBreakEncloser()
-    {
+    public BreakEncloser asBreakEncloser() {
         return BreakEncloser.WHILE;
     }
 
     @Override
-    public @OnThread(Tag.FXPlatform) void setView(View oldView, View newView, SharedTransition animateProgress)
-    {
+    public @OnThread(Tag.FXPlatform) void setView(View oldView, View newView, SharedTransition animateProgress) {
         super.setView(oldView, newView, animateProgress);
-        if (isFrameEnabled()  && (oldView == View.JAVA_PREVIEW || newView == View.JAVA_PREVIEW))
+        if (isFrameEnabled() && (oldView == View.JAVA_PREVIEW || newView == View.JAVA_PREVIEW))
             canvas.previewCurly(newView == View.JAVA_PREVIEW, header.getLeftFirstItem() + tweakCurlyX(), tweakOpeningCurlyY(), animateProgress);
     }
 }

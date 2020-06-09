@@ -23,36 +23,34 @@ package bluej.groupwork.git;
 
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
-import java.io.IOException;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.FetchResult;
+
+import java.io.IOException;
 
 /**
  * Git command to fetch project changes from the upstream repository.
  * This command essentially updates the local copy of the remote branch
+ *
  * @author Fabio Heday
  */
-public class GitFetchCommand extends GitCommand
-{
-    public GitFetchCommand(GitRepository repository)
-    {
+public class GitFetchCommand extends GitCommand {
+    public GitFetchCommand(GitRepository repository) {
         super(repository);
     }
-    
-      @Override
-    public TeamworkCommandResult getResult()
-    {
+
+    @Override
+    public TeamworkCommandResult getResult() {
         try (Git repo = Git.open(this.getRepository().getProjectPath())) {
-            
+
             FetchCommand fetch = repo.fetch();
             disableFingerprintCheck(fetch);
             fetch.call();
         } catch (IOException | GitAPIException ex) {
-            return new TeamworkCommandError(ex.getMessage(),ex.getLocalizedMessage());
+            return new TeamworkCommandError(ex.getMessage(), ex.getLocalizedMessage());
         }
         return new TeamworkCommandResult();
     }
-    
+
 }

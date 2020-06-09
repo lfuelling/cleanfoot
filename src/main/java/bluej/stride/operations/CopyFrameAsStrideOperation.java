@@ -21,35 +21,31 @@
  */
 package bluej.stride.operations;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.Config;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 
-public class CopyFrameAsStrideOperation extends FrameOperation
-{
+import java.util.Arrays;
+import java.util.List;
 
-    public CopyFrameAsStrideOperation(InteractionManager editor)
-    {
+public class CopyFrameAsStrideOperation extends FrameOperation {
+
+    public CopyFrameAsStrideOperation(InteractionManager editor) {
         super(editor, "COPY-STRIDE", Combine.ALL, new KeyCodeCombination(KeyCode.C, KeyCombination.SHORTCUT_DOWN));
     }
-    
+
     @Override
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         GreenfootFrameUtil.doCopyAsStride(frames);
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.copy"), MenuItemOrder.COPY));
     }
 }

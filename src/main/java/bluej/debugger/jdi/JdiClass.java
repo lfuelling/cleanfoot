@@ -21,38 +21,35 @@
  */
 package bluej.debugger.jdi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.utility.Debug;
-
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ReferenceType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents an class running on the user (remote) machine.
  *
- * @author     Michael Kolling
- * @created    December 26, 2000
+ * @author Michael Kolling
+ * @created December 26, 2000
  */
-public class JdiClass extends DebuggerClass
-{
+public class JdiClass extends DebuggerClass {
     ReferenceType remoteClass;  // the remote class represented
     List<Field> staticFields;
 
     // -- instance methods --
 
     /**
-     *  Create a remote class object.
+     * Create a remote class object.
      *
-     *@param  obj  the remote debugger object (Jdi code) this encapsulates.
+     * @param obj the remote debugger object (Jdi code) this encapsulates.
      */
-    public JdiClass(ReferenceType remoteClass)
-    {
+    public JdiClass(ReferenceType remoteClass) {
         this.remoteClass = remoteClass;
         getRemoteFields();
     }
@@ -64,18 +61,16 @@ public class JdiClass extends DebuggerClass
      * @return    The class name
      */
     @Override
-    public String getName()
-    {
+    public String getName() {
         return remoteClass.name();
     }
 
     @Override
-    public List<DebuggerField> getStaticFields()
-    {
+    public List<DebuggerField> getStaticFields() {
         List<Field> visibleFields = remoteClass.visibleFields();
         List<DebuggerField> rlist = new ArrayList<DebuggerField>(staticFields.size());
         for (Field field : staticFields) {
-            rlist.add(new JdiField(field, null, ! visibleFields.contains(field)));
+            rlist.add(new JdiField(field, null, !visibleFields.contains(field)));
         }
         return rlist;
     }
@@ -84,8 +79,7 @@ public class JdiClass extends DebuggerClass
      * Returns true if this represents a Java interface
      */
     @Override
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return remoteClass instanceof InterfaceType;
     }
 
@@ -93,8 +87,7 @@ public class JdiClass extends DebuggerClass
      * Returns true if this represents an enum
      */
     @Override
-    public boolean isEnum()
-    {
+    public boolean isEnum() {
         if (remoteClass instanceof ClassType) {
             return JdiUtils.getJdiUtils().isEnum((ClassType) remoteClass);
         }
@@ -102,10 +95,9 @@ public class JdiClass extends DebuggerClass
     }
 
     /**
-     *  Get the list of fields for this object.
+     * Get the list of fields for this object.
      */
-    private void getRemoteFields()
-    {
+    private void getRemoteFields() {
         staticFields = new ArrayList<Field>();
 
         if (remoteClass != null) {
@@ -115,8 +107,7 @@ public class JdiClass extends DebuggerClass
                 if (field.isStatic())
                     staticFields.add(field);
             }
-        }
-        else {
+        } else {
             Debug.reportError("cannot get fields for remote class");
         }
     }

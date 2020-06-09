@@ -23,14 +23,13 @@ package bluej.extensions;
 
 /**
  * This exception will be thrown when a reference to a project
- * is no longer valid. The most likely reason is that the 
+ * is no longer valid. The most likely reason is that the
  * user has closed the project from the GUI.
- * 
+ *
  * @author Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class ProjectNotOpenException extends ExtensionException 
-{
-    ProjectNotOpenException (String reason) {
-        super (reason);
+public class ProjectNotOpenException extends ExtensionException {
+    ProjectNotOpenException(String reason) {
+        super(reason);
     }
 }

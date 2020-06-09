@@ -25,54 +25,51 @@ import greenfoot.Actor;
 import greenfoot.ActorVisitor;
 import greenfoot.collision.*;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
+import java.util.List;
 import java.util.*;
 
 /**
  * A collision checker using a Binary Space Partition tree.
- * 
+ *
  * <p>Each node of the tree represents a rectangular area, and potentially has
  * two non-overlapping child nodes which together cover the same area as their
  * parent.
- * 
+ *
  * @author Davin McCall
  */
-public class IBSPColChecker implements CollisionChecker
-{
+public class IBSPColChecker implements CollisionChecker {
     public static final int X_AXIS = 0;
     public static final int Y_AXIS = 1;
-    
+
     public static final int PARENT_LEFT = 0;
     public static final int PARENT_RIGHT = 1;
     public static final int PARENT_NONE = 3; // no particular side
-    
+
     public static final int REBALANCE_THRESHOLD = 20;
-    
+
     private final GOCollisionQuery actorQuery = new GOCollisionQuery();
     private final NeighbourCollisionQuery neighbourQuery = new NeighbourCollisionQuery();
     private final PointCollisionQuery pointQuery = new PointCollisionQuery();
     private final InRangeQuery inRangeQuery = new InRangeQuery();
-    
+
     private int cellSize;
-    
+
     private BSPNode bspTree;
-    
+
     public static boolean debugging = false;
-    
+
     /* (non-Javadoc)
      * @see greenfoot.collision.CollisionChecker#initialize(int, int, int, boolean)
      */
-    public void initialize(int width, int height, int cellSize, boolean wrap)
-    {
+    public void initialize(int width, int height, int cellSize, boolean wrap) {
         this.cellSize = cellSize;
     }
 
     /*
      * @see greenfoot.collision.CollisionChecker#addObject(greenfoot.Actor)
      */
-    public void addObject(Actor actor)
-    {
+    public void addObject(Actor actor) {
         // checkConsistency(true);
         Rect bounds = getActorBounds(actor);
         if (bspTree == null) {
@@ -82,8 +79,7 @@ public class IBSPColChecker implements CollisionChecker
             if (bounds.getWidth() > bounds.getHeight()) {
                 splitAxis = X_AXIS;
                 splitPos = bounds.getMiddleX();
-            }
-            else {
+            } else {
                 splitAxis = Y_AXIS;
                 splitPos = bounds.getMiddleY();
             }
@@ -92,10 +88,9 @@ public class IBSPColChecker implements CollisionChecker
             bspTree.setSplitAxis(splitAxis);
             bspTree.setSplitPos(splitPos);
             bspTree.addActor(actor);
-        }
-        else {
+        } else {
             Rect treeArea = bspTree.getArea();
-            while (! treeArea.contains(bounds)) {
+            while (!treeArea.contains(bounds)) {
                 // We increase the tree area in up to four directions:
                 if (bounds.getX() < treeArea.getX()) {
                     // double the width out to the left
@@ -150,71 +145,69 @@ public class IBSPColChecker implements CollisionChecker
                     treeArea = newArea;
                 }
             }
-            
+
             insertObject(actor, bounds, bounds, treeArea, bspTree);
         }
         // checkConsistency(true);
     }
-    
+
     /**
      * Check the consistency of the tree, useful for debugging.
      */
-    public void checkConsistency(boolean checkActorBounds)
-    {
-        if (! debugging) {
+    public void checkConsistency(boolean checkActorBounds) {
+        if (!debugging) {
             return;
         }
-        
+
         LinkedList<BSPNode> stack = new LinkedList<BSPNode>();
-        
+
         stack.add(bspTree);
-        while(! stack.isEmpty()) {
+        while (!stack.isEmpty()) {
             BSPNode node = stack.removeLast();
             if (node != null) {
                 Rect nodeArea = node.getArea();
                 List<Actor> actors = node.getActorsList();
-                
+
                 for (Actor actor : actors) {
                     // The actor is really in this node
                     Rect actorBounds = getActorBounds(actor);
-                    if (checkActorBounds && ! nodeArea.intersects(actorBounds)) {
+                    if (checkActorBounds && !nodeArea.intersects(actorBounds)) {
                         throw new IllegalStateException("Actor not contained within region bounds?");
                     }
                 }
-                
+
                 // check the same actor doesn't occur further up tree // TODO
-                
+
                 if (node.getLeft() != null) {
                     Rect leftArea = node.getLeft().getArea();
-                    if (! Rect.equals(leftArea, node.getLeftArea())) {
+                    if (!Rect.equals(leftArea, node.getLeftArea())) {
                         throw new IllegalStateException("Areas wrong!");
                     }
                 }
-                
+
                 if (node.getRight() != null) {
                     Rect rightArea = node.getRight().getArea();
-                    if (! Rect.equals(rightArea, node.getRightArea())) {
+                    if (!Rect.equals(rightArea, node.getRightArea())) {
                         throw new IllegalStateException("Areas wrong!");
                     }
                 }
-                
+
                 stack.add(node.getLeft());
                 stack.add(node.getRight());
             }
         }
     }
-    
+
     /**
      * Insert an actor into the tree at the given position
-     * 
-     * @param actor   The actor to insert
-     * @param actorBounds  The total bounds of the actor
-     * @param bounds  The bounds of the actor (limited to the present area)
-     * @param area    The total area represented by the current search node
-     * @param node    The current search node (null, if the search has reached its end!)
+     *
+     * @param actor       The actor to insert
+     * @param actorBounds The total bounds of the actor
+     * @param bounds      The bounds of the actor (limited to the present area)
+     * @param area        The total area represented by the current search node
+     * @param node        The current search node (null, if the search has reached its end!)
      */
-    private void insertObject(Actor actor, Rect actorBounds, Rect bounds, Rect area, BSPNode node)
-    {
+    private void insertObject(Actor actor, Rect actorBounds, Rect bounds, Rect area, BSPNode node) {
         // the current search node might already contain the
         // actor...
         if (node.containsActor(actor)) {
@@ -241,8 +234,7 @@ public class IBSPColChecker implements CollisionChecker
                 BSPNode newLeft = createNewNode(leftArea);
                 newLeft.addActor(actor);
                 node.setChild(PARENT_LEFT, newLeft);
-            }
-            else {
+            } else {
                 insertObject(actor, actorBounds, leftIntersects, leftArea, node.getLeft());
             }
         }
@@ -252,24 +244,21 @@ public class IBSPColChecker implements CollisionChecker
                 BSPNode newRight = createNewNode(rightArea);
                 newRight.addActor(actor);
                 node.setChild(PARENT_RIGHT, newRight);
-            }
-            else {
+            } else {
                 insertObject(actor, actorBounds, rightIntersects, rightArea, node.getRight());
             }
         }
     }
-    
+
     /**
      * Create a new node for the given area.
      */
-    private BSPNode createNewNode(Rect area)
-    {
+    private BSPNode createNewNode(Rect area) {
         int splitAxis, splitPos;
         if (area.getWidth() > area.getHeight()) {
             splitAxis = X_AXIS;
             splitPos = area.getMiddleX();
-        }
-        else {
+        } else {
             splitAxis = Y_AXIS;
             splitPos = area.getMiddleY();
         }
@@ -279,53 +268,48 @@ public class IBSPColChecker implements CollisionChecker
         newNode.setSplitPos(splitPos);
         return newNode;
     }
-    
-    public final Rect getActorBounds(Actor actor)
-    {
-        Rect r = ActorVisitor.getBoundingRect(actor);      
+
+    public final Rect getActorBounds(Actor actor) {
+        Rect r = ActorVisitor.getBoundingRect(actor);
         return r;
     }
-    
-    public static void printTree(BSPNode node, String indent, String lead)
-    {
+
+    public static void printTree(BSPNode node, String indent, String lead) {
         if (node == null) {
             return;
         }
-        
+
         String xx = lead;
         xx += node + ": ";
         xx += node.getArea();
         println(xx);
-        
+
         BSPNode left = node.getLeft();
         BSPNode right = node.getRight();
-        
+
         if (left != null) {
             String newIndent;
             if (right != null) {
                 newIndent = indent + " |";
-            }
-            else {
+            } else {
                 newIndent = indent + "  ";
             }
             printTree(left, newIndent, indent + " \\L-");
         }
-        
+
         if (right != null) {
             printTree(node.getRight(), indent + "  ", indent + " \\R-");
         }
     }
-    
-    public void printTree()
-    {
+
+    public void printTree() {
         printTree(bspTree, "", "");
     }
-    
-    public void removeObject(Actor object)
-    {
+
+    public void removeObject(Actor object) {
         // checkConsistency(true);
         ActorNode node = getNodeForActor(object);
-        
+
         while (node != null) {
             BSPNode bspNode = node.getBSPNode();
             node.remove();
@@ -334,13 +318,12 @@ public class IBSPColChecker implements CollisionChecker
         }
         // checkConsistency(true);
     }
-    
+
     /**
      * Check whether a node can be removed, and remove it if so, traversing up the
      * tree and so on. Returns the highest node which wasn't removed.
      */
-    private BSPNode checkRemoveNode(BSPNode node)
-    {
+    private BSPNode checkRemoveNode(BSPNode node) {
         // checkConsistency(false); // may be due to actor moving
         while (node != null && node.isEmpty()) {
             BSPNode parent = node.getParent();
@@ -354,8 +337,7 @@ public class IBSPColChecker implements CollisionChecker
                         right.areaChanged();
                     }
                     parent.setChild(side, right);
-                }
-                else {
+                } else {
                     bspTree = right;
                     if (right != null) {
                         right.setParent(null);
@@ -364,16 +346,14 @@ public class IBSPColChecker implements CollisionChecker
                 node.setChild(PARENT_RIGHT, null);
                 BSPNodeCache.returnNode(node);
                 node = parent;
-            }
-            else if (right == null) {
+            } else if (right == null) {
                 if (parent != null) {
                     if (left != null) {
                         left.getArea().copyFrom(node.getArea());
                         left.areaChanged();
                     }
                     parent.setChild(side, left);
-                }
-                else {
+                } else {
                     bspTree = left;
                     if (left != null) {
                         left.setParent(null);
@@ -382,41 +362,36 @@ public class IBSPColChecker implements CollisionChecker
                 node.setChild(PARENT_LEFT, null);
                 BSPNodeCache.returnNode(node);
                 node = parent;
-            }
-            else {
+            } else {
                 break;
             }
         }
-        
+
         // checkConsistency(false);
         return node;
     }
-    
+
     private static final int dbgCounter = 0;
-    
-    private static void println(String s)
-    {
+
+    private static void println(String s) {
         if (dbgCounter < 3000) {
             System.out.println(s);
             // dbgCounter++;
         }
     }
-        
-    public static ActorNode getNodeForActor(Actor object)
-    {
+
+    public static ActorNode getNodeForActor(Actor object) {
         return (ActorNode) ActorVisitor.getData(object);
     }
-    
-    public static void setNodeForActor(Actor object, ActorNode node)
-    {
+
+    public static void setNodeForActor(Actor object, ActorNode node) {
         ActorVisitor.setData(object, node);
     }
-    
+
     /**
      * An actors position or size has changed - update the tree.
      */
-    private void updateObject(Actor object)
-    {
+    private void updateObject(Actor object) {
         // checkConsistency(false); // can't check actor bounds - actor has moved, may be inconsistent
         ActorNode node = getNodeForActor(object);
         if (node == null) {
@@ -424,9 +399,9 @@ public class IBSPColChecker implements CollisionChecker
             // checker...
             return;
         }
-        
+
         Rect newBounds = getActorBounds(object);
-        if (! bspTree.getArea().contains(newBounds)) {
+        if (!bspTree.getArea().contains(newBounds)) {
             // The actor has moved out of the existing tree area
             while (node != null) {
                 BSPNode rNode = node.getBSPNode();
@@ -437,7 +412,7 @@ public class IBSPColChecker implements CollisionChecker
             addObject(object);
             return;
         }
-        
+
         // First process all existing actor nodes. We cull nodes which
         // no longer contain any part of the actor; also, if we find a
         // BSPNode which completely contains the actor, we just throw
@@ -459,13 +434,12 @@ public class IBSPColChecker implements CollisionChecker
                     iter = iter.getNext();
                 }
                 return;
-            }
-            else if (! bspArea.intersects(newBounds)) {
+            } else if (!bspArea.intersects(newBounds)) {
                 // This actor node is no longer needed
                 BSPNode rNode = node.getBSPNode();
                 node.remove();
                 checkRemoveNode(rNode);
-                
+
                 // It's possible, when there is only one actor, that the tree is now empty:
                 if (bspTree == null) {
                     addObject(object);
@@ -475,7 +449,7 @@ public class IBSPColChecker implements CollisionChecker
             node.clearMark();
             node = node.getNext();
         }
-        
+
         // If we got here, there was no single node which contained the whole
         // actor (and we have culled any nodes which no longer contain any
         // part of the actor). We now need to find a suitable BSPNode
@@ -485,7 +459,7 @@ public class IBSPColChecker implements CollisionChecker
         Rect bspArea;
         if (node != null) {
             bspNode = node.getBSPNode();
-            while (bspNode != null && ! bspNode.getArea().contains(newBounds)) {
+            while (bspNode != null && !bspNode.getArea().contains(newBounds)) {
                 bspNode = bspNode.getParent();
             }
             if (bspNode == null) {
@@ -501,59 +475,54 @@ public class IBSPColChecker implements CollisionChecker
                 addObject(object);
                 return;
             }
-        }
-        else {
+        } else {
             bspNode = bspTree;
         }
-                
+
         // Note, we can pass null as the parent because bspNode is guaranteed not to be null.
         bspArea = bspNode.getArea();
         insertObject(object, newBounds, newBounds, bspArea, bspNode);
-        
+
         // Finally, it's possible the object changed size and therefore has been stored
         // in higher nodes than previously. This means there are duplicate actor nodes.
         // The insertObject call will mark all the nodes it touches, so we need remove
         // any unmarked nodes.
         node = getNodeForActor(object);
         while (node != null) {
-            if (! node.checkMark()) {
+            if (!node.checkMark()) {
                 bspNode = node.getBSPNode();
                 node.remove();
                 checkRemoveNode(bspNode);
             }
             node = node.getNext();
         }
-        
+
         // checkConsistency(true);
     }
-    
-    public void updateObjectLocation(Actor object, int oldX, int oldY)
-    {
+
+    public void updateObjectLocation(Actor object, int oldX, int oldY) {
         updateObject(object);
     }
 
-    public void updateObjectSize(Actor object)
-    {
+    public void updateObjectSize(Actor object) {
         updateObject(object);
     }
 
-    private List<Actor> getIntersectingObjects(Rect r, CollisionQuery query)
-    {
+    private List<Actor> getIntersectingObjects(Rect r, CollisionQuery query) {
         Set<Actor> set = new HashSet<Actor>();
         getIntersectingObjects(r, query, set, bspTree);
         List<Actor> l = new ArrayList<Actor>(set);
         return l;
     }
-    
-    private void getIntersectingObjects(Rect r, CollisionQuery query, Set<Actor> resultSet, BSPNode startNode)
-    {
+
+    private void getIntersectingObjects(Rect r, CollisionQuery query, Set<Actor> resultSet, BSPNode startNode) {
         LinkedList<BSPNode> nodeStack = new LinkedList<BSPNode>();
-        
+
         if (startNode != null) {
             nodeStack.add(startNode);
         }
-        
-        while (! nodeStack.isEmpty()) {
+
+        while (!nodeStack.isEmpty()) {
             BSPNode node = nodeStack.removeLast();
             if (node.getArea().intersects(r)) {
                 Iterator<Actor> i = node.getActorsIterator();
@@ -563,7 +532,7 @@ public class IBSPColChecker implements CollisionChecker
                         resultSet.add(actor);
                     }
                 }
-                
+
                 BSPNode left = node.getLeft();
                 BSPNode right = node.getRight();
                 if (left != null) {
@@ -575,53 +544,51 @@ public class IBSPColChecker implements CollisionChecker
             }
         }
     }
-    
+
     /**
      * Check if there is at least one actor in the given BSPNode which matches
      * the given collision query, and return it if so.
      */
-    private Actor checkForOneCollision(Actor ignore, BSPNode node, CollisionQuery query)
-    {
+    private Actor checkForOneCollision(Actor ignore, BSPNode node, CollisionQuery query) {
         Iterator<Actor> i = node.getActorsIterator();
-        
+
         while (i.hasNext()) {
             Actor candidate = i.next();
             if (ignore != candidate && query.checkCollision(candidate)) {
                 return candidate;
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Search for a single object which matches the given collision
      * query, starting from the given tree node and searching only
      * down the tree.
-     * 
-     * @param ignore - do not return this actor
-     * @param r  Bounds - do not search nodes which don't intersect this
-     * @param query  The query to check objects against
-     * @param startNode  The node to begin the search from
-     * @return  The actor found, or null
+     *
+     * @param ignore    - do not return this actor
+     * @param r         Bounds - do not search nodes which don't intersect this
+     * @param query     The query to check objects against
+     * @param startNode The node to begin the search from
+     * @return The actor found, or null
      */
-    private Actor getOneObjectDownTree(Actor ignore, Rect r, CollisionQuery query, BSPNode startNode)
-    {
+    private Actor getOneObjectDownTree(Actor ignore, Rect r, CollisionQuery query, BSPNode startNode) {
         if (startNode == null) {
             return null;
         }
-        
+
         LinkedList<BSPNode> nodeStack = new LinkedList<BSPNode>();
         nodeStack.add(startNode);
-        
-        while (! nodeStack.isEmpty()) {
+
+        while (!nodeStack.isEmpty()) {
             BSPNode node = nodeStack.removeLast();
             if (node.getArea().intersects(r)) {
                 Actor res = checkForOneCollision(ignore, node, query);
                 if (res != null) {
                     return res;
                 }
-                
+
                 BSPNode left = node.getLeft();
                 BSPNode right = node.getRight();
                 if (left != null) {
@@ -632,34 +599,34 @@ public class IBSPColChecker implements CollisionChecker
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Search down the tree, but only so far as the last node which fully contains the area.
+     *
      * @param r
      * @param query
      * @param actor
      * @return
      */
-    private Actor getOneIntersectingDown(Rect r, CollisionQuery query, Actor actor)
-    {
+    private Actor getOneIntersectingDown(Rect r, CollisionQuery query, Actor actor) {
         if (bspTree == null) {
             return null;
         }
-        
+
         LinkedList<BSPNode> nodeStack = new LinkedList<BSPNode>();
         nodeStack.add(bspTree);
-        
-        while (! nodeStack.isEmpty()) {
+
+        while (!nodeStack.isEmpty()) {
             BSPNode node = nodeStack.removeLast();
             if (node.getArea().contains(r)) {
                 Actor res = checkForOneCollision(actor, node, query);
                 if (res != null) {
                     return res;
                 }
-                
+
                 BSPNode left = node.getLeft();
                 BSPNode right = node.getRight();
                 if (left != null) {
@@ -670,20 +637,20 @@ public class IBSPColChecker implements CollisionChecker
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Search up the tree, up to (not including) the node which fully contains the area.
+     *
      * @param r
      * @param query
      * @param actor
      * @param start
      */
-    public Actor getOneIntersectingUp(Rect r, CollisionQuery query, Actor actor, BSPNode start)
-    {
-        while (start != null && ! start.getArea().contains(r)) {
+    public Actor getOneIntersectingUp(Rect r, CollisionQuery query, Actor actor, BSPNode start) {
+        while (start != null && !start.getArea().contains(r)) {
             Actor res = checkForOneCollision(actor, start, query);
             if (res != null) {
                 return res;
@@ -692,10 +659,9 @@ public class IBSPColChecker implements CollisionChecker
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls) {
         synchronized (pointQuery) {
             int px = x * cellSize + cellSize / 2;
             int py = y * cellSize + cellSize / 2;
@@ -706,10 +672,9 @@ public class IBSPColChecker implements CollisionChecker
 
     @SuppressWarnings("unchecked")
     public <T extends Actor> List<T> getIntersectingObjects(Actor actor,
-            Class<T> cls)
-    {
+                                                            Class<T> cls) {
         Rect r = getActorBounds(actor);
-        
+
         synchronized (actorQuery) {
             actorQuery.init(cls, actor);
             return (List<T>) getIntersectingObjects(r, actorQuery);
@@ -718,47 +683,45 @@ public class IBSPColChecker implements CollisionChecker
 
     @SuppressWarnings("unchecked")
     public <T extends Actor> List<T> getObjectsInRange(int x, int y, int r,
-            Class<T> cls)
-    {
+                                                       Class<T> cls) {
         int halfCell = cellSize / 2;
         int size = 2 * r * cellSize;
-        
+
         Rect rect = new Rect((x - r) * cellSize + halfCell,
                 (y - r) * cellSize + halfCell,
                 size,
                 size);
-        
+
         List<T> result;
         synchronized (actorQuery) {
             actorQuery.init(cls, null);
             result = (List<T>) getIntersectingObjects(rect, actorQuery);
         }
-        
+
         Iterator<T> i = result.iterator();
         synchronized (inRangeQuery) {
-            inRangeQuery.init(x * cellSize + halfCell , y * cellSize + halfCell, r * cellSize);
+            inRangeQuery.init(x * cellSize + halfCell, y * cellSize + halfCell, r * cellSize);
             while (i.hasNext()) {
-                if (! inRangeQuery.checkCollision(i.next())) {
+                if (!inRangeQuery.checkCollision(i.next())) {
                     i.remove();
                 }
             }
         }
-        
+
         return result;
     }
 
     @SuppressWarnings("unchecked")
     public <T extends Actor> List<T> getNeighbours(Actor actor, int distance,
-            boolean diag, Class<T> cls)
-    {
+                                                   boolean diag, Class<T> cls) {
         int x = ActorVisitor.getX(actor);
         int y = ActorVisitor.getY(actor);
         int xPixel = x * cellSize;
         int yPixel = y * cellSize;
         int dPixel = distance * cellSize;
-        
+
         Rect r = new Rect(xPixel - dPixel, yPixel - dPixel, dPixel * 2 + 1, dPixel * 2 + 1);
-        
+
         synchronized (neighbourQuery) {
             neighbourQuery.init(x, y, distance, diag, cls);
             List<T> res = (List<T>) getIntersectingObjects(r, neighbourQuery);
@@ -767,23 +730,21 @@ public class IBSPColChecker implements CollisionChecker
     }
 
     public <T extends Actor> List<T> getObjectsInDirection(int x, int y,
-            int angle, int length, Class<T> cls)
-    {
+                                                           int angle, int length, Class<T> cls) {
         // non-functional
         return new ArrayList<T>();
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getObjects(Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjects(Class<T> cls) {
         Set<T> set = new HashSet<T>();
         LinkedList<BSPNode> nodeStack = new LinkedList<BSPNode>();
-        
+
         if (bspTree != null) {
             nodeStack.add(bspTree);
         }
-        
-        while (! nodeStack.isEmpty()) {
+
+        while (!nodeStack.isEmpty()) {
             BSPNode node = nodeStack.removeLast();
             Iterator<Actor> i = node.getActorsIterator();
             while (i.hasNext()) {
@@ -801,25 +762,22 @@ public class IBSPColChecker implements CollisionChecker
                 nodeStack.add(right);
             }
         }
-        
+
         List<T> list = new ArrayList<T>(set);
         return list;
     }
 
-    public List<Actor> getObjectsList()
-    {
+    public List<Actor> getObjectsList() {
         return getObjects(null);
     }
 
-    public final void startSequence()
-    {
+    public final void startSequence() {
         // Nothing necessary.
     }
 
     @SuppressWarnings("unchecked")
     public <T extends Actor> T getOneObjectAt(Actor object, int dx, int dy,
-            Class<T> cls)
-    {
+                                              Class<T> cls) {
         synchronized (pointQuery) {
             int px = dx * cellSize + cellSize / 2;
             int py = dy * cellSize + cellSize / 2;
@@ -835,12 +793,11 @@ public class IBSPColChecker implements CollisionChecker
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Actor> T getOneIntersectingObject(Actor actor, Class<T> cls)
-    {
+    public <T extends Actor> T getOneIntersectingObject(Actor actor, Class<T> cls) {
         Rect r = getActorBounds(actor);
         synchronized (actorQuery) {
             actorQuery.init(cls, actor);
-            
+
             ActorNode node = getNodeForActor(actor);
             do {
                 BSPNode bspNode = node.getBSPNode();
@@ -859,17 +816,16 @@ public class IBSPColChecker implements CollisionChecker
         }
     }
 
-    public void paintDebug(Graphics g)
-    {
+    public void paintDebug(Graphics g) {
         LinkedList<BSPNode> nodeStack = new LinkedList<BSPNode>();
         nodeStack.add(bspTree);
-        
+
         Color oldColor = g.getColor();
         //g.setColor(Color.YELLOW);
         //g.setColor(Color.WHITE);
         g.setColor(Color.RED);
-        
-        while (! nodeStack.isEmpty()) {
+
+        while (!nodeStack.isEmpty()) {
             BSPNode node = nodeStack.removeLast();
             if (node != null) {
                 Rect area = node.getArea();
@@ -878,7 +834,7 @@ public class IBSPColChecker implements CollisionChecker
                 nodeStack.add(node.getRight());
             }
         }
-        
+
         g.setColor(oldColor);
     }
 

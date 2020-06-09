@@ -24,15 +24,14 @@ package bluej.debugger;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.io.*;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
- *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  * @version $Id: DebuggerTerminal.java 6215 2009-03-30 13:28:25Z polle $
  */
-public interface DebuggerTerminal
-{
+public interface DebuggerTerminal {
     @OnThread(Tag.Any)
     Writer getErrorWriter();
 

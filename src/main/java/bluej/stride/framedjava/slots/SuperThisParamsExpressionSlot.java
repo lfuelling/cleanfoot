@@ -32,20 +32,17 @@ import bluej.stride.slots.ChoiceSlot;
 import java.util.Collections;
 
 public class SuperThisParamsExpressionSlot extends
-        ExpressionSlot<SuperThisParamsExpressionFragment>
-{
+        ExpressionSlot<SuperThisParamsExpressionFragment> {
     public SuperThisParamsExpressionSlot(InteractionManager editor,
-            Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
+                                         Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
                                          ChoiceSlot<SuperThis> superThis,
-            String stylePrefix)
-    {
+                                         String stylePrefix) {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, Collections.emptyList());
         setParamsToConstructor(superThis);
     }
 
     @Override
-    protected SuperThisParamsExpressionFragment makeSlotFragment(String content, String javaCode)
-    {
+    protected SuperThisParamsExpressionFragment makeSlotFragment(String content, String javaCode) {
         return new SuperThisParamsExpressionFragment(content, javaCode, this);
     }
 }

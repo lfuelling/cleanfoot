@@ -21,29 +21,23 @@
  */
 package bluej.stride.framedjava.elements;
 
-import java.util.stream.Stream;
-
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.*;
 import bluej.stride.framedjava.frames.AssignFrame;
 import bluej.stride.framedjava.frames.DebugInfo;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
 
-public class AssignElement extends CodeElement implements JavaSingleLineDebugHandler
-{
+import java.util.stream.Stream;
+
+public class AssignElement extends CodeElement implements JavaSingleLineDebugHandler {
     public static final String ELEMENT = "assign";
     private final FilledExpressionSlotFragment lhs;
     private final FilledExpressionSlotFragment rhs;
     private AssignFrame frame;
-    
-    public AssignElement(AssignFrame frame, FilledExpressionSlotFragment lhs, FilledExpressionSlotFragment rhs, boolean enabled)
-    {
+
+    public AssignElement(AssignFrame frame, FilledExpressionSlotFragment lhs, FilledExpressionSlotFragment rhs, boolean enabled) {
         this.frame = frame;
         this.lhs = lhs;
         this.lhs.markAssignmentLHS(frame);
@@ -52,51 +46,44 @@ public class AssignElement extends CodeElement implements JavaSingleLineDebugHan
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         return new JavaSource(this, lhs, f(frame, " = "), rhs, f(frame, ";"));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement assignEl = new LocatableElement(this, ELEMENT);
         assignEl.addAttributeStructured("dest", lhs);
         assignEl.addAttributeStructured("src", rhs);
         addEnableAttribute(assignEl);
         return assignEl;
     }
-    
-    public AssignElement(Element el)
-    {
+
+    public AssignElement(Element el) {
         lhs = new FilledExpressionSlotFragment(el.getAttributeValue("dest"), el.getAttributeValue("dest-java"));
         rhs = new FilledExpressionSlotFragment(el.getAttributeValue("src"), el.getAttributeValue("src-java"));
         enable = Boolean.valueOf(el.getAttributeValue("enable"));
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new AssignFrame(editor, lhs, rhs, isEnable());
         lhs.markAssignmentLHS(frame);
         return frame;
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
-    }
-    
-    @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
     }
 
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    public void show(ShowReason reason) {
+        frame.show(reason);
+    }
+
+    @Override
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.of(lhs, rhs);
     }
 }

@@ -25,28 +25,28 @@ import java.util.EventListener;
 
 /**
  * Listener for recieving events when publishing a scenario to a website.
- * 
+ *
  * @author Poul Henriksen
  */
-public interface PublishListener extends EventListener
-{
+public interface PublishListener extends EventListener {
     /**
      * The upload completed successfully.
      */
     void uploadComplete(PublishEvent event);
-    
+
     /**
      * An error occurred. The upload will not complete.
      */
     void errorRecieved(PublishEvent event);
-    
+
     /**
      * Some upload progress has been made.
      */
     void progressMade(PublishEvent event);
-    
+
     /**
      * Proxy authentication details are required.
+     *
      * @return a 2-element array containing a username/password pair, or null if the user cancels.
      */
     String[] needProxyAuth();

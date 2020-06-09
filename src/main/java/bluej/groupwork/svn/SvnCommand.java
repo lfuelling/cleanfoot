@@ -21,91 +21,81 @@
  */
 package bluej.groupwork.svn;
 
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.SVNClientInterface;
-
 import bluej.groupwork.TeamworkCommand;
 import bluej.groupwork.TeamworkCommandAborted;
 import bluej.groupwork.TeamworkCommandResult;
 import bluej.utility.Debug;
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.SVNClientInterface;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * Base class for subversion command implementations.
- * 
+ *
  * @author Davin McCall
  */
 abstract public class SvnCommand
-    implements TeamworkCommand
-{
+        implements TeamworkCommand {
     private final SvnRepository repository;
     private SVNClientInterface client;
     private boolean cancelled = false;
-    
-    protected SvnCommand(SvnRepository repository)
-    {
+
+    protected SvnCommand(SvnRepository repository) {
         this.repository = repository;
     }
-    
-    public synchronized void cancel()
-    {
+
+    public synchronized void cancel() {
         cancelled = true;
         if (client != null) {
             try {
                 client.cancelOperation();
-            }
-            catch (ClientException ce) {
+            } catch (ClientException ce) {
                 // Why would we get an exception on a cancel?
                 Debug.message("Exception during subversion cancel:");
                 ce.printStackTrace(System.out);
             }
         }
     }
-    
+
     /**
      * Check whether this command has been cancelled.
      */
-    protected synchronized boolean isCancelled()
-    {
+    protected synchronized boolean isCancelled() {
         return cancelled;
     }
-    
+
     /**
      * Get a handle to the SVN client interface.
      */
-    protected SVNClientInterface getClient()
-    {
+    protected SVNClientInterface getClient() {
         return client;
     }
-    
+
     /**
      * Get a handle to the repository.
      */
-    protected SvnRepository getRepository()
-    {
+    protected SvnRepository getRepository() {
         return repository;
     }
 
     @OnThread(Tag.Worker)
-    public TeamworkCommandResult getResult()
-    {
+    public TeamworkCommandResult getResult() {
         return repository.execCommand(this);
     }
 
     @OnThread(Tag.Worker)
-    public TeamworkCommandResult doCommand(SVNClientInterface client)
-    {
+    public TeamworkCommandResult doCommand(SVNClientInterface client) {
         synchronized (this) {
             if (cancelled) {
                 return new TeamworkCommandAborted();
             }
             this.client = client;
         }
-        
+
         TeamworkCommandResult result = doCommand();
         this.client = null; // so that cancellation after completion doesn't
-                       // cause the next command to be cancelled
+        // cause the next command to be cancelled
         return result;
     }
 

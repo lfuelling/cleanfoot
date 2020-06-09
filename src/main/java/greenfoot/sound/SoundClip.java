@@ -21,80 +21,81 @@
  */
 package greenfoot.sound;
 
+import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.FloatControl;
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
 /**
  * Plays sound from a URL. The sound is loaded into memory the first time it is
  * played.
- * 
+ *
  * <p>Much of the complexity of this code comes from the need to work around bugs in
  * the audio support of various Java runtimes.
- * 
+ *
  * @author Poul Henriksen
  */
-public class SoundClip implements Sound, LineListener
-{
+public class SoundClip implements Sound, LineListener {
     private static final ClipCache clipCache = new ClipCache();
     private static final ClipProcessThread processThread = new ClipProcessThread();
     private static final ClipCloserThread closerThread = new ClipCloserThread();
 
-    /** URL of the sound data. */
+    /**
+     * URL of the sound data.
+     */
     private final URL url;
-    
-    /** Data for the clip (used for caching) */
+
+    /**
+     * Data for the clip (used for caching)
+     */
     private ClipData clipData;
-    
+
     /**
      * The clip that this SoundClip represents. Can be null (when state is
      * CLOSED)
      */
     private Clip soundClip;
 
-    /** The states a clip can be in. */
-    private enum ClipState
-    {
+    /**
+     * The states a clip can be in.
+     */
+    private enum ClipState {
         STOPPED, PLAYING, PAUSED_LOOPING, PAUSED_PLAYING, CLOSED, LOOPING, STOPPING
     }
 
-    /** requested clip state (never STOPPING) */
+    /**
+     * requested clip state (never STOPPING)
+     */
     private ClipState clipState = ClipState.CLOSED;
-    
-    /** actual state playing vs looping vs stopping vs stopped */
+
+    /**
+     * actual state playing vs looping vs stopping vs stopped
+     */
     private ClipState currentState = ClipState.STOPPED;
-    
+
     /**
      * The master volume of the sound clip.
      */
     private int masterVolume = 100;
-    
-    /** Listener for state changes. */
+
+    /**
+     * Listener for state changes.
+     */
     private final SoundPlaybackListener playbackListener;
-    
+
     private boolean resumedLoop;
-    
-    /** Sound has been stopped; if played again, should be played from start rather than current position */
+
+    /**
+     * Sound has been stopped; if played again, should be played from start rather than current position
+     */
     private boolean resetToStart;
 
     /**
      * Creates a new sound clip
      */
-    public SoundClip(String name, URL url, SoundPlaybackListener listener)
-    {
+    public SoundClip(String name, URL url, SoundPlaybackListener listener) {
         this.url = url;
         playbackListener = listener;
     }
@@ -102,38 +103,30 @@ public class SoundClip implements Sound, LineListener
     /**
      * Load the sound file supplied by the parameter into this sound engine.
      */
-    private boolean open()
-    {
+    private boolean open() {
         try {
             load();
             soundClip.addLineListener(this);
             return true;
-        }
-        catch (SecurityException e) {
+        } catch (SecurityException e) {
             SoundExceptionHandler.handleSecurityException(e, url.toString());
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             SoundExceptionHandler.handleIllegalArgumentException(e, url.toString());
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             SoundExceptionHandler.handleFileNotFoundException(e, url.toString());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             SoundExceptionHandler.handleIOException(e, url.toString());
-        }
-        catch (UnsupportedAudioFileException e) {
+        } catch (UnsupportedAudioFileException e) {
             SoundExceptionHandler.handleUnsupportedAudioFileException(e,
                     url.toString());
-        }
-        catch (LineUnavailableException e) {
+        } catch (LineUnavailableException e) {
             SoundExceptionHandler.handleLineUnavailableException(e);
         }
         return false;
     }
 
     private void load() throws UnsupportedAudioFileException, IOException,
-            LineUnavailableException
-    {
+            LineUnavailableException {
         clipData = clipCache.getCachedClip(url);
         InputStream is = new ByteArrayInputStream(clipData.getBuffer());
         AudioFormat format = clipData.getFormat();
@@ -143,28 +136,24 @@ public class SoundClip implements Sound, LineListener
         // getLine throws illegal argument exception if it can't find a line.
         soundClip = (Clip) AudioSystem.getLine(info);
         soundClip.open(stream);
-        
+
         // Note we don't use soundClip.getMicrosecondLength() due to an IcedTea bug:
         // http://icedtea.classpath.org/bugzilla/show_bug.cgi?id=902
         setVolume(masterVolume);
     }
-    
+
     /**
      * Preloads the clip, by opening it.
      */
-    public synchronized void preLoad()
-    {
+    public synchronized void preLoad() {
         //Ignore all exceptions when pre-loading
-        try
-        {
+        try {
             clipData = clipCache.getCachedClip(url);
             clipCache.releaseClipData(clipData);
-        }
-        catch (IOException e) {
-            
-        }
-        catch (UnsupportedAudioFileException e) {
-            
+        } catch (IOException e) {
+
+        } catch (UnsupportedAudioFileException e) {
+
         }
     }
 
@@ -172,8 +161,7 @@ public class SoundClip implements Sound, LineListener
      * @see greenfoot.sound.Sound#play()
      */
     @Override
-    public synchronized void play()
-    {
+    public synchronized void play() {
         if (clipState == ClipState.PLAYING) {
             return;
         }
@@ -182,23 +170,20 @@ public class SoundClip implements Sound, LineListener
             // Open the clip in another thread
             processThread.addToQueue(this);
             currentState = ClipState.STOPPED;
-        }
-        else if (currentState == ClipState.STOPPED) {
+        } else if (currentState == ClipState.STOPPED) {
             if (resetToStart) {
                 resetToStart = false;
                 soundClip.setFramePosition(0);
             }
             soundClip.loop(0);
             soundClip.start();
-        }
-        else if (currentState == ClipState.STOPPING) {
+        } else if (currentState == ClipState.STOPPING) {
             // This state only occurs while processState is executing
             // (and stopping or pausing a clip).
             setState(ClipState.PLAYING);
             // The rest is handled in processState.
             return;
-        }
-        else if (currentState == ClipState.LOOPING) {
+        } else if (currentState == ClipState.LOOPING) {
             soundClip.loop(0);
         }
         setState(ClipState.PLAYING);
@@ -212,8 +197,7 @@ public class SoundClip implements Sound, LineListener
      * end have been reached.
      */
     @Override
-    public synchronized void loop()
-    {
+    public synchronized void loop() {
         if (clipState == ClipState.LOOPING) {
             return;
         }
@@ -221,23 +205,20 @@ public class SoundClip implements Sound, LineListener
             // Open the clip in another thread
             processThread.addToQueue(this);
             currentState = ClipState.STOPPED;
-        }
-        else if (currentState == ClipState.STOPPED) {
+        } else if (currentState == ClipState.STOPPED) {
             if (resetToStart) {
                 resetToStart = false;
                 soundClip.setFramePosition(0);
             }
             soundClip.setLoopPoints(0, -1);
             soundClip.loop(Clip.LOOP_CONTINUOUSLY);
-        }
-        else if (currentState == ClipState.STOPPING) {
+        } else if (currentState == ClipState.STOPPING) {
             // This state only occurs while processState is executing
             // (and stopping or pausing a clip).
             setState(ClipState.LOOPING);
             // The rest is handled in processState.
             return;
-        }
-        else if (currentState == ClipState.PLAYING) {
+        } else if (currentState == ClipState.PLAYING) {
             soundClip.setLoopPoints(0, -1);
             soundClip.loop(Clip.LOOP_CONTINUOUSLY);
             resumedLoop = true;
@@ -247,9 +228,8 @@ public class SoundClip implements Sound, LineListener
             currentState = ClipState.LOOPING;
         }
     }
-    
-    public void processState()
-    {
+
+    public void processState() {
         ClipState toState;
         Clip soundClip;
 
@@ -263,11 +243,11 @@ public class SoundClip implements Sound, LineListener
         // There are certain combinations we won't see here:
         //  current = LOOPING, desired = PLAYING
         //  current = PLAYING, desired = LOOPING
-        
+
         synchronized (this) {
             toState = clipState; // desired state
             soundClip = this.soundClip;
-            
+
             if (clipState == ClipState.PLAYING) {
                 if (currentState != ClipState.PLAYING) {
                     if (soundClip == null && !open()) {
@@ -278,8 +258,7 @@ public class SoundClip implements Sound, LineListener
                     currentState = ClipState.PLAYING;
                 }
                 return;
-            }
-            else if (clipState == ClipState.LOOPING) {
+            } else if (clipState == ClipState.LOOPING) {
                 if (currentState != ClipState.LOOPING) {
                     if (soundClip == null && !open()) {
                         return;
@@ -292,21 +271,18 @@ public class SoundClip implements Sound, LineListener
                     currentState = ClipState.LOOPING;
                 }
                 return;
-            }
-            else if (clipState == ClipState.CLOSED) {
+            } else if (clipState == ClipState.CLOSED) {
                 return;
-            }
-            else if (isPaused() || clipState == ClipState.STOPPED) {
+            } else if (isPaused() || clipState == ClipState.STOPPED) {
                 if (currentState == ClipState.PLAYING || currentState == ClipState.LOOPING) {
                     currentState = ClipState.STOPPING;
                     resumedLoop = false;
-                }
-                else {
+                } else {
                     return; // prevent code below from executing
                 }
             }
         }
-        
+
         if (toState == ClipState.STOPPED
                 || toState == ClipState.PAUSED_LOOPING
                 || toState == ClipState.PAUSED_PLAYING) {
@@ -316,23 +292,22 @@ public class SoundClip implements Sound, LineListener
             // which means we'll get a deadlock if we're sync'd now.
             // Also, stop() can take quite a while to execute on OpenJDK.
             soundClip.stop();
-            
+
             synchronized (this) {
                 if (resetToStart) {
                     resetToStart = false;
                     soundClip.setFramePosition(0);
                 }
-                
+
                 currentState = ClipState.STOPPED;
-                
+
                 // Possibly the clip state changed while we were stopping/pausing.
                 // We need to deal with this now.
                 if (clipState == ClipState.PLAYING) {
                     soundClip.loop(0);
                     soundClip.start();
                     currentState = ClipState.PLAYING;
-                }
-                else if (clipState == ClipState.LOOPING) {
+                } else if (clipState == ClipState.LOOPING) {
                     soundClip.setLoopPoints(0, -1);
                     soundClip.loop(Clip.LOOP_CONTINUOUSLY);
                     currentState = ClipState.LOOPING;
@@ -340,14 +315,14 @@ public class SoundClip implements Sound, LineListener
             }
         }
     }
-    
+
     /**
      * Set the volume level for this sound.
+     *
      * @param level the volume level.
      */
     @Override
-    public synchronized void setVolume(int level)
-    {
+    public synchronized void setVolume(int level) {
         this.masterVolume = level;
         if (soundClip != null) {
             if (soundClip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
@@ -359,11 +334,11 @@ public class SoundClip implements Sound, LineListener
 
     /**
      * Get the volume level.
+     *
      * @return the volume level.
      */
     @Override
-    public synchronized int getVolume()
-    {
+    public synchronized int getVolume() {
         return masterVolume;
     }
 
@@ -371,8 +346,7 @@ public class SoundClip implements Sound, LineListener
      * Stop this sound.
      */
     @Override
-    public synchronized void stop()
-    {
+    public synchronized void stop() {
         if (isStopped()) {
             return;
         }
@@ -382,8 +356,7 @@ public class SoundClip implements Sound, LineListener
                 // Release the clip.
                 closerThread.addClip(soundClip);
                 soundClip = null;
-            }
-            else {
+            } else {
                 resetToStart = true;
                 processThread.addToQueue(this);
             }
@@ -395,8 +368,7 @@ public class SoundClip implements Sound, LineListener
      * immediately.
      */
     @Override
-    public synchronized void close()
-    {
+    public synchronized void close() {
         if (clipState != ClipState.CLOSED) {
             if (soundClip != null) {
                 setVolume(0);
@@ -412,8 +384,7 @@ public class SoundClip implements Sound, LineListener
      * Pause the clip. Paused sounds can be resumed.
      */
     @Override
-    public synchronized void pause()
-    {
+    public synchronized void pause() {
         resumedLoop = false;
         if (soundClip == null) {
             return;
@@ -428,8 +399,7 @@ public class SoundClip implements Sound, LineListener
         }
     }
 
-    private void setState(ClipState newState)
-    {
+    private void setState(ClipState newState) {
         if (clipState != newState) {
             clipState = newState;
             switch (clipState) {
@@ -458,8 +428,7 @@ public class SoundClip implements Sound, LineListener
      * True if the sound is currently playing.
      */
     @Override
-    public synchronized boolean isPlaying()
-    {
+    public synchronized boolean isPlaying() {
         return clipState == ClipState.PLAYING || clipState == ClipState.LOOPING;
     }
 
@@ -467,8 +436,7 @@ public class SoundClip implements Sound, LineListener
      * True if the sound is currently paused.
      */
     @Override
-    public synchronized boolean isPaused()
-    {
+    public synchronized boolean isPaused() {
         return clipState == ClipState.PAUSED_PLAYING || clipState == ClipState.PAUSED_LOOPING;
     }
 
@@ -476,20 +444,17 @@ public class SoundClip implements Sound, LineListener
      * True if the sound is currently stopped.
      */
     @Override
-    public synchronized boolean isStopped()
-    {
+    public synchronized boolean isStopped() {
         return clipState == ClipState.STOPPED || clipState == ClipState.CLOSED;
     }
 
     @Override
-    public void update(LineEvent event)
-    {
+    public void update(LineEvent event) {
         if (event.getType() == LineEvent.Type.STOP) {
             synchronized (this) {
                 if (currentState == ClipState.STOPPING) {
                     // setState(ClipState.STOPPED);
-                }
-                else {
+                } else {
                     currentState = ClipState.STOPPED;
                     if (resumedLoop && clipState == ClipState.LOOPING) {
                         // If the sound is supposed to be looping, we shouldn't get a stop event for it.
@@ -506,8 +471,7 @@ public class SoundClip implements Sound, LineListener
                         soundClip = null;
                         // Avoid restarting on this thread to avoid OpenJDK pulseaudio deadlock:
                         processThread.addToQueue(this);
-                    }
-                    else if (! isPaused()) {
+                    } else if (!isPaused()) {
                         setState(ClipState.STOPPED);
                         // May have been restarted by a listener, so this check
                         // of clipState is not as redundant as it looks:
@@ -523,8 +487,7 @@ public class SoundClip implements Sound, LineListener
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return url + " " + super.toString();
     }
 }

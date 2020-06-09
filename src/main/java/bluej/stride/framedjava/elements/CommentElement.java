@@ -21,59 +21,53 @@
  */
 package bluej.stride.framedjava.elements;
 
-import java.util.stream.Stream;
-
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.stride.framedjava.ast.JavaSource;
 import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.frames.CommentFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
-public class CommentElement extends CodeElement
-{
+import java.util.stream.Stream;
+
+public class CommentElement extends CodeElement {
     public static final String ELEMENT = "comment";
     private CommentFrame frame;
     private final String comment;
-    
-    public CommentElement(Element xmlEl)
-    {
+
+    public CommentElement(Element xmlEl) {
         if (xmlEl.getChildCount() > 0)
             comment = xmlEl.getChild(0).getValue();
         else
             comment = ""; // Empty
     }
-    
+
     @OnThread(Tag.FX)
-    public CommentElement(CommentFrame frame)
-    {
+    public CommentElement(CommentFrame frame) {
         this.frame = frame;
         this.comment = frame.getComment();
     }
 
-    public CommentElement(String s)
-    {
+    public CommentElement(String s) {
         this.comment = s;
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         // We keep the comment in the source so that it's there if the user
         // converts the whole class to Java or previews as Java
-        
+
         // We must remove any initial star (to avoid making it a Javadoc comment)
         // and any /* or */ inside.  Prefixing space removes initial star  
-        String sanitised = " " +comment.replace("/*", "").replace("*/","").replace("\n",""); // TODO make newlines work again
+        String sanitised = " " + comment.replace("/*", "").replace("*/", "").replace("\n", ""); // TODO make newlines work again
         return new JavaSource(null, f(frame, "/*"), f(frame, sanitised), f(frame, "*/"));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement commentEl = new LocatableElement(this, ELEMENT);
         preserveWhitespace(commentEl);
         commentEl.appendChild(comment);
@@ -81,21 +75,18 @@ public class CommentElement extends CodeElement
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new CommentFrame(editor, comment);
         return frame;
     }
-    
+
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.empty();
     }
 }

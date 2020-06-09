@@ -21,30 +21,23 @@
  */
 package bluej.extmgr;
 
-import javax.swing.*;
-
-import bluej.*;
+import bluej.Config;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformSupplier;
 import bluej.utility.javafx.JavaFXUtil;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.net.URL;
-import java.util.List;
 import javafx.application.Platform;
-import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Window;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import javax.swing.*;
+import java.net.URL;
+import java.util.List;
 
 /**
  * The Extensions Manager help panel allows the user to view current extensions.
@@ -53,8 +46,7 @@ import javafx.stage.Window;
  * @author Damiano Bolla, University of Kent at Canterbury, 2003
  */
 @OnThread(Tag.FXPlatform)
-public class ExtensionsDialog
-{
+public class ExtensionsDialog {
     private final String systemString = Config.getString("extmgr.systemExtensionShort");
     private final String projectString = Config.getString("extmgr.projectExtensionShort");
     private final String systemLongString = Config.getString("extmgr.systemExtensionLong");
@@ -68,9 +60,7 @@ public class ExtensionsDialog
      * Setup the UI for the dialog and event handlers for the dialog's buttons.
      * This new version is guarantee to have a valid extension manager.
      */
-    @OnThread(Tag.Swing)
-    ExtensionsDialog(List<ExtensionWrapper> extensionsList, FXPlatformSupplier<Window> parent)
-    {
+    @OnThread(Tag.Swing) ExtensionsDialog(List<ExtensionWrapper> extensionsList, FXPlatformSupplier<Window> parent) {
         Platform.runLater(() -> {
             mainFrame = new Dialog();
             mainFrame.initOwner(parent.get());
@@ -91,7 +81,7 @@ public class ExtensionsDialog
             mainFrame.getDialogPane().setContent(extensionsPane);
             mainFrame.getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
         });
-        
+
         extensionsList.forEach(wrapper -> {
             // We must get details on the Swing thread...
             String extensionName = wrapper.safeGetExtensionName();
@@ -102,20 +92,18 @@ public class ExtensionsDialog
             String extensionFileName = wrapper.getExtensionFileName();
             URL url = wrapper.safeGetURL();
             // But create the TitledPane on the FX thread:
-            Platform.runLater(() -> 
-                extensionsVBox.getChildren().add(makeDisplay(extensionName, extensionStatus, extensionVersion, extensionDescription, isProject, extensionFileName, url))
+            Platform.runLater(() ->
+                    extensionsVBox.getChildren().add(makeDisplay(extensionName, extensionStatus, extensionVersion, extensionDescription, isProject, extensionFileName, url))
             );
         });
     }
-    
-    public void showAndWait()
-    {
+
+    public void showAndWait() {
         mainFrame.showAndWait();
     }
 
     @OnThread(Tag.FXPlatform)
-    private TitledPane makeDisplay(String extensionName, String extensionStatus, String extensionVersion, String extensionDescription, boolean isProject, String extensionFileName, URL url)
-    {
+    private TitledPane makeDisplay(String extensionName, String extensionStatus, String extensionVersion, String extensionDescription, boolean isProject, String extensionFileName, URL url) {
         String typeShort = isProject ? projectString : systemString;
         String typeLong = isProject ? projectLongString : systemLongString;
         String title = extensionName + " (" + typeShort + ", " + extensionStatus + ")";
@@ -124,16 +112,15 @@ public class ExtensionsDialog
         JavaFXUtil.addStyleClass(mainPanel, "extension-info");
 
         mainPanel.getChildren().add(new Label(extensionName + " " + versionTag + " "
-            + extensionVersion));
+                + extensionVersion));
         mainPanel.getChildren().add(new Label(typeLong));
 
         mainPanel.getChildren().add(new Label(locationTag + " " + extensionFileName +
-            " (" + extensionStatus +')'));
+                " (" + extensionStatus + ')'));
 
         Text description = new Text(extensionDescription);
         mainPanel.getChildren().add(new TextFlow(description));
-        if (url != null)
-        {
+        if (url != null) {
             Hyperlink link = new Hyperlink(url.toExternalForm());
             link.setOnAction(e -> SwingUtilities.invokeLater(() -> Utility.openWebBrowser(url.toExternalForm())));
             mainPanel.getChildren().add(link);

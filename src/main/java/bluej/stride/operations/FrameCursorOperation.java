@@ -21,23 +21,18 @@
  */
 package bluej.stride.operations;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.control.CustomMenuItem;
 import bluej.stride.generic.FrameCursor;
 import bluej.stride.generic.InteractionManager;
+import javafx.scene.control.CustomMenuItem;
 
-public abstract class FrameCursorOperation extends AbstractOperation
-{
-    public FrameCursorOperation(InteractionManager editor, String identifier, Combine combine)
-    {
+public abstract class FrameCursorOperation extends AbstractOperation {
+    public FrameCursorOperation(InteractionManager editor, String identifier, Combine combine) {
         super(editor, identifier, combine);
     }
 
     public abstract void execute(FrameCursor frameCursor);
 
-    public CustomMenuItem getMenuItem(final FrameCursor frameCursor)
-    {
+    public CustomMenuItem getMenuItem(final FrameCursor frameCursor) {
         CustomMenuItem item = initializeCustomItem();
         // Delete (with hover preview)
         item.setOnAction(e -> {

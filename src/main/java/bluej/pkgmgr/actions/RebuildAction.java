@@ -26,20 +26,17 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "Rebuild package" command. Re-compiles all classes regardless of whether
  * they need it or not (!).
- * 
+ *
  * @author Davin McCall
  * @version $Id: RebuildAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
 
-final public class RebuildAction extends PkgMgrAction
-{
-    public RebuildAction(PkgMgrFrame pmf)
-    {
+final public class RebuildAction extends PkgMgrAction {
+    public RebuildAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.rebuild");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.getPackage().rebuild();
     }

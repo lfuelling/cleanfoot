@@ -26,12 +26,11 @@ import threadchecker.Tag;
 
 /**
  * A class to represent team settings
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class TeamSettings
-{
+public class TeamSettings {
     private final TeamworkProvider provider;
     private final String protocol;
     private final String server;
@@ -41,10 +40,9 @@ public class TeamSettings
     private final String password;
     private String yourName;
     private String yourEmail;
-    
+
     public TeamSettings(TeamworkProvider provider, String protocol, String server,
-            String prefix, String group, String username, String password)
-    {
+                        String prefix, String group, String username, String password) {
         this.provider = provider;
         this.protocol = protocol;
         this.server = server;
@@ -53,84 +51,74 @@ public class TeamSettings
         this.username = username;
         this.password = password;
     }
-    
-    public TeamworkProvider getProvider()
-    {
+
+    public TeamworkProvider getProvider() {
         return provider;
     }
-    
-    public String getProtocol()
-    {
+
+    public String getProtocol() {
         return protocol;
     }
-    
-    public String getServer()
-    {
+
+    public String getServer() {
         return server;
     }
-    
-    public String getPrefix()
-    {
+
+    public String getPrefix() {
         return prefix;
     }
-    
-    public String getGroup()
-    {
+
+    public String getGroup() {
         return group;
     }
-    
-    public String getUserName()
-    {
+
+    public String getUserName() {
         return username;
     }
-    
-    public String getPassword()
-    {
+
+    public String getPassword() {
         return password;
     }
 
     /**
      * @return the yourName
      */
-    public String getYourName()
-    {
+    public String getYourName() {
         return yourName;
     }
 
     /**
      * @param yourName the yourName to set
      */
-    public void setYourName(String yourName)
-    {
+    public void setYourName(String yourName) {
         this.yourName = yourName;
     }
 
     /**
      * @return the yourEmail
      */
-    public String getYourEmail()
-    {
+    public String getYourEmail() {
         return yourEmail;
     }
 
     /**
      * @param yourEmail the yourEmail to set
      */
-    public void setYourEmail(String yourEmail)
-    {
+    public void setYourEmail(String yourEmail) {
         this.yourEmail = yourEmail;
     }
-    
+
     /**
      * produces an URI connection string for display purposes.
+     *
      * @param protocol the string containting the protocol
-     * @param server the server address
-     * @param prefix the repository path in the server
+     * @param server   the server address
+     * @param prefix   the repository path in the server
      * @param userName the user name used for login
      * @return the connection string in URI format.
      */
-    public static String getURI(String protocol, String server, String prefix){
-        
+    public static String getURI(String protocol, String server, String prefix) {
+
         String gitUrl = protocol + "://";
 
 

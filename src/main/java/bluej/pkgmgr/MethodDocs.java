@@ -25,27 +25,23 @@ import java.util.List;
 
 /**
  * Simple container class for capturing method documentation - javadoc and parameter names.
- * 
+ *
  * @author Davin McCall
  */
-public class MethodDocs
-{
+public class MethodDocs {
     private final String javaDoc;
     private final List<String> paramNames;
-    
-    public MethodDocs(String javaDoc, List<String> paramNames)
-    {
+
+    public MethodDocs(String javaDoc, List<String> paramNames) {
         this.javaDoc = javaDoc;
         this.paramNames = paramNames;
     }
-    
-    public String getJavaDoc()
-    {
+
+    public String getJavaDoc() {
         return javaDoc;
     }
-    
-    public List<String> getParamNames()
-    {
+
+    public List<String> getParamNames() {
         return paramNames;
     }
 }

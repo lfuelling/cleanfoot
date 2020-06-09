@@ -34,10 +34,9 @@ import java.util.function.Predicate;
  * vs package-private&protected&public.
  */
 @OnThread(Tag.FXPlatform)
-public final class ViewFilter implements Predicate<MemberView>
-{
-    public enum StaticOrInstance { STATIC, INSTANCE}
-    
+public final class ViewFilter implements Predicate<MemberView> {
+    public enum StaticOrInstance {STATIC, INSTANCE}
+
     private final StaticOrInstance staticOrInstance;
     // Show only items callable from another class in the given
     // package.  If null, only show public items.
@@ -45,26 +44,25 @@ public final class ViewFilter implements Predicate<MemberView>
 
     /**
      * Create a View filter.
+     *
      * @param staticOrInstance Do you want only-static, or only-instance?
-     * @param callingPackage Show only items callable from another class in the given package.
-     *                       If null, only show public items. 
+     * @param callingPackage   Show only items callable from another class in the given package.
+     *                         If null, only show public items.
      */
-    public ViewFilter(StaticOrInstance staticOrInstance, String callingPackage)
-    {
+    public ViewFilter(StaticOrInstance staticOrInstance, String callingPackage) {
         this.staticOrInstance = staticOrInstance;
         this.callingPackage = callingPackage;
     }
-    
+
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    public boolean test(MemberView member)
-    {
+    public boolean test(MemberView member) {
         boolean wantStatic = staticOrInstance == StaticOrInstance.STATIC;
         boolean isStatic = member.isStatic();
         // We either want static or instance, member must match that:
         if (wantStatic != isStatic)
             return false;
-        
+
         // If public, definitely in:
         if ((member.getModifiers() & Modifier.PUBLIC) != 0)
             return true;

@@ -28,42 +28,39 @@ import threadchecker.Tag;
 
 /**
  * Class to display files to be committed in a list for the UpdateFilesFrame
- * 
+ *
  * @author Amjad Altadmri
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class FileRendererCell extends ListCell<UpdateStatus>
-{
+public class FileRendererCell extends ListCell<UpdateStatus> {
     private final Project project;
     private boolean remote;
 
-    public FileRendererCell(Project proj)
-    {
+    public FileRendererCell(Project proj) {
         super();
         project = proj;
     }
 
     /**
      * Creates a fileRenderer for remote or local status.
-     * @param proj project
+     *
+     * @param proj   project
      * @param remote the status we are taking into account.
      */
-    public FileRendererCell(Project proj, boolean remote)
-    {
+    public FileRendererCell(Project proj, boolean remote) {
         this(proj);
         this.remote = remote;
     }
 
     @Override
-    public void updateItem(UpdateStatus status, boolean empty)
-    {
+    public void updateItem(UpdateStatus status, boolean empty) {
         super.updateItem(status, empty);
         if (empty || status == null) {
             setText(null);
         } else {
 
             String topText;
-            if (project.getTeamSettingsController().isDVCS()){
+            if (project.getTeamSettingsController().isDVCS()) {
                 topText = ResourceDescriptor.getDCVSResource(project, status, true, remote);
             } else {
                 topText = ResourceDescriptor.getResource(project, status, true);

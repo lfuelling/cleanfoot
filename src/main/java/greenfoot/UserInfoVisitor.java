@@ -21,32 +21,23 @@
  */
 package greenfoot;
 
-public class UserInfoVisitor
-{
+public class UserInfoVisitor {
     private static UserInfo myInfo;
-    
-    public static UserInfo allocate(String userName, int rank, String singletonUserName)
-    {
-        if (singletonUserName != null && singletonUserName.equals(userName))
-        {
-            if (myInfo != null && myInfo.getUserName().equals(singletonUserName))
-            {
+
+    public static UserInfo allocate(String userName, int rank, String singletonUserName) {
+        if (singletonUserName != null && singletonUserName.equals(userName)) {
+            if (myInfo != null && myInfo.getUserName().equals(singletonUserName)) {
                 myInfo.setRank(rank);
-            }
-            else
-            {
+            } else {
                 myInfo = new UserInfo(userName, rank);
             }
             return myInfo;
-        }
-        else
-        {
+        } else {
             return new UserInfo(userName, rank);
         }
     }
-    
-    public static GreenfootImage readImage(byte[] imageFileContents)
-    {
+
+    public static GreenfootImage readImage(byte[] imageFileContents) {
         return new GreenfootImage(imageFileContents);
     }
 }

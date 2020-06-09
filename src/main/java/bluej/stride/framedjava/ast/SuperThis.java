@@ -24,50 +24,42 @@ package bluej.stride.framedjava.ast;
 import java.util.Arrays;
 import java.util.List;
 
-public enum SuperThis
-{
+public enum SuperThis {
     SUPER("super"), THIS("this"), EMPTY("");
     // EMPTY is not a valid state in the language, but it arises in the case that the slot is empty
-    
+
     private final String displayName;
-    
-    SuperThis(String displayName)
-    {
+
+    SuperThis(String displayName) {
         this.displayName = displayName;
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return displayName;
     }
-    
-    public String getJavaCode()
-    {
+
+    public String getJavaCode() {
         if (this == EMPTY)
             return "empty_super_this";
         else
             return displayName;
     }
-    
-    public static List<SuperThis> all()
-    {
+
+    public static List<SuperThis> all() {
         return Arrays.asList(SUPER, THIS);
     }
 
-    public static SuperThis fromString(String s)
-    {
-        for (SuperThis a : all())
-        {
+    public static SuperThis fromString(String s) {
+        for (SuperThis a : all()) {
             if (a.toString().equals(s)) {
                 return a;
             }
         }
         return null;
     }
-    
-    public static boolean isValid(SuperThis st)
-    {
+
+    public static boolean isValid(SuperThis st) {
         return st == SUPER || st == THIS;
     }
 }

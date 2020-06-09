@@ -32,22 +32,22 @@ import java.util.Properties;
  * scenarios which just need to read the data without modifying it.  The file is located
  * using the class-loader, which makes sense in an exported JAR.
  */
-public class ExportedProjectProperties implements ReadOnlyProjectProperties
-{
+public class ExportedProjectProperties implements ReadOnlyProjectProperties {
     /**
      * Name of the greenfoot package file that holds information specific to a
      * package/project
      */
     public static final String GREENFOOT_PKG_NAME = "project.greenfoot";
 
-    /** Holds the actual properties */
+    /**
+     * Holds the actual properties
+     */
     private final Properties properties;
 
     /**
      * Creates a new properties instance with the file loaded from the root of this class loader.
      */
-    public ExportedProjectProperties()
-    {
+    public ExportedProjectProperties() {
         properties = new Properties();
         load();
     }
@@ -55,26 +55,23 @@ public class ExportedProjectProperties implements ReadOnlyProjectProperties
     /**
      * Tries to load the project-file with the default class loader.
      */
-    private void load()
-    {
+    private void load() {
         URL probsFile = this.getClass().getResource("/" + GREENFOOT_PKG_NAME);
         InputStream is = null;
         try {
             is = probsFile.openStream();
             properties.load(is);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             // if it does not exist, we will create it later if something needs
             // to be written to it. This makes it work with scenarios created
             // with earlier versions of greenfoot that does not contain a
             // greenfoot project properties file.
-        }
-        finally {
+        } finally {
             if (is != null) {
                 try {
                     is.close();
+                } catch (IOException e) {
                 }
-                catch (IOException e) {}
             }
         }
     }
@@ -82,8 +79,7 @@ public class ExportedProjectProperties implements ReadOnlyProjectProperties
     /**
      * Gets a property as in Java's Properties class. Thread-safe.
      */
-    public synchronized String getString(String key, String defaultValue)
-    {
+    public synchronized String getString(String key, String defaultValue) {
         return properties.getProperty(key, defaultValue);
     }
 

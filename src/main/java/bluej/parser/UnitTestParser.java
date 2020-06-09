@@ -21,99 +21,83 @@
  */
 package bluej.parser;
 
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
+
+import java.io.Reader;
+import java.util.*;
 
 /**
  * A parser which extracts certain information needed for BlueJ's unit test
  * (junit) functionality.
- * 
+ *
  * @author Davin McCall
  */
-public class UnitTestParser extends JavaParser
-{
+public class UnitTestParser extends JavaParser {
     private int classLevel = 0; // level of class nesting
     private boolean inMethod = false; // are we in an interesting method
     private String methodName;
     private LocatableToken methodBegin;
     private boolean isPublic = false;
     private boolean haveClassInfo = false;
-    
+
     private List<SourceSpan> fieldSpans = new LinkedList<SourceSpan>();
     private SourceLocation methodInsertLocation;
     private SourceLocation fixtureInsertLocation;
-    private Map<String,SourceSpan> methodSpans = new HashMap<String,SourceSpan>();
-    
+    private Map<String, SourceSpan> methodSpans = new HashMap<String, SourceSpan>();
+
     private final Stack<SourceLocation> fieldStarts = new Stack<SourceLocation>();
-    
-    public UnitTestParser(Reader r)
-    {
+
+    public UnitTestParser(Reader r) {
         super(r);
         try {
             parseCU();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
         }
     }
-    
-    public List<SourceSpan> getFieldSpans()
-    {
+
+    public List<SourceSpan> getFieldSpans() {
         return fieldSpans;
     }
-    
-    public SourceLocation getNewMethodInsertLocation()
-    {
+
+    public SourceLocation getNewMethodInsertLocation() {
         return methodInsertLocation;
     }
-    
-    public SourceLocation getFixtureInsertLocation()
-    {
+
+    public SourceLocation getFixtureInsertLocation() {
         return fixtureInsertLocation;
     }
-    
-    public SourceSpan getMethodBlockSpan(String name)
-    {
+
+    public SourceSpan getMethodBlockSpan(String name) {
         return methodSpans.get(name);
     }
-    
+
     @Override
-    protected void error(String msg, int beginLine, int beginColumn, int endLine, int endColumn)
-    {
+    protected void error(String msg, int beginLine, int beginColumn, int endLine, int endColumn) {
         throw new RuntimeException("Parse error: " + msg);
     }
-        
+
     @Override
-    protected void gotModifier(LocatableToken token)
-    {
+    protected void gotModifier(LocatableToken token) {
         if (token.getType() == JavaTokenTypes.LITERAL_public) {
             isPublic = true;
         }
     }
-    
+
     @Override
-    protected void modifiersConsumed()
-    {
+    protected void modifiersConsumed() {
         isPublic = false;
     }
-    
+
     @Override
-    protected void gotField(LocatableToken first, LocatableToken idToken, boolean initExpressionFollows)
-    {
+    protected void gotField(LocatableToken first, LocatableToken idToken, boolean initExpressionFollows) {
         if (classLevel == 1 && !haveClassInfo) {
             fieldStarts.push(new SourceLocation(first.getLine(), first.getColumn()));
         }
     }
-    
+
     @Override
-    protected void endFieldDeclarations(LocatableToken token, boolean included)
-    {
+    protected void endFieldDeclarations(LocatableToken token, boolean included) {
         if (classLevel == 1 && !haveClassInfo) {
             SourceLocation start = fieldStarts.pop();
             SourceLocation end = new SourceLocation(token.getEndLine(), token.getEndColumn());
@@ -121,31 +105,28 @@ public class UnitTestParser extends JavaParser
             fieldSpans.add(ss);
         }
     }
-    
+
     @Override
-    protected void gotTypeDef(LocatableToken firstToken, int tdType)
-    {
+    protected void gotTypeDef(LocatableToken firstToken, int tdType) {
         classLevel++;
         if (haveClassInfo && isPublic) {
             // A public class overrides a non-public class
             haveClassInfo = false;
             fieldSpans = new LinkedList<SourceSpan>();
-            methodSpans = new HashMap<String,SourceSpan>();
+            methodSpans = new HashMap<String, SourceSpan>();
         }
     }
-    
+
     @Override
-    protected void beginTypeBody(LocatableToken leftCurlyToken)
-    {
+    protected void beginTypeBody(LocatableToken leftCurlyToken) {
         if (classLevel == 1) {
             fixtureInsertLocation = new SourceLocation(leftCurlyToken.getLine(),
                     leftCurlyToken.getColumn());
         }
     }
-    
+
     @Override
-    protected void gotTypeDefEnd(LocatableToken token, boolean included)
-    {
+    protected void gotTypeDefEnd(LocatableToken token, boolean included) {
         classLevel--;
         endElement(token, included);
         if (classLevel == 0) {
@@ -153,34 +134,30 @@ public class UnitTestParser extends JavaParser
             methodInsertLocation = new SourceLocation(token.getLine(), token.getColumn());
         }
     }
-    
+
     @Override
     protected void gotMethodDeclaration(LocatableToken token,
-                                        LocatableToken hiddenToken)
-    {
-        if (classLevel == 1 && ! haveClassInfo) {
+                                        LocatableToken hiddenToken) {
+        if (classLevel == 1 && !haveClassInfo) {
             inMethod = true;
             methodName = token.getText();
         }
     }
-    
+
     @Override
-    protected void gotMethodParameter(LocatableToken token, LocatableToken ellipsisToken)
-    {
+    protected void gotMethodParameter(LocatableToken token, LocatableToken ellipsisToken) {
         inMethod = false; // we're not interested in methods with parameters
     }
-    
+
     @Override
-    protected void beginMethodBody(LocatableToken token)
-    {
+    protected void beginMethodBody(LocatableToken token) {
         if (inMethod) {
             methodBegin = token;
         }
     }
-    
+
     @Override
-    protected void endMethodBody(LocatableToken token, boolean included)
-    {
+    protected void endMethodBody(LocatableToken token, boolean included) {
         if (classLevel == 1 && !haveClassInfo && methodBegin != null) {
             SourceLocation start = new SourceLocation(methodBegin.getLine(), methodBegin.getColumn());
             SourceLocation end = new SourceLocation(token.getEndLine(), token.getEndColumn());

@@ -22,19 +22,18 @@
 package bluej.extensions;
 
 /**
- * This exception will be thrown when an exception occurs during a method or constructor 
- * invocation. The most likely cause of this exception is the user cancelling a 
+ * This exception will be thrown when an exception occurs during a method or constructor
+ * invocation. The most likely cause of this exception is the user cancelling a
  * long-running object construction or method invocation from the GUI.
- * 
+ *
  * @version $Id: InvocationErrorException.java 6215 2009-03-30 13:28:25Z polle $
  */
 
 /*
  * Author: Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class InvocationErrorException extends ExtensionException 
-{
-  InvocationErrorException (String reason) {
-      super (reason);
-  }
+public class InvocationErrorException extends ExtensionException {
+    InvocationErrorException(String reason) {
+        super(reason);
+    }
 }

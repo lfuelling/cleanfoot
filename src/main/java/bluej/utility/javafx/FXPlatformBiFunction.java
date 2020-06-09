@@ -29,7 +29,6 @@ import threadchecker.Tag;
  */
 @FunctionalInterface
 @OnThread(Tag.FXPlatform)
-public interface FXPlatformBiFunction<T, U, R>
-{
+public interface FXPlatformBiFunction<T, U, R> {
     R apply(T t, U u);
 }

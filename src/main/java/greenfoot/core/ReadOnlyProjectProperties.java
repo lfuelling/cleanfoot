@@ -7,11 +7,10 @@ import threadchecker.Tag;
 
 /**
  * A read-only interface to access properties of a project.
- * 
+ * <p>
  * Implementing classes only need implement one method: getString(String key, String defaultValue).
  */
-public interface ReadOnlyProjectProperties
-{
+public interface ReadOnlyProjectProperties {
 
     /**
      * Gets a property as in Java's Properties class. Thread-safe.
@@ -21,26 +20,23 @@ public interface ReadOnlyProjectProperties
     /**
      * Gets a String property.  Returns null if property not present.
      */
-    default String getString(String key)
-    {
+    default String getString(String key) {
         return getString(key, null);
     }
 
     /**
      * Gets an integer property with the given key.
      */
-    default int getInt(String key) throws NumberFormatException
-    {
+    default int getInt(String key) throws NumberFormatException {
         String number = getString(key);
         return Integer.parseInt(number);
     }
 
     /**
-     * Gets a boolean property as in Java's Properties class. 
+     * Gets a boolean property as in Java's Properties class.
      * Allows the specification of a default value. Thread-safe.
      */
-    default boolean getBoolean(String key, boolean defaultValue)
-    {
+    default boolean getBoolean(String key, boolean defaultValue) {
         String bool = getString(key, Boolean.toString(defaultValue));
         return Boolean.parseBoolean(bool);
     }
@@ -50,13 +46,12 @@ public interface ReadOnlyProjectProperties
      * images several times. This method is thread-safe.
      *
      * @param className If it is a qualified name, the package is ignored.
-     *            Returns null, if there is no entry for this class in the
-     *            properties.
+     *                  Returns null, if there is no entry for this class in the
+     *                  properties.
      * @return The image.
      */
     @OnThread(Tag.Simulation)
-    default GreenfootImage getImage(String className)
-    {
+    default GreenfootImage getImage(String className) {
         return GreenfootUtil.getGreenfootImage(className, getString("class." + className + ".image"));
     }
 }

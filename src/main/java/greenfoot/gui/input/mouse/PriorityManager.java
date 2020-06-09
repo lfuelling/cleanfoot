@@ -26,7 +26,7 @@ import java.awt.event.MouseEvent;
 /**
  * This class resolves the priorities of mouse events for the MousePollingManager.
  * <p>
- *
+ * <p>
  * Priorities with highest priority first::
  * <ul>
  * <li> dragEnd </li>
@@ -35,76 +35,64 @@ import java.awt.event.MouseEvent;
  * <li> drag </li>
  * <li> move </li>
  * </ul>
- * 
+ * <p>
  * If several of the same type of event happens, then the last one is used.
  * <p>
  * If two buttons are pressed at the same time, the behaviour is
  * undefined. Maybe we should define it so that button1 always have higher
  * priority than button2 and button2 always higher than button3. But not
  * necessarily documenting this to the user.
- * 
+ *
  * @author Poul Henriksen
- * 
  */
-public class PriorityManager
-{
+public class PriorityManager {
     /**
      * Returns true if the new mouse event has higher or equal priority than the current.
-     * @param newEvent The AWT mouse event code
+     *
+     * @param newEvent    The AWT mouse event code
      * @param currentData The existing mouse data to compare against
      * @return True if the new event is higher priority
      */
-    public static boolean isHigherPriority(int newEvent, MouseEventData currentData)
-    {
+    public static boolean isHigherPriority(int newEvent, MouseEventData currentData) {
         int currentPriority = getPriority(currentData);
         int newPriority = getPriority(newEvent);
         return newPriority <= currentPriority;
     }
+
     /**
      * Priority 0 is highest.
+     *
      * @param event The AWT event code for the mouse event
      * @return The mapped priority, to enable a comparison.
      */
-    private static int getPriority(int event)
-    {
-        if(event == MouseEvent.MOUSE_RELEASED) {
+    private static int getPriority(int event) {
+        if (event == MouseEvent.MOUSE_RELEASED) {
             return 0;
-        }
-        else if(event == MouseEvent.MOUSE_CLICKED) {
+        } else if (event == MouseEvent.MOUSE_CLICKED) {
             return 1;
-        }
-        else if(event == MouseEvent.MOUSE_PRESSED) {
+        } else if (event == MouseEvent.MOUSE_PRESSED) {
             return 2;
-        }
-        else if(event == MouseEvent.MOUSE_DRAGGED) {
+        } else if (event == MouseEvent.MOUSE_DRAGGED) {
             return 3;
-        }
-        else if(event == MouseEvent.MOUSE_MOVED) {
+        } else if (event == MouseEvent.MOUSE_MOVED) {
             return 4;
-        }
-        else {
+        } else {
             return Integer.MAX_VALUE;
         }
     }
 
-    private static int getPriority(MouseEventData data)
-    {
-        if(data.isMouseDragEnded()) {
+    private static int getPriority(MouseEventData data) {
+        if (data.isMouseDragEnded()) {
             return 0;
-        }
-        else if(data.isMouseClicked()) {
+        } else if (data.isMouseClicked()) {
             return 1;
-        }
-        else if(data.isMousePressed()) {
+        } else if (data.isMousePressed()) {
             return 2;
-        }
-        else if(data.isMouseDragged()) {
+        } else if (data.isMouseDragged()) {
             return 3;
-        }
-        else if(data.isMouseMoved()) {
+        } else if (data.isMouseMoved()) {
             return 4;
-        }
-        else {
+        } else {
             return Integer.MAX_VALUE;
         }
     }

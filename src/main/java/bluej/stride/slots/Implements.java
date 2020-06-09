@@ -21,10 +21,6 @@
  */
 package bluej.stride.slots;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Supplier;
-
 import bluej.stride.framedjava.ast.TypeSlotFragment;
 import bluej.stride.framedjava.slots.TypeSlot;
 import bluej.stride.generic.Frame;
@@ -32,15 +28,16 @@ import bluej.stride.generic.InteractionManager;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXRunnable;
 
-public class Implements extends TypeList
-{
-    public Implements(Frame parentFrame, Supplier<TypeSlot> slotGenerator, FXRunnable focusOnNext, InteractionManager editor)
-    {
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
+
+public class Implements extends TypeList {
+    public Implements(Frame parentFrame, Supplier<TypeSlot> slotGenerator, FXRunnable focusOnNext, InteractionManager editor) {
         super(" implements ", parentFrame, slotGenerator, focusOnNext, editor);
     }
 
-    public List<TypeSlotFragment> getTypes()
-    {
+    public List<TypeSlotFragment> getTypes() {
         // Treat single empty slot as missing:
         if (typeSlots.size() == 1 && typeSlots.get(0).isEmpty())
             return Collections.emptyList();

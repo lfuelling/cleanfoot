@@ -54,21 +54,15 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A window that displays a method return value.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.FXPlatform)
-public class ResultInspector extends Inspector
-{
+public class ResultInspector extends Inspector {
 
     // === static variables ===
 
@@ -87,25 +81,18 @@ public class ResultInspector extends Inspector
 
     /**
      * Note: 'pkg' may be null if 'ir' is null.
-     * 
-     * @param obj
-     *            The object displayed by this viewer
-     * @param name
-     *            The name of this object or "null" if the name is unobtainable
-     * @param pkg
-     *            The package all this belongs to
-     * @param ir
-     *            the InvokerRecord explaining how we created this result/object
-     *            if null, the "get" button is permanently disabled
-     * @param info
-     *            The expression used to create the object (ie. the method call
-     *            information)
-     * @param parent
-     *            The parent frame of this frame
+     *
+     * @param obj    The object displayed by this viewer
+     * @param name   The name of this object or "null" if the name is unobtainable
+     * @param pkg    The package all this belongs to
+     * @param ir     the InvokerRecord explaining how we created this result/object
+     *               if null, the "get" button is permanently disabled
+     * @param info   The expression used to create the object (ie. the method call
+     *               information)
+     * @param parent The parent frame of this frame
      */
     public ResultInspector(DebuggerObject obj, InspectorManager inspectorManager, String name,
-            Package pkg, InvokerRecord ir, ExpressionInformation info)
-    {
+                           Package pkg, InvokerRecord ir, ExpressionInformation info) {
         super(inspectorManager, pkg, ir, StageStyle.DECORATED);
 
         expressionInformation = info;
@@ -121,8 +108,7 @@ public class ResultInspector extends Inspector
     /**
      * Determine the expected static type of the result.
      */
-    private void calcResultType()
-    {
+    private void calcResultType() {
         GenTypeClass instanceType = expressionInformation.getInstanceType();
         // We know it's a MethodView, as we don't inspect the result of a
         // constructor!
@@ -136,27 +122,27 @@ public class ResultInspector extends Inspector
         // arguments passed to the method.
         // For now, use the base type of the any generic type parameters
         if (methodReturnType instanceof GenTypeParameter) {
-            
+
             // The return type may contain type parameters. First, get the
             // type parameters of the object:
-            Map<String,GenTypeParameter> tparmap;
+            Map<String, GenTypeParameter> tparmap;
             if (instanceType != null)
                 tparmap = instanceType.mapToSuper(m.getDeclaringClass().getName()).getMap();
             else
-                tparmap = new HashMap<String,GenTypeParameter>();
-            
+                tparmap = new HashMap<String, GenTypeParameter>();
+
             // It's possible the mapping result is a raw type.
             if (tparmap == null) {
                 resultType = JavaUtils.getJavaUtils().getRawReturnType(m);
                 return;
             }
-            
+
             // Then put in the type parameters from the method itself,
             // if there are any (ie. if the method is a generic method).
             // Tpars from the method override those from the instance.
             List<GenTypeDeclTpar> tpars = JavaUtils.getJavaUtils().getTypeParams(m);
             tparmap.putAll(JavaUtils.TParamsToMap(tpars));
-            
+
             methodReturnType = methodReturnType.mapTparsToTypes(tparmap).getUpperBound();
         }
 
@@ -164,8 +150,7 @@ public class ResultInspector extends Inspector
     }
 
     @Override
-    protected boolean shouldAutoUpdate()
-    {
+    protected boolean shouldAutoUpdate() {
         return false;
     }
 
@@ -174,23 +159,20 @@ public class ResultInspector extends Inspector
      */
     @Override
     @OnThread(Tag.FXPlatform)
-    protected List<FieldInfo> getListData()
-    {
+    protected List<FieldInfo> getListData() {
         String fieldString;
         DebuggerField resultField = obj.getField(0);
         if (!resultType.isPrimitive()) {
             DebuggerObject resultObject = resultField.getValueObject(resultType);
             if (!resultObject.isNullObject()) {
                 fieldString = resultObject.getGenType().toString(true);
-            }
-            else {
+            } else {
                 fieldString = resultType.toString(true);
             }
-        }
-        else {
+        } else {
             fieldString = resultField.getType().toString(true);
         }
-        
+
         List<FieldInfo> rlist = new ArrayList<FieldInfo>(1);
         rlist.add(new FieldInfo(fieldString, resultField.getValueString()));
         return rlist;
@@ -198,18 +180,16 @@ public class ResultInspector extends Inspector
 
     /**
      * Build the GUI
-     * 
-     * @param showAssert
-     *            Indicates if assertions should be shown.
+     *
+     * @param showAssert Indicates if assertions should be shown.
      */
-    protected void makeFrame()
-    {
+    protected void makeFrame() {
         setTitle(resultTitle);
 
         // Create the header
 
         Pane header = new VBox();
-        
+
         Comment comment = expressionInformation.getComment();
         FXFormattedPrintWriter commentLabelPrintWriter = new FXFormattedPrintWriter();
         comment.print(commentLabelPrintWriter);
@@ -231,15 +211,15 @@ public class ResultInspector extends Inspector
         final Node expression = new TextFlow(new Text(expressionDisplay + " " + returnedString));
         JavaFXUtil.addStyleClass(expression, "inspector-result-details-header");
         ContextMenu copyPopup = new ContextMenu();
-        copyPopup.getItems().add(JavaFXUtil.makeMenuItem(Config.getString("editor.copyLabel"),() ->
-            {
-                Clipboard.getSystemClipboard().setContent(Collections.singletonMap(DataFormat.PLAIN_TEXT, expressionDisplay));
-            }
-        , null));
+        copyPopup.getItems().add(JavaFXUtil.makeMenuItem(Config.getString("editor.copyLabel"), () ->
+                {
+                    Clipboard.getSystemClipboard().setContent(Collections.singletonMap(DataFormat.PLAIN_TEXT, expressionDisplay));
+                }
+                , null));
         expression.setOnContextMenuRequested(e -> copyPopup.show(expression, e.getScreenX(), e.getScreenY()));
 
         result.getChildren().add(expression);
-        
+
         result.getChildren().add(fieldList);
         /*
         Box resultPanel = new Box(BoxLayout.Y_AXIS) {
@@ -262,7 +242,7 @@ public class ResultInspector extends Inspector
             }
         };
         */
-        
+
         mainPanel.setCenter(result);
 
         mainPanel.setRight(createInspectAndGetButtons());
@@ -305,67 +285,59 @@ public class ResultInspector extends Inspector
     }
 
     @Override
-    public Region getContent()
-    {
+    public Region getContent() {
         return contentPane;
     }
 
     /**
      * An element in the field list was selected.
      */
-    protected void listElementSelected(int slot)
-    {
+    protected void listElementSelected(int slot) {
         DebuggerField field = obj.getInstanceField(0);
-        if (field.isReferenceType() && ! field.isNull()) {
+        if (field.isReferenceType() && !field.isNull()) {
             // Don't use the name, since it is meaningless anyway (it is always "result")
             setCurrentObj(field.getValueObject(resultType), null, resultType.toString(false));
             setButtonsEnabled(true, true);
-        }
-        else {
+        } else {
             setCurrentObj(null, null, null);
             setButtonsEnabled(false, false);
         }
     }
 
     @Override
-    protected void doInspect()
-    {
+    protected void doInspect() {
         if (selectedField != null) {
             boolean isPublic = !getButton.isDisable();
             inspectorManager.getInspectorInstance(selectedField, selectedFieldName, pkg, isPublic ? ir : null, this, null);
         }
     }
-    
+
     /**
      * Remove this inspector.
      */
-    protected void remove()
-    {
-        if(inspectorManager != null) {
+    protected void remove() {
+        if (inspectorManager != null) {
             inspectorManager.removeInspector(obj);
         }
     }
 
     /**
      * return a String with the result.
-     * 
+     *
      * @return The Result value
      */
-    public String getResult()
-    {
+    public String getResult() {
         DebuggerField resultField = obj.getField(0);
-        
+
         String result = resultField.getType() + " " + resultField.getName() + " = " + resultField.getValueString();
         return result;
     }
 
-    protected int getPreferredRows()
-    {
+    protected int getPreferredRows() {
         return 2;
     }
-    
-    protected void doGet()
-    {
+
+    protected void doGet() {
         if (selectedField != null) {
             GenTypeClass resultClass = resultType.asClass();
             pkg.getEditor().raisePutOnBenchEvent(this, selectedField, resultClass, ir, true, Optional.empty());

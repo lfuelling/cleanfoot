@@ -21,32 +21,28 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.Collections;
-import java.util.List;
-
 import bluej.stride.framedjava.ast.AccessPermission;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
 import bluej.stride.operations.FrameOperation;
 
-public class InheritedFieldFrame extends SingleLineFrame
-{
+import java.util.Collections;
+import java.util.List;
 
-    public InheritedFieldFrame(InteractionManager editor, AccessPermission access, String type, String name)
-    {
+public class InheritedFieldFrame extends SingleLineFrame {
+
+    public InheritedFieldFrame(InteractionManager editor, AccessPermission access, String type, String name) {
         super(editor, access + " \t" + type + " " + name, "inherited-field-");
     }
-    
+
     @Override
-    public boolean canDrag()
-    {
+    public boolean canDrag() {
         // We cannot be dragged:
         return false;
     }
 
     @Override
-    public List<FrameOperation> getContextOperations()
-    {
+    public List<FrameOperation> getContextOperations() {
         return Collections.emptyList();
     }
 }

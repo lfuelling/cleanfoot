@@ -21,35 +21,29 @@
  */
 package bluej.extmgr;
 
-import java.awt.BorderLayout;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
-
 import bluej.pkgmgr.Project;
 import bluej.prefmgr.PrefPanelListener;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.util.List;
+
 /**
  * This manages the whole preference pane for Extensions
  * It will be loaded in the appropriate tab when the register() is called
- * 
- * @author  Damiano Bolla: University of Kent at Canterbury
- * @author  Michael Kolling
+ *
+ * @author Damiano Bolla: University of Kent at Canterbury
+ * @author Michael Kolling
  */
-public class ExtensionPrefManager implements PrefPanelListener
-{
+public class ExtensionPrefManager implements PrefPanelListener {
     private final List<ExtensionWrapper> extensionsList;
 
-    private final int DO_panelUpdate=1;
-    private final int DO_loadValues=2;
-    private final int DO_saveValues=3;
+    private final int DO_panelUpdate = 1;
+    private final int DO_loadValues = 2;
+    private final int DO_saveValues = 3;
 
     private final JPanel drawPanel;
     private final JPanel rootPanel;
@@ -57,21 +51,20 @@ public class ExtensionPrefManager implements PrefPanelListener
     /**
      * The manager needs to know the installed extensions
      */
-    public ExtensionPrefManager(List<ExtensionWrapper> i_extensionsList) 
-    {
+    public ExtensionPrefManager(List<ExtensionWrapper> i_extensionsList) {
         extensionsList = i_extensionsList;
 
         // I need a draw panel Components in here should be laid on the top - down
         drawPanel = new JPanel();
-        drawPanel.setLayout(new BoxLayout(drawPanel,BoxLayout.Y_AXIS));
+        drawPanel.setLayout(new BoxLayout(drawPanel, BoxLayout.Y_AXIS));
 
         // I need a middle panel just to pack everything up
-        JPanel middlePanel = new JPanel (new BorderLayout());
-        middlePanel.add(drawPanel,BorderLayout.NORTH);
+        JPanel middlePanel = new JPanel(new BorderLayout());
+        middlePanel.add(drawPanel, BorderLayout.NORTH);
 
         // And I need to put this panel into a scroll pane
-        JScrollPane drawScroll = new JScrollPane (middlePanel);
-        drawScroll.setBorder(new EmptyBorder(0,0,0,0));
+        JScrollPane drawScroll = new JScrollPane(middlePanel);
+        drawScroll.setBorder(new EmptyBorder(0, 0, 0, 0));
         drawScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         /* Add the scroll pane to the root panel
@@ -79,32 +72,30 @@ public class ExtensionPrefManager implements PrefPanelListener
          * understand when to draw its scrollbars
          */
         rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(drawScroll,BorderLayout.CENTER);
+        rootPanel.add(drawScroll, BorderLayout.CENTER);
     }
 
     /**
      * Return the panel that shows the GUI.
      */
-    public JPanel getPanel()
-    {
+    public JPanel getPanel() {
         return rootPanel;
     }
-    
+
     /**
      * This is the looper, I will use some const to decide at the end
      * what to do. Just to make code simples and cleaner
      * Note that half or more of the code is on Fault managment ...
      */
-    private void doWorkLoop(int doAction) 
-    {
+    private void doWorkLoop(int doAction) {
         // I need to remove all content, in any case...
-        if (doAction == DO_panelUpdate) 
+        if (doAction == DO_panelUpdate)
             drawPanel.removeAll();
-      
+
         synchronized (extensionsList) {
             for (ExtensionWrapper wrapper : extensionsList) {
-                doWorkItem (wrapper, doAction);
-            }            
+                doWorkItem(wrapper, doAction);
+            }
         }
     }
 
@@ -112,33 +103,31 @@ public class ExtensionPrefManager implements PrefPanelListener
      * Do some work on one extension wrapper.
      * It is either adding panels, saving or loading...
      */
-    private void doWorkItem(ExtensionWrapper aWrapper, int doAction) 
-    {
+    private void doWorkItem(ExtensionWrapper aWrapper, int doAction) {
         // This extension is not valid, let me skip it
-        if (! aWrapper.isValid()) return;
+        if (!aWrapper.isValid()) return;
 
         String extensionName = aWrapper.safeGetExtensionName();
 
         switch (doAction) {
-            case DO_loadValues:  
-                aWrapper.safePrefGenLoadValues();   
+            case DO_loadValues:
+                aWrapper.safePrefGenLoadValues();
                 return;
-            case DO_saveValues:  
-                aWrapper.safePrefGenSaveValues();   
+            case DO_saveValues:
+                aWrapper.safePrefGenSaveValues();
                 return;
-            case DO_panelUpdate: 
-                addUserPanel (aWrapper, extensionName); 
+            case DO_panelUpdate:
+                addUserPanel(aWrapper, extensionName);
                 return;
         }
     }
 
-  
+
     /**
-     * Being here to make code cleaner. 
+     * Being here to make code cleaner.
      * Given an Extension preference panel add it into the main panel
      */
-    private void addUserPanel(ExtensionWrapper aWrapper, String extensionName) 
-    {
+    private void addUserPanel(ExtensionWrapper aWrapper, String extensionName) {
         JPanel aPanel = aWrapper.safePrefGenGetPanel();
         if (aPanel == null) {
             return;
@@ -149,10 +138,10 @@ public class ExtensionPrefManager implements PrefPanelListener
         framePanel.setBorder(BorderFactory.createTitledBorder(extensionName));
 
         // The panel that the user gives me goes into the north, packed
-        framePanel.add (aPanel,BorderLayout.NORTH);
+        framePanel.add(aPanel, BorderLayout.NORTH);
 
         // Finally put this panel into the drawing panel, it will be stacket Y axis
-        drawPanel.add (framePanel);
+        drawPanel.add(framePanel);
     }
 
 
@@ -160,10 +149,9 @@ public class ExtensionPrefManager implements PrefPanelListener
      * Start the revalidation of the panels associated to the extensions.
      */
     @OnThread(Tag.Swing)
-    public void panelRevalidate() 
-    {
+    public void panelRevalidate() {
         //if (EventQueue.isDispatchThread()) {
-            doWorkLoop(DO_panelUpdate);
+        doWorkLoop(DO_panelUpdate);
         //}
         //else {
         //    EventQueue.invokeLater(() -> doWorkLoop(DO_panelUpdate));
@@ -174,15 +162,15 @@ public class ExtensionPrefManager implements PrefPanelListener
      * Needed only to satisfy the implements
      */
     @OnThread(Tag.FXPlatform)
-    public void beginEditing(Project project)  {  }
-    
-    
+    public void beginEditing(Project project) {
+    }
+
+
     /*
      * Called by the system when it is time to reload the panel values
      */
     @OnThread(Tag.FXPlatform)
-    public void revertEditing(Project project)
-    {
+    public void revertEditing(Project project) {
         SwingUtilities.invokeLater(() -> doWorkLoop(DO_loadValues));
     }
 
@@ -190,8 +178,7 @@ public class ExtensionPrefManager implements PrefPanelListener
      * Called by the system when the user has pressed the OK buton
      */
     @OnThread(Tag.FXPlatform)
-    public void commitEditing(Project project)
-    {
+    public void commitEditing(Project project) {
         SwingUtilities.invokeLater(() -> doWorkLoop(DO_saveValues));
     }
 

@@ -21,9 +21,6 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.security.InvalidParameterException;
-import java.util.stream.Stream;
-
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.ErrorShower;
@@ -34,61 +31,51 @@ import bluej.stride.slots.EditableSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class FrameFragment extends JavaFragment
-{
+import java.security.InvalidParameterException;
+import java.util.stream.Stream;
+
+public class FrameFragment extends JavaFragment {
     private Frame frame;
     private final String content;
     private final CodeElement element;
-    
-    public FrameFragment(Frame frame, CodeElement src, String content)
-    {
+
+    public FrameFragment(Frame frame, CodeElement src, String content) {
         this.frame = frame;
         this.content = content;
         this.element = src;
-        
-        if (content == null)
-        {
+
+        if (content == null) {
             throw new InvalidParameterException("FrameFragment content cannot be null");
-        }
-        else if (content.contains("\n"))
-        {
+        } else if (content.contains("\n")) {
             throw new IllegalStateException("FrameFragment content contains newline");
         }
     }
-    
+
     @Override
-    protected String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator)
-    {
+    protected String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator) {
         return content;
     }
 
     @Override
-    public Stream<SyntaxCodeError> findEarlyErrors()
-    {
+    public Stream<SyntaxCodeError> findEarlyErrors() {
         return Stream.empty();
     }
 
     @Override
-    public void addError(CodeError codeError)
-    {
+    public void addError(CodeError codeError) {
         frame.addError(codeError);
     }
 
     @Override
-    public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn)
-    {
+    public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn) {
         if (frame == null)
             return ErrorRelation.CANNOT_SHOW;
-        else
-        {
+        else {
             // Frame fragments are not ideal to show errors, so map overlaps into overlaps-fallback:
             ErrorRelation errorRelation = super.checkCompileError(startLine, startColumn, endLine, endColumn);
-            if (errorRelation == ErrorRelation.OVERLAPS_FRAGMENT)
-            {
+            if (errorRelation == ErrorRelation.OVERLAPS_FRAGMENT) {
                 return ErrorRelation.OVERLAPS_FRAGMENT_FALLBACK;
-            }
-            else
-            {
+            } else {
                 return errorRelation;
             }
         }
@@ -96,8 +83,7 @@ public class FrameFragment extends JavaFragment
 
     @Override
     @OnThread(Tag.FX)
-    protected JavaFragment getCompileErrorRedirect()
-    {
+    protected JavaFragment getCompileErrorRedirect() {
         EditableSlot slot = frame.getErrorShowRedirect();
         if (slot != null)
             return slot.getSlotElement();
@@ -107,8 +93,7 @@ public class FrameFragment extends JavaFragment
 
     @Override
     @OnThread(Tag.FX)
-    public ErrorShower getErrorShower()
-    {
+    public ErrorShower getErrorShower() {
         EditableSlot slot = frame.getErrorShowRedirect();
         if (slot != null)
             return slot;
@@ -116,13 +101,11 @@ public class FrameFragment extends JavaFragment
             return frame;
     }
 
-    public void setFrame(Frame frame)
-    {
+    public void setFrame(Frame frame) {
         this.frame = frame;
     }
 
-    public CodeElement getElement()
-    {
+    public CodeElement getElement() {
         return element;
     }
 }

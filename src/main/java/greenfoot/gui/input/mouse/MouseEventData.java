@@ -36,14 +36,13 @@ import java.util.Arrays;
  * Class to hold data collected from the mouse events. Using MouseInfo is
  * not enough, since a mouse info object doesn't contain all the info we
  * need (whether it was a drag, move, etc)
+ *
  * @author Poul Henriksen
- * 
  */
 @OnThread(Tag.Any)
-class MouseEventData
-{
+class MouseEventData {
     private MouseInfo mouseInfo;
-    
+
     // We need to hold the data for each individual action that might have
     // happened, because what to report depends on what we are interested in,
     // with relation to the actor, world or globally.
@@ -54,88 +53,79 @@ class MouseEventData
     private MouseInfo mouseMovedInfo;
     private MouseEventData dragStartedBy;
 
-    public void init()
-    {
+    public void init() {
         mousePressedInfo = null;
         mouseClickedInfo = null;
         mouseDraggedInfo = null;
         mouseDragEndedInfo = null;
         mouseMovedInfo = null;
-        if (mouseInfo != null)
-        {
+        if (mouseInfo != null) {
             MouseInfo blankedMouseInfo = MouseInfoVisitor.newMouseInfo();
             // Only retain info on latest location, not clicks etc:
             MouseInfoVisitor.setLoc(blankedMouseInfo, mouseInfo.getX(), mouseInfo.getY(),
                     MouseInfoVisitor.getPx(mouseInfo), MouseInfoVisitor.getPy(mouseInfo));
             mouseInfo = blankedMouseInfo;
         }
-        
+
     }
-    
-    public MouseInfo getMouseInfo()
-    {
+
+    public MouseInfo getMouseInfo() {
         return mouseInfo;
     }
 
-    public boolean isMousePressed()
-    {
+    public boolean isMousePressed() {
         return mousePressedInfo != null;
     }
 
-    public boolean isMousePressedOn(Object obj)
-    {
+    public boolean isMousePressedOn(Object obj) {
         return checkObject(obj, mousePressedInfo);
     }
 
     /**
      * Record a mouse press event in the event data.
-     * 
-     * @param x   x-coordinate in world cells
-     * @param y   y-coordinate in world cells
-     * @param px    x-coordinate in pixels
-     * @param py    y-coordinate in pixels
-     * @param button    which button was pressed.
+     *
+     * @param x      x-coordinate in world cells
+     * @param y      y-coordinate in world cells
+     * @param px     x-coordinate in pixels
+     * @param py     y-coordinate in pixels
+     * @param button which button was pressed.
      */
-    public void mousePressed(int x, int y, int px, int py, int button)
-    {
+    public void mousePressed(int x, int y, int px, int py, int button) {
         init();
         mousePressedInfo = MouseInfoVisitor.newMouseInfo();
-        mouseInfo = mousePressedInfo;  
+        mouseInfo = mousePressedInfo;
         MouseInfoVisitor.setButton(mouseInfo, button);
         MouseInfoVisitor.setLoc(mouseInfo, x, y, px, py);
     }
 
-    public boolean isMouseClickedOn(Object obj)
-    { 
+    public boolean isMouseClickedOn(Object obj) {
         // if the mouse was pressed outside the object we are looking for, it
         // can't be clicked on that object
-        if(obj != null && (isMousePressed() && !isMousePressedOn(obj))) {
+        if (obj != null && (isMousePressed() && !isMousePressedOn(obj))) {
             return false;
         }
         return checkObject(obj, mouseClickedInfo);
     }
-    
-    public boolean isMouseClicked()
-    {
+
+    public boolean isMouseClicked() {
         return mouseClickedInfo != null;
     }
-    
+
     /**
      * Record a mouse click in the event data.
-     * 
-     * @param x   x-coordinate in world cells
-     * @param y   y-coordinate in world cells
-     * @param px    x-coordinate in pixels
-     * @param py    y-coordinate in pixels
-     * @param button    which button was clicked
-     * @param clickCount   the click count (how many times the button has been clicked)
+     *
+     * @param x          x-coordinate in world cells
+     * @param y          y-coordinate in world cells
+     * @param px         x-coordinate in pixels
+     * @param py         y-coordinate in pixels
+     * @param button     which button was clicked
+     * @param clickCount the click count (how many times the button has been clicked)
      */
-    public void mouseClicked(int x, int y, int px, int py, int button, int clickCount)
-    {
-        MouseInfo tempPressedInfo = mousePressedInfo;        
-        init();       
+    public void mouseClicked(int x, int y, int px, int py, int button, int clickCount) {
+        MouseInfo tempPressedInfo = mousePressedInfo;
+        init();
         mousePressedInfo = tempPressedInfo;
-        
+
         mouseClickedInfo = MouseInfoVisitor.newMouseInfo();
         mouseInfo = mouseClickedInfo;
         MouseInfoVisitor.setButton(mouseInfo, button);
@@ -143,28 +133,25 @@ class MouseEventData
         MouseInfoVisitor.setClickCount(mouseInfo, clickCount);
     }
 
-    public boolean isMouseDragged()
-    {
+    public boolean isMouseDragged() {
         return mouseDraggedInfo != null;
     }
 
-    public boolean isMouseDraggedOn(Object obj)
-    {
+    public boolean isMouseDraggedOn(Object obj) {
         return checkObject(obj, mouseDraggedInfo);
     }
 
     /**
      * Record a mouse drag in the event data.
-     * 
-     * @param x   x-coordinate in world cells
-     * @param y   y-coordinate in world cells
-     * @param px    x-coordinate in pixels
-     * @param py    y-coordinate in pixels
-     * @param button    which button is pressed
-     * @param actor    the actor being dragged.
+     *
+     * @param x      x-coordinate in world cells
+     * @param y      y-coordinate in world cells
+     * @param px     x-coordinate in pixels
+     * @param py     y-coordinate in pixels
+     * @param button which button is pressed
+     * @param actor  the actor being dragged.
      */
-    public void mouseDragged(int x, int y, int px, int py, int button, Actor actor)
-    {
+    public void mouseDragged(int x, int y, int px, int py, int button, Actor actor) {
         init();
         mouseDraggedInfo = MouseInfoVisitor.newMouseInfo();
         mouseInfo = mouseDraggedInfo;
@@ -173,28 +160,25 @@ class MouseEventData
         MouseInfoVisitor.setActor(mouseInfo, actor);
     }
 
-    public boolean isMouseDragEnded()
-    {
+    public boolean isMouseDragEnded() {
         return mouseDragEndedInfo != null;
     }
 
-    public boolean isMouseDragEndedOn(Object obj)
-    {
+    public boolean isMouseDragEndedOn(Object obj) {
         return checkObject(obj, mouseDragEndedInfo);
     }
 
     /**
      * Record a mouse drag ending in the event data.
-     * 
-     * @param x   x-coordinate in world cells
-     * @param y   y-coordinate in world cells
-     * @param px    x-coordinate in pixels
-     * @param py    y-coordinate in pixels
-     * @param button    which button was pressed
-     * @param dragStartData  the data object holding information about the drag start event.
+     *
+     * @param x             x-coordinate in world cells
+     * @param y             y-coordinate in world cells
+     * @param px            x-coordinate in pixels
+     * @param py            y-coordinate in pixels
+     * @param button        which button was pressed
+     * @param dragStartData the data object holding information about the drag start event.
      */
-    public void mouseDragEnded(int x, int y, int px, int py, int button, MouseEventData dragStartData)
-    {
+    public void mouseDragEnded(int x, int y, int px, int py, int button, MouseEventData dragStartData) {
         MouseInfo tempPressedInfo = mousePressedInfo;
         MouseInfo tempClickedInfo = mouseClickedInfo;
         init();
@@ -208,90 +192,82 @@ class MouseEventData
         this.dragStartedBy = dragStartData;
     }
 
-    public void mouseExited()
-    {
+    public void mouseExited() {
         mouseInfo = mouseDraggedInfo;
         mouseMovedInfo = null;
     }
-    
-    public boolean isMouseMoved()
-    {
+
+    public boolean isMouseMoved() {
         return mouseMovedInfo != null;
     }
 
-    public boolean isMouseMovedOn(Object obj)
-    {
+    public boolean isMouseMovedOn(Object obj) {
         return checkObject(obj, mouseMovedInfo);
     }
 
     /**
      * Record a mouse movement (with no buttons down) in the event data.
-     * 
-     * @param x   x-coordinate in world cells
-     * @param y   y-coordinate in world cells
-     * @param px    x-coordinate in pixels
-     * @param py    y-coordinate in pixels
+     *
+     * @param x  x-coordinate in world cells
+     * @param y  y-coordinate in world cells
+     * @param px x-coordinate in pixels
+     * @param py y-coordinate in pixels
      */
-    public void mouseMoved(int x, int y, int px, int py)
-    {
+    public void mouseMoved(int x, int y, int px, int py) {
         init();
         mouseMovedInfo = MouseInfoVisitor.newMouseInfo();
         mouseInfo = mouseMovedInfo;
         MouseInfoVisitor.setLoc(mouseInfo, x, y, px, py);
     }
 
-    public Actor getActor()
-    {
-        if(mouseInfo == null) {
+    public Actor getActor() {
+        if (mouseInfo == null) {
             return null;
         }
         return mouseInfo.getActor();
     }
 
-    public int getButton()
-    {
-        if(mouseInfo == null) {
+    public int getButton() {
+        if (mouseInfo == null) {
             return 0;
         }
         return mouseInfo.getButton();
     }
-    
+
     /**
      * Check whether the given object can be considered to match the MouseInfo.
-     * 
-     * @param obj The query
+     *
+     * @param obj  The query
      * @param info To check against
      * @return
      */
-    private boolean checkObject(Object obj, MouseInfo info)
-    {
-        if(info == null) {
+    private boolean checkObject(Object obj, MouseInfo info) {
+        if (info == null) {
             return false;
         }
         Actor actor = info.getActor();
         return obj == null || (obj instanceof World && actor == null) || actor == obj;
     }
 
-    
-    public String toString()
-    {
+
+    public String toString() {
         String s = "MouseEventData ";
-        if(mouseInfo != null) {
+        if (mouseInfo != null) {
             s += mouseInfo.toString();
         }
-        if(mousePressedInfo != null) {
+        if (mousePressedInfo != null) {
             s += " pressed";
         }
-        if(mouseClickedInfo != null) {
+        if (mouseClickedInfo != null) {
             s += " clicked";
         }
-        if(mouseDraggedInfo != null) {
+        if (mouseDraggedInfo != null) {
             s += " dragged";
         }
-        if(mouseDragEndedInfo != null) {
+        if (mouseDragEndedInfo != null) {
             s += " dragEnded";
         }
-        if(mouseMovedInfo != null) {
+        if (mouseMovedInfo != null) {
             s += " moved";
         }
         return s;
@@ -300,16 +276,14 @@ class MouseEventData
     /**
      * From the simulation thread (when it is safe to access the actors via the world's locator),
      * go through our mouse data and map X,Y positions into actors.
+     *
      * @param locator
      */
     @OnThread(Tag.Simulation)
-    public void setActors(WorldLocator locator)
-    {
+    public void setActors(WorldLocator locator) {
         for (MouseInfo info : Arrays.asList(mouseInfo, mouseClickedInfo, mouseDragEndedInfo,
-                mouseMovedInfo, mousePressedInfo, mouseDraggedInfo))
-        {
-            if (info != null && info.getActor() == null)
-            {
+                mouseMovedInfo, mousePressedInfo, mouseDraggedInfo)) {
+            if (info != null && info.getActor() == null) {
                 int x = MouseInfoVisitor.getPx(info);
                 int y = MouseInfoVisitor.getPy(info);
                 MouseInfoVisitor.setActor(info, locator.getTopMostActorAt(x, y));
@@ -321,11 +295,9 @@ class MouseEventData
      * If drag ended, and was started by the given MouseEventData, copy the drag-start
      * actor to the drag-end info.
      */
-    public void setDragStartActor(MouseEventData dragStartData)
-    {
+    public void setDragStartActor(MouseEventData dragStartData) {
         // 
-        if (mouseDragEndedInfo != null && dragStartedBy == dragStartData)
-        {
+        if (mouseDragEndedInfo != null && dragStartedBy == dragStartData) {
             MouseInfoVisitor.setActor(mouseDragEndedInfo, dragStartData.getActor());
         }
     }

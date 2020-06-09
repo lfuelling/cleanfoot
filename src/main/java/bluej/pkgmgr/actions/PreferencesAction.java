@@ -26,19 +26,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "Preferences" command. Displays a dialog box in which user can set various
  * preferences as to how BlueJ should behave.
- * 
+ *
  * @author Davin McCall
  */
-final public class PreferencesAction extends PkgMgrAction
-{
-    
-    public PreferencesAction(PkgMgrFrame pmf)
-    {
+final public class PreferencesAction extends PkgMgrAction {
+
+    public PreferencesAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.preferences");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.showPreferences();
     }

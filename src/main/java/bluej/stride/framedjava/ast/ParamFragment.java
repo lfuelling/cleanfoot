@@ -21,55 +21,45 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.util.List;
-
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.LocatableElement;
-import bluej.utility.Debug;
-import nu.xom.Attribute;
-import nu.xom.Element;
 import bluej.stride.generic.Frame;
+import nu.xom.Element;
 
-public class ParamFragment
-{
+import java.util.List;
+
+public class ParamFragment {
     public static final String ELEMENT = "param";
     private final TypeSlotFragment paramType;
     private final NameDefSlotFragment paramName;
-    
-    public ParamFragment(TypeSlotFragment paramType, NameDefSlotFragment paramName)
-    {
+
+    public ParamFragment(TypeSlotFragment paramType, NameDefSlotFragment paramName) {
         this.paramType = paramType;
         this.paramName = paramName;
     }
-    
-    public ParamFragment(Element el)
-    {
+
+    public ParamFragment(Element el) {
         paramType = new TypeSlotFragment(el.getAttributeValue("type"), el.getAttributeValue("type-java"));
         paramName = new NameDefSlotFragment(el.getAttributeValue("name"));
     }
-    
-    public Element toXML()
-    {
+
+    public Element toXML() {
         LocatableElement paramEl = new LocatableElement(null, ELEMENT);
         paramEl.addAttributeStructured("type", paramType);
         paramEl.addAttributeCode("name", paramName);
         return paramEl;
     }
-    
-    public TypeSlotFragment getParamType()
-    {
+
+    public TypeSlotFragment getParamType() {
         return paramType;
     }
-    
-    public NameDefSlotFragment getParamName()
-    {
+
+    public NameDefSlotFragment getParamName() {
         return paramName;
     }
-    
-    public static void addParamsToHeader(Frame frame, CodeElement src, List<ParamFragment> params, List<JavaFragment> header)
-    {
-        for (int i = 0; i < params.size();i++)
-        {
+
+    public static void addParamsToHeader(Frame frame, CodeElement src, List<ParamFragment> params, List<JavaFragment> header) {
+        for (int i = 0; i < params.size(); i++) {
             header.add(params.get(i).getParamType());
             header.add(new FrameFragment(frame, src, " "));
             header.add(params.get(i).getParamName());

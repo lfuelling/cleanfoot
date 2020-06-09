@@ -29,15 +29,13 @@ import java.lang.reflect.Modifier;
 /**
  * A representation of a Java class member in BlueJ.
  *
- * @author  Michael Cahill
+ * @author Michael Cahill
  */
-public abstract class MemberView
-{
+public abstract class MemberView {
     private final View view;
     private Comment comment;
 
-    protected MemberView(View view)
-    {
+    protected MemberView(View view) {
         if (view == null)
             throw new NullPointerException();
 
@@ -47,16 +45,14 @@ public abstract class MemberView
     /**
      * @return the View of the class or interface that declares this member.
      */
-    public View getDeclaringView()
-    {
+    public View getDeclaringView() {
         return view;
     }
 
     /**
      * @return the name of the class or interface that declares this member.
      */
-    public String getClassName()
-    {
+    public String getClassName() {
         return view.getQualifiedName();
     }
 
@@ -65,6 +61,7 @@ public abstract class MemberView
      * constructor represented by this Member, as an integer.  The
      * Modifier class should be used to decode the modifiers in
      * the integer.
+     *
      * @see Modifier
      */
     @OnThread(Tag.Any)
@@ -78,16 +75,14 @@ public abstract class MemberView
     /**
      * Sets the (javadoc) comment for this Member
      */
-    void setComment(Comment comment)
-    {
+    void setComment(Comment comment) {
         this.comment = comment;
     }
 
     /**
      * Returns the (javadoc) comment for this Member
      */
-    public Comment getComment()
-    {
+    public Comment getComment() {
         if (view != null) {
             view.loadComments();
         }
@@ -108,13 +103,11 @@ public abstract class MemberView
     /**
      * @return a boolean indicating whether this member is static
      */
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         return Modifier.isStatic(getModifiers());
     }
 
-    public String toString()
-    {
+    public String toString() {
         return view.toString();
     }
 }

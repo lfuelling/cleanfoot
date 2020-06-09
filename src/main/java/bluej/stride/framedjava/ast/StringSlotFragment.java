@@ -27,18 +27,15 @@ import bluej.stride.slots.EditableSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public abstract class StringSlotFragment extends SlotFragment
-{
+public abstract class StringSlotFragment extends SlotFragment {
     protected final String content;
-    
-    public StringSlotFragment(String content)
-    {
+
+    public StringSlotFragment(String content) {
         this.content = content;
-    
+
         if (content == null) {
             throw new IllegalArgumentException("SlotElement content cannot be null");
-        }
-        else if (content.contains("\n")) {
+        } else if (content.contains("\n")) {
             throw new IllegalStateException("SlotElement content contains newline");
         }
     }
@@ -46,22 +43,19 @@ public abstract class StringSlotFragment extends SlotFragment
     public abstract EditableSlot getSlot();
 
     @Override
-    public ErrorShower getErrorShower()
-    {
+    public ErrorShower getErrorShower() {
         return getSlot();
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public final void addError(CodeError error)
-    {
+    public final void addError(CodeError error) {
         if (getSlot() != null)
             getSlot().addError(error);
     }
 
     @Override
-    protected final JavaFragment getCompileErrorRedirect()
-    {
+    protected final JavaFragment getCompileErrorRedirect() {
         // SlotFragments should not override:
         return null;
     }
@@ -69,13 +63,11 @@ public abstract class StringSlotFragment extends SlotFragment
     /**
      * Gets the content of the slot, as it should be displayed in the editor.
      */
-    public String getContent()
-    {
+    public String getContent() {
         return content;
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return content.isEmpty();
     }
 }

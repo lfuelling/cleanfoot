@@ -21,42 +21,35 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.parser.AssistContent;
 import bluej.parser.AssistContent.Access;
 
-public enum AccessPermission
-{
+import java.util.Arrays;
+import java.util.List;
+
+public enum AccessPermission {
     PRIVATE("private"), PROTECTED("protected"), PUBLIC("public"), EMPTY("");
     // EMPTY is not a valid state in the language, but it arises in the case that the slot is empty
-    
+
     private final String displayName;
-    
-    AccessPermission(String displayName)
-    {
+
+    AccessPermission(String displayName) {
         this.displayName = displayName;
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return displayName;
     }
-    
-    public String getJavaCode()
-    {
+
+    public String getJavaCode() {
         // This is ok, even for EMPTY, because missing the permission does produce
         // parseable code:
         return displayName;
     }
 
-    public Access asAccess()
-    {
-        switch (this)
-        {
+    public Access asAccess() {
+        switch (this) {
             case PRIVATE:
                 return Access.PRIVATE;
             case PROTECTED:
@@ -67,14 +60,12 @@ public enum AccessPermission
                 return null;
         }
     }
-    
-    public static List<AccessPermission> all()
-    {
+
+    public static List<AccessPermission> all() {
         return Arrays.asList(PRIVATE, PROTECTED, PUBLIC);
     }
 
-    public static AccessPermission fromString(String s)
-    {
+    public static AccessPermission fromString(String s) {
         for (AccessPermission a : all()) {
             if (a.toString().equals(s)) {
                 return a;
@@ -83,16 +74,13 @@ public enum AccessPermission
         return EMPTY;
     }
 
-    
-    public static boolean isValid(AccessPermission ap)
-    {
+
+    public static boolean isValid(AccessPermission ap) {
         return ap == PRIVATE || ap == PROTECTED || ap == PUBLIC;
     }
 
-    public static AccessPermission fromAccess(AssistContent.Access access)
-    {
-        switch (access)
-        {
+    public static AccessPermission fromAccess(AssistContent.Access access) {
+        switch (access) {
             case PRIVATE:
                 return PRIVATE;
             case PROTECTED:

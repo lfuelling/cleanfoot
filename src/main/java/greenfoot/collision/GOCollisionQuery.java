@@ -26,40 +26,35 @@ import greenfoot.ActorVisitor;
 
 /**
  * Checks collisions between GreenfooObjects.
- * 
- * @author Poul Henriksen
  *
+ * @author Poul Henriksen
  */
-public class GOCollisionQuery implements CollisionQuery
-{
+public class GOCollisionQuery implements CollisionQuery {
     private Class<?> cls;
     private Actor compareObject;
 
     /**
      * Initialise.
-     * 
+     *
      * @param cls   If not null, the compared object must be of this class. If null, the compared
      *              object's class is not considered.
      * @param actor Object to compare against other objects.
      */
-    public void init(Class<?> cls, Actor actor)
-    {
+    public void init(Class<?> cls, Actor actor) {
         this.cls = cls;
         this.compareObject = actor;
-    }        
-    
+    }
+
     /**
      * Checks if the other object collides with this object and if it is of the given class.
      */
-    public boolean checkCollision(Actor other)
-    {   
-        if(cls != null && !cls.isInstance(other)) {
+    public boolean checkCollision(Actor other) {
+        if (cls != null && !cls.isInstance(other)) {
             return false;
         }
-        
-        if(compareObject == null) {
+
+        if (compareObject == null) {
             return true;
-        }
-        else return ActorVisitor.intersects(compareObject, other);
-    }     
+        } else return ActorVisitor.intersects(compareObject, other);
+    }
 }

@@ -31,29 +31,25 @@ import java.util.Set;
 /**
  * A class for handling a single-selection across a set of ClassDisplay items.
  */
-public class ClassDisplaySelectionManager
-{
+public class ClassDisplaySelectionManager {
     private final Set<ClassDisplay> classDisplayList = new HashSet<>();
     private final List<FXPlatformConsumer<ClassDisplay>> selectionListeners = new ArrayList<>();
     private ClassDisplay selected = null;
 
-    public ClassDisplaySelectionManager()
-    {
+    public ClassDisplaySelectionManager() {
     }
 
     /**
      * Add a ClassDisplay to the set of possibly-selected classes
      */
-    public void addClassDisplay(ClassDisplay classDisplay)
-    {
+    public void addClassDisplay(ClassDisplay classDisplay) {
         classDisplayList.add(classDisplay);
     }
-    
+
     /**
      * Remove a ClassDisplay from the set of possibly-selected classes
      */
-    public void removeClassDisplay(ClassDisplay classDisplay)
-    {
+    public void removeClassDisplay(ClassDisplay classDisplay) {
         classDisplayList.remove(classDisplay);
     }
 
@@ -61,19 +57,15 @@ public class ClassDisplaySelectionManager
      * Select the given item.  The setSelected method of all classes will
      * be called with the relevant true/false state.
      */
-    public void select(ClassDisplay target)
-    {
+    public void select(ClassDisplay target) {
         target.setSelected(true);
         selected = target;
-        for (ClassDisplay display : classDisplayList)
-        {
-            if (!display.equals(target))
-            {
+        for (ClassDisplay display : classDisplayList) {
+            if (!display.equals(target)) {
                 display.setSelected(false);
             }
         }
-        for (FXPlatformConsumer<ClassDisplay> selectionListener : selectionListeners)
-        {
+        for (FXPlatformConsumer<ClassDisplay> selectionListener : selectionListeners) {
             selectionListener.accept(target);
         }
     }
@@ -81,8 +73,7 @@ public class ClassDisplaySelectionManager
     /**
      * Gets the currently selected ClassDisplay.  May be null.
      */
-    public ClassDisplay getSelected()
-    {
+    public ClassDisplay getSelected() {
         return selected;
     }
 
@@ -90,8 +81,7 @@ public class ClassDisplaySelectionManager
      * Adds a selection listener to be called back when the selection changes.
      * Note: it is possible that null may be passed as the current selection.
      */
-    public void addSelectionListener(FXPlatformConsumer<ClassDisplay> listener)
-    {
+    public void addSelectionListener(FXPlatformConsumer<ClassDisplay> listener) {
         selectionListeners.add(listener);
     }
 }

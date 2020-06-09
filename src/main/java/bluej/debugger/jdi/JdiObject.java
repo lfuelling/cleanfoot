@@ -21,17 +21,12 @@
  */
 package bluej.debugger.jdi;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
-
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
@@ -39,69 +34,67 @@ import com.sun.jdi.ReferenceType;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Represents an object running on the user (remote) machine, together with an optional generic
  * type of the object.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
-public class JdiObject extends DebuggerObject
-{
+public class JdiObject extends DebuggerObject {
     /**
-     *  Factory method that returns instances of JdiObjects.
+     * Factory method that returns instances of JdiObjects.
      *
-     *  @param  obj  the remote object this encapsulates (may be null)
-     *  @return      a new JdiObject or a new JdiArray object if
-     *               remote object is an array
+     * @param obj the remote object this encapsulates (may be null)
+     * @return a new JdiObject or a new JdiArray object if
+     * remote object is an array
      */
     @OnThread(Tag.Any)
-    public static JdiObject getDebuggerObject(ObjectReference obj)
-    {
+    public static JdiObject getDebuggerObject(ObjectReference obj) {
         if (obj instanceof ArrayReference) {
             return new JdiArray((ArrayReference) obj);
-        }
-        else {
+        } else {
             return new JdiObject(obj);
         }
     }
-    
-    public static JdiObject getDebuggerObject(ObjectReference obj, JavaType expectedType)
-    {
-        if( obj instanceof ArrayReference ) {
+
+    public static JdiObject getDebuggerObject(ObjectReference obj, JavaType expectedType) {
+        if (obj instanceof ArrayReference) {
             return new JdiArray((ArrayReference) obj, expectedType);
-        }
-        else {
-            if( expectedType instanceof GenTypeClass ) {
-                return new JdiObject(obj, (GenTypeClass)expectedType);
-            }
-            else {
+        } else {
+            if (expectedType instanceof GenTypeClass) {
+                return new JdiObject(obj, (GenTypeClass) expectedType);
+            } else {
                 return new JdiObject(obj);
             }
         }
     }
 
     /**
-     * Get a JdiObject from a field. 
+     * Get a JdiObject from a field.
+     *
      * @param obj    Represents the value of the field.
      * @param field  The field.
      * @param parent The parent object containing the field.
      * @return
      */
-    public static JdiObject getDebuggerObject(ObjectReference obj, Field field, JdiObject parent)
-    {
+    public static JdiObject getDebuggerObject(ObjectReference obj, Field field, JdiObject parent) {
         JavaType expectedType = JdiReflective.fromField(field, parent);
         if (obj instanceof ArrayReference) {
             return new JdiArray((ArrayReference) obj, expectedType);
         }
-        
+
         if (expectedType.asClass() != null) {
             return new JdiObject(obj, expectedType.asClass());
         }
-        
+
         return new JdiObject(obj);
     }
-    
-    
+
+
     // -- instance methods --
 
     @OnThread(Tag.Any)
@@ -109,21 +102,19 @@ public class JdiObject extends DebuggerObject
     GenTypeClass genType = null; // the generic type, if known
     @OnThread(Tag.Any)
     private final List<Field> fields = new ArrayList<>();
-    
+
     // used by JdiArray.
-    protected JdiObject()
-    {
+    protected JdiObject() {
     }
 
     /**
-     *  Constructor is private so that instances need to use getJdiObject
-     *  factory method.
+     * Constructor is private so that instances need to use getJdiObject
+     * factory method.
      *
-     *  @param  obj  the remote debugger object (Jdi code) this encapsulates.
+     * @param obj the remote debugger object (Jdi code) this encapsulates.
      */
     @OnThread(Tag.Any)
-    private JdiObject(ObjectReference obj)
-    {
+    private JdiObject(ObjectReference obj) {
         this.obj = obj;
         if (obj != null) {
             obj.disableCollection();
@@ -131,44 +122,39 @@ public class JdiObject extends DebuggerObject
         }
     }
 
-    private JdiObject(ObjectReference obj, GenTypeClass expectedType)
-    {
+    private JdiObject(ObjectReference obj, GenTypeClass expectedType) {
         this.obj = obj;
         if (obj != null) {
             obj.disableCollection();
             getRemoteFields();
             Reflective reflective = new JdiReflective(obj.referenceType());
-            if( expectedType.isGeneric() ) {
+            if (expectedType.isGeneric()) {
                 genType = expectedType.mapToDerived(reflective);
             }
         }
     }
-    
+
     @Override
-    protected void finalize()
-    {
+    protected void finalize() {
         if (obj != null) {
             obj.enableCollection();
         }
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return JdiUtils.getJdiUtils().getValueString(obj);
     }
-    
+
     /*
      * Get the (raw) name of the class of this object.
      */
     @Override
     @OnThread(Tag.Any)
-    public String getClassName()
-    {
+    public String getClassName() {
         if (obj == null) {
             return "";
-        }
-        else {
+        } else {
             return obj.referenceType().name();
         }
     }
@@ -177,94 +163,81 @@ public class JdiObject extends DebuggerObject
      * Get the class of this object.
      */
     @Override
-    public DebuggerClass getClassRef()
-    {
+    public DebuggerClass getClassRef() {
         if (obj == null) {
             return null;
-        }
-        else {
+        } else {
             return new JdiClass(obj.referenceType());
         }
     }
-    
+
     @Override
-    public GenTypeClass getGenType()
-    {
-        if(genType != null) {
+    public GenTypeClass getGenType() {
+        if (genType != null) {
             return genType;
-        }
-        else if (obj != null) {
+        } else if (obj != null) {
             Reflective r = new JdiReflective(obj.referenceType());
             return new GenTypeClass(r);
-        }
-        else {
+        } else {
             return null;
         }
     }
-    
+
     /**
-     *  Return true if this object is an array. This is always false, since
-     *  arrays are wropped in the subclass "JdiArray".
+     * Return true if this object is an array. This is always false, since
+     * arrays are wropped in the subclass "JdiArray".
      *
-     *@return    The Array value
+     * @return The Array value
      */
     @Override
     @OnThread(Tag.Any)
-    public boolean isArray()
-    {
+    public boolean isArray() {
         return false;
     }
 
     @Override
-    public boolean isNullObject()
-    {
+    public boolean isNullObject() {
         return obj == null;
     }
 
     /**
-     *  Return the number of object fields.
+     * Return the number of object fields.
      *
-     *@return    The InstanceFieldCount value
+     * @return The InstanceFieldCount value
      */
     @Override
-    public int getElementCount()
-    {
+    public int getElementCount() {
         return -1;
     }
-    
+
     @Override
-    public JavaType getElementType()
-    {
+    public JavaType getElementType() {
         return null;
     }
 
     @Override
-    public DebuggerObject getElementObject(int index)
-    {
+    public DebuggerObject getElementObject(int index) {
         return null;
     }
-    
+
     @Override
-    public String getElementValueString(int index)
-    {
+    public String getElementValueString(int index) {
         return null;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public ObjectReference getObjectReference()
-    {
+    public ObjectReference getObjectReference() {
         return obj;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public List<DebuggerField> getFields()
-    {
+    public List<DebuggerField> getFields() {
         List<Field> visibleFields = obj.referenceType().visibleFields();
         List<DebuggerField> rlist = new ArrayList<DebuggerField>(fields.size());
         for (Field field : fields) {
-            if (! checkIgnoreField(field)) {
+            if (!checkIgnoreField(field)) {
                 boolean visible = visibleFields.remove(field);
                 rlist.add(new JdiField(field, this, !visible));
             }
@@ -273,17 +246,15 @@ public class JdiObject extends DebuggerObject
     }
 
     @OnThread(Tag.Any)
-    private static boolean checkIgnoreField(Field f)
-    {
+    private static boolean checkIgnoreField(Field f) {
         return (f.name().indexOf('$') >= 0);
     }
 
     /**
-     *  Get the list of fields for this object.
+     * Get the list of fields for this object.
      */
     @OnThread(Tag.Any)
-    protected void getRemoteFields()
-    {
+    protected void getRemoteFields() {
         if (obj != null) {
             ReferenceType cls = obj.referenceType();
             if (cls != null) {
@@ -301,17 +272,16 @@ public class JdiObject extends DebuggerObject
      * to in the remote VM.
      */
     @Override
-    public boolean equals(Object o)
-    {
-        if(this == o) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if((o == null) || (o.getClass() != this.getClass())) {
+        if ((o == null) || (o.getClass() != this.getClass())) {
             return false;
         }
 
         // object must be JdiObject at this point
-        JdiObject test = (JdiObject)o;
+        JdiObject test = (JdiObject) o;
         return Objects.equals(this.obj, test.obj);
     }
 
@@ -320,8 +290,7 @@ public class JdiObject extends DebuggerObject
      * referring to in the remote VM.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return obj.hashCode();
     }
 }

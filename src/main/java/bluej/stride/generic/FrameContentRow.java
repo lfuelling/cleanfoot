@@ -21,14 +21,16 @@
  */
 package bluej.stride.generic;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
+import bluej.stride.slots.*;
 import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.ErrorUnderlineCanvas;
+import bluej.utility.javafx.HangingFlowPane;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
+import bluej.utility.javafx.binding.ConcatListBinding;
+import bluej.utility.javafx.binding.ConcatMapListBinding;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -44,32 +46,24 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-
-import bluej.stride.slots.CopyableHeaderItem;
-import bluej.stride.slots.EditableSlot;
-import bluej.stride.slots.Focus;
-import bluej.stride.slots.HeaderItem;
-import bluej.stride.slots.SlotParent;
-import bluej.utility.Utility;
-import bluej.utility.javafx.ErrorUnderlineCanvas;
-import bluej.utility.javafx.HangingFlowPane;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
-import bluej.utility.javafx.binding.ConcatListBinding;
-import bluej.utility.javafx.binding.ConcatMapListBinding;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * A frame content item with a stack pane containing an overlay and a flow pane.
- * 
+ * <p>
  * A frame content row is used for the content of most frames (e.g. frame headers).
  * Essentially, anything except documentation pane and frame canvases sits within
  * a frame content row.  All HeaderItem and EditableSlot things sit inside the
  * HangingFlowPane in a FrameContentRow.
  */
-public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
-{
+public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem> {
     /**
      * The frame that this FrameContentRow lives in
      */
@@ -94,7 +88,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * has many Nodes, e.g. a text field, an operator label, another text field.)
      */
     private final ObservableList<HeaderItem> headerRowComponents = FXCollections.observableArrayList();
-    
+
     /**
      * The stack pane which contains the headerRow (underneath) and headerOverlay (on top).
      */
@@ -109,8 +103,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * Quick constructor to create a FrameContentRow with the given content.
      * Has "anon-" style prefix.
      */
-    public FrameContentRow(Frame parentFrame, HeaderItem... items)
-    {
+    public FrameContentRow(Frame parentFrame, HeaderItem... items) {
         this(parentFrame, "anon-");
         headerRowComponents.setAll(items);
     }
@@ -118,12 +111,11 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     /**
      * Standard constructor for FrameContentRow.  Creates an empty one, with the
      * given CSS style class prefix.
-     * 
+     *
      * @param parentFrame The parent of this FrameContentRow
      * @param stylePrefix The style-class prefix.
      */
-    public FrameContentRow(Frame parentFrame, String stylePrefix)
-    {
+    public FrameContentRow(Frame parentFrame, String stylePrefix) {
         this.parentFrame = parentFrame;
 
         stackPane = new StackPane();
@@ -145,20 +137,17 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     /**
      * Sets the margin for the headerRow flow pane within the stack pane.
      */
-    public void setMargin(Insets insets)
-    {
+    public void setMargin(Insets insets) {
         StackPane.setMargin(headerRow, insets);
     }
 
     @Override
-    public Stream<HeaderItem> getHeaderItemsDeep()
-    {
+    public Stream<HeaderItem> getHeaderItemsDeep() {
         return getHeaderItemsDirect(); // HeaderItems cannot nest
     }
 
     @Override
-    public Stream<HeaderItem> getHeaderItemsDirect()
-    {
+    public Stream<HeaderItem> getHeaderItemsDirect() {
         return headerRowComponents.stream();
     }
 
@@ -166,8 +155,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * Gets all the HeaderItems contained within this FrameContentRow which are
      * instances of EditableSlot (as determined by HeaderItem::asEditable).
      */
-    public Stream<EditableSlot> getSlotsDirect()
-    {
+    public Stream<EditableSlot> getSlotsDirect() {
         return getHeaderItemsDirect().map(HeaderItem::asEditable).filter(x -> x != null);
     }
 
@@ -175,8 +163,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * Gets the overlay which spans this FrameContentRow (and thus also spans all contained
      * HeaderItems).
      */
-    public ErrorUnderlineCanvas getOverlay()
-    {
+    public ErrorUnderlineCanvas getOverlay() {
         return headerOverlay;
     }
 
@@ -184,8 +171,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * Sets the HeaderItems which are to be contained within this FrameContentRow, replacing
      * all previous content.
      */
-    public void setHeaderItems(List<HeaderItem> headerItems)
-    {
+    public void setHeaderItems(List<HeaderItem> headerItems) {
         headerRowComponents.setAll(headerItems);
     }
 
@@ -193,20 +179,17 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * Binds the contents of this FrameContentRow to the concatenation of the given
      * list of lists of HeaderItems.
      */
-    public void bindContentsConcat(ObservableList<ObservableList<? extends HeaderItem>> src)
-    {
+    public void bindContentsConcat(ObservableList<ObservableList<? extends HeaderItem>> src) {
         ConcatListBinding.bind(headerRowComponents, src);
     }
 
     @Override
-    public Bounds getSceneBounds()
-    {
+    public Bounds getSceneBounds() {
         return stackPane.localToScene(stackPane.getBoundsInLocal());
     }
 
     @Override
-    public void focusLeft(HeaderItem src)
-    {
+    public void focusLeft(HeaderItem src) {
         int index = headerRowComponents.indexOf(src);
         if (index < 0) {
             throw new IllegalStateException("Child slot not found in slot parent");
@@ -215,15 +198,13 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
         EditableSlot s = prevFocusableBefore(index);
         if (s != null) {
             s.requestFocus(Focus.RIGHT);
-        }
-        else {
+        } else {
             parentFrame.focusLeft(this);
         }
     }
 
     @Override
-    public void focusRight(HeaderItem src)
-    {
+    public void focusRight(HeaderItem src) {
         int index = headerRowComponents.indexOf(src);
         if (index < 0) {
             throw new IllegalStateException("Child slot not found in slot parent");
@@ -232,8 +213,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
         EditableSlot s = nextFocusableAfter(index);
         if (s != null) {
             s.requestFocus(Focus.LEFT);
-        }
-        else {
+        } else {
             parentFrame.focusRight(this);
         }
     }
@@ -241,8 +221,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     /**
      * Gets the next editable slot after the given position (exclusive), or null if there is none.
      */
-    private EditableSlot nextFocusableAfter(int curSlot)
-    {
+    private EditableSlot nextFocusableAfter(int curSlot) {
         for (int i = curSlot + 1; i < headerRowComponents.size(); i++) {
             EditableSlot s = headerRowComponents.get(i).asEditable();
             if (s != null && s.isEditable()) {
@@ -255,8 +234,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     /**
      * Gets the previous editable slot before the given position (exclusive), or null if there is none.
      */
-    private EditableSlot prevFocusableBefore(int curSlot)
-    {
+    private EditableSlot prevFocusableBefore(int curSlot) {
         for (int i = curSlot - 1; i >= 0; i--) {
             EditableSlot s = headerRowComponents.get(i).asEditable();
             if (s != null && s.isEditable()) {
@@ -267,111 +245,92 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     }
 
     @Override
-    public void focusEnter(HeaderItem src)
-    {
+    public void focusEnter(HeaderItem src) {
         parentFrame.focusEnter(this);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void escape(HeaderItem src)
-    {
+    public void escape(HeaderItem src) {
         parentFrame.escape(this, src);
     }
 
     @Override
-    public void focusDown(HeaderItem src)
-    {
+    public void focusDown(HeaderItem src) {
         parentFrame.focusDown(this);
     }
 
     @Override
-    public void focusUp(HeaderItem src, boolean cursorToEnd)
-    {
+    public void focusUp(HeaderItem src, boolean cursorToEnd) {
         parentFrame.focusUp(this, cursorToEnd);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public boolean backspaceAtStart(HeaderItem src)
-    {
+    public boolean backspaceAtStart(HeaderItem src) {
         return parentFrame.backspaceAtStart(this, src);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public boolean deleteAtEnd(HeaderItem src)
-    {
+    public boolean deleteAtEnd(HeaderItem src) {
         return parentFrame.deleteAtEnd(this, src);
     }
 
     @Override
-    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animation)
-    {
+    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animation) {
         getHeaderItemsDirect().forEach(item -> item.setView(oldView, newView, animation));
         animation.addOnStopped(() -> JavaFXUtil.runAfter(Duration.millis(100), headerOverlay::redraw));
     }
 
     @Override
-    public boolean focusBottomEndFromNext()
-    {
+    public boolean focusBottomEndFromNext() {
         // This is called when they e.g. press up at the beginning of the canvas
         // after us.  In this case we still want to focus the start of the row, not the end:
         return focusLeftEndFromPrev();
     }
 
     @Override
-    public boolean focusLeftEndFromPrev()
-    {
+    public boolean focusLeftEndFromPrev() {
         Optional<EditableSlot> last = getSlotsDirect().filter(EditableSlot::isEditable).findFirst();
-        if (last.isPresent())
-        {
+        if (last.isPresent()) {
             last.get().requestFocus(Focus.LEFT);
             return true;
-        }
-        else
+        } else
             return false;
     }
 
     @Override
-    public boolean focusRightEndFromNext()
-    {
+    public boolean focusRightEndFromNext() {
         Optional<EditableSlot> last = Utility.findLast(getSlotsDirect().filter(EditableSlot::isEditable));
-        if (last.isPresent())
-        {
+        if (last.isPresent()) {
             last.get().requestFocus(Focus.RIGHT);
             return true;
-        }
-        else
+        } else
             return false;
     }
 
     @Override
-    public boolean focusTopEndFromPrev()
-    {
+    public boolean focusTopEndFromPrev() {
         // Focus start of row:
         return focusLeftEndFromPrev();
     }
 
     @Override
-    public Optional<FrameCanvas> getCanvas()
-    {
+    public Optional<FrameCanvas> getCanvas() {
         return Optional.empty();
     }
 
-    public final DoubleExpression flowPaneWidth()
-    {
+    public final DoubleExpression flowPaneWidth() {
         return headerRow.widthProperty();
     }
 
     @Override
-    public Region getNode()
-    {
+    public Region getNode() {
         return stackPane;
     }
 
-    public void setSnapToPixel(boolean b)
-    {
+    public void setSnapToPixel(boolean b) {
         stackPane.setSnapToPixel(b);
         headerRow.setSnapToPixel(b);
     }
@@ -379,40 +338,36 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     /**
      * Adds the given overlay to the stack pane, in front of the error underline canvas.
      */
-    public void addOverlay(Node item)
-    {
+    public void addOverlay(Node item) {
         stackPane.getChildren().add(item);
     }
 
     /**
      * Gets the X coordinate (in scene coordinates) of the first Node in the flow pane.
      */
-    public double getLeftFirstItem()
-    {
+    public double getLeftFirstItem() {
         Node n = headerRow.getChildren().stream().findFirst().get();
         return n.localToScene(n.getBoundsInLocal()).getMinX();
     }
 
-    public DoubleExpression flowPaneHeight()
-    {
+    public DoubleExpression flowPaneHeight() {
         return headerRow.heightProperty();
     }
 
-    public void applyCss()
-    {
+    public void applyCss() {
         headerRow.applyCss();
     }
 
     /**
      * Makes a display clone of this FrameContentRow.  This is used for making a copy of
      * method headers for displaying the pinned method header.
+     *
      * @return A StackPane containing a display-identical (but immutable) copy of this FrameContentRow.
      */
-    public StackPane makeDisplayClone(InteractionManager editor)
-    {
+    public StackPane makeDisplayClone(InteractionManager editor) {
         HangingFlowPane hfpCopy = new HangingFlowPane();
         hfpCopy.getChildren().setAll(headerRowComponents.stream().flatMap(c ->
-                ((CopyableHeaderItem)c).makeDisplayClone(editor)
+                ((CopyableHeaderItem) c).makeDisplayClone(editor)
         ).collect(Collectors.toList()));
         hfpCopy.prefWidthProperty().bind(headerRow.widthProperty());
         hfpCopy.alignmentProperty().bind(headerRow.alignmentProperty());
@@ -423,19 +378,16 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
         return paneCopy;
     }
 
-    public void setVisible(boolean visible)
-    {
+    public void setVisible(boolean visible) {
         stackPane.setVisible(visible);
         stackPane.setManaged(visible);
     }
 
-    public ObservableBooleanValue mouseHoveringProperty()
-    {
+    public ObservableBooleanValue mouseHoveringProperty() {
         return mouseHovering;
     }
 
-    public final List<ExtensionDescription> getExtensions()
-    {
+    public final List<ExtensionDescription> getExtensions() {
         if (parentFrame.getHeaderRow() == this)
             return parentFrame.getAvailableExtensions(null, null);
         else
@@ -443,15 +395,11 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
     }
 
     @OnThread(Tag.FXPlatform)
-    public void notifyModifiedPress(KeyCode c)
-    {
+    public void notifyModifiedPress(KeyCode c) {
         List<ExtensionDescription> possibles = getExtensions().stream().filter(ext -> ext.validFor(ExtensionSource.MODIFIER) && ("" + ext.getShortcutKey()).equals(c.getName().toLowerCase())).collect(Collectors.toList());
-        if (possibles.size() == 1)
-        {
+        if (possibles.size() == 1) {
             possibles.get(0).activate();
-        }
-        else if (possibles.size() > 1)
-        {
+        } else if (possibles.size() > 1) {
             Debug.message("Ambiguous alt keypress for " + parentFrame.getClass() + " for " + c);
         }
     }
@@ -461,8 +409,7 @@ public class FrameContentRow implements FrameContentItem, SlotParent<HeaderItem>
      * Called when the editor font size has changed, to redraw the overlay
      */
     @OnThread(Tag.FXPlatform)
-    public void fontSizeChanged()
-    {
+    public void fontSizeChanged() {
         headerOverlay.redraw();
     }
 }

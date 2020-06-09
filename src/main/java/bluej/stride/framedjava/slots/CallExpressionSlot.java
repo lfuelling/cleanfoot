@@ -21,9 +21,6 @@
  */
 package bluej.stride.framedjava.slots;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.Config;
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
@@ -32,25 +29,25 @@ import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameContentRow;
 import bluej.stride.generic.InteractionManager;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by neil on 04/12/2015.
  */
-public class CallExpressionSlot extends ExpressionSlot<CallExpressionSlotFragment>
-{
+public class CallExpressionSlot extends ExpressionSlot<CallExpressionSlotFragment> {
     public static final List<FrameCatalogue.Hint> CALL_HINTS = Arrays.asList(
-        new FrameCatalogue.Hint("move(3)", Config.getString("frame.catalogue.hint.move")),
-        new FrameCatalogue.Hint("turn(5)", Config.getString("frame.catalogue.hint.turn")),
-        new FrameCatalogue.Hint("removeTouching(Crab.class)", Config.getString("frame.catalogue.hint.removeobject"))
+            new FrameCatalogue.Hint("move(3)", Config.getString("frame.catalogue.hint.move")),
+            new FrameCatalogue.Hint("turn(5)", Config.getString("frame.catalogue.hint.turn")),
+            new FrameCatalogue.Hint("removeTouching(Crab.class)", Config.getString("frame.catalogue.hint.removeobject"))
     );
 
-    public CallExpressionSlot(InteractionManager editor, Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row, String stylePrefix, List<FrameCatalogue.Hint> hints)
-    {
+    public CallExpressionSlot(InteractionManager editor, Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row, String stylePrefix, List<FrameCatalogue.Hint> hints) {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, hints);
     }
 
     @Override
-    protected CallExpressionSlotFragment makeSlotFragment(String content, String javaCode)
-    {
+    protected CallExpressionSlotFragment makeSlotFragment(String content, String javaCode) {
         return new CallExpressionSlotFragment(content, javaCode, this);
     }
 }

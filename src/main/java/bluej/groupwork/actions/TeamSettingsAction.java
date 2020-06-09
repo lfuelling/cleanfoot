@@ -27,18 +27,16 @@ import bluej.pkgmgr.Project;
 
 /**
  * Action to show teamwork settings dialog
- *
  */
-public class TeamSettingsAction extends TeamAction
-{
-    /** Creates a new instance of TeamSettingsAction */
-    public TeamSettingsAction()
-    {
+public class TeamSettingsAction extends TeamAction {
+    /**
+     * Creates a new instance of TeamSettingsAction
+     */
+    public TeamSettingsAction() {
         super("team.settings", true);
     }
 
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+    public void actionPerformed(PkgMgrFrame pmf) {
         Project project = pmf.getProject();
         project.getTeamSettingsDialog().showAndWait();
     }

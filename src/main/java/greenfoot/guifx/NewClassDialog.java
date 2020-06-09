@@ -21,9 +21,12 @@
  */
 package greenfoot.guifx;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.utility.JavaNames;
+import bluej.utility.javafx.HorizontalRadio;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.dialog.DialogPaneAnimateError;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
@@ -34,33 +37,37 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
-
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.utility.JavaNames;
-import bluej.utility.javafx.HorizontalRadio;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.dialog.DialogPaneAnimateError;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Dialog for creating a new class
  *
- * @author  Justin Tan
- * @author  Michael Kolling
+ * @author Justin Tan
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
-{
-    /** The buttons for the source language (Java/Stride) */
+public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo> {
+    /**
+     * The buttons for the source language (Java/Stride)
+     */
     private final HorizontalRadio<SourceType> language;
 
-    /** stores restricted windows class filenames */
+    /**
+     * stores restricted windows class filenames
+     */
     private static List<String> windowsRestrictedWords;
-    /** The field with the class name */
+    /**
+     * The field with the class name
+     */
     private final TextField nameField;
-    /** The dialog pane */
+    /**
+     * The dialog pane
+     */
     private final DialogPaneAnimateError dialogPane;
     /* Keeps track of whether the field has yet been non-blank.
      *  We don't show an error for empty class name if the class name
@@ -76,13 +83,11 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
      * The information selected in the dialog: class name and source type.
      */
     @OnThread(Tag.Any)
-    public static class NewClassInfo
-    {
+    public static class NewClassInfo {
         public final String className;
         public final SourceType sourceType;
 
-        private NewClassInfo(String className, SourceType sourceType)
-        {
+        private NewClassInfo(String className, SourceType sourceType) {
             this.className = className;
             this.sourceType = sourceType;
         }
@@ -92,8 +97,7 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
     /**
      * Construct a NewClassDialog.
      */
-    public NewClassDialog(Window parent, SourceType defaultSourceType)
-    {
+    public NewClassDialog(Window parent, SourceType defaultSourceType) {
         setTitle(Config.getString("newclass.dialog.title"));
         initOwner(parent);
         initModality(Modality.WINDOW_MODAL);
@@ -136,11 +140,9 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
 
         getDialogPane().setContent(mainPanel);
         setResultConverter(buttonType -> {
-            if (buttonType == ButtonType.OK)
-            {
+            if (buttonType == ButtonType.OK) {
                 return new NewClassInfo(nameField.getText().trim(), language.selectedProperty().get());
-            }
-            else {
+            } else {
                 return null;
             }
         });
@@ -156,8 +158,7 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
      *              even if it has been blank since the dialog was shown (we do
      *              this when the user mouses over OK).
      */
-    private void updateOKButton(boolean force)
-    {
+    private void updateOKButton(boolean force) {
         String newClassName = nameField.getText().trim();
         fieldHasHadContent |= !newClassName.equals("");
         boolean enable = false;
@@ -166,18 +167,13 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
         Properties localProperties = new Properties();
         localProperties.put("LANGUAGE", sourceType.toString());
 
-        if (!JavaNames.isIdentifier(newClassName))
-        {
+        if (!JavaNames.isIdentifier(newClassName)) {
             if (fieldHasHadContent || force)
-                showError(Config.getString("pkgmgr.newClass.error.notValidClassName", null,  localProperties), true);
-        }
-        else if (isWindowsRestrictedWord(newClassName))
-        {
+                showError(Config.getString("pkgmgr.newClass.error.notValidClassName", null, localProperties), true);
+        } else if (isWindowsRestrictedWord(newClassName)) {
             if (fieldHasHadContent || force)
                 showError(Config.getString("pkgmgr.newClass.error.windowsRestricted"), true);
-        }
-        else
-        {
+        } else {
             hideError();
             enable = true;
         }
@@ -185,14 +181,12 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
         setOKEnabled(enable);
     }
 
-    private void hideError()
-    {
+    private void hideError() {
         errorLabel.setText("");
         JavaFXUtil.setPseudoclass("bj-dialog-error", false, nameField);
     }
 
-    private void showError(String error, boolean problemIsName)
-    {
+    private void showError(String error, boolean problemIsName) {
         // show error, highlight field red if problem is name:
         errorLabel.setText(error);
         JavaFXUtil.setPseudoclass("bj-dialog-error", problemIsName, nameField);
@@ -201,17 +195,17 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
     /**
      * Sets the OK button of the dialog to be enabled (pass true) or not (pass false)
      */
-    private void setOKEnabled(boolean okEnabled)
-    {
+    private void setOKEnabled(boolean okEnabled) {
         dialogPane.getOKButton().setDisable(!okEnabled);
     }
+
     /**
      * Tests for restricted class names (case insensitive)
+     *
      * @param fileName potential class name
      * @return true if restricted word
      */
-    private boolean isWindowsRestrictedWord(String fileName)
-    {
+    private boolean isWindowsRestrictedWord(String fileName) {
         initialiseRestrictedWordList();
         return windowsRestrictedWords.contains(fileName.toUpperCase());
     }
@@ -219,9 +213,8 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
     /**
      * Initialises the list of restricted words
      */
-    private void initialiseRestrictedWordList()
-    {
-        if (windowsRestrictedWords==null){
+    private void initialiseRestrictedWordList() {
+        if (windowsRestrictedWords == null) {
             windowsRestrictedWords = Arrays.asList("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5",
                     "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
         }
@@ -230,31 +223,28 @@ public class NewClassDialog extends Dialog<NewClassDialog.NewClassInfo>
     /**
      * Sets the suggested class name to the nameFiled in the dialog
      */
-    public void setSuggestedClassName(String suggestedClassName)
-    {
+    public void setSuggestedClassName(String suggestedClassName) {
         nameField.setText(suggestedClassName);
     }
 
     /**
      * Disables/Enables the language box in the dialog
      */
-    public void disableLanguageBox(boolean value){
+    public void disableLanguageBox(boolean value) {
         language.setDisable(value);
     }
 
     /**
      * Get the selected language of the class.
      */
-    public SourceType getSelectedLanguage()
-    {
+    public SourceType getSelectedLanguage() {
         return language.selectedProperty().get();
     }
 
     /**
      * select the language of the class.
      */
-    public void setSelectedLanguage(SourceType type)
-    {
+    public void setSelectedLanguage(SourceType type) {
         language.select(type);
     }
 

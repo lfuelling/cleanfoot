@@ -21,20 +21,23 @@
  */
 package bluej.pkgmgr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.pkgmgr.target.ClassTarget;
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
+import bluej.utility.Utility;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Window;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -42,30 +45,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import bluej.pkgmgr.target.ClassTarget;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Window;
-
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.utility.Debug;
-import bluej.utility.DialogManager;
-import bluej.utility.FileUtility;
-import bluej.utility.Utility;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 /**
  * Component to manage storing projects to jar file format.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
-final class ExportManager
-{
+final class ExportManager {
     private static final String specifyJar = Config.getString("pkgmgr.export.specifyJar");
-    
+
     private static final String sourceSuffix = "." + SourceType.Java.toString().toLowerCase();
     private static final String contextSuffix = ".ctxt";
     private static final String packageFilePrefix = "bluej.pk";
@@ -76,8 +63,7 @@ final class ExportManager
     @OnThread(Tag.FXPlatform)
     private ExportDialog dialog;
 
-    public ExportManager(PkgMgrFrame frame)
-    {
+    public ExportManager(PkgMgrFrame frame) {
         this.frame = frame;
     }
 
@@ -85,14 +71,13 @@ final class ExportManager
      * Envoke the "create jar" user function. This starts by displaying the
      * export dialog, then it reads the options and performs the export to jar.
      */
-    public void export()
-    {
+    public void export() {
         Project proj = frame.getProject();
         ExportDialog.ProjectInfo projectInfo = new ExportDialog.ProjectInfo(proj);
 
         boolean hasStride = proj.getPackageNames().stream().map(proj::getPackage)
-            .flatMap(p -> p.getClassTargets().stream())
-            .anyMatch(ct -> ct.getSourceType() == SourceType.Stride);
+                .flatMap(p -> p.getClassTargets().stream())
+                .anyMatch(ct -> ct.getSourceType() == SourceType.Stride);
 
         Window parent = frame.getFXWindow();
         if (dialog == null)
@@ -104,15 +89,11 @@ final class ExportManager
         if (!result.isPresent())
             return;
         ExportDialog.ExportInfo info = result.get();
-        if (!info.mainClassName.equals(""))
-        {
-            for (Package p : proj.getProjectPackages())
-            {
-                for (ClassTarget c : p.getClassTargets())
-                {
-                    if (!c.isCompiled())
-                    {
-                        DialogManager.showErrorFX(parent,"jar-executable-uncompiled-project");
+        if (!info.mainClassName.equals("")) {
+            for (Package p : proj.getProjectPackages()) {
+                for (ClassTarget c : p.getClassTargets()) {
+                    if (!c.isCompiled()) {
+                        DialogManager.showErrorFX(parent, "jar-executable-uncompiled-project");
                         return;
                     }
                 }
@@ -126,7 +107,7 @@ final class ExportManager
         String sourceDir = proj.getProjectDir().getPath();
 
         createJar(proj, fileName.getAbsolutePath(), sourceDir, info.mainClassName, info.selectedFiles,
-            info.includeSource, info.includePkgFiles, hasStride);
+                info.includeSource, info.includePkgFiles, hasStride);
     }
 
     /**
@@ -134,11 +115,10 @@ final class ExportManager
      */
     @OnThread(Tag.FXPlatform)
     private void createJar(Project proj, String fileName, String sourceDir, String mainClass,
-                           List<File> userLibs, boolean includeSource, boolean includePkgFiles, boolean includeStrideLang)
-    {
-        
+                           List<File> userLibs, boolean includeSource, boolean includePkgFiles, boolean includeStrideLang) {
+
         // Create a single jar file
-        if(!fileName.endsWith(".jar"))
+        if (!fileName.endsWith(".jar"))
             fileName = fileName + ".jar";
 
         File jarFile = new File(fileName);
@@ -159,42 +139,36 @@ final class ExportManager
             JarOutput jarOutput = new JarOutput(jStream);
 
             writeDirToJar(new File(sourceDir), "", jarOutput, includeSource,
-                            includePkgFiles,
-                            jarFile.getCanonicalFile());
-            if (includeStrideLang)
-            {
+                    includePkgFiles,
+                    jarFile.getCanonicalFile());
+            if (includeStrideLang) {
                 includeJarContent(new File(Config.getBlueJLibDir(), "lang-stride.jar"), jarOutput);
             }
-            for (URL url : proj.getPlusLibsContent())
-            {
-                try
-                {
+            for (URL url : proj.getPlusLibsContent()) {
+                try {
                     includeJarContent(new File(new URI(url.toString())), jarOutput);
-                }
-                catch (URISyntaxException urie)
-                {
+                } catch (URISyntaxException urie) {
 
                 }
             }
             for (File f : userLibs)
                 includeJarContent(f, jarOutput);
-            
+
             frame.setStatus(Config.getString("pkgmgr.exported.jar"));
-        }
-        catch(IOException exc) {
+        } catch (IOException exc) {
             DialogManager.showErrorFX(frame.getFXWindow(), "error-writing-jar");
             Debug.reportError("problem writing jar file: " + exc);
         } finally {
             try {
-                if(jStream != null)
+                if (jStream != null)
                     jStream.close();
-            } catch (IOException e) {}
+            } catch (IOException e) {
+            }
         }
     }
 
     @OnThread(Tag.Any)
-    private void includeJarContent(File srcJarFile, JarOutput jarOutput) throws IOException
-    {
+    private void includeJarContent(File srcJarFile, JarOutput jarOutput) throws IOException {
         try (ZipFile jar = new ZipFile(srcJarFile)) {
             for (ZipEntry entry : Utility.iterableStream(jar.stream())) {
                 jarOutput.writeJarEntry(jar.getInputStream(entry), entry.getName());
@@ -211,23 +185,21 @@ final class ExportManager
     @OnThread(Tag.Any)
     private void writeDirToJar(File sourceDir, String pathPrefix,
                                JarOutput jarOutput, boolean includeSource, boolean includePkg, File outputFile)
-        throws IOException
-    {
+            throws IOException {
         File[] dir = sourceDir.listFiles();
-        for(int i = 0; i < dir.length; i++) {
-            if(dir[i].isDirectory()) {
-                if(!skipDir(dir[i], includePkg) ) {
+        for (int i = 0; i < dir.length; i++) {
+            if (dir[i].isDirectory()) {
+                if (!skipDir(dir[i], includePkg)) {
                     writeDirToJar(dir[i], pathPrefix + dir[i].getName() + "/",
-                                  jarOutput, includeSource, includePkg, outputFile);
+                            jarOutput, includeSource, includePkg, outputFile);
                 }
-            }
-            else {
+            } else {
                 // check against a list of file we don't want to export and also
                 // check that we don't try to export the jar file we are writing
                 // (hangs the machine)
-                if(!skipFile(dir[i].getName(), !includeSource, !includePkg) &&
-                    !outputFile.equals(dir[i].getCanonicalFile())) {
-                        jarOutput.writeJarEntry(dir[i], pathPrefix + dir[i].getName());
+                if (!skipFile(dir[i].getName(), !includeSource, !includePkg) &&
+                        !outputFile.equals(dir[i].getCanonicalFile())) {
+                    jarOutput.writeJarEntry(dir[i], pathPrefix + dir[i].getName());
                 }
             }
         }
@@ -238,30 +210,30 @@ final class ExportManager
      */
     @OnThread(Tag.Any)
     private void copyLibsToJar(List<File> userLibs, File destDir)
-        throws IOException
-    {
-        for(Iterator<File> it = userLibs.iterator(); it.hasNext(); ) {
+            throws IOException {
+        for (Iterator<File> it = userLibs.iterator(); it.hasNext(); ) {
             File lib = it.next();
             FileUtility.copyFile(lib, new File(destDir, lib.getName()));
         }
     }
 
-    /** array of directory names not to be included in jar file **/
+    /**
+     * array of directory names not to be included in jar file
+     **/
     @OnThread(Tag.Any)
-    private static final String[] skipDirs = { "CVS", ".svn", ".git" };
+    private static final String[] skipDirs = {"CVS", ".svn", ".git"};
 
     /**
      * Test whether a given directory should be skipped (not included) in
      * export.
      */
     @OnThread(Tag.Any)
-    private boolean skipDir(File dir, boolean includePkg)
-    {
+    private boolean skipDir(File dir, boolean includePkg) {
         if (dir.getName().equals(Project.projectLibDirName))
-            return ! includePkg;
-        
-        for(int i = 0; i < skipDirs.length; i++) {
-            if(dir.getName().equals(skipDirs[i]))
+            return !includePkg;
+
+        for (int i = 0; i < skipDirs.length; i++) {
+            if (dir.getName().equals(skipDirs[i]))
                 return true;
         }
         return false;
@@ -273,14 +245,13 @@ final class ExportManager
      * source files are skipped.
      */
     @OnThread(Tag.Any)
-    private boolean skipFile(String fileName, boolean skipSource, boolean skipPkg)
-    {
-        if(fileName.equals(packageFileBackup))
+    private boolean skipFile(String fileName, boolean skipSource, boolean skipPkg) {
+        if (fileName.equals(packageFileBackup))
             return true;
-        
-        if(fileName.endsWith(sourceSuffix) || fileName.endsWith(sourceSuffix + "~"))
+
+        if (fileName.endsWith(sourceSuffix) || fileName.endsWith(sourceSuffix + "~"))
             return skipSource;
-        if(fileName.startsWith(packageFilePrefix) || fileName.endsWith(packageFileSuffix) ||
+        if (fileName.startsWith(packageFilePrefix) || fileName.endsWith(packageFileSuffix) ||
                 fileName.endsWith(contextSuffix))
             return skipPkg;
 
@@ -293,13 +264,11 @@ final class ExportManager
      * duplicate(s) discarded.
      */
     @OnThread(Tag.Any)
-    private static class JarOutput
-    {
+    private static class JarOutput {
         private final JarOutputStream jStream;
         private final HashSet<String> existingNames = new HashSet<>();
 
-        public JarOutput(JarOutputStream jStream)
-        {
+        public JarOutput(JarOutputStream jStream) {
             this.jStream = jStream;
             // The manifest is already added, so we must put it in our records:
             existingNames.add("META-INF/MANIFEST.MF");
@@ -312,28 +281,22 @@ final class ExportManager
          */
         @OnThread(Tag.Any)
         public void writeJarEntry(File srcFile, String entryName)
-            throws IOException
-        {
+                throws IOException {
             writeJarEntry(new FileInputStream(srcFile), entryName);
         }
 
         @OnThread(Tag.Any)
         public void writeJarEntry(InputStream src, String entryName)
-            throws IOException
-        {
-            try
-            {
-                if (!existingNames.contains(entryName))
-                {
+                throws IOException {
+            try {
+                if (!existingNames.contains(entryName)) {
                     existingNames.add(entryName);
                     jStream.putNextEntry(new ZipEntry(entryName));
                     FileUtility.copyStream(src, jStream);
                 }
-            } catch (ZipException exc)
-            {
+            } catch (ZipException exc) {
                 Debug.message("warning: " + exc);
-            } finally
-            {
+            } finally {
                 if (src != null)
                     src.close();
             }

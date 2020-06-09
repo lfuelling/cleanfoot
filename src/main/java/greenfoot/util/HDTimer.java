@@ -24,16 +24,13 @@ package greenfoot.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 /**
  * Timer to do high precision sleeps and waits.
- * 
+ *
  * @author Poul Henriksen
  */
-public class HDTimer
-{
+public class HDTimer {
     private static Long sleepPrecision;
     private static long worstYieldTime;
     private static boolean inited;
@@ -43,8 +40,7 @@ public class HDTimer
         init();
     }
 
-    public synchronized static void init()
-    {
+    public synchronized static void init() {
         if (!inited) {
             measureSleepPrecision();
             measureWaitPrecision();
@@ -52,8 +48,7 @@ public class HDTimer
         }
     }
 
-    private static void measureSleepPrecision()
-    {
+    private static void measureSleepPrecision() {
         int testSize = 11;
         List<Long> tests = new ArrayList<Long>();
 
@@ -64,16 +59,14 @@ public class HDTimer
                 long t2 = System.nanoTime();
                 tests.add((t2 - t1));
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         Collections.sort(tests);
         sleepPrecision = tests.get(testSize / 2);
     }
 
-    private static void measureWaitPrecision()
-    {
+    private static void measureWaitPrecision() {
         int testSize = 11;
         List<Long> tests = new ArrayList<Long>();
         Object lock = new Object();
@@ -86,8 +79,7 @@ public class HDTimer
                     tests.add((t2 - t1));
                 }
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         Collections.sort(tests);
@@ -96,39 +88,32 @@ public class HDTimer
 
     /**
      * Sleep for the specified amount of time.
-     * 
-     * @param nanos
-     *            Time to wait in nanoseconds.
-     * @throws InterruptedException
-     *             if another thread has interrupted the current thread
+     *
+     * @param nanos Time to wait in nanoseconds.
+     * @throws InterruptedException if another thread has interrupted the current thread
      */
     public static void sleep(long nanos)
-        throws InterruptedException
-    {
+            throws InterruptedException {
         long tStart = System.nanoTime();
         sleepFromTime(nanos, tStart);
     }
 
     /**
      * Sleep for the specified amount of time.
-     * 
-     * @param nanos
-     *            Time to wait in nanoseconds.
+     *
+     * @param nanos  Time to wait in nanoseconds.
      * @param tStart The tiem from which the wainting should start.
-     * 
-     * @throws InterruptedException
-     *             if another thread has interrupted the current thread
+     * @throws InterruptedException if another thread has interrupted the current thread
      */
     private static void sleepFromTime(long nanos, long tStart)
-        throws InterruptedException
-    {
+            throws InterruptedException {
         long sleepNanos = nanos - sleepPrecision;
 
         // First, use Java's Thread.sleep() if it is precise enough
         if (nanos / sleepPrecision >= 2) {
             long actualDelayMillis = (sleepNanos) / 1000000L;
             int nanoRest = (int) (sleepNanos % 1000000L);
-            if(Thread.interrupted()) {
+            if (Thread.interrupted()) {
                 throw new InterruptedException("HDTimer.sleepFromTime interrupted in sleep.");
             }
             Thread.sleep(actualDelayMillis, nanoRest);
@@ -137,7 +122,7 @@ public class HDTimer
         // Second, yield in a busy loop if precise enough
         while ((System.nanoTime() - tStart + worstYieldTime) < nanos) {
             long t1 = System.nanoTime();
-            if(Thread.interrupted()) {
+            if (Thread.interrupted()) {
                 throw new InterruptedException("HDTimer.sleepFromTime interrupted in yield.");
             }
             Thread.yield();
@@ -149,7 +134,7 @@ public class HDTimer
 
         // Third, run a busy loop for the rest of the time
         while ((System.nanoTime() - tStart) < nanos) {
-            if(Thread.interrupted()) {
+            if (Thread.interrupted()) {
                 throw new InterruptedException("HDTimer.sleepFromTime interrupted in busy loop.");
             }
         }

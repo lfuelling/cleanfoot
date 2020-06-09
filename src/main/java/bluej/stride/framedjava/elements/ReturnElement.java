@@ -21,54 +21,45 @@
  */
 package bluej.stride.framedjava.elements;
 
+import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.ReturnFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Attribute;
+import nu.xom.Element;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Attribute;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.OptionalExpressionSlotFragment;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.ReturnFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-
-public class ReturnElement extends CodeElement implements JavaSingleLineDebugHandler
-{
+public class ReturnElement extends CodeElement implements JavaSingleLineDebugHandler {
     public static final String ELEMENT = "return";
     private final OptionalExpressionSlotFragment val;
     private ReturnFrame frame;
-    
+
     // val is optional and can be null
-    public ReturnElement(ReturnFrame frame, OptionalExpressionSlotFragment val, boolean enabled)
-    {
+    public ReturnElement(ReturnFrame frame, OptionalExpressionSlotFragment val, boolean enabled) {
         this.frame = frame;
         this.val = val;
         this.enable = enabled;
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         List<JavaFragment> fragments = new ArrayList<JavaFragment>();
         fragments.add(f(frame, "return"));
         if (val != null) {
             fragments.addAll(Arrays.asList(space(), val));
-        }        
+        }
         fragments.add(f(frame, ";"));
         return new JavaSource(this, fragments);
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement retEl = new LocatableElement(this, ELEMENT);
         if (val != null) {
             retEl.addAttributeStructured("value", val);
@@ -76,36 +67,31 @@ public class ReturnElement extends CodeElement implements JavaSingleLineDebugHan
         addEnableAttribute(retEl);
         return retEl;
     }
-    
-    public ReturnElement(Element el)
-    {
+
+    public ReturnElement(Element el) {
         Attribute valueAttribute = el.getAttribute("value");
         val = (valueAttribute == null) ? null : new OptionalExpressionSlotFragment(valueAttribute.getValue(), el.getAttributeValue("value-java"));
         enable = Boolean.valueOf(el.getAttributeValue("enable"));
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new ReturnFrame(editor, val, isEnable());
         return frame;
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
     }
-    
+
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return val == null ? Stream.empty() : Stream.of(val);
     }
 }

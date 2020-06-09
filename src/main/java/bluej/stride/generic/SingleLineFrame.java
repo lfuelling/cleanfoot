@@ -47,12 +47,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class SingleLineFrame extends Frame
-{
+public abstract class SingleLineFrame extends Frame {
     protected final SlotLabel previewSemi = new SlotLabel("", "preview-semi") {
         @Override
-        public void setView(View oldView, View v, SharedTransition animate)
-        {
+        public void setView(View oldView, View v, SharedTransition animate) {
             if (v == View.JAVA_PREVIEW) {
                 setText(";");
 
@@ -62,31 +60,27 @@ public abstract class SingleLineFrame extends Frame
             rt.play();*/
                 getNode().opacityProperty().bind(animate.getProgress());
                 animate.addOnStopped(() -> getNode().opacityProperty().unbind());
-            }
-            else {
+            } else {
                 setText("");
             }
         }
-    }; 
+    };
     private final ObservableList<FrameState> recentValues = FXCollections.observableArrayList();
 
-    public SingleLineFrame(InteractionManager editor, String caption, String stylePrefix)
-    {
+    public SingleLineFrame(InteractionManager editor, String caption, String stylePrefix) {
         super(editor, caption, stylePrefix);
     }
-    
+
     @Override
-    public double lowestCursorY()
-    {
+    public double lowestCursorY() {
         Bounds sceneBounds = getNode().localToScene(getNode().getBoundsInLocal());
         return sceneBounds.getMaxY();
     }
-    
+
     @Override
-    public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend)
-    {
+    public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend) {
         Bounds headBounds = getHeaderRow().getSceneBounds();
-            
+
         // Slight bias towards dropping before:
         if (sceneY <= 2 + (headBounds.getMinY() + headBounds.getMaxY()) / 2) {
             return prevCursor;
@@ -94,8 +88,7 @@ public abstract class SingleLineFrame extends Frame
         return nextCursor;
     }
 
-    protected boolean isInInterface(FrameCanvas parentCanvas)
-    {
+    protected boolean isInInterface(FrameCanvas parentCanvas) {
         if (parentCanvas == null) {
             bluej.utility.Debug.printCallStack("parentCanvas shouldn't be null");
             return false;
@@ -105,44 +98,36 @@ public abstract class SingleLineFrame extends Frame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public List<FrameOperation> getContextOperations()
-    {
+    public List<FrameOperation> getContextOperations() {
         List<FrameOperation> ops = new ArrayList<>(super.getContextOperations());
 
         int i = 0;
-        for (FrameState state : recentValues)
-        {
+        for (FrameState state : recentValues) {
             // The first value in the list should always be the most current value,
             // so we don't actually display that on the menu.  (But we keep it because
             // once there's a change, it will become index 1, and thus shown)
-            if (i > 0)
-            {
-                ops.add(new FrameOperation(getEditor(), "revert" + i, Combine.ONE)
-                {
+            if (i > 0) {
+                ops.add(new FrameOperation(getEditor(), "revert" + i, Combine.ONE) {
                     @Override
                     @OnThread(Tag.FXPlatform)
-                    protected void execute(List<Frame> frames)
-                    {
+                    protected void execute(List<Frame> frames) {
                         getParentCanvas().replaceBlock(SingleLineFrame.this, Loader.loadElement(state.value).createFrame(editor));
                     }
 
                     @Override
-                    public List<ItemLabel> getLabels()
-                    {
+                    public List<ItemLabel> getLabels() {
                         return Arrays.asList(l(Config.getString("frame.slot.recent"), MenuItemOrder.RECENT_VALUES), l("0", MenuItemOrder.RECENT_VALUES));
                     }
 
                     @Override
-                    protected CustomMenuItem initializeCustomItem()
-                    {
+                    protected CustomMenuItem initializeCustomItem() {
                         ImageView view = new ImageView(state.picture);
                         CustomMenuItem item = new CustomMenuItem(view);
                         return item;
                     }
 
                     @Override
-                    public boolean onlyOnContextMenu()
-                    {
+                    public boolean onlyOnContextMenu() {
                         return true;
                     }
                 });
@@ -154,32 +139,27 @@ public abstract class SingleLineFrame extends Frame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void lostFocus()
-    {
+    public void lostFocus() {
         super.lostFocus();
         saveAsRecent();
     }
 
     @OnThread(Tag.FXPlatform)
-    protected void saveAsRecent()
-    {
+    protected void saveAsRecent() {
         if (!(this instanceof CodeFrame))
             return;
 
-        CodeElement code = ((CodeFrame)this).getCode();
+        CodeElement code = ((CodeFrame) this).getCode();
         if (code == null)
             return;
         Element el = code.toXML();
         String xml = el.toXML();
         int existingRecent = Utility.findIndex(recentValues, fs -> fs.cachedXML.equals(xml));
-        if (existingRecent != -1)
-        {
+        if (existingRecent != -1) {
             // Just need to re-order the list.  Don't need to consider length as it won't change
             FrameState fs = recentValues.remove(existingRecent);
             recentValues.add(0, fs);
-        }
-        else
-        {
+        } else {
             JavaFXUtil.runAfterCurrent(() -> {
                 Image pic = takeShot(Arrays.asList(this), null);
                 FrameState s = new FrameState(pic, el, xml);
@@ -193,14 +173,12 @@ public abstract class SingleLineFrame extends Frame
         }
     }
 
-    private static class FrameState
-    {
+    private static class FrameState {
         public final Element value;
         public final String cachedXML;
         public final Image picture;
 
-        public FrameState(Image picture, Element value, String xml)
-        {
+        public FrameState(Image picture, Element value, String xml) {
             this.picture = picture;
             // We must take a copy because value is probably a LocatableElement, which retains
             // a lot of references which we don't want to keep alive, we just need the XML part:
@@ -209,8 +187,7 @@ public abstract class SingleLineFrame extends Frame
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -221,8 +198,7 @@ public abstract class SingleLineFrame extends Frame
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return cachedXML.hashCode();
         }
     }

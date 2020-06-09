@@ -27,30 +27,21 @@ import bluej.parser.entity.EntityResolver;
 import bluej.stride.framedjava.ast.JavadocUnit;
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
-import bluej.stride.framedjava.elements.ImportElement;
 import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.elements.ImportElement;
 import bluej.stride.framedjava.elements.InterfaceElement;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.ExtensionDescription;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.FrameTypeCheck;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.TopLevelDocumentMultiCanvasFrame;
-import bluej.stride.operations.CopyFrameAsImageOperation;
-import bluej.stride.operations.CopyFrameAsJavaOperation;
-import bluej.stride.operations.CopyFrameAsStrideOperation;
-import bluej.stride.operations.CustomFrameOperation;
-import bluej.stride.operations.FrameOperation;
+import bluej.stride.generic.*;
+import bluej.stride.operations.*;
 import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.ExtendsList;
 import bluej.stride.slots.Focus;
-import bluej.stride.slots.HeaderItem;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Utility;
 import bluej.utility.javafx.SharedTransition;
+import javafx.collections.FXCollections;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,20 +49,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceElement>
-{
+public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceElement> {
     private final ExtendsList extendsList;
 
     public InterfaceFrame(InteractionManager editor, EntityResolver projectResolver, String packageName,
                           List<ImportElement> imports, JavadocUnit documentation, NameDefSlotFragment interfaceName,
-                          List<TypeSlotFragment> extendsTypes, boolean enabled)
-    {
+                          List<TypeSlotFragment> extendsTypes, boolean enabled) {
         super(editor, projectResolver, "interface", "interface-", packageName, imports, documentation, interfaceName, enabled);
 
         extendsList = new ExtendsList(this, () -> {
@@ -95,17 +78,15 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
         ));
     }
 
-    protected Frame findASpecialMethod()
-    {
+    protected Frame findASpecialMethod() {
         return null;
     }
 
     @Override
-    public synchronized void regenerateCode()
-    {
+    public synchronized void regenerateCode() {
         List<CodeElement> fields = getMembers(fieldsCanvas);
         List<CodeElement> methods = getMembers(methodsCanvas);
-        List<ImportElement> imports = Utility.mapList(getMembers(importCanvas), e -> (ImportElement)e);
+        List<ImportElement> imports = Utility.mapList(getMembers(importCanvas), e -> (ImportElement) e);
         element = new InterfaceElement(this, projectResolver, paramName.getSlotElement(), extendsList.getTypes(),
                 fields, methods, new JavadocUnit(getDocumentation()), packageNameLabel == null ? null : packageNameLabel.getText(),
                 imports, frameEnabledProperty.get());
@@ -113,14 +94,12 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
 
     @Override
     @OnThread(value = Tag.Any, ignoreParent = true)
-    public synchronized InterfaceElement getCode()
-    {
+    public synchronized InterfaceElement getCode() {
         return element;
     }
 
     @Override
-    public List<FrameOperation> getContextOperations()
-    {
+    public List<FrameOperation> getContextOperations() {
         ArrayList<FrameOperation> ops = new ArrayList<>();
         ops.add(new CopyFrameAsStrideOperation(editor));
         ops.add(new CopyFrameAsImageOperation(editor));
@@ -129,8 +108,7 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
                 EditableSlot.MenuItemOrder.TOGGLE_EXTENDS, this, () -> extendsList.addTypeSlotAtEnd("", true)));
 
         final List<TypeSlotFragment> types = extendsList.getTypes();
-        for (int i = 0; i < types.size(); i++)
-        {
+        for (int i = 0; i < types.size(); i++) {
             final int index = i;
             TypeSlotFragment type = types.get(i);
             CustomFrameOperation removeOp = new CustomFrameOperation(getEditor(), "removeExtends",
@@ -144,12 +122,11 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas)
-    {
+    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas) {
         // We deliberately don't include super.getAvailableExtensions; we can't be disabled
         ExtensionDescription extendsExtension = null;
         if (fieldsCanvas.equals(canvas) || canvas == null) {
-            extendsExtension = new ExtensionDescription(StrideDictionary.EXTENDS_EXTENSION_CHAR,  Config.getString("frame.class.add.extends.declaration"),
+            extendsExtension = new ExtensionDescription(StrideDictionary.EXTENDS_EXTENSION_CHAR, Config.getString("frame.class.add.extends.declaration"),
                     () -> extendsList.addTypeSlotAtEnd("", true), true, ExtensionDescription.ExtensionSource.INSIDE_FIRST,
                     ExtensionDescription.ExtensionSource.MODIFIER);
         }
@@ -157,8 +134,7 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    public void saved()
-    {
+    public void saved() {
         // TODO Auto-generated method stub
 //        if (extendsInheritedCanvases.isEmpty()) {
 //            updateInheritedItems();
@@ -166,79 +142,66 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    public BirdseyeManager prepareBirdsEyeView(SharedTransition animate)
-    {
+    public BirdseyeManager prepareBirdsEyeView(SharedTransition animate) {
         // Birdseye view is not available in Interfaces
         return null;
     }
 
     @Override
-    public void addExtendsClassOrInterface(String className)
-    {
+    public void addExtendsClassOrInterface(String className) {
         extendsList.addTypeSlotAtEnd(className, false);
     }
 
     @Override
-    public void addImplements(String className)
-    {
+    public void addImplements(String className) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void removeExtendsClass()
-    {
+    public void removeExtendsClass() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void removeExtendsOrImplementsInterface(String interfaceName)
-    {
+    public void removeExtendsOrImplementsInterface(String interfaceName) {
         List<TypeSlotFragment> extendsTypes = extendsList.getTypes();
-        for (int i = 0; i < extendsTypes.size(); i++)
-        {
-            if (extendsTypes.get(i).getContent().equals(interfaceName))
-            {
+        for (int i = 0; i < extendsTypes.size(); i++) {
+            if (extendsTypes.get(i).getContent().equals(interfaceName)) {
                 extendsList.removeIndex(i);
                 return;
             }
         }
     }
-    
+
     @Override
-    public boolean canDoBirdseye()
-    {
+    public boolean canDoBirdseye() {
         // No point, since we only have prototypes in
         return false;
     }
 
     @Override
-    public void addDefaultConstructor()
-    {
+    public void addDefaultConstructor() {
         throw new IllegalAccessError();
     }
 
     @Override
-    public List<ConstructorFrame> getConstructors()
-    {
+    public List<ConstructorFrame> getConstructors() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<MethodProtoFrame> getMethods()
-    {
+    public List<MethodProtoFrame> getMethods() {
         return methodsCanvas.getBlocksSubtype(MethodProtoFrame.class);
     }
 
     @Override
-    public Stream<FrameCanvas> getPersistentCanvases()
-    {
+    public Stream<FrameCanvas> getPersistentCanvases() {
         return getCanvases();
 //        return getCanvases().filter(canvas -> !extendsInheritedCanvases.contains(canvas));
     }
 
     @Override
-    public FrameTypeCheck check(FrameCanvas canvas)
-    {
+    public FrameTypeCheck check(FrameCanvas canvas) {
         if (canvas == fieldsCanvas)
             return StrideDictionary.checkInterfaceField();
         else if (canvas == methodsCanvas)
@@ -248,8 +211,7 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    public CanvasKind getChildKind(FrameCanvas c)
-    {
+    public CanvasKind getChildKind(FrameCanvas c) {
         if (c == fieldsCanvas)
             return CanvasKind.FIELDS;
         else if (c == methodsCanvas)
@@ -259,8 +221,7 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    public void restore(InterfaceElement target)
-    {
+    public void restore(InterfaceElement target) {
         paramName.setText(target.getName());
         extendsList.setTypes(target.getExtends());
         importCanvas.restore(target.getImports(), editor);
@@ -269,12 +230,10 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    protected FrameContentRow makeHeader(String stylePrefix)
-    {
+    protected FrameContentRow makeHeader(String stylePrefix) {
         return new FrameContentRow(this, stylePrefix) {
             @Override
-            public boolean focusRightEndFromNext()
-            {
+            public boolean focusRightEndFromNext() {
                 extendsList.ensureAtLeastOneSlot();
                 Utility.findLast(extendsList.getTypeSlots()).get().requestFocus(Focus.RIGHT);
                 return true;
@@ -283,14 +242,12 @@ public class InterfaceFrame extends TopLevelDocumentMultiCanvasFrame<InterfaceEl
     }
 
     @Override
-    protected List<FrameContentRow> getLabelRows()
-    {
+    protected List<FrameContentRow> getLabelRows() {
         return Arrays.asList(importRow, fieldsLabelRow, methodsLabelRow);
     }
 
     @Override
-    protected List<SlotLabel> getCanvasLabels()
-    {
+    protected List<SlotLabel> getCanvasLabels() {
         return Arrays.asList(importsLabel, fieldsLabel, methodsLabel);
     }
 }

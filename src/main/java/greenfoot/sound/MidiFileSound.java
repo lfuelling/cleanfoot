@@ -21,36 +21,23 @@
  */
 package greenfoot.sound;
 
+import javax.sound.midi.*;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MetaEventListener;
-import javax.sound.midi.MetaMessage;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.Sequencer;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Synthesizer;
-import javax.sound.midi.Transmitter;
-
 /**
  * Plays sound from a MIDI file.
- * 
+ * <p>
  * TODO: maybe keep it open for a while, instead of closing as soon as playback
  * has stopped.
- * 
+ *
  * @author Poul Henriksen
- * 
  */
-public class MidiFileSound implements Sound
-{
-    private void printDebug(String s)
-    {
+public class MidiFileSound implements Sound {
+    private void printDebug(String s) {
         //System.out.println(s);
     }
+
     private final URL url;
     private final SoundPlaybackListener playbackListener;
     private Sequencer sequencer;
@@ -60,8 +47,7 @@ public class MidiFileSound implements Sound
     private int level;
     private Receiver receiver;
 
-    public MidiFileSound(final URL url, SoundPlaybackListener listener)
-    {
+    public MidiFileSound(final URL url, SoundPlaybackListener listener) {
         this.url = url;
         playbackListener = listener;
         try {
@@ -90,32 +76,26 @@ public class MidiFileSound implements Sound
              *
              * Thanks to Espen Riskedal for finding this trick.
              */
-            sequencer.addMetaEventListener(new MetaEventListener()
-            {
+            sequencer.addMetaEventListener(new MetaEventListener() {
 
-                public void meta(MetaMessage event)
-                {
+                public void meta(MetaMessage event) {
                     if (event.getType() == 47) {
                         close();
                     }
                 }
             });
 
-        }
-        catch (InvalidMidiDataException e) {
+        } catch (InvalidMidiDataException e) {
             SoundExceptionHandler.handleInvalidMidiDataException(e, url.toString());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             SoundExceptionHandler.handleIOException(e, url.toString());
-        }
-        catch (MidiUnavailableException e) {
+        } catch (MidiUnavailableException e) {
             SoundExceptionHandler.handleLineUnavailableException(e);
         }
     }
 
     @Override
-    public synchronized void play()
-    {
+    public synchronized void play() {
         sequencer.setLoopCount(0);
 
         if (!isPlaying()) {
@@ -126,8 +106,7 @@ public class MidiFileSound implements Sound
     /**
      * Start playback if it hasn't been started yet.
      */
-    private synchronized void startPlayback()
-    {
+    private synchronized void startPlayback() {
         try {
             pause = false;
             open();
@@ -136,17 +115,14 @@ public class MidiFileSound implements Sound
                 sequencer.start();
                 playbackListener.playbackStarted(this);
             }
-        }
-        catch (SecurityException e) {
+        } catch (SecurityException e) {
             SoundExceptionHandler.handleSecurityException(e, url.toString());
-        }
-        catch (InvalidMidiDataException e) {
+        } catch (InvalidMidiDataException e) {
             SoundExceptionHandler.handleInvalidMidiDataException(e, url.toString());
         }
     }
 
-    private synchronized void open()
-    {
+    private synchronized void open() {
         try {
             if (!sequencer.isOpen()) {
                 receiver = MidiSystem.getReceiver();
@@ -160,15 +136,13 @@ public class MidiFileSound implements Sound
                 Transmitter seqTransmitter = sequencer.getTransmitter();
                 seqTransmitter.setReceiver(receiver);
             }
-        }
-        catch (MidiUnavailableException e) {
+        } catch (MidiUnavailableException e) {
             SoundExceptionHandler.handleLineUnavailableException(e);
         }
     }
 
     @Override
-    public synchronized void loop()
-    {
+    public synchronized void loop() {
         sequencer.setLoopStartPoint(0);
         sequencer.setLoopEndPoint(-1);
         sequencer.setLoopCount(Sequencer.LOOP_CONTINUOUSLY);
@@ -176,23 +150,20 @@ public class MidiFileSound implements Sound
     }
 
     @Override
-    public synchronized void pause()
-    {
+    public synchronized void pause() {
         pause = true;
         sequencer.stop();
         playbackListener.playbackPaused(this);
     }
 
     @Override
-    public synchronized void stop()
-    {
+    public synchronized void stop() {
         pause = false;
         close();
     }
 
     @Override
-    public synchronized void close()
-    {
+    public synchronized void close() {
         playbackListener.playbackStopped(this);
         pause = false;
         printDebug(" playback ended: " + url);
@@ -206,34 +177,29 @@ public class MidiFileSound implements Sound
     }
 
     @Override
-    public synchronized boolean isPaused()
-    {
+    public synchronized boolean isPaused() {
         return pause;
     }
 
     @Override
-    public synchronized boolean isPlaying()
-    {
+    public synchronized boolean isPlaying() {
         return sequencer.isRunning();
     }
 
     @Override
-    public synchronized boolean isStopped()
-    {
+    public synchronized boolean isStopped() {
         return !isPaused() && !isPlaying();
     }
 
     @Override
-    public void setVolume(int level)
-    {
+    public void setVolume(int level) {
         open();
         this.level = level;
         ShortMessage volMessage = new ShortMessage();
         for (int i = 0; i < 16; i++) {
             try {
                 volMessage.setMessage(ShortMessage.CONTROL_CHANGE, i, 7, level);
-            }
-            catch (InvalidMidiDataException e) {
+            } catch (InvalidMidiDataException e) {
                 e.printStackTrace();
             }
             receiver.send(volMessage, -1);
@@ -241,8 +207,7 @@ public class MidiFileSound implements Sound
     }
 
     @Override
-    public int getVolume()
-    {
+    public int getVolume() {
         return level;
     }
 }

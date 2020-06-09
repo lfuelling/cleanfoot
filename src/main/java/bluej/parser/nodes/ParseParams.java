@@ -21,34 +21,35 @@
  */
 package bluej.parser.nodes;
 
-import java.util.LinkedList;
-
 import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.parser.EditorParser;
 import bluej.parser.lexer.JavaTokenFilter;
 import bluej.parser.nodes.NodeTree.NodeAndPosition;
 
+import java.util.LinkedList;
+
 /**
  * Parameter block for certain parsing methods.
- * 
+ *
  * <p>The sole use of objects of this class are to pass around a large number of
  * parameters. For this reason fields are publicly accessible.
- * 
+ *
  * @author Davin McCall
  */
-public class ParseParams
-{
+public class ParseParams {
     // Parameters passed to the subclass partial parse method
-    
+
     public NodeStructureListener listener;
     public EditorParser parser;
     public JavaTokenFilter tokenStream;
     public MoeSyntaxDocument document;
     public int nodePos;
     public LinkedList<NodeAndPosition<ParsedNode>> childQueue;
-    
+
     // Parameters returned from the partial parse method
-    
-    /** Where exactly parsing got to, when partial parse returns PP_ABORT */
+
+    /**
+     * Where exactly parsing got to, when partial parse returns PP_ABORT
+     */
     public int abortPos;
 }

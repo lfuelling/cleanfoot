@@ -25,13 +25,8 @@ import bluej.Config;
 import bluej.utility.DialogManager;
 import bluej.utility.javafx.FXCustomizedDialog;
 import greenfoot.util.ExternalAppLauncher;
-
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
@@ -42,25 +37,24 @@ import threadchecker.Tag;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * A new image dialog, used for specifying the properties of an image before its
  * creation. After it has been created it will automatically be opened in the
  * default image editing program so the user can edit it.
- * 
+ *
  * @author Michael Berry (mjrb4)
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class NewImageDialog extends FXCustomizedDialog<File>
-{
+public class NewImageDialog extends FXCustomizedDialog<File> {
     private static final int MAX_IMAGE_HEIGHT = 2000;
     private static final int MAX_IMAGE_WIDTH = 2000;
     private static final int DEFAULT_HEIGHT = 100;
     private static final int DEFAULT_WIDTH = 100;
-    
+
     private TextField name;
     private Spinner width;
     private Spinner height;
@@ -73,11 +67,10 @@ public class NewImageDialog extends FXCustomizedDialog<File>
      * Create a new image dialog. This is used for specifying the properties for
      * creating a new image, which will then be opened in the image editor.
      *
-     * @param parent the parent window associated with this dialog
+     * @param parent        the parent window associated with this dialog
      * @param projImagesDir the directory in which the images for the project are placed.
      */
-    NewImageDialog(Window parent, File projImagesDir)
-    {
+    NewImageDialog(Window parent, File projImagesDir) {
         super(parent, Config.getString("imagelib.new.image.title"), null);
         this.projImagesDir = projImagesDir;
 
@@ -89,8 +82,7 @@ public class NewImageDialog extends FXCustomizedDialog<File>
     /**
      * Build the user interface for the dialog.
      */
-    private void buildUI()
-    {
+    private void buildUI() {
         GridPane detailsPanel = new GridPane();
         detailsPanel.setVgap(10);
         detailsPanel.setHgap(1);
@@ -132,12 +124,10 @@ public class NewImageDialog extends FXCustomizedDialog<File>
      *
      * @return The image file created.
      */
-    private File createImageFile()
-    {
+    private File createImageFile() {
         File file = new File(projImagesDir, name.getText() + ".png");
-        if (file.exists())
-        {
-            boolean overwrite = DialogManager.askQuestionFX(this.asWindow(), "file-exists-overwrite", new String[] {file.getName()}) == 0;
+        if (file.exists()) {
+            boolean overwrite = DialogManager.askQuestionFX(this.asWindow(), "file-exists-overwrite", new String[]{file.getName()}) == 0;
             return overwrite && writeImageAndEdit(file) ? file : null;
         }
         return writeImageAndEdit(file) ? file : null;
@@ -150,19 +140,14 @@ public class NewImageDialog extends FXCustomizedDialog<File>
      * @param file The image file to be written.
      * @return True if the file is written successfully on the disk, false otherwise.
      */
-    private boolean writeImageAndEdit(File file)
-    {
+    private boolean writeImageAndEdit(File file) {
         BufferedImage im = new BufferedImage((Integer) width.getValue(), (Integer) height.getValue(), BufferedImage.TYPE_INT_ARGB);
-        try
-        {
-            if (ImageIO.write(im, "png", file))
-            {
+        try {
+            if (ImageIO.write(im, "png", file)) {
                 SwingUtilities.invokeLater(() -> ExternalAppLauncher.editImage(file));
                 return true;
             }
-        }
-        catch (IOException ex)
-        {
+        } catch (IOException ex) {
             // No need to repeat the error message here and in case writing the image returned false.
         }
         DialogManager.showErrorFX(asWindow(), "imagelib-writing-image-failed");

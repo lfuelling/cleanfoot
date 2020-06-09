@@ -21,56 +21,48 @@
  */
 package bluej.stride.operations;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.Config;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import javafx.scene.input.KeyCharacterCombination;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import javafx.scene.input.KeyCharacterCombination;
+import java.util.Arrays;
+import java.util.List;
 
-public class DisableFrameOperation extends FrameOperation
-{
+public class DisableFrameOperation extends FrameOperation {
 
-    public DisableFrameOperation(InteractionManager editor)
-    {
+    public DisableFrameOperation(InteractionManager editor) {
         super(editor, "DISABLE", Combine.ANY, new KeyCharacterCombination("\\"));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void enablePreview()
-    {
+    public void enablePreview() {
         editor.getSelection().getSelected().forEach(frame -> frame.setFrameEnablePreview(Frame.FramePreviewEnabled.PREVIEW_DISABLED));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void disablePreview()
-    {
+    public void disablePreview() {
         editor.getSelection().getSelected().forEach(frame -> frame.setFrameEnablePreview(Frame.FramePreviewEnabled.PREVIEW_NONE));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         frames.forEach(frame -> frame.setFrameEnabled(false));
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.disable"), MenuItemOrder.DISABLE_FRAME));
     }
 
     @Override
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         return true;
     }
 }

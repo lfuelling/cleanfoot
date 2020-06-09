@@ -25,7 +25,7 @@ package greenfoot.util;
  * Indicates a problem with accessing the storage
  * <p>
  * This indicates that there was a problem reading from/writing to the storage, typically:
- * 
+ *
  * <ul>
  * <li>A problem accessing the CSV file in the local storage (e.g. bad permissions, disconnected USB stick)
  * <li>A problem accessing the Gallery storage (may be caused by maintenance work on the gallery)
@@ -36,11 +36,9 @@ package greenfoot.util;
  * storage for this session.  Warn the user that their data cannot be loaded/saved,
  * and proceed as best as you can.
  */
-public class GreenfootStorageException extends Exception
-{
+public class GreenfootStorageException extends Exception {
 
-    public GreenfootStorageException(String message)
-    {
+    public GreenfootStorageException(String message) {
         super(message);
     }
 

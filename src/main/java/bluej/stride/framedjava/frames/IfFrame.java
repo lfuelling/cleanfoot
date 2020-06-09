@@ -22,10 +22,6 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.ast.SlotFragment;
@@ -35,11 +31,7 @@ import bluej.stride.framedjava.elements.IfElement;
 import bluej.stride.framedjava.elements.SandwichCanvasesElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SandwichCanvasesFrame;
+import bluej.stride.generic.*;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Debug;
@@ -47,12 +39,16 @@ import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Container-block representing an if statement.
+ *
  * @author Fraser McKay
  */
-public class IfFrame extends SandwichCanvasesFrame
-{
+public class IfFrame extends SandwichCanvasesFrame {
     private static final String IF_STYLE_PREFIX = "if-";
     protected final ExpressionSlot<FilledExpressionSlotFragment> ifCondition;
     private final List<ExpressionSlot<FilledExpressionSlotFragment>> elseIfConditions = new ArrayList<>();
@@ -60,16 +56,14 @@ public class IfFrame extends SandwichCanvasesFrame
     /**
      * Default constructor.
      */
-    private IfFrame(InteractionManager editor)
-    {
+    private IfFrame(InteractionManager editor) {
         super(editor, "if", "elseif", "else", IF_STYLE_PREFIX);
 
         //Condition
-        ifCondition = new FilledExpressionSlot(editor, this, this, getHeaderRow(), "if-", FilledExpressionSlot.CONDITION_HINTS){
+        ifCondition = new FilledExpressionSlot(editor, this, this, getHeaderRow(), "if-", FilledExpressionSlot.CONDITION_HINTS) {
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean backspaceAtStart()
-            {
+            public boolean backspaceAtStart() {
                 if (isAlmostBlank()) {
                     new PullUpContentsOperation(getEditor()).activate(getFrame(), getCursorBefore());
                     return true;
@@ -82,12 +76,11 @@ public class IfFrame extends SandwichCanvasesFrame
         ifCondition.onTextPropertyChange(updateSidebarCurried("if "));
         setHeaderRow(new SlotLabel(" (", "if-bracket-opening"), ifCondition, new SlotLabel(")"));
     }
-    
+
     /**
      * Construct an IfFrame by wrapping the given frames
      */
-    public IfFrame(InteractionManager editor, List<Frame> contents)
-    {
+    public IfFrame(InteractionManager editor, List<Frame> contents) {
         this(editor);
         getFirstCanvas().getFirstCursor().insertFramesAfter(contents);
     }
@@ -99,21 +92,18 @@ public class IfFrame extends SandwichCanvasesFrame
      * @param condition
      * @param thenContents
      * @param elseIfConditions Same length as elseIfContents
-     * @param elseIfContents If empty, no elseIfs.  Cannot be null.
-     * @param elseContents If null, no finally.
+     * @param elseIfContents   If empty, no elseIfs.  Cannot be null.
+     * @param elseContents     If null, no finally.
      */
     public IfFrame(InteractionManager editor, ExpressionSlotFragment condition, List<Frame> thenContents,
-                    List<FilledExpressionSlotFragment> elseIfConditions, List<List<Frame>> elseIfContents,
-                    List<Frame> elseContents, boolean enabled)
-    {
+                   List<FilledExpressionSlotFragment> elseIfConditions, List<List<Frame>> elseIfContents,
+                   List<Frame> elseContents, boolean enabled) {
         this(editor, thenContents);
         ifCondition.setText(condition);
-        for (int i = 0; i < elseIfContents.size(); i++)
-        {
+        for (int i = 0; i < elseIfContents.size(); i++) {
             addIntermediateCanvas(Arrays.asList(elseIfConditions.get(i)), elseIfContents.get(i));
         }
-        if (elseContents != null)
-        {
+        if (elseContents != null) {
             addTailCanvas();
             elseContents.forEach(f -> getTailCanvas().insertBlockAfter(f, null));
         }
@@ -121,14 +111,12 @@ public class IfFrame extends SandwichCanvasesFrame
     }
 
     @Override
-    protected FrameContentRow getFrameContentRow(List<SlotFragment> slots, JavaCanvas canvas, int at)
-    {
+    protected FrameContentRow getFrameContentRow(List<SlotFragment> slots, JavaCanvas canvas, int at) {
         FrameContentRow row = new FrameContentRow(this, "else-if-");
-        ExpressionSlot<FilledExpressionSlotFragment> elseIfCondition = new FilledExpressionSlot(editor, this, this, row, "if-", FilledExpressionSlot.CONDITION_HINTS){
+        ExpressionSlot<FilledExpressionSlotFragment> elseIfCondition = new FilledExpressionSlot(editor, this, this, row, "if-", FilledExpressionSlot.CONDITION_HINTS) {
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean backspaceAtStart()
-            {
+            public boolean backspaceAtStart() {
                 if (isAlmostBlank()) {
                     pullUpCanvasContents(canvas.getFirstCursor().getUp(), canvas);
                     return true;
@@ -148,7 +136,7 @@ public class IfFrame extends SandwichCanvasesFrame
         }
 
         row.setHeaderItems(Arrays.asList(new SlotLabel("else if", "caption", "else-if-caption"),
-                new SlotLabel(" (", "if-bracket-opening"),elseIfCondition, new SlotLabel(")")));
+                new SlotLabel(" (", "if-bracket-opening"), elseIfCondition, new SlotLabel(")")));
 
 //        SlotLabel elseIfLabel = new SlotLabel("else if");
 //        JavaFXUtil.addStyleClass(elseIfLabel, "divider-else");
@@ -164,38 +152,32 @@ public class IfFrame extends SandwichCanvasesFrame
     }
 
     @Override
-    public boolean focusWhenJustAdded()
-    {
+    public boolean focusWhenJustAdded() {
         ifCondition.requestFocus();
         return true;
     }
 
-    public static FrameFactory<IfFrame> getFactory()
-    {
+    public static FrameFactory<IfFrame> getFactory() {
         return new FrameFactory<IfFrame>() {
             @Override
-            public IfFrame createBlock(InteractionManager editor)
-            {
+            public IfFrame createBlock(InteractionManager editor) {
                 return new IfFrame(editor);
             }
-            
+
             @Override
-            public IfFrame createBlock(InteractionManager editor, List<Frame> contents)
-            {
+            public IfFrame createBlock(InteractionManager editor, List<Frame> contents) {
                 return new IfFrame(editor, contents);
             }
 
             @Override
-            public Class<IfFrame> getBlockClass()
-            {
+            public Class<IfFrame> getBlockClass() {
                 return IfFrame.class;
             }
         };
     }
 
     protected SandwichCanvasesElement regenerateCodeElement(List<CodeElement> firstCanvasContents,
-                 List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled)
-    {
+                                                            List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled) {
         List<FilledExpressionSlotFragment> elseIfConditionsCode = Utility.mapList(elseIfConditions, ExpressionSlot::getSlotElement);
         return new IfElement(this, ifCondition.getSlotElement(), firstCanvasContents, elseIfConditionsCode,
                 intermediateCanvasesContents, tailCanvasContents, enabled);

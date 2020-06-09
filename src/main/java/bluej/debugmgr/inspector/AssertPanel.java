@@ -23,9 +23,7 @@ package bluej.debugmgr.inspector;
 
 import bluej.Config;
 import bluej.debugger.gentype.JavaType;
-import bluej.pkgmgr.Package;
 import bluej.testmgr.record.InvokerRecord;
-import bluej.utility.javafx.FXPlatformSupplier;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -42,29 +40,27 @@ import javafx.scene.layout.VBox;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * A panel that can record assertion statements.
- * 
- * @author  Andrew Patterson  
+ *
+ * @author Andrew Patterson
  */
 @OnThread(Tag.FXPlatform)
-public class AssertPanel extends VBox
-{
+public class AssertPanel extends VBox {
     private static final String equalToLabel =
-        Config.getString("debugger.assert.equalTo");
+            Config.getString("debugger.assert.equalTo");
     private static final String sameAsLabel =
-        Config.getString("debugger.assert.sameAs");
+            Config.getString("debugger.assert.sameAs");
     private static final String notSameAsLabel =
-        Config.getString("debugger.assert.notSameAs");
+            Config.getString("debugger.assert.notSameAs");
     private static final String notNullLabel =
-        Config.getString("debugger.assert.notNull");
+            Config.getString("debugger.assert.notNull");
     private static final String assertNullLabel =
-        Config.getString("debugger.assert.null");
+            Config.getString("debugger.assert.null");
     private static final String equalToFloatingPointLabel =
-        Config.getString("debugger.assert.equalToFloatingPoint");
+            Config.getString("debugger.assert.equalToFloatingPoint");
 
     /**
      * The panels and UI elements of this panel.
@@ -77,9 +73,8 @@ public class AssertPanel extends VBox
     private final TextField deltaData;
     private final ComboBox<AssertInfo> assertCombo;
     protected CheckBox assertCheckbox;
-    
-    private static class AssertInfo
-    {
+
+    private static class AssertInfo {
         public final String label;
         public final String assertMethodName;
         public final int fieldsNeeded;
@@ -87,8 +82,7 @@ public class AssertPanel extends VBox
         public final boolean supportsObject;
         public final boolean supportsPrimitive;
 
-        public AssertInfo(String label, String assertMethodName, int fieldsNeeded, boolean supportsFloatingPoint, boolean supportsObject, boolean supportsPrimitive)
-        {
+        public AssertInfo(String label, String assertMethodName, int fieldsNeeded, boolean supportsFloatingPoint, boolean supportsObject, boolean supportsPrimitive) {
             this.label = label;
             this.assertMethodName = assertMethodName;
             this.fieldsNeeded = fieldsNeeded;
@@ -96,44 +90,40 @@ public class AssertPanel extends VBox
             this.supportsObject = supportsObject;
             this.supportsPrimitive = supportsPrimitive;
         }
-        
-        public boolean needsFirstField()
-        {
+
+        public boolean needsFirstField() {
             return fieldsNeeded >= 1;
         }
-        
-        public boolean needsSecondField()
-        {
+
+        public boolean needsSecondField() {
             return fieldsNeeded >= 2;
         }
 
         // For display in the combo box:
         @Override
-        public String toString()
-        {
+        public String toString() {
             return label;
         }
     }
-    
+
     private final ObservableList<AssertInfo> asserts = FXCollections.observableArrayList(
-        new AssertInfo(equalToLabel, "assertEquals", 1, false, true, true),
-        new AssertInfo(sameAsLabel, "assertSame", 1, false, true, false),
-        new AssertInfo(notSameAsLabel, "assertNotSame", 1, false, true, false),
-        new AssertInfo(notNullLabel, "assertNotNull", 0, false, true, false),
-        new AssertInfo(assertNullLabel, "assertNull", 0, false, true, false),
-        new AssertInfo(equalToFloatingPointLabel, "assertEquals", 2, true, false, false)
+            new AssertInfo(equalToLabel, "assertEquals", 1, false, true, true),
+            new AssertInfo(sameAsLabel, "assertSame", 1, false, true, false),
+            new AssertInfo(notSameAsLabel, "assertNotSame", 1, false, true, false),
+            new AssertInfo(notNullLabel, "assertNotNull", 0, false, true, false),
+            new AssertInfo(assertNullLabel, "assertNull", 0, false, true, false),
+            new AssertInfo(equalToFloatingPointLabel, "assertEquals", 2, true, false, false)
     );
-    
+
     /**
      * A panel which presents an interface for making a single
-     * assertion about a result. 
+     * assertion about a result.
      */
-    public AssertPanel(JavaType type)
-    {
+    public AssertPanel(JavaType type) {
         JavaFXUtil.addStyleClass(this, "assert-panel");
-        
+
         boolean isFloat = type.typeIs(JavaType.JT_FLOAT) || type.typeIs(JavaType.JT_DOUBLE);
-        
+
         // a checkbox which enables/disables all the assertion UI
 
         assertCheckbox = new CheckBox(Config.getString("debugger.assert.assertThat"));
@@ -144,8 +134,8 @@ public class AssertPanel extends VBox
             assertLabel = new Label(Config.getString("debugger.assert.resultIs"));
             standardPanel.getChildren().add(assertLabel);
 
-            assertCombo = new ComboBox<>();                 
-            
+            assertCombo = new ComboBox<>();
+
             assertData = new TextField();
             JavaFXUtil.addStyleClass(assertData, "assert-field-data");
 
@@ -168,22 +158,22 @@ public class AssertPanel extends VBox
 
         assertCombo.disableProperty().bind(assertCheckbox.selectedProperty().not());
         assertData.disableProperty().bind(
-            // We calculate enabled.  This is if assertCheckBox is selected
-            assertCheckbox.selectedProperty()
-                // And the given assert selection needs a first field
-                .and(ofB(assertCombo.getSelectionModel().selectedItemProperty(),
-                    ai -> ai != null && ai.needsFirstField()))
-                // Now flip the enable calculation to disable:
-                .not());
+                // We calculate enabled.  This is if assertCheckBox is selected
+                assertCheckbox.selectedProperty()
+                        // And the given assert selection needs a first field
+                        .and(ofB(assertCombo.getSelectionModel().selectedItemProperty(),
+                                ai -> ai != null && ai.needsFirstField()))
+                        // Now flip the enable calculation to disable:
+                        .not());
         BooleanBinding secondFieldExp = ofB(assertCombo.getSelectionModel().selectedItemProperty(),
-            ai -> ai != null && ai.needsSecondField());
+                ai -> ai != null && ai.needsSecondField());
         deltaData.disableProperty().bind(
-            // We calculate enabled.  This is if assertCheckBox is selected
-            assertCheckbox.selectedProperty()
-                // And the given assert selection needs a first field
-                .and(secondFieldExp)
-                // Now flip the enable calculation to disable:
-                .not());
+                // We calculate enabled.  This is if assertCheckBox is selected
+                assertCheckbox.selectedProperty()
+                        // And the given assert selection needs a first field
+                        .and(secondFieldExp)
+                        // Now flip the enable calculation to disable:
+                        .not());
         // if the second field is needed, we _always_ make it visible
         // (but perhaps not enabled)
         deltaData.visibleProperty().set(isFloat);
@@ -191,7 +181,7 @@ public class AssertPanel extends VBox
         deltaLabel.visibleProperty().bind(deltaData.visibleProperty());
         deltaLabel.managedProperty().bind(deltaData.visibleProperty());
         assertCheckbox.setSelected(true);
-        
+
         assertCombo.setItems(asserts.filtered(a -> {
             if (isFloat)
                 return a.supportsFloatingPoint;
@@ -202,65 +192,59 @@ public class AssertPanel extends VBox
         }));
         assertCombo.getSelectionModel().select(0);
     }
-    
-    private static <T> BooleanBinding ofB(ObservableValue<T> t, Function<T, Boolean> accessor)
-    {
+
+    private static <T> BooleanBinding ofB(ObservableValue<T> t, Function<T, Boolean> accessor) {
         return Bindings.createBooleanBinding(() -> accessor.apply(t.getValue()), t);
     }
 
     /**
      * Check whether the user has asked for an assertion to be recorded.
      */
-    public boolean isAssertEnabled()
-    {
+    public boolean isAssertEnabled() {
         return assertCheckbox != null && assertCheckbox.isSelected();
     }
-    
+
     /**
      * Check whether the necessary fields have been filled in to make a compilable
      * assert statement.
      */
-    public boolean isAssertComplete()
-    {
+    public boolean isAssertComplete() {
         AssertInfo info = assertCombo.getSelectionModel().getSelectedItem();
-        
+
         if (info.needsSecondField()) {
             if (deltaData.getText().trim().length() == 0) {
                 return false;
             }
         }
-        
+
         if (info.needsFirstField()) {
             return assertData.getText().trim().length() != 0;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Return an assertion statement out of the data in the UI.
-     * 
+     *
      * @return a String representing the assertion specified in this
-     *         assertion panel.
+     * assertion panel.
      */
-    public String getAssertStatement()
-    {
+    public String getAssertStatement() {
         // which type of assertion is selected
         AssertInfo info = assertCombo.getSelectionModel().getSelectedItem();
-        
+
         // for double/float assertEquals() assertions, we need a delta value
         if (info.needsSecondField()) {
             return InvokerRecord.makeAssertionStatement(info.assertMethodName,
-                                                        assertData.getText(),
-                                                        deltaData.getText());
-        }
-        else if (info.needsFirstField()) {
+                    assertData.getText(),
+                    deltaData.getText());
+        } else if (info.needsFirstField()) {
             return InvokerRecord.makeAssertionStatement(info.assertMethodName,
-                                                        assertData.getText());
-        }
-        else {
+                    assertData.getText());
+        } else {
             return InvokerRecord.makeAssertionStatement(info.assertMethodName);
         }
     }
-    
+
 }

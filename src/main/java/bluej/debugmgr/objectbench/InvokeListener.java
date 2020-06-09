@@ -27,20 +27,20 @@ import bluej.views.MethodView;
 /**
  * Listener interface for some object to be notified when a method is to be
  * interactively invoked.
- * 
+ *
  * @author Davin McCall
  */
-public interface InvokeListener
-{
+public interface InvokeListener {
     /**
      * Execute a method. The listener must prompt for parameters, if appropriate,
      * and then actually execute the method.
      */
     void executeMethod(MethodView mv);
-    
+
     /**
      * Execute a constructor. The listener must prompt for parameters, if appropriate,
      * and the actually execute the constructor.
+     *
      * @param cv
      */
     void callConstructor(ConstructorView cv);

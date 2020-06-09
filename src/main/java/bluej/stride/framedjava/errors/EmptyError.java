@@ -29,17 +29,15 @@ import threadchecker.Tag;
  * An error which complains that the given slot is empty.  This is just a special
  * form of the more general syntax error.
  */
-public class EmptyError extends SyntaxCodeError
-{
+public class EmptyError extends SyntaxCodeError {
     /**
      * Creates an error complaining a slot is empty.
      *
      * @param slot The slot this error is attached to (i.e. the empty one)
-     * @param msg The message complaining about the empty slot
+     * @param msg  The message complaining about the empty slot
      */
     @OnThread(Tag.Any)
-    public EmptyError(SlotFragment slot, String msg)
-    {
+    public EmptyError(SlotFragment slot, String msg) {
         super(slot, msg);
     }
 }

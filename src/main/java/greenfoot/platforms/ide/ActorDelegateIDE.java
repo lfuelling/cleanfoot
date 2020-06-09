@@ -28,29 +28,24 @@ import greenfoot.platforms.ActorDelegate;
 
 /**
  * Delegate for the Actor when it is running in the Greenfoot IDE.
- * 
- * @author Poul Henriksen <polle@polle.org>
  *
+ * @author Poul Henriksen <polle@polle.org>
  */
-public class ActorDelegateIDE implements ActorDelegate
-{
+public class ActorDelegateIDE implements ActorDelegate {
     private final ReadOnlyProjectProperties projectProperties;
-    
-    private ActorDelegateIDE(ReadOnlyProjectProperties projectProperties)
-    {
-    	this.projectProperties = projectProperties;
+
+    private ActorDelegateIDE(ReadOnlyProjectProperties projectProperties) {
+        this.projectProperties = projectProperties;
     }
-    
+
     /**
      * Register this class as the delegate for Actor.
      */
-    public static void setupAsActorDelegate(ReadOnlyProjectProperties projectProperties)
-    {
+    public static void setupAsActorDelegate(ReadOnlyProjectProperties projectProperties) {
         ActorVisitor.setDelegate(new ActorDelegateIDE(projectProperties));
     }
-    
-    public GreenfootImage getImage(String name)
-    {
+
+    public GreenfootImage getImage(String name) {
         return projectProperties.getImage(name);
     }
 }

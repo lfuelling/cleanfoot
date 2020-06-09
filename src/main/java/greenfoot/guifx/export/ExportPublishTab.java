@@ -27,14 +27,22 @@ import bluej.utility.Debug;
 import bluej.utility.FXWorker;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
-
-import static greenfoot.export.Exporter.ExportFunction;
+import greenfoot.export.ScenarioSaver;
 import greenfoot.export.mygame.ExistingScenarioChecker;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.MyGameClient;
 import greenfoot.export.mygame.ScenarioInfo;
-import greenfoot.export.ScenarioSaver;
+import javafx.beans.binding.BooleanBinding;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
+import org.apache.http.conn.ConnectTimeoutException;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,41 +50,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javafx.beans.binding.BooleanBinding;
-import javafx.geometry.HPos;
-import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-
-import org.apache.http.conn.ConnectTimeoutException;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import javax.swing.*;
+import static greenfoot.export.Exporter.ExportFunction;
 
 /**
  * Pane used for exporting to Greenfoot Gallery
- * 
+ *
  * @author Michael Kolling
  * @author Poul Henriksen
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class ExportPublishTab extends ExportTab
-{
+public class ExportPublishTab extends ExportTab {
     private static final int IMAGE_WIDTH = 120;
     private static final int IMAGE_HEIGHT = 70;
 
@@ -136,8 +120,7 @@ public class ExportPublishTab extends ExportTab
      * @param scenarioInfo  The previously stored scenario info in the properties file.
      */
     public ExportPublishTab(Project project, ExportDialog exportDialog,
-                            ScenarioSaver scenarioSaver, ScenarioInfo scenarioInfo)
-    {
+                            ScenarioSaver scenarioSaver, ScenarioInfo scenarioInfo) {
         super(scenarioInfo, "export-publish.png");
         this.project = project;
         this.exportDialog = exportDialog;
@@ -159,18 +142,16 @@ public class ExportPublishTab extends ExportTab
     }
 
     @Override
-    public ExportFunction getFunction()
-    {
+    public ExportFunction getFunction() {
         return ExportFunction.PUBLISH;
     }
 
     /**
      * Get the image that is to be used as icon for this scenario.
-     * 
+     *
      * @return The image, or null if it couldn't be created.
      */
-    public Image getImage()
-    {
+    public Image getImage() {
         return imagePane.getImage();
     }
 
@@ -179,18 +160,15 @@ public class ExportPublishTab extends ExportTab
      *
      * @param snapShot The snapshot to be put in the image pane.
      */
-    public void setImage(Image snapShot)
-    {
+    public void setImage(Image snapShot) {
         imagePane.setImage(snapShot);
     }
 
     /**
      * Get the scenario title, specified in the title field.
      */
-    public String getTitle()
-    {
-        if (titleField != null)
-        {
+    public String getTitle() {
+        if (titleField != null) {
             return titleField.getText();
         }
         return null;
@@ -199,64 +177,56 @@ public class ExportPublishTab extends ExportTab
     /**
      * Return the short description string.
      */
-    public String getShortDescription()
-    {
+    public String getShortDescription() {
         return shortDescriptionField.getText();
     }
 
     /**
      * Return the description string.
      */
-    public String getLongDescription()
-    {
+    public String getLongDescription() {
         return longDescriptionArea.getText();
     }
 
     /**
      * Return the URL.
      */
-    public String getURL()
-    {
+    public String getURL() {
         return urlField.getText();
     }
 
     /**
      * Return the user name.
      */
-    public String getUserName()
-    {
+    public String getUserName() {
         return userNameField.getText();
     }
 
     /**
      * Return the changes to update string (if applicable)
      */
-    private String getUpdateDescription()
-    {
+    private String getUpdateDescription() {
         return updateArea != null ? updateArea.getText() : null;
     }
 
     /**
      * Return the password.
      */
-    public String getPassword()
-    {
+    public String getPassword() {
         return passwordField.getText();
     }
 
     /**
      * True if the source code should be included.
      */
-    public boolean isIncludeSource()
-    {
+    public boolean isIncludeSource() {
         return includeSource.isSelected();
     }
 
     /**
      * True if the screenshot should *not* be overwritten; false if it should
      */
-    private boolean isKeepSavedScreenshot()
-    {
+    private boolean isKeepSavedScreenshot() {
         return update && keepScenarioScreenshot.isSelected();
     }
 
@@ -266,12 +236,9 @@ public class ExportPublishTab extends ExportTab
      *
      * @param tags a list of String tags.
      */
-    private void processTags(List<String> tags)
-    {
-        for (CheckBox popTag : popTags)
-        {
-            if (tags.contains(popTag.getText()))
-            {
+    private void processTags(List<String> tags) {
+        for (CheckBox popTag : popTags) {
+            if (tags.contains(popTag.getText())) {
                 popTag.setSelected(true);
             }
         }
@@ -290,16 +257,14 @@ public class ExportPublishTab extends ExportTab
     /**
      * Returns a list of the text in the pop tags checkboxes.
      */
-    private List<String> getPopTagsTexts()
-    {
+    private List<String> getPopTagsTexts() {
         return Stream.of(popTags).map(CheckBox::getText).collect(Collectors.toList());
     }
 
     /**
      * Build the contents' pane.
      */
-    private void buildContentPane()
-    {
+    private void buildContentPane() {
         Label publishInfoLabel = new Label(Config.getString("export.publish.info") + " " + serverName);
         publishInfoLabel.getStyleClass().add("intro-label");
         BorderPane.setAlignment(publishInfoLabel, Pos.CENTER);
@@ -310,13 +275,13 @@ public class ExportPublishTab extends ExportTab
 
         setContent(new VBox(getHelpBox(), infoPane, getLoginPane()));
     }
-    
+
     /**
      * Creates a login pane with a username and password and a create account option
+     *
      * @return Login pane Component
      */
-    private Pane getLoginPane()
-    {
+    private Pane getLoginPane() {
         Label loginLabel = new Label(Config.getString("export.publish.login"));
         loginLabel.getStyleClass().add("intro-label");
 
@@ -324,8 +289,7 @@ public class ExportPublishTab extends ExportTab
         userNameField = new TextField();
         userNameField.setPrefColumnCount(10);
         JavaFXUtil.addChangeListenerPlatform(userNameField.focusedProperty(), focused -> {
-            if (!focused)
-            {
+            if (!focused) {
                 checkForExistingScenario();
             }
         });
@@ -345,13 +309,13 @@ public class ExportPublishTab extends ExportTab
         loginPane.getStyleClass().add("login-pane");
         return loginPane;
     }
-    
+
     /**
      * Build a help box with a link to appropriate help
+     *
      * @return help box
      */
-    private Pane getHelpBox()
-    {
+    private Pane getHelpBox() {
         Hyperlink serverLink = new Hyperlink(serverURL);
         serverLink.setOnAction(event -> SwingUtilities.invokeLater(() -> Utility.openWebBrowser(serverURL)));
 
@@ -363,35 +327,30 @@ public class ExportPublishTab extends ExportTab
     /**
      * Set the tags in the UI from the given list (null if the server couldn't be contacted or
      * didn't respond as expected).
-     * 
+     *
      * <p>Should be called from event thread
      */
     //TODO thread checker : Should be called from event thread
-    private void setPopularTags(List<String> tags)
-    {
-        if (tags == null)
-        {
+    private void setPopularTags(List<String> tags) {
+        if (tags == null) {
             // Couldn't get the tags list.
             popTags[0].setText("Unavailable");
-            for (int i = 1; i < popTags.length; i++)
-            {
+            for (int i = 1; i < popTags.length; i++) {
                 popTags[i].setText("");
             }
             return;
         }
-        
+
         int minLength = popTags.length < tags.size() ? popTags.length : tags.size();
-        for (int i = 0; i < minLength; i++)
-        {
+        for (int i = 0; i < minLength; i++) {
             CheckBox checkBox = popTags[i];
             checkBox.setText(tags.get(i));
             checkBox.setDisable(false);
             processTags(getTags());
         }
-        
+
         // Clear any remaining checkboxes.
-        for (int i = minLength; i < popTags.length; i++)
-        {
+        for (int i = minLength; i < popTags.length; i++) {
             popTags[i].setText("");
         }
     }
@@ -399,8 +358,7 @@ public class ExportPublishTab extends ExportTab
     /**
      * Returns a list of the tags that the user chose for this scenario.
      */
-    public List<String> getTags()
-    {
+    public List<String> getTags() {
         // Get the pop tags from the selected checkboxes
         ArrayList<String> tagList = Arrays.stream(popTags)
                 .filter(CheckBox::isSelected)
@@ -411,12 +369,9 @@ public class ExportPublishTab extends ExportTab
         tagList.addAll(Arrays.asList(tagArea.getText().split("\\s+")));
 
         // Include/Exclude the "with source" tag.
-        if(isIncludeSource() && !tagList.contains(WITH_SOURCE_TAG))
-        {
+        if (isIncludeSource() && !tagList.contains(WITH_SOURCE_TAG)) {
             tagList.add(WITH_SOURCE_TAG);
-        }
-        else if (!isIncludeSource())
-        {
+        } else if (!isIncludeSource()) {
             tagList.remove(WITH_SOURCE_TAG);
         }
 
@@ -426,8 +381,7 @@ public class ExportPublishTab extends ExportTab
     /**
      * Loads details already stored for this scenario at previous publish (if they exist).
      */
-    private void loadStoredScenarioInfo()
-    {
+    private void loadStoredScenarioInfo() {
         titleField.setText(scenarioInfo.getTitle());
         shortDescriptionField.setText(scenarioInfo.getShortDescription());
         longDescriptionArea.setText(scenarioInfo.getLongDescription());
@@ -439,8 +393,7 @@ public class ExportPublishTab extends ExportTab
     }
 
     @Override
-    protected void updateInfoFromFields()
-    {
+    protected void updateInfoFromFields() {
         scenarioInfo.setTitle(getTitle());
         scenarioInfo.setShortDescription(getShortDescription());
         scenarioInfo.setLongDescription(getLongDescription());
@@ -449,10 +402,9 @@ public class ExportPublishTab extends ExportTab
         scenarioInfo.setLocked(isLockScenario());
         scenarioInfo.setIncludeSource(isIncludeSource());
     }
-    
+
     @Override
-    protected ExportInfo getExportInfo()
-    {
+    protected ExportInfo getExportInfo() {
         ExportInfo info = new ExportInfo(scenarioInfo);
         info.setUpdateDescription(getUpdateDescription());
         info.setUserName(getUserName());
@@ -463,35 +415,29 @@ public class ExportPublishTab extends ExportTab
         return info;
     }
 
-    private void checkForExistingScenario()
-    {
+    private void checkForExistingScenario() {
         String userName = getUserName();
         String title = getTitle();
 
         // First check if everything is ready and bail out if it is not.
-        if (userName == null || userName.equals(""))
-        {
+        if (userName == null || userName.equals("")) {
             return;
         }
-        if (title == null || title.equals(""))
-        {
+        if (title == null || title.equals("")) {
             return;
         }
 
-        if (scenarioChecker == null)
-        {
+        if (scenarioChecker == null) {
             scenarioChecker = new ExistingScenarioChecker() {
 
                 @Override
-                public void scenarioExistenceCheckFailed(Exception reason)
-                {
+                public void scenarioExistenceCheckFailed(Exception reason) {
                     // Don't do anything. Failure could be due to proxy requiring authentication,
                     // or network disconnection.
                 }
 
                 @Override
-                public void scenarioExistenceChecked(ScenarioInfo info)
-                {
+                public void scenarioExistenceChecked(ScenarioInfo info) {
                     setUpdate(info != null);
                 }
             };
@@ -502,61 +448,49 @@ public class ExportPublishTab extends ExportTab
     /**
      * The first time this tab is activated we fetch the popular tags from the
      * server (if possible).
-     * 
+     *
      * <p>And we load previously used values if they are stored.
      */
-    private void activated()
-    {
-        if (firstActivation)
-        {
+    private void activated() {
+        if (firstActivation) {
             firstActivation = false;
 
             userNameField.setText(Config.getPropString("publish.username", ""));
             loadStoredScenarioInfo();
             checkForExistingScenario();
 
-            FXWorker commonTagsLoader = new FXWorker()
-            {
+            FXWorker commonTagsLoader = new FXWorker() {
                 @SuppressWarnings("unchecked")
                 @Override
-                public void finished()
-                {
+                public void finished() {
                     setPopularTags((List<String>) getValue());
                 }
 
                 @Override
                 @OnThread(Tag.FXPlatform)
-                public void abort()
-                {
+                public void abort() {
 
                 }
 
                 @Override
-                public Object construct()
-                {
+                public Object construct() {
                     MyGameClient client = new MyGameClient(null);
                     List<String> tags = null;
                     try {
                         String hostAddress = serverURL;
-                        if (!hostAddress.endsWith("/"))
-                        {
+                        if (!hostAddress.endsWith("/")) {
                             hostAddress += "/";
                         }
                         // We add one to the number, because WITH_SOURCE is
                         // likely to be among them and we then will filter it out.
                         tags = client.getCommonTags(hostAddress, popTags.length + 1);
-                        if (tags.contains(WITH_SOURCE_TAG))
-                        {
+                        if (tags.contains(WITH_SOURCE_TAG)) {
                             tags.remove(WITH_SOURCE_TAG);
-                        }
-                        else if (!tags.isEmpty())
-                        {
+                        } else if (!tags.isEmpty()) {
                             tags.remove(tags.size() - 1);
                         }
-                    }
-                    catch (ConnectTimeoutException ignored) { }
-                    catch (IOException e)
-                    {
+                    } catch (ConnectTimeoutException ignored) {
+                    } catch (IOException e) {
                         Debug.reportError("Error while publishing scenario", e);
                     }
                     return tags;
@@ -571,43 +505,37 @@ public class ExportPublishTab extends ExportTab
     /**
      * Sets the dialog export button's text to either update or share.
      */
-    private void setExportButtonText()
-    {
+    private void setExportButtonText() {
         exportDialog.setExportButtonText(
                 Config.getString(update ? "export.dialog.update" : "export.dialog.share"));
     }
 
     @Override
-    public boolean prePublish()
-    {
+    public boolean prePublish() {
         super.prePublish();
         publishedUserName = getUserName();
         return true;
     }
 
     @Override
-    public void postPublish(boolean success)
-    {
-        if (success)
-        {
+    public void postPublish(boolean success) {
+        if (success) {
             scenarioSaver.doSave();
             Config.putPropString("publish.username", publishedUserName);
             setUpdate(true);
         }
     }
-    
+
     /**
      * Make sure a host name ends with a slash.
      */
-    private static String ensureTrailingSlash(String hostname)
-    {
-        if (hostname.endsWith("/"))
-        {
+    private static String ensureTrailingSlash(String hostname) {
+        if (hostname.endsWith("/")) {
             return hostname;
         }
         return hostname + "/";
     }
-    
+
     /**
      * Creates the scenario information display including information
      * such as title, description, url. For an update (update = true),
@@ -615,8 +543,7 @@ public class ExportPublishTab extends ExportTab
      *
      * @return The pane containing main scenario controls.
      */
-    private Pane createScenarioPane()
-    {
+    private Pane createScenarioPane() {
         titleAndDescPane = new GridPane();
         titleAndDescPane.getStyleClass().add("title-desc-pane");
 
@@ -645,8 +572,7 @@ public class ExportPublishTab extends ExportTab
 
         titleField = new TextField(getTitle() != null ? getTitle() : project.getProjectName());
         JavaFXUtil.addChangeListenerPlatform(titleField.focusedProperty(), focused -> {
-            if (!focused)
-            {
+            if (!focused) {
                 checkForExistingScenario();
             }
         });
@@ -693,21 +619,17 @@ public class ExportPublishTab extends ExportTab
      * a "changes" description area is shown. If not there a short description
      * and long description areas are shown.
      */
-    private void chooseNewOrUpdatedScenarioFields()
-    {
+    private void chooseNewOrUpdatedScenarioFields() {
         titleAndDescPane.getChildren().removeAll(titleLabel, titleField);
 
-        if (update)
-        {
+        if (update) {
             titleAndDescPane.getChildren().removeAll(shortDescriptionLabel, shortDescriptionField,
                     longDescriptionLabel, description);
 
             titleAndDescPane.addRow(1, emptyLabel, keepScenarioScreenshot);
             titleAndDescPane.addRow(2, titleLabel, titleField);
             titleAndDescPane.addRow(3, updateLabel, updatePane);
-        }
-        else
-        {
+        } else {
             titleAndDescPane.getChildren().removeAll(emptyLabel, keepScenarioScreenshot,
                     updateLabel, updatePane);
             titleAndDescPane.addRow(1, titleLabel, titleField);
@@ -721,14 +643,12 @@ public class ExportPublishTab extends ExportTab
     /**
      * Creates the tag display with popular tags and an option to add tags
      */
-    private Pane getTagDisplay ()
-    {
+    private Pane getTagDisplay() {
         Label popLabel = new Label(Config.getString("export.publish.tags.popular"));
 
         VBox popPane = new VBox(popLabel);
         popPane.getStyleClass().add("pop-pane");
-        for (int i = 0; i < popTags.length; i++)
-        {
+        for (int i = 0; i < popTags.length; i++) {
             CheckBox popTag = new CheckBox(Config.getString("export.publish.tags.loading"));
             popTag.setDisable(true);
             popTags[i] = popTag;
@@ -751,18 +671,15 @@ public class ExportPublishTab extends ExportTab
     /**
      * Returns true if it is an update and false if it is a first export
      */
-    public boolean isUpdate()
-    {
+    public boolean isUpdate() {
         return update;
     }
 
     /**
      * Specify whether this scenario will be updated, or is a new export.
      */
-    private void setUpdate(boolean isUpdate)
-    {
-        if (this.update != isUpdate)
-        {
+    private void setUpdate(boolean isUpdate) {
+        if (this.update != isUpdate) {
             this.update = isUpdate;
             setExportButtonText();
             chooseNewOrUpdatedScenarioFields();

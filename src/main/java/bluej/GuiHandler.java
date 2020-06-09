@@ -21,54 +21,53 @@
  */
 package bluej;
 
-import java.io.File;
-
 import javafx.stage.Stage;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
 
 /**
  * This is an interface for handling project-related and general startup-related GUI tasks.
  * <p>
  * This interface allows projects to be managed by BlueJ or Greenfoot independently.
- *  
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public interface GuiHandler
-{
+public interface GuiHandler {
     /**
      * Try to open a project and display a GUI for it.
-     * 
-     * @param path  The path to the project
-     * @param displayError  true if an error dialog should be displayed on failure
-     * @return      true if successful; false if not
+     *
+     * @param path         The path to the project
+     * @param displayError true if an error dialog should be displayed on failure
+     * @return true if successful; false if not
      */
     boolean tryOpen(File path, boolean displayError);
-    
+
     /**
      * Handle an 'about' request issued from the OS interface (i.e. Mac application menu).
      */
     void handleAbout();
-    
+
     /**
      * Handle a 'preferences' request issued from the OS interface.
      */
     void handlePreferences();
-    
+
     /**
      * Handle a 'quit' request issued from the OS interface.
      */
     void handleQuit();
-    
+
     /**
      * Initial opening of projects is complete.
-     * 
-     * @param projectOpen  true if a project was opened; false if no projects are open
-     * @return An open main window, or null if not available due to an unexpected error. 
+     *
+     * @param projectOpen true if a project was opened; false if no projects are open
+     * @return An open main window, or null if not available due to an unexpected error.
      */
     Stage initialOpenComplete(boolean projectOpen);
-    
+
     /**
      * Perform any cleanup/save prior to application exit. The exit cannot be cancelled at this point.
      */

@@ -21,36 +21,27 @@
  */
 package greenfoot.sound;
 
-import java.io.IOException;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.sound.sampled.DataLine.Info;
-
 import bluej.utility.Debug;
+
+import javax.sound.sampled.*;
+import javax.sound.sampled.DataLine.Info;
+import java.io.IOException;
 
 /**
  * Plays sound from a URL. To avoid loading the entire sound clip into memory,
  * the sound is streamed. The sound can either be a standard sound supported by
  * the core Java libraries or an MP3.
- * 
+ *
+ * @author Poul Henriksen
  * @see Mp3AudioInputStream
  * @see JavaAudioInputStream
- * 
- * @author Poul Henriksen
- * 
  */
-public class SoundStream implements Sound, Runnable
-{
-    private static void printDebug(String s)
-    {
+public class SoundStream implements Sound, Runnable {
+    private static void printDebug(String s) {
         // Comment this line out if you don't want debug info.
         // System.out.println(s);
     }
+
     /**
      * How long to wait until closing the line and stopping the playback thread
      * after playback has finished. In ms.
@@ -61,14 +52,16 @@ public class SoundStream implements Sound, Runnable
      */
     private boolean loop = false;
     /**
-     * Signals that the playback should stop. 
+     * Signals that the playback should stop.
      */
     private boolean stop = true;
     /**
      * Signals that the playback should pause.
      */
     private boolean pause = false;
-    /** Signals that playback should start over from the beginning. */
+    /**
+     * Signals that playback should start over from the beginning.
+     */
     private boolean restart = false;
     /**
      * Flag that indicates whether the sound is currently stopped (not playing
@@ -81,17 +74,22 @@ public class SoundStream implements Sound, Runnable
      * the playThread.
      */
     private final GreenfootAudioInputStream inputStream;
-    /** Listener for state changes. */
+    /**
+     * Listener for state changes.
+     */
     private final SoundPlaybackListener playbackListener;
-    /** The line that we play the sound through */
+    /**
+     * The line that we play the sound through
+     */
     private volatile AudioLine line;
     private AudioFormat format;
     private Info info;
-    /** Thread that handles the actual playback of the sound. */
+    /**
+     * Thread that handles the actual playback of the sound.
+     */
     private Thread playThread;
 
-    public SoundStream(GreenfootAudioInputStream inputStream, SoundPlaybackListener playbackListener)
-    {
+    public SoundStream(GreenfootAudioInputStream inputStream, SoundPlaybackListener playbackListener) {
         this.playbackListener = playbackListener;
         this.inputStream = inputStream;
         try {
@@ -100,32 +98,27 @@ public class SoundStream implements Sound, Runnable
             format = inputStream.getFormat();
             info = new DataLine.Info(SourceDataLine.class, format);
             line = initialiseLine(info, format);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // Thrown by getLine()
             SoundExceptionHandler.handleIllegalArgumentException(e, inputStream.getSource());
-        }
-        catch (LineUnavailableException e) {
+        } catch (LineUnavailableException e) {
             SoundExceptionHandler.handleLineUnavailableException(e);
         }
     }
 
     @Override
-    public synchronized void play()
-    {
+    public synchronized void play() {
         if (isPlaying()) {
             // Make sure we no longer loop.
             loop = false;
-        }
-        else {
+        } else {
             // We are not playing, so we should start playing.
             startPlayback();
         }
     }
 
     @Override
-    public synchronized void loop()
-    {
+    public synchronized void loop() {
         // Make sure we loop.
         loop = true;
         if (!isPlaying()) {
@@ -138,8 +131,7 @@ public class SoundStream implements Sound, Runnable
      * Starts playback by creating the thread if necessary, clearing the
      * stop, stopped, and pause flags and notifying listeners.
      */
-    private void startPlayback()
-    {
+    private void startPlayback() {
         if (!pause) {
             restart = true;
             if (playThread == null) {
@@ -162,8 +154,7 @@ public class SoundStream implements Sound, Runnable
     }
 
     @Override
-    public synchronized void close()
-    {
+    public synchronized void close() {
         if (line != null) {
             reset();
             line.close();
@@ -173,8 +164,7 @@ public class SoundStream implements Sound, Runnable
     }
 
     @Override
-    public synchronized void stop()
-    {
+    public synchronized void stop() {
         if (!stop) {
             stop = true;
             stopped = true;
@@ -186,8 +176,7 @@ public class SoundStream implements Sound, Runnable
     }
 
     @Override
-    public synchronized void pause()
-    {
+    public synchronized void pause() {
         if (!stopped && !pause) {
             line.stop();
             pause = true;
@@ -197,32 +186,27 @@ public class SoundStream implements Sound, Runnable
     }
 
     @Override
-    public synchronized boolean isPlaying()
-    {
+    public synchronized boolean isPlaying() {
         return !stopped && !pause;
     }
 
     @Override
-    public synchronized boolean isStopped()
-    {
+    public synchronized boolean isStopped() {
         return stopped && !pause;
     }
 
     @Override
-    public synchronized boolean isPaused()
-    {
+    public synchronized boolean isPaused() {
         return pause;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return inputStream.getSource() + " " + super.toString();
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         // Whether the thread should stay alive or die.
         boolean stayAlive = true;
 
@@ -336,8 +320,7 @@ public class SoundStream implements Sound, Runnable
                                 printDebug("WAIT");
                                 wait(CLOSE_TIMEOUT);
                             }
-                        }
-                        catch (InterruptedException e) {
+                        } catch (InterruptedException e) {
                         }
                         // Kill thread if we have not received a signal to
                         // continue playback.
@@ -359,21 +342,16 @@ public class SoundStream implements Sound, Runnable
                 }
 
             }
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // Thrown by getLine()
             SoundExceptionHandler.handleIllegalArgumentException(e, inputStream.getSource());
-        }
-        catch (UnsupportedAudioFileException e) {
+        } catch (UnsupportedAudioFileException e) {
             SoundExceptionHandler.handleUnsupportedAudioFileException(e, inputStream.getSource());
-        }
-        catch (LineUnavailableException e) {
+        } catch (LineUnavailableException e) {
             SoundExceptionHandler.handleLineUnavailableException(e);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             SoundExceptionHandler.handleIOException(e, inputStream.getSource());
-        }
-        finally {
+        } finally {
             if (stayAlive == true) {
                 // Abnormal termination, lets reset:
                 reset();
@@ -384,8 +362,7 @@ public class SoundStream implements Sound, Runnable
             if (inputStream != null) {
                 try {
                     inputStream.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -396,8 +373,7 @@ public class SoundStream implements Sound, Runnable
     /**
      * Pauses as long as the pause signal is true.
      */
-    private synchronized void doPause()
-    {
+    private synchronized void doPause() {
         if (pause) {
             while (pause) {
                 try {
@@ -405,8 +381,7 @@ public class SoundStream implements Sound, Runnable
                     line.stop();
                     printDebug("In pause loop 2");
                     wait();
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     Debug.reportError(
                             "Interrupted while pausing sound: " + inputStream.getSource(), e);
                 }
@@ -417,21 +392,17 @@ public class SoundStream implements Sound, Runnable
 
     /**
      * Initialise the line by creating it and setting up listeners.
-     * 
+     *
      * @param info
-     * @throws LineUnavailableException
-     *             if a matching line is not available due to resource
-     *             restrictions
-     * @throws SecurityException
-     *             if a matching line is not available due to security
-     *             restrictions
-     * @throws IllegalArgumentException
-     *             if the system does not support at least one line matching the
-     *             specified
+     * @throws LineUnavailableException if a matching line is not available due to resource
+     *                                  restrictions
+     * @throws SecurityException        if a matching line is not available due to security
+     *                                  restrictions
+     * @throws IllegalArgumentException if the system does not support at least one line matching the
+     *                                  specified
      */
     private AudioLine initialiseLine(DataLine.Info info, AudioFormat format)
-            throws LineUnavailableException, IllegalArgumentException
-    {
+            throws LineUnavailableException, IllegalArgumentException {
         //Throws IllegalArgumentException if it can't find a line
         SourceDataLine l = (SourceDataLine) AudioSystem.getLine(info);
         printDebug("buffer size: " + l.getBufferSize());
@@ -441,8 +412,7 @@ public class SoundStream implements Sound, Runnable
     /**
      * Stops the thread and reset all flags and signals to initial values.
      */
-    private synchronized void reset()
-    {
+    private synchronized void reset() {
         stopped = true;
         pause = false;
         loop = false;
@@ -450,20 +420,17 @@ public class SoundStream implements Sound, Runnable
         playThread = null;
     }
 
-    public long getLongFramePosition()
-    {
+    public long getLongFramePosition() {
         return line.getLongFramePosition();
     }
 
     @Override
-    public void setVolume(int level)
-    {
+    public void setVolume(int level) {
         line.setVolume(SoundUtils.logToLin(level));
     }
 
     @Override
-    public int getVolume()
-    {
+    public int getVolume() {
         return line.getVolume();
     }
 }

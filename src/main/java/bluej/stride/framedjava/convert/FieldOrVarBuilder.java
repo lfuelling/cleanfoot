@@ -24,20 +24,16 @@ package bluej.stride.framedjava.convert;
 import java.util.ArrayList;
 import java.util.List;
 
-import bluej.parser.lexer.LocatableToken;
-
 /**
  * A simple class to keep track of the details of a field/local var declaration set being parsed
  */
-class FieldOrVarBuilder
-{
+class FieldOrVarBuilder {
     // The type of the variable
     final String type;
     // The modifiers
     final List<Modifier> modifiers = new ArrayList<>();
 
-    FieldOrVarBuilder(String type, List<Modifier> modifiers)
-    {
+    FieldOrVarBuilder(String type, List<Modifier> modifiers) {
         this.type = type;
         this.modifiers.addAll(modifiers);
     }

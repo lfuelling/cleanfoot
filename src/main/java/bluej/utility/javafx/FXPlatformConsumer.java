@@ -29,7 +29,6 @@ import threadchecker.Tag;
  */
 @FunctionalInterface
 @OnThread(Tag.FXPlatform)
-public interface FXPlatformConsumer<T>
-{
+public interface FXPlatformConsumer<T> {
     void accept(T t);
 }

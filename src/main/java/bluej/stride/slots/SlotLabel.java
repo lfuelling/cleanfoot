@@ -21,11 +21,11 @@
  */
 package bluej.stride.slots;
 
-import java.util.List;
-import java.util.stream.Stream;
-
+import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.ScalableHeightLabel;
+import bluej.utility.javafx.SharedTransition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -46,27 +46,24 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 
-import bluej.stride.generic.Frame;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * A SlotLabel is a wrapper class for a ScalableHeightLabel (i.e. our subclass
  * of JavaFX's Label, which allows growing and shrinking the height)
  * which can be used as a HeaderItem in FrameContentRow.
- * 
+ * <p>
  * The actual label is kept private, and this class is mainly filled with delegates
  * which expose the necessary methods of Label.
  */
-public class SlotLabel implements HeaderItem, Styleable, CopyableHeaderItem
-{
+public class SlotLabel implements HeaderItem, Styleable, CopyableHeaderItem {
     private final ScalableHeightLabel l;
     // It's important that the same list is returned every time from getComponents:
     private final ObservableList<Node> list;
     private boolean animateCaption;
 
-    public SlotLabel(String content, String... styleClasses)
-    {
+    public SlotLabel(String content, String... styleClasses) {
         l = new ScalableHeightLabel(content, false);
         JavaFXUtil.addStyleClass(l, "slot-label");
         JavaFXUtil.addStyleClass(l, styleClasses);
@@ -74,133 +71,108 @@ public class SlotLabel implements HeaderItem, Styleable, CopyableHeaderItem
     }
 
     @Override
-    public ObservableList<Node> getComponents()
-    {
+    public ObservableList<Node> getComponents() {
         return list;
     }
 
     @Override
-    public EditableSlot asEditable()
-    {
+    public EditableSlot asEditable() {
         return null;
     }
 
     @Override
-    public String getTypeSelector()
-    {
+    public String getTypeSelector() {
         return l.getTypeSelector();
     }
 
     @Override
-    public String getId()
-    {
+    public String getId() {
         return l.getId();
     }
 
     @Override
-    public ObservableList<String> getStyleClass()
-    {
+    public ObservableList<String> getStyleClass() {
         return l.getStyleClass();
     }
 
     @Override
-    public String getStyle()
-    {
+    public String getStyle() {
         return l.getStyle();
     }
 
     @Override
-    public List<CssMetaData<? extends Styleable, ?>> getCssMetaData()
-    {
+    public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
         return l.getCssMetaData();
     }
 
     @Override
-    public Styleable getStyleableParent()
-    {
+    public Styleable getStyleableParent() {
         return l.getStyleableParent();
     }
 
     @Override
-    public ObservableSet<PseudoClass> getPseudoClassStates()
-    {
+    public ObservableSet<PseudoClass> getPseudoClassStates() {
         return l.getPseudoClassStates();
     }
 
-    public void setStyle(String style)
-    {
+    public void setStyle(String style) {
         l.setStyle(style);
     }
 
-    public StringProperty textProperty()
-    {
+    public StringProperty textProperty() {
         return l.textProperty();
     }
 
-    public BooleanProperty disableProperty()
-    {
+    public BooleanProperty disableProperty() {
         return l.disableProperty();
     }
 
-    public void setOnMouseClicked(EventHandler<? super MouseEvent> h)
-    {
-        l.setOnMouseClicked(h);        
+    public void setOnMouseClicked(EventHandler<? super MouseEvent> h) {
+        l.setOnMouseClicked(h);
     }
 
-    public void setOnMouseDragged(EventHandler<? super MouseEvent> value)
-    {
+    public void setOnMouseDragged(EventHandler<? super MouseEvent> value) {
         l.setOnMouseDragged(value);
     }
 
-    public void setCursor(Cursor c)
-    {
+    public void setCursor(Cursor c) {
         l.setCursor(c);
     }
 
-    public void setOpacity(double d)
-    {
+    public void setOpacity(double d) {
         l.setOpacity(0.0);
     }
-    
-    public Node getNode()
-    {
+
+    public Node getNode() {
         return l;
     }
 
-    public void setText(String string)
-    {
+    public void setText(String string) {
         l.setText(string);
     }
 
-    public DoubleProperty rotateProperty()
-    {
+    public DoubleProperty rotateProperty() {
         return l.rotateProperty();
     }
 
-    public DoubleProperty prefWidthProperty()
-    {
+    public DoubleProperty prefWidthProperty() {
         return l.prefWidthProperty();
     }
 
-    public DoubleProperty minWidthProperty()
-    {
+    public DoubleProperty minWidthProperty() {
         return l.minWidthProperty();
     }
 
     @Override
-    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animate)
-    {
+    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animate) {
         if (!animateCaption)
             return;
 
-        if (newView == Frame.View.JAVA_PREVIEW)
-        {
+        if (newView == Frame.View.JAVA_PREVIEW) {
             animate.addOnStopped(() -> {
                 JavaFXUtil.setPseudoclass("bj-java-preview", newView == Frame.View.JAVA_PREVIEW, l);
             });
-        }
-        else
-        {
+        } else {
             JavaFXUtil.setPseudoclass("bj-java-preview", newView == Frame.View.JAVA_PREVIEW, l);
             JavaFXUtil.setPseudoclass("bj-birdseye", newView.isBirdseye(), l);
             animate.addOnStopped(() -> {
@@ -210,18 +182,16 @@ public class SlotLabel implements HeaderItem, Styleable, CopyableHeaderItem
         }
 
     }
-    
-    public void shrinkHorizontally(SharedTransition animate)
-    {
+
+    public void shrinkHorizontally(SharedTransition animate) {
         l.setTextOverrun(OverrunStyle.CLIP);
         final double cur = l.getWidth();
         l.minWidthProperty().set(0.0);
         l.maxWidthProperty().unbind();
         l.maxWidthProperty().bind(animate.getProgress().negate().add(1.0).multiply(cur));
     }
-    
-    public void growHorizontally(SharedTransition animate)
-    {
+
+    public void growHorizontally(SharedTransition animate) {
         l.maxWidthProperty().unbind();
         l.maxWidthProperty().bind(animate.getProgress().multiply(JavaFXUtil.measureString(l, l.getText())));
         animate.addOnStopped(() -> {
@@ -230,69 +200,57 @@ public class SlotLabel implements HeaderItem, Styleable, CopyableHeaderItem
             l.maxWidthProperty().set(Region.USE_COMPUTED_SIZE);
         });
     }
-    
-    public void shrinkVertically(SharedTransition animate)
-    {
+
+    public void shrinkVertically(SharedTransition animate) {
         l.setTextOverrun(OverrunStyle.CLIP);
         l.shrinkToNothingWith(animate, true);
     }
 
-    public void shrinkInstantly()
-    {
+    public void shrinkInstantly() {
         l.setTextOverrun(OverrunStyle.CLIP);
         l.setToNothing();
     }
 
 
-    public void growVertically(SharedTransition animate)
-    {
+    public void growVertically(SharedTransition animate) {
         l.growToFullHeightWith(animate, true);
     }
 
-    public String getText()
-    {
+    public String getText() {
         return l.getText();
     }
 
-    public ObjectProperty<Font> fontProperty()
-    {
+    public ObjectProperty<Font> fontProperty() {
         return l.fontProperty();
     }
 
-    public double measureString(String text)
-    {
+    public double measureString(String text) {
         return JavaFXUtil.measureString(l, text);
     }
 
-    public void setOnDragDetected(EventHandler<? super MouseEvent> value)
-    {
+    public void setOnDragDetected(EventHandler<? super MouseEvent> value) {
         l.setOnDragDetected(value);
     }
 
-    public void setOnMousePressed(EventHandler<? super MouseEvent> value)
-    {
+    public void setOnMousePressed(EventHandler<? super MouseEvent> value) {
         l.setOnMousePressed(value);
     }
 
-    public void setOnMouseReleased(EventHandler<? super MouseEvent> value)
-    {
+    public void setOnMouseReleased(EventHandler<? super MouseEvent> value) {
         l.setOnMouseReleased(value);
     }
 
-    public void setLeftPadding(double amount)
-    {
+    public void setLeftPadding(double amount) {
         Insets p = l.getPadding();
         l.setPadding(new Insets(p.getTop(), p.getRight(), p.getBottom(), amount));
     }
 
-    public void setAnimateCaption(boolean animateCaption)
-    {
+    public void setAnimateCaption(boolean animateCaption) {
         this.animateCaption = animateCaption;
     }
 
     @Override
-    public Stream<Label> makeDisplayClone(InteractionManager editor)
-    {
+    public Stream<Label> makeDisplayClone(InteractionManager editor) {
         Label copy = JavaFXUtil.cloneLabel(l, editor.getFontCSS());
         return Stream.of(copy);
     }

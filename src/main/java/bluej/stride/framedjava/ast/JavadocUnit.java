@@ -21,33 +21,29 @@
  */
 package bluej.stride.framedjava.ast;
 
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.utility.Utility;
+import nu.xom.Element;
+
 import java.util.LinkedList;
 import java.util.List;
 
-import nu.xom.Element;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.utility.Utility;
-
-public class JavadocUnit
-{
+public class JavadocUnit {
     public static final String ELEMENT = "javadoc";
     private String content;
 
-    public JavadocUnit(String text)
-    {
+    public JavadocUnit(String text) {
         this.content = text == null ? "" : text;
     }
 
-    public JavadocUnit(Element el)
-    {
+    public JavadocUnit(Element el) {
         content = el.getValue();
         if (content == null) {
             content = "";
         }
     }
 
-    public List<String> getJavaCode()
-    {
+    public List<String> getJavaCode() {
         List<String> code = new LinkedList<>();
         code.add("/**");
         for (String line : Utility.splitLines(content)) {
@@ -57,8 +53,7 @@ public class JavadocUnit
         return code;
     }
 
-    public Element toXML()
-    {
+    public Element toXML() {
         Element docEl = new Element(ELEMENT);
         CodeElement.preserveWhitespace(docEl);
         docEl.appendChild(content);
@@ -66,8 +61,7 @@ public class JavadocUnit
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return content;
     }
 }

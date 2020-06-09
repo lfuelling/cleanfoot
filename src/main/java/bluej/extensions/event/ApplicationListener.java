@@ -23,16 +23,14 @@ package bluej.extensions.event;
 
 /**
  * This interface allows you to listen for application events.
- *
  */
-public interface ApplicationListener
-{
+public interface ApplicationListener {
     /**
      * This method will be called when the BlueJ application is initialised.
      * Warning: If you load an extension with a Project you will not get this event since
      * BlueJ has already completed its initialisation when the project is loaded.
      * Note that this method is called from a Swing-like dispatcher and therefore you must
-     * return as quickly as possible. 
+     * return as quickly as possible.
      * If a long operation must be performed you should start a Thread.
      */
     void blueJReady(ApplicationEvent event);
@@ -41,5 +39,6 @@ public interface ApplicationListener
      * This method will be called when submission to the current data recording server
      * (Blackbox, or your local purpose-run recording server) has failed.
      */
-    default void dataSubmissionFailed(ApplicationEvent event) { }
+    default void dataSubmissionFailed(ApplicationEvent event) {
+    }
 }

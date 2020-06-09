@@ -22,6 +22,18 @@
 package bluej.stride.framedjava.elements;
 
 
+import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.generic.SandwichCanvasesFrame;
+import bluej.utility.Utility;
+import nu.xom.Element;
+import nu.xom.Elements;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,27 +41,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaContainerDebugHandler;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SandwichCanvasesFrame;
-import bluej.utility.Utility;
 
-import nu.xom.Element;
-import nu.xom.Elements;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-
-public abstract class SandwichCanvasesElement extends ContainerCodeElement implements JavaSingleLineDebugHandler
-{
+public abstract class SandwichCanvasesElement extends ContainerCodeElement implements JavaSingleLineDebugHandler {
     private SandwichCanvasesFrame frame;
 
     private final String frameCaption;
@@ -63,8 +56,7 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
 
 
     protected SandwichCanvasesElement(String frameCaption, String intermediateCanvasElement,
-                                      String intermediateCanvasJavaCaption, String tailCanvasCaption)
-    {
+                                      String intermediateCanvasJavaCaption, String tailCanvasCaption) {
         this.frameCaption = frameCaption;
         this.intermediateCanvasElement = intermediateCanvasElement;
         this.intermediateCanvasJavaCaption = intermediateCanvasJavaCaption;
@@ -72,17 +64,15 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
     }
 
     /**
-     *
      * @param frame
      * @param firstCanvasContents
      * @param intermediateCanvasContents
-     * @param tailCanvasContents Note that passing null here means no tailCanvas, whereas passing
-     *               an empty list indicates that there is a tailCanvas, but it is empty.
+     * @param tailCanvasContents         Note that passing null here means no tailCanvas, whereas passing
+     *                                   an empty list indicates that there is a tailCanvas, but it is empty.
      */
     protected SandwichCanvasesElement(SandwichCanvasesFrame frame, String frameCaption, List<CodeElement> firstCanvasContents,
-                  String intermediateCanvasElement, String intermediateCanvasJavaCaption, List<List<CodeElement>> intermediateCanvasContents,
-                  String tailCanvasCaption, List<CodeElement> tailCanvasContents, boolean enabled)
-    {
+                                      String intermediateCanvasElement, String intermediateCanvasJavaCaption, List<List<CodeElement>> intermediateCanvasContents,
+                                      String tailCanvasCaption, List<CodeElement> tailCanvasContents, boolean enabled) {
         this(frameCaption, intermediateCanvasElement, intermediateCanvasJavaCaption, tailCanvasCaption);
         this.frame = frame;
 
@@ -100,8 +90,7 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
         this.enable = enabled;
     }
 
-    public void loadElement(Element el)
-    {
+    public void loadElement(Element el) {
         loadMainAttributes(el);
         firstCanvasContents = new ArrayList<>();
         Element firstStatementsEl = el.getChildElements(frameCaption + "Statements").get(0);
@@ -118,8 +107,7 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
             final Element intermediateEl = intermediateCanvasElements.get(i);
             loadIntermediateAttributes(intermediateEl);
             List<CodeElement> body = new ArrayList<>();
-            for (int j = 0; j < intermediateEl.getChildElements().size(); j++)
-            {
+            for (int j = 0; j < intermediateEl.getChildElements().size(); j++) {
                 CodeElement member = Loader.loadElement(intermediateEl.getChildElements().get(j));
                 body.add(member);
                 member.setParent(this);
@@ -136,11 +124,9 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
                 tailCanvasContents.add(member);
                 member.setParent(this);
             }
-        }
-        else if (el.getChildElements(tailCanvasCaption).size() == 0) {
+        } else if (el.getChildElements(tailCanvasCaption).size() == 0) {
             tailCanvasContents = null;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
 
@@ -152,15 +138,13 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
     protected abstract void loadIntermediateAttributes(final Element element);
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         JavaContainerDebugHandler firstCanvasHandler = debug -> frame.getFirstCanvasDebug().showDebugAtEnd(debug);
         JavaSource src = JavaSource.createCompoundStatement(frame, this, this, firstCanvasHandler,
                 getFirstHeaderFragment(),
                 CodeElement.toJavaCodes(firstCanvasContents));
 
-        for (int i = 0; i < intermediateCanvasContents.size(); i++)
-        {
+        for (int i = 0; i < intermediateCanvasContents.size(); i++) {
             final int iFinal = i;
             JavaContainerDebugHandler intermediateCanvasHandler = debug -> frame.getIntermediateCanvasDebug(iFinal).showDebugAtEnd(debug);
             src.append(JavaSource.createCompoundStatement(frame, this, this, intermediateCanvasHandler,
@@ -178,19 +162,16 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
         return src;
     }
 
-    protected List<JavaFragment> getFirstHeaderFragment()
-    {
+    protected List<JavaFragment> getFirstHeaderFragment() {
         return new ArrayList<>(Arrays.asList(f(frame, frameCaption)));
     }
 
-    protected List<JavaFragment> getIntermediateHeaderFragment(int index)
-    {
+    protected List<JavaFragment> getIntermediateHeaderFragment(int index) {
         return new ArrayList<>(Arrays.asList(f(frame, intermediateCanvasJavaCaption)));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement mainEl = new LocatableElement(this, frameCaption);
         addMainAttributes(mainEl);
         addEnableAttribute(mainEl);
@@ -198,8 +179,7 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
         firstCanvasContents.forEach(c -> firstCanvasStatementsEl.appendChild(c.toXML()));
         mainEl.appendChild(firstCanvasStatementsEl);
 
-        for (int i = 0; i < intermediateCanvasContents.size(); i++)
-        {
+        for (int i = 0; i < intermediateCanvasContents.size(); i++) {
             LocatableElement intermediateCanvasEl = new LocatableElement(null, intermediateCanvasElement);
             addIntermediateAttributes(intermediateCanvasEl, i);
             intermediateCanvasContents.get(i).forEach(f -> intermediateCanvasEl.appendChild(f.toXML()));
@@ -220,8 +200,7 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
     protected abstract void addIntermediateAttributes(LocatableElement element, int index);
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         Function<CodeElement, Frame> makeFrame = e -> e.createFrame(editor);
         frame = buildFrame(editor,
                 Utility.mapList(firstCanvasContents, makeFrame),
@@ -234,23 +213,18 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
 
     @OnThread(Tag.FX)
     protected abstract SandwichCanvasesFrame buildFrame(InteractionManager editor, List<Frame> firstCanvasFrames,
-                            List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable);
+                                                        List<List<Frame>> intermediateCanvasFrames, List<Frame> tailCanvasFrames, boolean enable);
 
 
     @Override
-    public List<CodeElement> childrenUpTo(CodeElement c)
-    {
-        if (firstCanvasContents.contains(c))
-        {
+    public List<CodeElement> childrenUpTo(CodeElement c) {
+        if (firstCanvasContents.contains(c)) {
             return firstCanvasContents.subList(0, firstCanvasContents.indexOf(c));
         }
 
-        if (intermediateCanvasContents != null)
-        {
-            for (List<CodeElement> intermediateCanvasContent : intermediateCanvasContents)
-            {
-                if (intermediateCanvasContent.contains(c))
-                {
+        if (intermediateCanvasContents != null) {
+            for (List<CodeElement> intermediateCanvasContent : intermediateCanvasContents) {
+                if (intermediateCanvasContent.contains(c)) {
                     return intermediateCanvasContent.subList(0, intermediateCanvasContent.indexOf(c));
                 }
             }
@@ -264,31 +238,27 @@ public abstract class SandwichCanvasesElement extends ContainerCodeElement imple
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
     }
 
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    public Stream<CodeElement> streamContained()
-    {
+    public Stream<CodeElement> streamContained() {
         Stream<CodeElement> intermediateCanvasStream = intermediateCanvasContents.stream().flatMap(c -> streamContained(c));
         return Utility.concat(streamContained(firstCanvasContents), intermediateCanvasStream, streamContained(tailCanvasContents));
     }
 
-    /** If the child is a direct member of an intermediate canvas, return its index,
+    /**
+     * If the child is a direct member of an intermediate canvas, return its index,
      * otherwise return empty optional
      */
-    protected Optional<Integer> findDirectIntermediateChild(CodeElement child)
-    {
-        for (int i = 0; i < intermediateCanvasContents.size(); i++)
-        {
+    protected Optional<Integer> findDirectIntermediateChild(CodeElement child) {
+        for (int i = 0; i < intermediateCanvasContents.size(); i++) {
             if (intermediateCanvasContents.get(i).stream().anyMatch(c -> c == child))
                 return Optional.of(i);
         }

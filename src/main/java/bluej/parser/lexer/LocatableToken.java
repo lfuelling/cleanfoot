@@ -25,44 +25,37 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.Any)
-public class LocatableToken
-{
+public class LocatableToken {
     private int beginLine, beginColumn;
     private int endLine, endColumn;
     private LocatableToken hiddenBefore;
     private final int type;
     private int position, length; // position and length in original source
     private final String text;
-    
-    public LocatableToken(int t, String txt)
-    {
+
+    public LocatableToken(int t, String txt) {
         type = t;
         text = txt;
     }
 
-    public void setEndLineAndCol(int l, int c)
-    {
+    public void setEndLineAndCol(int l, int c) {
         endLine = l;
         endColumn = c;
     }
-    
-    public int getEndColumn()
-    {
+
+    public int getEndColumn() {
         return endColumn;
     }
-    
-    public int getEndLine()
-    {
+
+    public int getEndLine() {
         return endLine;
     }
-    
-    public int getLine()
-    {
+
+    public int getLine() {
         return beginLine;
     }
 
-    public void setPosition(int beginLine, int beginColumn, int endLine, int endColumn, int position, int length)
-    {
+    public void setPosition(int beginLine, int beginColumn, int endLine, int endColumn, int position, int length) {
         this.beginLine = beginLine;
         this.beginColumn = beginColumn;
         this.endLine = endLine;
@@ -71,36 +64,32 @@ public class LocatableToken
         this.length = length;
     }
 
-    public void adjustStart(int offset)
-    {
+    public void adjustStart(int offset) {
         // Assume same line:
         beginColumn += offset;
         endColumn += offset;
         position += offset;
     }
-    
-    public int getColumn()
-    {
+
+    public int getColumn() {
         return beginColumn;
     }
-    
-    public int getType()
-    {
+
+    public int getType() {
         return type;
     }
-    
+
     /**
      * Gets the text of the token, with any unicode escapes from the original
      * taken care of.
-     * 
+     * <p>
      * For example, the original code may have String with the capital S escaped,
      * like "\u0053tring".  In this case, getText() would return "String".
      */
-    public String getText()
-    {
+    public String getText() {
         return text;
     }
-    
+
     /**
      * Returns the length of the token in the original source.  Note that
      * this is not necessarily the same as getText().length(), because the original
@@ -109,40 +98,34 @@ public class LocatableToken
      * still return the length of the original token in the document, including
      * all the escapes.
      */
-    public int getLength()
-    {
+    public int getLength() {
         return length;
     }
-    
-    public int getPosition()
-    {
+
+    public int getPosition() {
         return position;
     }
-    
-    public int getEndPosition()
-    {
+
+    public int getEndPosition() {
         return position + length;
     }
-    
-    public void setHiddenBefore(LocatableToken t)
-    {
+
+    public void setHiddenBefore(LocatableToken t) {
         hiddenBefore = t;
     }
-    
-    public LocatableToken getHiddenBefore()
-    {
+
+    public LocatableToken getHiddenBefore() {
         return hiddenBefore;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "LocatableToken [beginLine=" + beginLine + ", beginColumn="
                 + beginColumn + ", endLine=" + endLine + ", endColumn="
                 + endColumn + ", hiddenBefore=" + hiddenBefore + ", type="
                 + type + ", position=" + position + ", length=" + length
                 + ", text=" + text + "]";
     }
-    
-    
+
+
 }

@@ -29,33 +29,32 @@ import bluej.views.View;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+
 import java.lang.reflect.Modifier;
 
 /**
  * A wrapper for a method of a BlueJ class.
  * Allows an extension to invoke a method on an object that is on the BlueJ object bench.
  * When values representing types are returned, there are two cases:
- * In the case that the returned value is of primitive type (<code>int</code> etc.), 
+ * In the case that the returned value is of primitive type (<code>int</code> etc.),
  * it is represented in the appropriate Java wrapper type (<code>Integer</code> etc.).
- * In the case that the returned value is an object type then an appropriate BObject will 
+ * In the case that the returned value is an object type then an appropriate BObject will
  * be returned, allowing the returned object itself to be placed on the BlueJ object bench.
  *
  * @author Clive Miller, University of Kent at Canterbury, 2002
  * @author Damiano Bolla, University of Kent at Canterbury 2003
  */
-public class BMethod
-{
+public class BMethod {
     // The same reasoning as of BConstructor applies here.
-    
+
     private final Identifier parentId;
     private final MethodView bluej_view;
-    
+
     /**
      * Constructor.
      */
-    BMethod ( Identifier aParentId, MethodView i_bluej_view )
-    {
-        parentId   = aParentId;
+    BMethod(Identifier aParentId, MethodView i_bluej_view) {
+        parentId = aParentId;
         bluej_view = i_bluej_view;
     }
 
@@ -64,31 +63,30 @@ public class BMethod
      * Returns true if there is a match, false otherwise.
      * Pass a zero length parameter array if the method takes no arguments.
      */
-    public boolean matches ( String methodName, Class<?>[] parameter )
-    {
+    public boolean matches(String methodName, Class<?>[] parameter) {
         // If someone is crazy enough to do this he deserves it :-)
-        if ( methodName == null ) return false;
+        if (methodName == null) return false;
 
         // Let me se if the named method is OK
-        if ( ! methodName.equals(bluej_view.getName() ) ) return false;
-     
+        if (!methodName.equals(bluej_view.getName())) return false;
+
         Class<?>[] thisArgs = bluej_view.getParameters();
 
         // An empty array is equivalent to a null array
-        if (thisArgs  != null && thisArgs.length  <= 0)  thisArgs  = null;
-        if (parameter != null && parameter.length <= 0 ) parameter = null;
+        if (thisArgs != null && thisArgs.length <= 0) thisArgs = null;
+        if (parameter != null && parameter.length <= 0) parameter = null;
 
         // If both are null the we are OK
-        if ( thisArgs == null && parameter == null ) return true;
+        if (thisArgs == null && parameter == null) return true;
 
         // If ANY of them is null we are in trouble now. (They MUST be both NOT null)
-        if ( thisArgs == null || parameter == null ) return false;
+        if (thisArgs == null || parameter == null) return false;
 
         // Now I know that BOTH are NOT empty. They MUST be the same length
-        if ( thisArgs.length != parameter.length ) return false;
-    
-        for ( int index=0; index<thisArgs.length; index++ ) {
-            if ( ! thisArgs[index].isAssignableFrom(parameter[index]) ) {
+        if (thisArgs.length != parameter.length) return false;
+
+        for (int index = 0; index < thisArgs.length; index++) {
+            if (!thisArgs[index].isAssignableFrom(parameter[index])) {
                 return false;
             }
         }
@@ -96,60 +94,55 @@ public class BMethod
         return true;
     }
 
-     /**
+    /**
      * Returns the class that declares this method.
      * Similar to Reflection API
      */
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return bluej_view.getClassName();
     }
-    
+
     /**
      * Returns the types of the parameters of this method.
      * Similar to Reflection API
      */
-    public Class<?>[] getParameterTypes()
-    {
+    public Class<?>[] getParameterTypes() {
         return bluej_view.getParameters();
     }
-      
+
     /**
      * Returns the name of this method.
      * Similar to Reflection API
      */
-    public String getName()
-    {
+    public String getName() {
         return bluej_view.getName();
     }
-    
+
     /**
      * Returns the return type of this method
      * Similar to Reflection API
      */
-    public Class<?> getReturnType()
-    {
+    public Class<?> getReturnType() {
         View aView = bluej_view.getReturnType();
         return aView.getViewClass();
     }
-    
+
     /**
      * Returns the modifiers for this method.
      * The <code>java.lang.reflect.Modifier</code> class can be used to decode the modifiers.
      */
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return bluej_view.getModifiers();
     }
 
     /**
      * Invoke this method on the given object. Note that this method should
      * not be called from the AWT/Swing event-dispatching thread.
-     * 
+     *
      * <p>The arguments passed in the initargs array may have any type,
      * but the type will determine exactly what is passed to the
      * method:
-     * 
+     *
      * <ul>
      * <li>String - the String will be passed directly to the method
      * <li>BObject - the object will be passed directly to the method,
@@ -158,36 +151,35 @@ public class BMethod
      *               result is treated as a Java expression, which is
      *               evaluated and passed to the method.
      * </ul>
-     * 
+     *
      * <p>An attempt is made to ensure that the argument types are suitable
      * for the method. InvocationArgumentException will be thrown if
      * the arguments are clearly unsuitable, however some cases will
      * generate an InvocationErrorException instead. In such cases no
      * expression arguments will be evaluated.
-     * 
+     *
      * <p>If the method invoked is <code>public static void main(String [] args)</code>, then the invocation will,
      * as a side-effect, reset the VM used by BlueJ to run user code in this project, and clear the object bench. This
      * behaviour matches the effect of invoking a main method through the BlueJ GUI.
-     * 
+     *
      * @param onThis The BObject to which the method call should be applied, null if a static method.
      * @param params an array containing the arguments, or null if there are none
      * @return the resulting Object. It can be a wrapper for a primitive type or a BObject
-     * @throws ProjectNotOpenException if the project to which this object belongs has been closed by the user.
-     * @throws PackageNotFoundException if the package to which this object belongs has been deleted by the user.
+     * @throws ProjectNotOpenException     if the project to which this object belongs has been closed by the user.
+     * @throws PackageNotFoundException    if the package to which this object belongs has been deleted by the user.
      * @throws InvocationArgumentException if the <code>params</code> don't match the object's arguments.
-     * @throws InvocationErrorException if an error occurs during the invocation.
+     * @throws InvocationErrorException    if an error occurs during the invocation.
      */
-    public Object invoke (BObject onThis, Object[] params) 
-        throws ProjectNotOpenException, PackageNotFoundException, 
-               InvocationArgumentException, InvocationErrorException
-    {
-        ObjectWrapper instanceWrapper=null;
+    public Object invoke(BObject onThis, Object[] params)
+            throws ProjectNotOpenException, PackageNotFoundException,
+            InvocationArgumentException, InvocationErrorException {
+        ObjectWrapper instanceWrapper = null;
         // If it is a method call on a live object get the identifier for it.
-        if ( onThis != null ) instanceWrapper = onThis.getObjectWrapper();
-        
-        PkgMgrFrame  pkgFrame = parentId.getPackageFrame();
-        DirectInvoker invoker = new DirectInvoker (pkgFrame);
-        DebuggerObject result = invoker.invokeMethod (instanceWrapper, bluej_view, params);
+        if (onThis != null) instanceWrapper = onThis.getObjectWrapper();
+
+        PkgMgrFrame pkgFrame = parentId.getPackageFrame();
+        DirectInvoker invoker = new DirectInvoker(pkgFrame);
+        DebuggerObject result = invoker.invokeMethod(instanceWrapper, bluej_view, params);
 
         // We return null if the method is void (as per Reflection), which might 
         // either be a null result object, or a valid result object representing null
@@ -199,26 +191,25 @@ public class BMethod
         ReferenceType type = objRef.referenceType();
 
         // It happens that the REAL result is in the result field of this Object...
-        Field thisField = type.fieldByName ("result");
-        if ( thisField == null ) return null;
+        Field thisField = type.fieldByName("result");
+        if (thisField == null) return null;
 
         // DOing this is the correct way of returning the right object. Tested 080303, Damiano
         return BField.doGetVal(pkgFrame, resultName, objRef.getValue(thisField));
     }
-    
-  
+
+
     /**
      * Returns a string representing the return type, name and signature of this method
      */
-    public String toString()
-    {
+    public String toString() {
         Class<?>[] signature = getParameterTypes();
         String sig = "";
-        for (int i=0; i<signature.length; i++) {
-            sig += signature[i].getName() + (i==signature.length-1?"":", ");
+        for (int i = 0; i < signature.length; i++) {
+            sig += signature[i].getName() + (i == signature.length - 1 ? "" : ", ");
         }
-        String mod = Modifier.toString (getModifiers());
+        String mod = Modifier.toString(getModifiers());
         if (mod.length() > 0) mod += " ";
-        return mod+getReturnType()+" "+getName()+"("+sig+")";
+        return mod + getReturnType() + " " + getName() + "(" + sig + ")";
     }
 }

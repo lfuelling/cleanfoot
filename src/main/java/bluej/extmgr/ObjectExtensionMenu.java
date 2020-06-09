@@ -21,8 +21,6 @@
  */
 package bluej.extmgr;
 
-import javax.swing.JMenuItem;
-
 import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.extensions.BObject;
 import bluej.extensions.ExtensionBridge;
@@ -30,38 +28,35 @@ import bluej.extensions.MenuGenerator;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.*;
+
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Object
  * menu.
- * 
+ *
  * @author Simon Gerlach
  */
-public class ObjectExtensionMenu implements ExtensionMenu
-{
+public class ObjectExtensionMenu implements ExtensionMenu {
     private final ObjectWrapper objectWrapper;
 
     /**
      * Constructor. Creates a new {@link ObjectExtensionMenu}.
-     * 
-     * @param objectWrapper
-     *            The object which was selected by the user.
+     *
+     * @param objectWrapper The object which was selected by the user.
      */
     @OnThread(Tag.Any)
-    public ObjectExtensionMenu(ObjectWrapper objectWrapper)
-    {
+    public ObjectExtensionMenu(ObjectWrapper objectWrapper) {
         this.objectWrapper = objectWrapper;
     }
 
     @Override
-    public JMenuItem getMenuItem(MenuGenerator menuGenerator)
-    {
+    public JMenuItem getMenuItem(MenuGenerator menuGenerator) {
         BObject bObject = ExtensionBridge.newBObject(objectWrapper);
         return menuGenerator.getObjectMenuItem(bObject);
     }
 
     @Override
-    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem)
-    {
+    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem) {
         BObject bObject = ExtensionBridge.newBObject(objectWrapper);
         menuGenerator.notifyPostObjectMenu(bObject, onThisItem);
     }

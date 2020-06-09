@@ -27,15 +27,10 @@ import greenfoot.GreenfootImage;
 import greenfoot.UserInfo;
 import greenfoot.core.ImageCache;
 import greenfoot.platforms.GreenfootUtilDelegate;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,44 +38,36 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 /**
  * General utility methods for Greenfoot.
- * 
+ *
  * @author Davin McCall
  */
-public class GreenfootUtil
-{
+public class GreenfootUtil {
     // constants for use with createSpacer()
     public static final int X_AXIS = 0;
     public static final int Y_AXIS = 1;
-    
+
     private static GreenfootUtilDelegate delegate;
     private static ImageCache imageCache;
 
     private static boolean haveCheckedForMp3 = false;
     private static boolean mp3available = false;
-    
+
     @OnThread(Tag.Any)
-    public static void initialise(GreenfootUtilDelegate newDelegate)
-    {
+    public static void initialise(GreenfootUtilDelegate newDelegate) {
         delegate = newDelegate;
         imageCache = ImageCache.getInstance();
     }
-    
+
     /**
      * Copies the src to dst, creating parent dirs for dst. If dst exists it
      * is overwritten.
-     * 
-     * @param src
-     *            The source. It must be a file
-     * @param dst
-     *            Must not exist as a DIR
+     *
+     * @param src The source. It must be a file
+     * @param dst Must not exist as a DIR
      */
-    public static void copyFile(File src, File dst)
-    {
+    public static void copyFile(File src, File dst) {
         if (!src.isFile() || dst.isDirectory()) {
             return;
         }
@@ -101,43 +88,39 @@ public class GreenfootUtil
             os.flush();
             is.close();
             os.close();
-        }
-        catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             ex.printStackTrace();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
 
         }
     }
-    
+
     /**
      * Gets a list of the sound files in this scenario
+     *
      * @return A list of files in the sounds subdirectory, without the path prefix (e.g. "foo.wav")
      */
     @OnThread(Tag.Any)
-    public static Iterable<String> getSoundFiles()
-    {
+    public static Iterable<String> getSoundFiles() {
         return delegate.getSoundFiles();
     }
 
     /**
      * Tries to find the specified file using the classloader. It first searches in
      * 'projectdir/dir/', then in the 'projectdir' and last as an absolute filename or URL.
-     * 
+     *
      * @param filename Name of the file
-     * @param dir directory to search in first
+     * @param dir      directory to search in first
      * @return A URL that can be read or null if the URL could not be found.
      * @throws FileNotFoundException If the file cannot be found.
      */
-    public static URL getURL(final String filename, final String dir) throws FileNotFoundException
-    {
+    public static URL getURL(final String filename, final String dir) throws FileNotFoundException {
         if (filename == null) {
             throw new NullPointerException("Filename must not be null.");
         }
-        
+
         URL url = delegate.getResource(dir + "/" + filename);
 
         if (url == null) {
@@ -146,38 +129,33 @@ public class GreenfootUtil
         if (url == null) {
             // Third, try as an absolute file
             File f = new File(filename);
-            
+
             try {
                 if (f.canRead()) {
                     url = f.toURI().toURL();
                 }
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 // Not a URL that Java can handle
-            }
-            catch (SecurityException se) {
+            } catch (SecurityException se) {
                 // Can get this when running as an applet
             }
         }
-        if(url == null) {
+        if (url == null) {
             // Fourth, try as an absolute  URL.
             InputStream s = null;
             try {
                 url = new URL(filename);
                 s = url.openStream();
                 s.close();
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 url = null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 url = null;
             } finally {
-                if(s != null) {
+                if (s != null) {
                     try {
                         s.close();
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                     }
                 }
             }
@@ -185,21 +163,20 @@ public class GreenfootUtil
 
         checkCase(url);
 
-        if(url == null) {
+        if (url == null) {
             throw new FileNotFoundException("Could not find file: " + filename);
         }
         return url;
     }
 
-    
+
     /**
      * Checks whether the case is correct for the given URL. If it is detected
      * NOT to be the right case a IllegalArgumentException will be thrown.
-     * 
+     *
      * @throws IllegalArgumentException If the case is wrong.
      */
-    private static void checkCase(URL url)
-    {
+    private static void checkCase(URL url) {
         if (url != null) {
             String errMsg = null;
             try {
@@ -210,8 +187,7 @@ public class GreenfootUtil
                     errMsg = "Filename '" + givenName + "' has the wrong case. It should be: '" + realName + "'";
                 }
 
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 // things might go wrong if we are running in an applet or from
                 // a jar. Just ignore all exceptions.
             }
@@ -224,17 +200,15 @@ public class GreenfootUtil
     /**
      * Returns the path to a small version of the greenfoot logo.
      */
-    public static String getGreenfootLogoPath()
-    {        
+    public static String getGreenfootLogoPath() {
         return delegate.getGreenfootLogoPath();
     }
-    
+
     /**
      * Check whether a class can be instantiated: it is not abstract
      * or an interface.
      */
-    public static boolean canBeInstantiated(Class<?> cls)
-    {
+    public static boolean canBeInstantiated(Class<?> cls) {
         // ACC_INTERFACE 0x0200 Is an interface, not a class.
         // ACC_ABSTRACT 0x0400 Declared abstract; may not be
         // instantiated.
@@ -244,16 +218,14 @@ public class GreenfootUtil
         if (cls.isEnum() || cls.isInterface()) {
             return false;
         }
-        return ! Modifier.isAbstract(cls.getModifiers());
+        return !Modifier.isAbstract(cls.getModifiers());
     }
-    
+
     /**
      * Returns a set of the third party libraries used by Greenfoot.
-     * 
      */
-    public static Set<File> get3rdPartyLibs()
-    {
-        File bluejLibDir = Config.getBlueJLibDir();      
+    public static Set<File> get3rdPartyLibs() {
+        File bluejLibDir = Config.getBlueJLibDir();
         String[] thirdPartyLibs = Boot.GREENFOOT_EXPORT_JARS;
         Set<File> jars = new TreeSet<File>();
         for (String lib : thirdPartyLibs) {
@@ -265,9 +237,8 @@ public class GreenfootUtil
     /**
      * Check whether MP3 support is available.
      */
-    public static boolean isMp3LibAvailable()
-    {
-        if (! haveCheckedForMp3) {
+    public static boolean isMp3LibAvailable() {
+        if (!haveCheckedForMp3) {
             URL url = delegate.getResource("javazoom/jl/decoder/BitstreamException.class");
             mp3available = url != null;
             haveCheckedForMp3 = true;
@@ -279,24 +250,22 @@ public class GreenfootUtil
      * First tries to create the file with the given name and type. If it
      * already exists, it will try creating the file with "01" appended to the
      * filename, if that exists it will try "02" and so on.
-     * 
-     * @param dir Directory where the file should be created.
+     *
+     * @param dir  Directory where the file should be created.
      * @param name Base name of the file
      * @param type Type of the file (extension) (without the dot)
      * @throws IOException If an IO error is generate when trying to create the
-     *             file.
+     *                     file.
      */
     public static File createNumberedFile(File dir, String name, String type)
-        throws IOException
-    {
+            throws IOException {
         File f = new File(dir, name + "." + type);
         int number = 1;
         while (!f.createNewFile()) {
             String numberString = null;
             if (number < 10) {
                 numberString = "0" + number;
-            }
-            else {
+            } else {
                 numberString = "" + number;
             }
             f = new File(dir, name + numberString + "." + type);
@@ -304,22 +273,22 @@ public class GreenfootUtil
         }
         return f;
     }
-    
+
     /**
      * Retrieves the GreenfootImage either from the cache or a new image if not previously created
      * Adds the image to the cached image list or the null image list (if none was found)
+     *
      * @param className name of the class
      * @param imageName filename of the image
      */
     @OnThread(Tag.Simulation)
-    public static GreenfootImage getGreenfootImage(String className, String imageName)
-    {   
+    public static GreenfootImage getGreenfootImage(String className, String imageName) {
         //try {throw new Exception();} catch (Exception e) {e.printStackTrace();}
-        GreenfootImage image=null;
-        if (imageName==null){
+        GreenfootImage image = null;
+        if (imageName == null) {
             return image;
         }
-        if (isInvalidImageFilename(imageName)){
+        if (isInvalidImageFilename(imageName)) {
             return image;
         }
         // If it is the Actor class the image is always the same:
@@ -328,8 +297,7 @@ public class GreenfootUtil
         }
         try {
             image = new GreenfootImage(imageName);
-        }
-        catch (IllegalArgumentException iae) {
+        } catch (IllegalArgumentException iae) {
             // This occurs if the image file doesn't exist anymore
         }
         return image;
@@ -339,54 +307,49 @@ public class GreenfootUtil
      * Remove the cached version of an image for a particular class. This should be
      * called when the image for the class is changed. Thread-safe.
      */
-    public static void removeCachedImage(String className)
-    {
+    public static void removeCachedImage(String className) {
         imageCache.removeCachedImage(className);
     }
-   
+
     /**
      * Adds a filename with the associated image into the cache
-     * @param name filename (should be the image filename)
+     *
+     * @param name  filename (should be the image filename)
      * @param image GreenfootImage
      */
-    public static boolean addCachedImage(String name, GreenfootImage image)
-    {
+    public static boolean addCachedImage(String name, GreenfootImage image) {
         return imageCache.addCachedImage(name, image);
     }
-    
+
     /**
      * Gets the cached image (if any) of the requested name. Thread-safe.
-     * 
-     * @param name   name of the image file
+     *
+     * @param name name of the image file
      * @return The cached image (should not be modified), or null if the image
-     *         is not cached.
+     * is not cached.
      */
-    public static GreenfootImage getCachedImage(String name)
-    {
+    public static GreenfootImage getCachedImage(String name) {
         return imageCache.getCachedImage(name);
     }
-    
+
     /**
      * Returns whether the cached image is null
      */
-    public static boolean isInvalidImageFilename(String fileName)
-    {
+    public static boolean isInvalidImageFilename(String fileName) {
         return imageCache.isNullCachedImage(fileName);
     }
-    
+
     /**
      * Given a string that represents a filename (or long path),
      * chops off the extension if any is present.
-     * 
+     * <p>
      * So Crab.java becomes Crab, and /tmp/pic.png becomes /tmp/pic
      */
-    public static String removeExtension(String full)
-    {
+    public static String removeExtension(String full) {
         int n = full.lastIndexOf('.');
         if (n == -1) {
             return full;
-        }
-        else {
+        } else {
             return full.substring(0, n);
         }
     }
@@ -395,8 +358,7 @@ public class GreenfootUtil
      * Find out whether storage is supported in the current setting
      */
     @OnThread(Tag.Simulation)
-    public static boolean isStorageSupported()
-    {
+    public static boolean isStorageSupported() {
         return delegate.isStorageSupported();
     }
 
@@ -404,8 +366,7 @@ public class GreenfootUtil
      * null if an error, blank values if no previous storage
      */
     @OnThread(Tag.Simulation)
-    public static UserInfo getCurrentUserInfo()
-    {
+    public static UserInfo getCurrentUserInfo() {
         return delegate.getCurrentUserInfo();
     }
 
@@ -413,12 +374,10 @@ public class GreenfootUtil
      * returns whether it was successful
      */
     @OnThread(Tag.Simulation)
-    public static boolean storeCurrentUserInfo(UserInfo data)
-    {
+    public static boolean storeCurrentUserInfo(UserInfo data) {
         if (data.getUserName().equals(getUserName()))
             return delegate.storeCurrentUserInfo(data);
-        else
-        {
+        else {
             // This message the user should see, because
             // it indicates a programming mistake:
             System.err.println("Attempted to store the data for another user, \"" + data.getUserName() + "\" (i.e. a user other than the current user, \"" + getUserName() + "\")");
@@ -428,12 +387,11 @@ public class GreenfootUtil
 
     /**
      * null if problem, empty list if simply no data
-     * 
+     * <p>
      * Returns highest data when sorted by integer index 0
      */
     @OnThread(Tag.Simulation)
-    public static List<UserInfo> getTopUserInfo(int limit)
-    {
+    public static List<UserInfo> getTopUserInfo(int limit) {
         return delegate.getTopUserInfo(limit);
     }
 
@@ -441,34 +399,32 @@ public class GreenfootUtil
      * returns null if storage not supported.
      */
     @OnThread(Tag.Simulation)
-    public static GreenfootImage getUserImage(String userName)
-    {
+    public static GreenfootImage getUserImage(String userName) {
         if (userName == null || userName.equals("")) {
             userName = getUserName();
         }
-        
+
         GreenfootImage r = null;
-        
+
         if (userName != null) {
             r = delegate.getUserImage(userName);
         }
-        
-        if (r == null)
-        {
+
+        if (r == null) {
             // This can be because there was a problem reading from the gallery,
             // or because we're using local storage:
             r = new GreenfootImage(50, 50);
             r.setColor(greenfoot.Color.DARK_GRAY);
             r.fill();
-            
+
             final int CHARS_PER_LINE = 6; // Heuristic: 15 pixels high, assume 8 pixels width per char, 50 / 8 ~= 6
-            
+
             StringBuilder wrappedName = new StringBuilder();
             if (userName == null)
                 userName = "";
-            for (int i = 0 ;i < userName.length(); i += CHARS_PER_LINE)
+            for (int i = 0; i < userName.length(); i += CHARS_PER_LINE)
                 wrappedName.append(userName, i, Math.min(userName.length(), i + CHARS_PER_LINE)).append("\n");
-                    
+
             GreenfootImage textImage = new GreenfootImage(wrappedName.toString(), 15, greenfoot.Color.WHITE, greenfoot.Color.DARK_GRAY);
             r.drawImage(textImage, Math.max(0, (50 - textImage.getWidth()) / 2), Math.max(0, (50 - textImage.getHeight()) / 2));
         }
@@ -480,19 +436,17 @@ public class GreenfootUtil
     // For remote storage, this is the username got from the applet params
     // For turned off, this is null
     @OnThread(Tag.Simulation)
-    public static String getUserName()
-    {
+    public static String getUserName() {
         return delegate.getUserName();
     }
 
     /**
      * Get info for users near the current player when sorted by score
-     * 
-     * @return  null if problem, empty list if simply no data.
+     *
+     * @return null if problem, empty list if simply no data.
      */
     @OnThread(Tag.Simulation)
-    public static List<UserInfo> getNearbyUserData(int maxAmount)
-    {
+    public static List<UserInfo> getNearbyUserData(int maxAmount) {
         return delegate.getNearbyUserInfo(maxAmount);
     }
 }

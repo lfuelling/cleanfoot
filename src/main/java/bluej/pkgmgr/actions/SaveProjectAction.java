@@ -25,19 +25,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * User chooses "save project". Save all files in the project.
- * 
+ *
  * @author Davin McCall
  * @version $Id: SaveProjectAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class SaveProjectAction extends PkgMgrAction
-{
-    public SaveProjectAction(PkgMgrFrame pmf)
-    {
+final public class SaveProjectAction extends PkgMgrAction {
+    public SaveProjectAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.save");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.getProject().saveAll();
     }

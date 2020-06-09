@@ -22,28 +22,26 @@
 package bluej.extensions;
 
 
-import bluej.debugger.*;
-import bluej.debugmgr.objectbench.*;
-import bluej.pkgmgr.*;
-import bluej.views.*;
+import bluej.debugger.DebuggerObject;
+import bluej.debugmgr.objectbench.ObjectWrapper;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.views.ConstructorView;
 
 /**
  * A wrapper for a constructor of a BlueJ class.
  * Behaviour is similar to reflection API.
  *
- *
  * @author Damiano Bolla, University of Kent at Canterbury, 2003,2004
  */
-public class BConstructor
-{
+public class BConstructor {
     // The problem of consistency here is quite subtle.....
     // I could try to get a kind of id for a ConstructorView and then try to get it back
     // when I need it, but really, the gain is almost nil.
     // What I will do is to have an Identifier with Project,Package,Class given and before doing
     // anything I will check with it. If everything is still there it should be OK.
     // In any case, it it goes wrong we will get an invoker exception !
-    
-    
+
+
     private final Identifier parentId;
     private final ConstructorView bluej_view;
 
@@ -52,11 +50,10 @@ public class BConstructor
      * Constructor.
      * It is duty of the caller to make shure that the parent is valid.
      *
-     * @param  aParentId  Description of the Parameter
-     * @param  i_view     Description of the Parameter
+     * @param aParentId Description of the Parameter
+     * @param i_view    Description of the Parameter
      */
-    BConstructor(Identifier aParentId, ConstructorView i_view)
-    {
+    BConstructor(Identifier aParentId, ConstructorView i_view) {
         parentId = aParentId;
         bluej_view = i_view;
     }
@@ -65,11 +62,10 @@ public class BConstructor
     /**
      * Tests if this constructor matches the given signature.
      *
-     * @param  parameter  Description of the Parameter
-     * @return            true if it does, false otherwise.
+     * @param parameter Description of the Parameter
+     * @return true if it does, false otherwise.
      */
-    public boolean matches(Class<?>[] parameter)
-    {
+    public boolean matches(Class<?>[] parameter) {
         Class<?>[] thisArgs = bluej_view.getParameters();
 
         // An empty array is equivalent to a null array
@@ -109,10 +105,9 @@ public class BConstructor
      * Returns the parameters of this constructor.
      * Similar to reflection API.
      *
-     * @return    The parameterTypes value
+     * @return The parameterTypes value
      */
-    public Class<?>[] getParameterTypes()
-    {
+    public Class<?>[] getParameterTypes() {
         return bluej_view.getParameters();
     }
 
@@ -121,11 +116,11 @@ public class BConstructor
      * Creates a new instance of the object described by this constructor.
      * Similar to reflection API. Note that this method should not be called
      * from the AWT/Swing event-dispatching thread.
-     * 
+     *
      * <p>The arguments passed in the initargs array may have any type,
      * but the type will determine exactly what is passed to the
      * constructor:
-     * 
+     *
      * <ul>
      * <li>String - the String will be passed directly to the constructor
      * <li>BObject - the object will be passed directly to the constructor,
@@ -134,24 +129,23 @@ public class BConstructor
      *               result is treated as a Java expression, which is
      *               evaluated and passed to the constructor.
      * </ul>
-     * 
+     *
      * <p>An attempt is made to ensure that the argument types are suitable
      * for the constructor. InvocationArgumentException will be thrown if
      * the arguments are clearly unsuitable, however some cases will
      * generate an InvocationErrorException instead. In such cases no
      * expression arguments will be evaluated.
      *
-     * @param  initargs                      Description of the Parameter
-     * @return                               Description of the Return Value
-     * @throws  ProjectNotOpenException      if the project to which this constructor belongs has been closed by the user.
-     * @throws  PackageNotFoundException     if the package to which this constructor belongs has been deleted by the user.
-     * @throws  InvocationArgumentException  if the <code>initargs</code> don't match the constructor's arguments.
-     * @throws  InvocationErrorException     if an error occurs during the invocation.
+     * @param initargs Description of the Parameter
+     * @return Description of the Return Value
+     * @throws ProjectNotOpenException     if the project to which this constructor belongs has been closed by the user.
+     * @throws PackageNotFoundException    if the package to which this constructor belongs has been deleted by the user.
+     * @throws InvocationArgumentException if the <code>initargs</code> don't match the constructor's arguments.
+     * @throws InvocationErrorException    if an error occurs during the invocation.
      */
     public BObject newInstance(Object[] initargs)
-             throws ProjectNotOpenException, PackageNotFoundException,
-            InvocationArgumentException, InvocationErrorException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException,
+            InvocationArgumentException, InvocationErrorException {
         PkgMgrFrame pkgFrame = parentId.getPackageFrame();
 
         DirectInvoker invoker = new DirectInvoker(pkgFrame);
@@ -174,22 +168,19 @@ public class BConstructor
      * {@link java.lang.reflect.Modifier} class can be used to decode the
      * modifiers.
      */
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return bluej_view.getModifiers();
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
-    public String toString()
-    {
+    public String toString() {
         if (bluej_view != null) {
             return "BConstructor: " + bluej_view.getLongDesc();
-        }
-        else {
+        } else {
             return "BConstructor: ";
         }
     }

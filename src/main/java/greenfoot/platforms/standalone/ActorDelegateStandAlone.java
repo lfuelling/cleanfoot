@@ -23,38 +23,32 @@ package greenfoot.platforms.standalone;
 
 import greenfoot.ActorVisitor;
 import greenfoot.GreenfootImage;
-import greenfoot.core.ProjectProperties;
 import greenfoot.core.ReadOnlyProjectProperties;
 import greenfoot.platforms.ActorDelegate;
 
 /**
  * Delegate for the Actor when it is running in a stand alone project created by
  * the "export" functionality in Greenfoot.
- * 
+ *
  * @author Poul Henriksen <polle@polle.org>
  */
 public class ActorDelegateStandAlone
-    implements ActorDelegate
-{
+        implements ActorDelegate {
     private static final ActorDelegateStandAlone instance = new ActorDelegateStandAlone();
     private ReadOnlyProjectProperties properties;
-    
+
     /**
      * Register this class as the delegate for Actor.
-     *
      */
-    public static void setupAsActorDelegate()
-    {
+    public static void setupAsActorDelegate() {
         ActorVisitor.setDelegate(instance);
     }
 
-    public static void initProperties(ReadOnlyProjectProperties properties)
-    {
+    public static void initProperties(ReadOnlyProjectProperties properties) {
         instance.properties = properties;
     }
 
-    public GreenfootImage getImage(String name)
-    {
+    public GreenfootImage getImage(String name) {
         return properties.getImage(name);
     }
 }

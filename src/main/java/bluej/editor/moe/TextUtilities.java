@@ -30,27 +30,27 @@ package bluej.editor.moe;
  * remains intact in all source distributions of this package.
  */
 
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
 
 /**
  * Class with several utility functions used by the text area component.
+ *
  * @author Slava Pestov
  * @version $Id: TextUtilities.java 6619 2009-09-04 02:33:09Z davmac $
  */
-public class TextUtilities
-{
+public class TextUtilities {
     /**
      * Returns the offset of the bracket matching the one at the
      * specified offset of the document, or -1 if the bracket is
      * unmatched (or if the character is not a bracket).
-     * @param doc The document
+     *
+     * @param doc    The document
      * @param offset The offset
-     * @exception BadLocationException If an out-of-bounds access
-     * was attempted on the document text
+     * @throws BadLocationException If an out-of-bounds access
+     *                              was attempted on the document text
      */
-    public static int findMatchingBracket(MoeSyntaxDocument doc, int offset)
-    {
-        if(doc.getLength() == 0) {
+    public static int findMatchingBracket(MoeSyntaxDocument doc, int offset) {
+        if (doc.getLength() == 0) {
             return -1;
         }
 
@@ -58,15 +58,33 @@ public class TextUtilities
         char cprime; // c` - corresponding character
         boolean direction; // true = back, false = forward
 
-        switch(c)
-        {
-        case '(': cprime = ')'; direction = false; break;
-        case ')': cprime = '('; direction = true; break;
-        case '[': cprime = ']'; direction = false; break;
-        case ']': cprime = '['; direction = true; break;
-        case '{': cprime = '}'; direction = false; break;
-        case '}': cprime = '{'; direction = true; break;
-        default: return -1;
+        switch (c) {
+            case '(':
+                cprime = ')';
+                direction = false;
+                break;
+            case ')':
+                cprime = '(';
+                direction = true;
+                break;
+            case '[':
+                cprime = ']';
+                direction = false;
+                break;
+            case ']':
+                cprime = '[';
+                direction = true;
+                break;
+            case '{':
+                cprime = '}';
+                direction = false;
+                break;
+            case '}':
+                cprime = '{';
+                direction = true;
+                break;
+            default:
+                return -1;
         }
 
         int count = 1;
@@ -80,8 +98,7 @@ public class TextUtilities
             texttOffset = 0;
             len = offset;
             i = len - 1;
-        }
-        else {
+        } else {
             // search forwards
             step = 1;
             texttOffset = offset + 1;
@@ -92,15 +109,14 @@ public class TextUtilities
 
         while (len > 0) {
             char x = textt.charAt(i);
-            if(x == c) {
+            if (x == c) {
                 count++;
             }
 
             // If text[i] == cprime, we have found a
             // opening bracket, so we return i if
             // --count == 0
-            else if(x == cprime)
-            {
+            else if (x == cprime) {
                 if (--count == 0) {
                     return i + texttOffset;
                 }
@@ -135,25 +151,23 @@ public class TextUtilities
 
     /**
      * Locates the start of the word at the specified position.
+     *
      * @param line The text
-     * @param pos The position
+     * @param pos  The position
      */
-    public static int findWordStart(String line, int pos, String noWordSep)
-    {
+    public static int findWordStart(String line, int pos, String noWordSep) {
         char ch = line.charAt(pos - 1);
 
-        if(noWordSep == null)
+        if (noWordSep == null)
             noWordSep = "";
         boolean selectNoLetter = (!Character.isLetterOrDigit(ch)
                 && noWordSep.indexOf(ch) == -1);
 
         int wordStart = 0;
-        for(int i = pos - 1; i >= 0; i--)
-        {
+        for (int i = pos - 1; i >= 0; i--) {
             ch = line.charAt(i);
-            if(selectNoLetter ^ (!Character.isLetterOrDigit(ch) &&
-                    noWordSep.indexOf(ch) == -1))
-            {
+            if (selectNoLetter ^ (!Character.isLetterOrDigit(ch) &&
+                    noWordSep.indexOf(ch) == -1)) {
                 wordStart = i + 1;
                 break;
             }
@@ -164,25 +178,23 @@ public class TextUtilities
 
     /**
      * Locates the end of the word at the specified position.
+     *
      * @param line The text
-     * @param pos The position
+     * @param pos  The position
      */
-    public static int findWordEnd(String line, int pos, String noWordSep)
-    {
+    public static int findWordEnd(String line, int pos, String noWordSep) {
         char ch = line.charAt(pos);
 
-        if(noWordSep == null)
+        if (noWordSep == null)
             noWordSep = "";
         boolean selectNoLetter = (!Character.isLetterOrDigit(ch)
                 && noWordSep.indexOf(ch) == -1);
 
         int wordEnd = line.length();
-        for(int i = pos; i < line.length(); i++)
-        {
+        for (int i = pos; i < line.length(); i++) {
             ch = line.charAt(i);
-            if(selectNoLetter ^ (!Character.isLetterOrDigit(ch) &&
-                    noWordSep.indexOf(ch) == -1))
-            {
+            if (selectNoLetter ^ (!Character.isLetterOrDigit(ch) &&
+                    noWordSep.indexOf(ch) == -1)) {
                 wordEnd = i;
                 break;
             }

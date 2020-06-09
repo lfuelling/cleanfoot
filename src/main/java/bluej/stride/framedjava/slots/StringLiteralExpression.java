@@ -21,14 +21,6 @@
  */
 package bluej.stride.framedjava.slots;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
 import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
 import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
 import bluej.stride.generic.Frame.View;
@@ -37,30 +29,46 @@ import bluej.utility.Utility;
 import bluej.utility.javafx.HangingFlowPane;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * A component in an expression slot which is a string literal, i.e.
  * double quotes around a single text field.
  */
 // Package-visible
-class StringLiteralExpression implements StructuredSlotComponent
-{
-    /** The text field with the string literal content */
+class StringLiteralExpression implements StructuredSlotComponent {
+    /**
+     * The text field with the string literal content
+     */
     private final StructuredSlotField field;
-    /** A permanent reference to the (unchanging) components: opening quote
-     *  label, text field, closing quote label */
+    /**
+     * A permanent reference to the (unchanging) components: opening quote
+     * label, text field, closing quote label
+     */
     private final ObservableList<Node> components = FXCollections.observableArrayList();
-    /** The label for the opening quote */
+    /**
+     * The label for the opening quote
+     */
     private final Label openingQuote;
-    /** The label for the closing quote */
+    /**
+     * The label for the closing quote
+     */
     private final Label closingQuote;
-    /** Either single quote or double quote */
+    /**
+     * Either single quote or double quote
+     */
     private final String quote;
     private final String openingSmartQuote;
     private final String closingSmartQuote;
 
-    public StringLiteralExpression(char quoteChar, StructuredSlotField f, InfixStructured parent)
-    {
+    public StringLiteralExpression(char quoteChar, StructuredSlotField f, InfixStructured parent) {
         field = f;
         this.quote = "" + quoteChar;
         // The quotes use proper open/close quote symbols normally, but
@@ -82,32 +90,27 @@ class StringLiteralExpression implements StructuredSlotComponent
     }
 
     @Override
-    public void focusAtStart()
-    {
+    public void focusAtStart() {
         field.focusAtStart();
     }
 
     @Override
-    public void focusAtEnd()
-    {
+    public void focusAtEnd() {
         field.focusAtEnd();
     }
 
     @Override
-    public Node focusAtPos(CaretPos caretPos)
-    {
+    public Node focusAtPos(CaretPos caretPos) {
         return field.focusAtPos(caretPos);
     }
 
     @Override
-    public TextOverlayPosition calculateOverlayPos(CaretPos pos)
-    {
+    public TextOverlayPosition calculateOverlayPos(CaretPos pos) {
         return field.calculateOverlayPos(pos);
     }
 
     @Override
-    public PosAndDist getNearest(double sceneX, double sceneY, boolean allowDescend, boolean anchorInItem)
-    {
+    public PosAndDist getNearest(double sceneX, double sceneY, boolean allowDescend, boolean anchorInItem) {
         if (allowDescend || anchorInItem)
             return field.getNearest(sceneX, sceneY, allowDescend, anchorInItem);
         else
@@ -115,64 +118,56 @@ class StringLiteralExpression implements StructuredSlotComponent
     }
 
     @Override
-    public CaretPos getSelectIntoPos(boolean atEnd)
-    {
+    public CaretPos getSelectIntoPos(boolean atEnd) {
         // Not allowed to select part of field:
         return null;
     }
-    
+
     @Override
-    public CaretPos getStartPos()
-    {
+    public CaretPos getStartPos() {
         return field.getStartPos();
     }
-    
+
     @Override
-    public CaretPos getEndPos()
-    {
+    public CaretPos getEndPos() {
         return field.getEndPos();
     }
 
     @Override
-    public String getCopyText(CaretPos from, CaretPos to)
-    {
+    public String getCopyText(CaretPos from, CaretPos to) {
         // We only add start and end when from/to are null:
         StringBuilder b = new StringBuilder();
         if (from == null)
             b.append(quote);
-        b.append(field.getCopyText(from, to));        
+        b.append(field.getCopyText(from, to));
         if (to == null)
             b.append(quote);
-        
-        return b.toString();
-    }
-    
-    @Override
-    public String getJavaCode()
-    {
-        StringBuilder b = new StringBuilder();
-        b.append(quote);
-        b.append(field.getText());        
-        b.append(quote);
-        
+
         return b.toString();
     }
 
     @Override
-    public CaretPos getCurrentPos()
-    {
+    public String getJavaCode() {
+        StringBuilder b = new StringBuilder();
+        b.append(quote);
+        b.append(field.getText());
+        b.append(quote);
+
+        return b.toString();
+    }
+
+    @Override
+    public CaretPos getCurrentPos() {
         return field.getCurrentPos();
     }
 
     @Override
-    public ObservableList<Node> getComponents()
-    {
+    public ObservableList<Node> getComponents() {
         return components;
     }
 
     @Override
-    public List<CaretPosMap> mapCaretPosStringPos(IntCounter cur, boolean javaString)
-    {
+    public List<CaretPosMap> mapCaretPosStringPos(IntCounter cur, boolean javaString) {
         cur.counter += 1;
         List<CaretPosMap> r = field.mapCaretPosStringPos(cur, false);
         // Need to add one to each index for opening bracket, and one to length for opening bracket
@@ -181,37 +176,31 @@ class StringLiteralExpression implements StructuredSlotComponent
     }
 
     @Override
-    public Region getNodeForPos(CaretPos subPos)
-    {
+    public Region getNodeForPos(CaretPos subPos) {
         return field.getNodeForPos(subPos);
     }
 
     //Package-visible
-    StructuredSlotField getField()
-    {
+    StructuredSlotField getField() {
         return field;
     }
 
     @Override
-    public String testingGetState(CaretPos pos)
-    {
+    public String testingGetState(CaretPos pos) {
         if (pos == null)
             return quote + field.getText() + quote;
-        else
-        {
+        else {
             return quote + field.getText().substring(0, pos.index) + "$" + field.getText().substring(pos.index) + quote;
         }
     }
 
     @Override
-    public boolean isFocused()
-    {
+    public boolean isFocused() {
         return field.isFocused();
     }
 
     @Override
-    public void insertSuggestion(CaretPos p, String name, char opening, List<String> params, StructuredSlot.ModificationToken token)
-    {
+    public void insertSuggestion(CaretPos p, String name, char opening, List<String> params, StructuredSlot.ModificationToken token) {
         if (params != null)
             throw new IllegalArgumentException();
         getField().setText(name, token);
@@ -219,26 +208,22 @@ class StringLiteralExpression implements StructuredSlotComponent
     }
 
     @Override
-    public Stream<TextOverlayPosition> getAllStartEndPositionsBetween(CaretPos start, CaretPos end)
-    {
+    public Stream<TextOverlayPosition> getAllStartEndPositionsBetween(CaretPos start, CaretPos end) {
         return field.getAllStartEndPositionsBetween(start, end);
     }
 
     @Override
-    public Stream<InfixStructured<?, ?>> getAllExpressions()
-    {
+    public Stream<InfixStructured<?, ?>> getAllExpressions() {
         return Stream.empty();
     }
 
     @Override
-    public String getText()
-    {
+    public String getText() {
         return quote + field.getText() + quote;
     }
 
     @Override
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         field.setView(oldView, newView, animate);
         JavaFXUtil.setPseudoclass("bj-java-preview", newView == View.JAVA_PREVIEW, openingQuote, closingQuote);
         openingQuote.setText(newView == View.JAVA_PREVIEW ? quote : openingSmartQuote);
@@ -246,50 +231,43 @@ class StringLiteralExpression implements StructuredSlotComponent
     }
 
     @Override
-    public boolean isAlmostBlank()
-    {
+    public boolean isAlmostBlank() {
         return field.isAlmostBlank();
     }
 
     @Override
-    public void notifyLostFocus(StructuredSlotField except)
-    {
+    public void notifyLostFocus(StructuredSlotField except) {
         if (field != except)
             field.notifyLostFocus(except);
     }
 
     @Override
-    public void setEditable(boolean editable)
-    {
+    public void setEditable(boolean editable) {
         field.setEditable(editable);
     }
 
     @Override
-    public boolean isNumericLiteral()
-    {
+    public boolean isNumericLiteral() {
         // A string can't be a numeric literal:
         return false;
     }
 
     @Override
-    public int calculateEffort()
-    {
+    public int calculateEffort() {
         return field.calculateEffort();
     }
 
     @Override
-    public Stream<Node> makeDisplayClone(InteractionManager editor)
-    {
+    public Stream<Node> makeDisplayClone(InteractionManager editor) {
         return Utility.concat(
-            Stream.of(JavaFXUtil.cloneLabel(openingQuote, editor.getFontCSS())),
-            field.makeDisplayClone(editor),
-            Stream.of(JavaFXUtil.cloneLabel(closingQuote, editor.getFontCSS()))
+                Stream.of(JavaFXUtil.cloneLabel(openingQuote, editor.getFontCSS())),
+                field.makeDisplayClone(editor),
+                Stream.of(JavaFXUtil.cloneLabel(closingQuote, editor.getFontCSS()))
         );
     }
 
     //package-visible
-    String getQuote()
-    {
+    String getQuote() {
         return quote;
     }
 }

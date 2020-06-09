@@ -31,50 +31,46 @@ import java.util.Map;
 
 /**
  * An image cache, which uses soft references to avoid holding images when heap space becomes exhausted.
- * 
+ *
  * @author Davin McCall
  */
-public class ImageCache
-{
+public class ImageCache {
     private static final ImageCache instance = new ImageCache();
-    
-    /** A soft reference to a cached image */
-    private class CachedImageRef extends SoftReference<GreenfootImage>
-    {
+
+    /**
+     * A soft reference to a cached image
+     */
+    private class CachedImageRef extends SoftReference<GreenfootImage> {
         String imgName;
-        
-        public CachedImageRef(String imgName, GreenfootImage image, ReferenceQueue<GreenfootImage> queue)
-        {
+
+        public CachedImageRef(String imgName, GreenfootImage image, ReferenceQueue<GreenfootImage> queue) {
             super(image, queue);
             this.imgName = imgName;
         }
     }
-    
-    private final Map<String,CachedImageRef> imageCache = new HashMap<String,CachedImageRef>();
+
+    private final Map<String, CachedImageRef> imageCache = new HashMap<String, CachedImageRef>();
     private ReferenceQueue<GreenfootImage> imgCacheRefQueue = new ReferenceQueue<GreenfootImage>();
-    
+
     /**
      * Retrieve the image cache instance.
      */
-    public static ImageCache getInstance()
-    {
+    public static ImageCache getInstance() {
         return instance;
     }
 
     /**
      * Requests that an image with associated name be added into the cache. The image may be null,
      * in which case the null response will be cached. Thread-safe.
-     * 
-     * @return  whether the image was cached.
+     *
+     * @return whether the image was cached.
      */
-    public boolean addCachedImage(String fileName, GreenfootImage image) 
-    {
+    public boolean addCachedImage(String fileName, GreenfootImage image) {
         synchronized (imageCache) {
             if (image != null) {
                 CachedImageRef cr = new CachedImageRef(fileName, image, imgCacheRefQueue);
                 imageCache.put(fileName, cr);
-            }
-            else {
+            } else {
                 imageCache.put(fileName, null);
             }
         }
@@ -84,12 +80,11 @@ public class ImageCache
     /**
      * Gets the cached image of the requested fileName. Thread-safe.
      *
-     * @param name   name of the image file
+     * @param name name of the image file
      * @return The cached image (should not be modified), or null if the image
-     *         is not cached.
+     * is not cached.
      */
-    public GreenfootImage getCachedImage(String fileName)
-    { 
+    public GreenfootImage getCachedImage(String fileName) {
         synchronized (imageCache) {
             flushImgCacheRefQueue();
             CachedImageRef sr = imageCache.get(fileName);
@@ -104,8 +99,7 @@ public class ImageCache
      * Remove the cached version of an image for a particular class. This should be
      * called when the image for the class is changed. Thread-safe.
      */
-    public void removeCachedImage(String fileName)
-    {
+    public void removeCachedImage(String fileName) {
         synchronized (imageCache) {
             CachedImageRef cr = imageCache.remove(fileName);
             if (cr != null) {
@@ -115,11 +109,10 @@ public class ImageCache
     }
 
     /**
-     * Returns true if the fileName exists in the map and the image is cached as being null; 
+     * Returns true if the fileName exists in the map and the image is cached as being null;
      * returns false if it exists and is not null or if it does not exist in the map
      */
-    public boolean isNullCachedImage(String fileName)
-    {
+    public boolean isNullCachedImage(String fileName) {
         synchronized (imageCache) {
             return imageCache.containsKey(fileName) && imageCache.get(fileName) == null;
         }
@@ -128,8 +121,7 @@ public class ImageCache
     /**
      * Clear the image cache.
      */
-    public void clearImageCache()
-    {
+    public void clearImageCache() {
         synchronized (imageCache) {
             imageCache.clear();
             imgCacheRefQueue = new ReferenceQueue<GreenfootImage>();
@@ -143,8 +135,7 @@ public class ImageCache
      * key will still map to the (cleared) reference. Calling this method occasionally removes such
      * dead keys.
      */
-    private void flushImgCacheRefQueue()
-    {
+    private void flushImgCacheRefQueue() {
         Reference<? extends GreenfootImage> ref = imgCacheRefQueue.poll();
         while (ref != null) {
             if (ref instanceof CachedImageRef) {

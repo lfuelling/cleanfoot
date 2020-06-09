@@ -27,43 +27,38 @@ import bluej.debugger.gentype.Reflective;
 /**
  * A resolver for a package scope level. Classes within the package are found
  * first; otherwise resolution is delegated to the parent resolver.
- * 
+ *
  * @author Davin McCall
  */
-public class PackageResolver implements EntityResolver
-{
+public class PackageResolver implements EntityResolver {
     private final EntityResolver parentResolver;
     private final String pkg;
-    
+
     /**
      * Constructor a PackageResolver for the specified package and with the specified parent resolver.
      */
-    public PackageResolver(EntityResolver parentResolver, String pkg)
-    {
+    public PackageResolver(EntityResolver parentResolver, String pkg) {
         this.parentResolver = parentResolver;
         this.pkg = pkg;
     }
-    
+
     /* (non-Javadoc)
      * @see bluej.parser.entity.EntityResolver#getValueEntity(java.lang.String, java.lang.String)
      */
-    public JavaEntity getValueEntity(String name, Reflective querySource)
-    {
+    public JavaEntity getValueEntity(String name, Reflective querySource) {
         return resolvePackageOrClass(name, querySource);
     }
 
     /* (non-Javadoc)
      * @see bluej.parser.entity.EntityResolver#resolvePackageOrClass(java.lang.String, java.lang.String)
      */
-    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource)
-    {
+    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource) {
         String fqName = (pkg.length() == 0) ? name : pkg + "." + name;
         TypeEntity tent = parentResolver.resolveQualifiedClass(fqName);
         if (tent != null) {
             // TODO check the returned class isn't private
             return tent;
-        }
-        else {
+        } else {
             return new PackageEntity(name, this);
         }
     }
@@ -71,8 +66,7 @@ public class PackageResolver implements EntityResolver
     /* (non-Javadoc)
      * @see bluej.parser.entity.EntityResolver#resolveQualifiedClass(java.lang.String)
      */
-    public TypeEntity resolveQualifiedClass(String name)
-    {
+    public TypeEntity resolveQualifiedClass(String name) {
         return parentResolver.resolveQualifiedClass(name);
     }
 }

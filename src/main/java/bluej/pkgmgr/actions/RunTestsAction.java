@@ -29,26 +29,22 @@ import javafx.scene.control.Button;
 /**
  * "Run all tests" action (test panel). Runs all the unit tests which have
  * been created in this project. Displays the results.
- * 
+ *
  * @author Davin McCall
  * @version $Id: RunTestsAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class RunTestsAction extends PkgMgrAction
-{
-    public RunTestsAction(PkgMgrFrame pmf)
-    {
+final public class RunTestsAction extends PkgMgrAction {
+    public RunTestsAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.run");
         shortDescription = Config.getString("tooltip.test");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.doTest();
     }
 
     @Override
-    public Button makeButton()
-    {
+    public Button makeButton() {
         Button b = super.makeButton();
         JavaFXUtil.addStyleClass(b, "pmf-tests-run-all");
         return b;

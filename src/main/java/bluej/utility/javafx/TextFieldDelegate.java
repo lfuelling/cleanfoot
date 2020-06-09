@@ -25,8 +25,7 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
-public interface TextFieldDelegate<IDENTIFIER>
-{
+public interface TextFieldDelegate<IDENTIFIER> {
     void insert(IDENTIFIER id, int index, String text);
 
     // This will be called speculatively by deletePrevious and deleteNext, in case
@@ -34,6 +33,7 @@ public interface TextFieldDelegate<IDENTIFIER>
     boolean deleteSelection();
 
     boolean deletePrevious(IDENTIFIER id, int caretPosition, boolean atStart);
+
     boolean deleteNext(IDENTIFIER id, int caretPosition, boolean atEnd);
 
     boolean previousWord(IDENTIFIER id, boolean atStart);
@@ -43,8 +43,9 @@ public interface TextFieldDelegate<IDENTIFIER>
     boolean endOfNextWord(IDENTIFIER id, boolean atEnd);
 
     void backwardAtStart(IDENTIFIER id);
+
     void forwardAtEnd(IDENTIFIER id);
-    
+
     void deselect();
 
     boolean copy();
@@ -52,14 +53,14 @@ public interface TextFieldDelegate<IDENTIFIER>
     boolean cut();
 
     void delete(IDENTIFIER id,
-            int start, int end);
+                int start, int end);
 
     boolean selectBackward(IDENTIFIER id, int caretPosition);
 
     boolean selectForward(IDENTIFIER id, int caretPosition, boolean atEnd);
 
     boolean selectAll(IDENTIFIER id);
-    
+
     boolean selectNextWord(IDENTIFIER id);
 
     boolean selectPreviousWord(IDENTIFIER id);
@@ -78,11 +79,11 @@ public interface TextFieldDelegate<IDENTIFIER>
 
     // Called when escape is pressed
     void escape();
-    
+
     // Called when selection is complete (mouse is released)
     void selected();
 
     void clicked();
-    
+
     void caretMoved();
 }

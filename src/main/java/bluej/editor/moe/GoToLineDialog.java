@@ -21,71 +21,57 @@
  */
 package bluej.editor.moe;
 
-import javafx.stage.Window;
-
 import bluej.Config;
 import bluej.utility.javafx.dialog.InputDialog;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 
 /**
  * Dialog for user to input a line number to traverse source file in editor
- * 
+ *
  * @author Bruce Quig
  */
 @OnThread(Tag.FXPlatform)
-public class GoToLineDialog extends InputDialog<Integer>
-{
+public class GoToLineDialog extends InputDialog<Integer> {
     private static final String goToLineTitle = Config.getString("editor.gotoline.title");
     private static final String goToLineLabel = Config.getString("editor.gotoline.label");
     private static final String notNumericMessage = Config.getString("editor.gotoline.notNumericMessage");
     private int rangeMax;
 
-    public GoToLineDialog(Window parent)
-    {
+    public GoToLineDialog(Window parent) {
         super(goToLineTitle, goToLineLabel, Config.getString("editor.gotoline.prompt"), "goto-line-dialog");
         initOwner(parent);
         setOKEnabled(false);
     }
 
-    public void setRangeMax(int max)
-    {
+    public void setRangeMax(int max) {
         this.rangeMax = max;
-        setPrompt(goToLineLabel +  " ( 1 - " + max + " )");
+        setPrompt(goToLineLabel + " ( 1 - " + max + " )");
     }
 
     @Override
-    protected Integer convert(String number)
-    {
-        try
-        {
+    protected Integer convert(String number) {
+        try {
             return Integer.parseInt(number);
-        }
-        catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             return null;
         }
     }
 
     @Override
-    protected boolean validate(String oldInput, String newInput)
-    {
+    protected boolean validate(String oldInput, String newInput) {
         Integer n = convert(newInput);
-        if (n == null)
-        {
+        if (n == null) {
             setErrorText(notNumericMessage);
             setOKEnabled(!oldInput.equals(""));
             return newInput.equals("");
-        }
-        else if (n >= 1 && n <= rangeMax)
-        {
+        } else if (n >= 1 && n <= rangeMax) {
             setErrorText("");
             setOKEnabled(true);
             return true;
-        }
-        else
-        {
+        } else {
             setErrorText("");
             setOKEnabled(!oldInput.equals(""));
             return false;

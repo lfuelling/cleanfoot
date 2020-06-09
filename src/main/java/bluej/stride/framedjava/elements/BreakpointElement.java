@@ -21,10 +21,6 @@
  */
 package bluej.stride.framedjava.elements;
 
-import java.util.stream.Stream;
-
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
 import bluej.stride.framedjava.ast.HighlightedBreakpoint;
 import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
 import bluej.stride.framedjava.ast.JavaSource;
@@ -33,59 +29,54 @@ import bluej.stride.framedjava.frames.BreakpointFrame;
 import bluej.stride.framedjava.frames.DebugInfo;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
 
-public class BreakpointElement extends CodeElement implements JavaSingleLineDebugHandler
-{
+import java.util.stream.Stream;
+
+public class BreakpointElement extends CodeElement implements JavaSingleLineDebugHandler {
     public static final String ELEMENT = "breakpoint";
     private BreakpointFrame frame;
 
-    public BreakpointElement(BreakpointFrame frame, boolean enabled)
-    {
+    public BreakpointElement(BreakpointFrame frame, boolean enabled) {
         this.frame = frame;
         this.enable = enabled;
     }
-    
+
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         return JavaSource.createBreakpoint(frame, this, this);
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement breakpointEl = new LocatableElement(this, ELEMENT);
         addEnableAttribute(breakpointEl);
         return breakpointEl;
     }
-    
-    public BreakpointElement(Element el)
-    {
+
+    public BreakpointElement(Element el) {
         enable = Boolean.valueOf(el.getAttributeValue("enable"));
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new BreakpointFrame(editor, isEnable());
         return frame;
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
-    }
-        
-    @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
     }
 
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    public void show(ShowReason reason) {
+        frame.show(reason);
+    }
+
+    @Override
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.empty();
-    }  
+    }
 }

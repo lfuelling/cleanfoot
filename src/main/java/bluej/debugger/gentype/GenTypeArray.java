@@ -21,80 +21,69 @@
  */
 package bluej.debugger.gentype;
 
+import bluej.utility.JavaReflective;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import bluej.utility.JavaReflective;
-
 /**
  * A specialization of GenTypeClass for arrays.
- * 
+ *
  * @author Davin McCall
  */
-public class GenTypeArray extends GenTypeSolid
-{
+public class GenTypeArray extends GenTypeSolid {
     JavaType baseType;
-    
+
     /**
      * Construct a new GenTypeArray, with the given component type.
      */
-    public GenTypeArray(JavaType baseType)
-    {
+    public GenTypeArray(JavaType baseType) {
         super();
         this.baseType = baseType;
     }
 
-    public String toString(boolean stripPrefix)
-    {
+    public String toString(boolean stripPrefix) {
         return baseType.toString(stripPrefix) + "[]";
     }
-    
-    public String toString(NameTransform nt)
-    {
+
+    public String toString(NameTransform nt) {
         return baseType.toString(nt) + "[]";
     }
 
     @Override
-    public String toTypeArgString(NameTransform nt)
-    {
+    public String toTypeArgString(NameTransform nt) {
         return toString(nt);
     }
 
-    public String arrayComponentName()
-    {
+    public String arrayComponentName() {
         return "[" + baseType.getUpperBound().arrayComponentName();
     }
-    
+
     @Override
-    public JavaType getCapture()
-    {
+    public JavaType getCapture() {
         JavaType baseCap = baseType.getCapture();
         if (baseCap == baseType) {
             return this;
         }
         return baseCap.getArray();
     }
-        
-    public JavaType getArrayComponent()
-    {
+
+    public JavaType getArrayComponent() {
         return baseType;
     }
-    
-    public GenTypeSolid getLowerBound()
-    {
+
+    public GenTypeSolid getLowerBound() {
         return this;
     }
 
     @Override
-    public boolean equals(JavaType other)
-    {
+    public boolean equals(JavaType other) {
         return baseType.equals(other.getArrayComponent());
     }
-    
+
     @Override
-    public void erasedSuperTypes(Set<Reflective> s)
-    {
+    public void erasedSuperTypes(Set<Reflective> s) {
         GenTypeSolid baseSolid = baseType.getUpperBound().asSolid();
         if (baseSolid != null) {
             Set<Reflective> bSupers = new HashSet<Reflective>();
@@ -102,77 +91,63 @@ public class GenTypeArray extends GenTypeSolid
             for (Reflective r : bSupers) {
                 s.add(r.getArrayOf());
             }
-        }
-        else {
+        } else {
             // Must be primitive
             Class<?> aClass = null;
             JavaType baseType = this.baseType.getUpperBound();
             if (baseType.typeIs(JT_VOID)) {
                 aClass = void.class;
-            }
-            else if (baseType.typeIs(JT_BOOLEAN)) {
+            } else if (baseType.typeIs(JT_BOOLEAN)) {
                 aClass = boolean.class;
-            }
-            else if (baseType.typeIs(JT_BYTE)) {
+            } else if (baseType.typeIs(JT_BYTE)) {
                 aClass = byte.class;
-            }
-            else if (baseType.typeIs(JT_CHAR)) {
+            } else if (baseType.typeIs(JT_CHAR)) {
                 aClass = char.class;
-            }
-            else if (baseType.typeIs(JT_DOUBLE)) {
+            } else if (baseType.typeIs(JT_DOUBLE)) {
                 aClass = double.class;
-            }
-            else if (baseType.typeIs(JT_FLOAT)) {
+            } else if (baseType.typeIs(JT_FLOAT)) {
                 aClass = float.class;
-            }
-            else if (baseType.typeIs(JT_INT)) {
+            } else if (baseType.typeIs(JT_INT)) {
                 aClass = int.class;
-            }
-            else if (baseType.typeIs(JT_LONG)) {
+            } else if (baseType.typeIs(JT_LONG)) {
                 aClass = long.class;
             }
             s.add(new JavaReflective(aClass).getArrayOf());
         }
     }
-    
+
     @Override
-    public GenTypeArray getArray()
-    {
+    public GenTypeArray getArray() {
         return new GenTypeArray(this);
     }
-    
+
     @Override
-    public JavaType getErasedType()
-    {
+    public JavaType getErasedType() {
         JavaType baseErased = baseType.getErasedType();
         if (baseErased == baseType) {
             return this;
-        }
-        else {
+        } else {
             return baseErased.getArray();
         }
     }
-    
+
     @Override
     public void getParamsFromTemplate(Map<String, GenTypeParameter> map,
-            GenTypeParameter template)
-    {
+                                      GenTypeParameter template) {
         GenTypeParameter ntemplate = template.getArrayComponent();
         if (ntemplate != null) {
             baseType.getParamsFromTemplate(map, ntemplate);
         }
     }
-        
+
     @Override
-    public GenTypeClass[] getReferenceSupertypes()
-    {
+    public GenTypeClass[] getReferenceSupertypes() {
         // There's not really much we can do here
         return new GenTypeClass[0];
     }
-    
+
     @Override
-    public GenTypeParameter mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams)
-    {
+    public GenTypeParameter mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams) {
         GenTypeParameter mappedBase = baseType.mapTparsToTypes(tparams);
         if (mappedBase != baseType) {
             if (mappedBase.isWildcard()) {
@@ -188,31 +163,28 @@ public class GenTypeArray extends GenTypeSolid
         }
         return this;
     }
-    
+
     @Override
-    public boolean isAssignableFrom(JavaType t)
-    {
+    public boolean isAssignableFrom(JavaType t) {
         JavaType componentType = t.getArrayComponent();
         if (componentType != null) {
             return baseType.isAssignableFrom(componentType);
         }
         return false;
     }
-    
+
     @Override
-    public boolean isAssignableFromRaw(JavaType t)
-    {
+    public boolean isAssignableFromRaw(JavaType t) {
         JavaType componentType = t.getArrayComponent();
         if (componentType != null) {
             return baseType.isAssignableFromRaw(componentType);
         }
         return false;
     }
-    
+
     @Override
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return false;
     }
-    
+
 }

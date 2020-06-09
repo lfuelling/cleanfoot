@@ -21,52 +21,46 @@
  */
 package bluej.stride.framedjava.elements;
 
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.generic.FrameCanvas;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.generic.FrameCanvas;
-
-public abstract class ContainerCodeElement extends CodeElement
-{
+public abstract class ContainerCodeElement extends CodeElement {
     public abstract List<CodeElement> childrenUpTo(CodeElement c);
-            
+
     @OnThread(Tag.FX)
-    private static <T> Stream<T> streamCodeFrame(FrameCanvas canvas, Function<CodeElement, Stream<T>> f)
-    {
+    private static <T> Stream<T> streamCodeFrame(FrameCanvas canvas, Function<CodeElement, Stream<T>> f) {
         return canvas.getBlocksSubtype(CodeFrame.class).stream()
-                   .map(CodeFrame::getCode)
-                   .flatMap(f);
+                .map(CodeFrame::getCode)
+                .flatMap(f);
     }
-    
+
     //Gets variables declared by this block that are in scope of its children
-    public List<LocalParamInfo> getDeclaredVariablesWithin(CodeElement child)
-    {
+    public List<LocalParamInfo> getDeclaredVariablesWithin(CodeElement child) {
         return Collections.emptyList();
     }
-    
+
     // Returns "this" if top level element, null otherwise
-    public TopLevelCodeElement getTopLevelElement()
-    {
+    public TopLevelCodeElement getTopLevelElement() {
         return null;
     }
-    
+
     // Returns this if ClassElement, null otherwise
-    public MethodWithBodyElement getMethodElement()
-    {
+    public MethodWithBodyElement getMethodElement() {
         return null;
     }
-    
+
     // Force sub-classes to implement this method:
     public abstract Stream<CodeElement> streamContained();
-    
+
     // Helper function:
-    protected static Stream<CodeElement> streamContained(List<CodeElement> els)
-    {
+    protected static Stream<CodeElement> streamContained(List<CodeElement> els) {
         if (els == null) {
             return Stream.empty();
         }

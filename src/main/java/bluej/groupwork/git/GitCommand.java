@@ -26,11 +26,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.eclipse.jgit.api.TransportCommand;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.transport.SshTransport;
-import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
 import threadchecker.OnThread;
 import threadchecker.Tag;
@@ -38,49 +34,42 @@ import threadchecker.Tag;
 /**
  * Base class for Git commands.
  * It also disables SSH fingerprint's check whenever applicable.
- * 
+ *
  * @author Fabio Hedayioglu
  */
-public abstract class GitCommand implements TeamworkCommand
-{
+public abstract class GitCommand implements TeamworkCommand {
 
     private boolean cancelled = false;
     private final GitRepository repository;
 
     @OnThread(Tag.Any)
-    public GitCommand(GitRepository repository)
-    {
+    public GitCommand(GitRepository repository) {
         this.repository = repository;
     }
-    
-    
-    
-    
+
+
     /**
      * Prepare a TransportCommand to be executed later.
      * This method checks if the command is using ssh. if it is,
      * then it will disable SSH's fingerprint detection and use
      * username and password authentication.
+     *
      * @param command The command to be configured.
      */
-    public void disableFingerprintCheck(TransportCommand command)
-    {
+    public void disableFingerprintCheck(TransportCommand command) {
         //check if the command is not null and conects via ssh.
         if (command != null && (repository.getReposUrl().startsWith("ssh") || repository.getReposUrl().startsWith("https"))) {
             //disable ssh host fingerprint check.
-            SshSessionFactory sshSessionFactory = new JschConfigSessionFactory()
-            {
+            SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
                 @Override
-                protected void configure(OpenSshConfig.Host host, Session sn)
-                {
+                protected void configure(OpenSshConfig.Host host, Session sn) {
                     java.util.Properties config = new java.util.Properties();
                     config.put("StrictHostKeyChecking", "no");
                     sn.setConfig(config);
                 }
 
                 @Override
-                protected JSch createDefaultJSch(FS fs) throws JSchException
-                {
+                protected JSch createDefaultJSch(FS fs) throws JSchException {
                     return super.createDefaultJSch(fs);
                 }
             };
@@ -99,9 +88,8 @@ public abstract class GitCommand implements TeamworkCommand
     }
 
     @Override
-    public void cancel()
-    {
-        if (! cancelled) {
+    public void cancel() {
+        if (!cancelled) {
             cancelled = true;
         }
     }
@@ -111,17 +99,15 @@ public abstract class GitCommand implements TeamworkCommand
      *
      * @return true if this command has been cancelled.
      */
-    public boolean isCancelled()
-    {
+    public boolean isCancelled() {
         return cancelled;
     }
 
     /**
      * Get a handle to the repository.
      */
-    protected GitRepository getRepository()
-    {
+    protected GitRepository getRepository() {
         return repository;
     }
-    
+
 }

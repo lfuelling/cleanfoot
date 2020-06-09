@@ -28,22 +28,19 @@ import bluej.pkgmgr.PkgMgrFrame;
  * Project action. User chooses "create new project". This prompts for a
  * choice of project name, creates the directory, and displays the new
  * project in a new window.
- * 
+ *
  * @author Davin McCall
  * @version $Id: NewProjectAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
 
-final public class NewProjectAction extends PkgMgrAction
-{
-    
-    public NewProjectAction(PkgMgrFrame pmf)
-    {
+final public class NewProjectAction extends PkgMgrAction {
+
+    public NewProjectAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.new");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doNewProject(); //pass false because we are not creating an ME project
-    }                        
+    }
 }

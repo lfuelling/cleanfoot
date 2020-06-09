@@ -26,18 +26,15 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "New CSS File" command. Allows the user to create a new CSS File with a
  * specified name.
- * 
+ *
  * @author Davin McCall
  */
-final public class NewCSSAction extends PkgMgrAction
-{
-    public NewCSSAction(PkgMgrFrame pmf)
-    {
+final public class NewCSSAction extends PkgMgrAction {
+    public NewCSSAction(PkgMgrFrame pmf) {
         super(pmf, "menu.edit.newCSS");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doCreateNewCSS(-1, -1);
     }

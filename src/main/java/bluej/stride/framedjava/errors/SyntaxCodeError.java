@@ -21,51 +21,41 @@
  */
 package bluej.stride.framedjava.errors;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-
-import bluej.compiler.Diagnostic;
 import bluej.compiler.Diagnostic.DiagnosticOrigin;
-import bluej.stride.framedjava.ast.JavaFragment;
 import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.ast.StringSlotFragment;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class SyntaxCodeError extends DirectSlotError
-{
+import java.util.Collections;
+import java.util.List;
+
+public class SyntaxCodeError extends DirectSlotError {
     private final String message;
 
     @OnThread(Tag.Any)
-    public SyntaxCodeError(SlotFragment slot)
-    {
+    public SyntaxCodeError(SlotFragment slot) {
         this(slot, "Syntax error");
     }
-    
+
     @OnThread(Tag.Any)
-    public SyntaxCodeError(SlotFragment slot, String msg)
-    {
+    public SyntaxCodeError(SlotFragment slot, String msg) {
         super(slot, DiagnosticOrigin.STRIDE_EARLY);
         this.message = msg;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public String getMessage()
-    {
+    public String getMessage() {
         return message;
     }
 
     @Override
-    public List<FixSuggestion> getFixSuggestions()
-    {
+    public List<FixSuggestion> getFixSuggestions() {
         return Collections.emptyList();
     }
 
     @Override
-    public boolean isJavaPos()
-    {
+    public boolean isJavaPos() {
         return false;
     }
 

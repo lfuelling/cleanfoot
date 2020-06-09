@@ -21,70 +21,23 @@
  */
 package bluej.debugger.jdi;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import bluej.debugger.gentype.ConstructorReflective;
-import bluej.debugger.gentype.FieldReflective;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeDeclTpar;
-import bluej.debugger.gentype.GenTypeExtends;
-import bluej.debugger.gentype.GenTypeParameter;
-import bluej.debugger.gentype.GenTypeSolid;
-import bluej.debugger.gentype.GenTypeSuper;
-import bluej.debugger.gentype.GenTypeTpar;
-import bluej.debugger.gentype.GenTypeUnbounded;
-import bluej.debugger.gentype.GenTypeWildcard;
-import bluej.debugger.gentype.IntersectionType;
-import bluej.debugger.gentype.JavaPrimitiveType;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.MethodReflective;
-import bluej.debugger.gentype.Reflective;
-import bluej.debugger.gentype.TextType;
+import bluej.debugger.gentype.*;
 import bluej.utility.Debug;
 import bluej.utility.JavaNames;
-
-import com.sun.jdi.ArrayType;
-import com.sun.jdi.BooleanType;
-import com.sun.jdi.ByteType;
-import com.sun.jdi.CharType;
-import com.sun.jdi.ClassLoaderReference;
-import com.sun.jdi.ClassNotLoadedException;
-import com.sun.jdi.ClassType;
-import com.sun.jdi.DoubleType;
-import com.sun.jdi.Field;
-import com.sun.jdi.FloatType;
-import com.sun.jdi.IntegerType;
-import com.sun.jdi.InterfaceType;
-import com.sun.jdi.LocalVariable;
-import com.sun.jdi.Location;
-import com.sun.jdi.LongType;
-import com.sun.jdi.Method;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.ShortType;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.Type;
-import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * A Reflective for Jdi classes.
- * 
- * @see Reflective.
- * 
+ *
  * @author Davin McCall
+ * @see Reflective.
  */
-public class JdiReflective extends Reflective
-{
+public class JdiReflective extends Reflective {
     // For a loaded type, we have a ReferenceType.
     private ReferenceType rclass = null;
 
@@ -97,8 +50,7 @@ public class JdiReflective extends Reflective
     /**
      * Constructor - loaded type
      */
-    public JdiReflective(ReferenceType rclass)
-    {
+    public JdiReflective(ReferenceType rclass) {
         super();
         this.rclass = rclass;
         if (rclass == null) {
@@ -109,15 +61,12 @@ public class JdiReflective extends Reflective
 
     /**
      * Constructor - type not loaded yet; source (parent) object available.
-     * 
-     * @param name
-     *            The fully qualified type name
-     * @param sourceType
-     *            The type from which a reference to this type was obtained
+     *
+     * @param name       The fully qualified type name
+     * @param sourceType The type from which a reference to this type was obtained
      */
     @OnThread(Tag.Any)
-    public JdiReflective(String name, ReferenceType sourceType)
-    {
+    public JdiReflective(String name, ReferenceType sourceType) {
         this.name = name;
         this.sourceLoader = sourceType.classLoader();
         this.sourceVM = sourceType.virtualMachine();
@@ -125,62 +74,54 @@ public class JdiReflective extends Reflective
 
     /**
      * Constructor - type may not yet be loaded; class loader available.
-     * 
-     * @param name
-     *            The fully qualified type name
-     * @param classLoader
-     *            The class loader used to load this type
-     * @param vm
-     *            The virtual machine reference
+     *
+     * @param name        The fully qualified type name
+     * @param classLoader The class loader used to load this type
+     * @param vm          The virtual machine reference
      */
-    public JdiReflective(String name, ClassLoaderReference classLoader, VirtualMachine vm)
-    {
+    public JdiReflective(String name, ClassLoaderReference classLoader, VirtualMachine vm) {
         this.name = name;
         this.sourceLoader = classLoader;
         this.sourceVM = vm;
     }
-    
+
     /**
      * Get the JDI ReferenceType this reflective represents.
      */
-    public ReferenceType getJdiType()
-    {
+    public ReferenceType getJdiType() {
         checkLoaded();
         return rclass;
     }
-    
+
     @Override
-    public Reflective getRelativeClass(String name)
-    {
+    public Reflective getRelativeClass(String name) {
         ClassLoaderReference cl;
         VirtualMachine vm;
         if (rclass != null) {
             cl = rclass.classLoader();
             vm = rclass.virtualMachine();
-        }
-        else {
+        } else {
             cl = this.sourceLoader;
             vm = this.sourceVM;
         }
-        
+
         ReferenceType resultClass = findClass(name, cl, vm);
         if (resultClass == null) {
             return null;
         }
-        
+
         return new JdiReflective(resultClass);
     }
 
     /**
      * Try to make sure we have a valid reference to the actual type
      */
-    protected void checkLoaded()
-    {
+    protected void checkLoaded() {
         if (rclass == null) {
             rclass = findClass(name, sourceLoader, sourceVM);
             if (rclass == null) {
                 Debug.message("Attempt to use unloaded type: " + name);
-                Debug.message("  name = " +  name + ", sourceLoader = " + sourceLoader);
+                Debug.message("  name = " + name + ", sourceLoader = " + sourceLoader);
                 Debug.message("  (in JdiReflective.checkLoaded()");
                 return;
             }
@@ -190,66 +131,57 @@ public class JdiReflective extends Reflective
         }
     }
 
-    public String getName()
-    {
+    public String getName() {
         if (name != null) {
             return name;
         }
-        
+
         if (rclass.signature().startsWith("[")) {
             return rclass.signature().replace('/', '.');
-        }
-        else {
+        } else {
             return rclass.name();
         }
     }
-    
+
     @Override
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         checkLoaded();
         return rclass instanceof InterfaceType;
     }
-    
+
     @Override
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         checkLoaded();
         return rclass.isStatic();
     }
-    
+
     @Override
-    public boolean isPublic()
-    {
+    public boolean isPublic() {
         checkLoaded();
         return rclass.isPublic();
     }
-    
+
     @Override
-    public boolean isFinal()
-    {
+    public boolean isFinal() {
         checkLoaded();
         return rclass.isFinal();
     }
 
-    public Reflective getArrayOf()
-    {
+    public Reflective getArrayOf() {
         if (rclass != null) {
             return new JdiArrayReflective(new GenTypeClass(this), rclass);
-        }
-        else {
+        } else {
             return new JdiArrayReflective(new GenTypeClass(this), sourceLoader, sourceVM);
         }
     }
-    
-    public List<GenTypeDeclTpar> getTypeParams()
-    {
+
+    public List<GenTypeDeclTpar> getTypeParams() {
         // Make sure we are loaded and a generic signature is present.
         checkLoaded();
         String gensig = JdiUtils.getJdiUtils().genericSignature(rclass);
         if (gensig == null)
             return Collections.emptyList();
-        
+
         // Read the type parameters from the generic signature.
         StringIterator s = new StringIterator(gensig);
         return getTypeParams(s);
@@ -258,17 +190,15 @@ public class JdiReflective extends Reflective
     /**
      * Get the type parameters of this class, as a list of GenTypeDeclTpar,
      * using a pre-existing string iterator to process the generic signature.
-     *  
-     * @param s  A string iterator, currently at the beginning of the generic
-     *           signature for this class. On return, the iterator will be
-     *           positioned after the type parameters in the signature, at the
-     *           beginning of the class name.
-     * 
-     * @return  A list of GenTypeDeclTpar, representing the type parameters of
-     *          this class.
+     *
+     * @param s A string iterator, currently at the beginning of the generic
+     *          signature for this class. On return, the iterator will be
+     *          positioned after the type parameters in the signature, at the
+     *          beginning of the class name.
+     * @return A list of GenTypeDeclTpar, representing the type parameters of
+     * this class.
      */
-    private List<GenTypeDeclTpar> getTypeParams(StringIterator s)
-    {
+    private List<GenTypeDeclTpar> getTypeParams(StringIterator s) {
         List<GenTypeDeclTpar> rlist = new ArrayList<GenTypeDeclTpar>();
 
         char c = s.peek();
@@ -294,20 +224,19 @@ public class JdiReflective extends Reflective
             ArrayList<GenTypeSolid> bounds = new ArrayList<GenTypeSolid>(3);
             while (s.current() == ':') {
                 bounds.add((GenTypeSolid) typeFromSignature(s, null, rclass));
-                
+
                 //we don't want the next char to be eaten...
                 if (s.peek() == ':')
                     s.next();
             }
-            rlist.add(new GenTypeDeclTpar(paramName, bounds.toArray(new GenTypeSolid [0])));
+            rlist.add(new GenTypeDeclTpar(paramName, bounds.toArray(new GenTypeSolid[0])));
             c = s.peek();
         }
         s.next();
         return rlist;
     }
-    
-    public List<Reflective> getSuperTypesR()
-    {
+
+    public List<Reflective> getSuperTypesR() {
         checkLoaded();
         if (rclass instanceof ClassType) {
             List<Reflective> l = new LinkedList<Reflective>();
@@ -317,27 +246,24 @@ public class JdiReflective extends Reflective
             if (((ClassType) rclass).superclass() != null)
                 l.add(new JdiReflective(((ClassType) rclass).superclass()));
             return l;
-        }
-        else if (rclass instanceof InterfaceType) {
+        } else if (rclass instanceof InterfaceType) {
             // interface
             List<Reflective> l = new LinkedList<Reflective>();
             Iterator<InterfaceType> i = ((InterfaceType) rclass).superinterfaces().iterator();
             while (i.hasNext())
                 l.add(new JdiReflective(i.next()));
-            
+
             // interfaces with no direct superinterfaces have a supertype of Object
             if (l.isEmpty()) {
                 l.add(new JdiReflective("java.lang.Object", this.rclass));
             }
-            
+
             return l;
-        }
-        else
+        } else
             return new LinkedList<Reflective>();
     }
 
-    public List<GenTypeClass> getSuperTypes()
-    {
+    public List<GenTypeClass> getSuperTypes() {
         checkLoaded();
         List<GenTypeClass> rlist = new ArrayList<GenTypeClass>();
 
@@ -354,22 +280,21 @@ public class JdiReflective extends Reflective
 
                 // interfaces
                 List<InterfaceType> interfaces = ctClass.interfaces();
-                for (Iterator<InterfaceType> i = interfaces.iterator(); i.hasNext();) {
+                for (Iterator<InterfaceType> i = interfaces.iterator(); i.hasNext(); ) {
                     Reflective r = new JdiReflective(i.next());
                     rlist.add(new GenTypeClass(r));
                 }
                 return rlist;
-            }
-            else {
+            } else {
                 // rclass must be an InterfaceType
                 InterfaceType itClass = (InterfaceType) rclass;
 
                 List<InterfaceType> interfaces = itClass.superinterfaces();
-                for (Iterator<InterfaceType> i = interfaces.iterator(); i.hasNext();) {
+                for (Iterator<InterfaceType> i = interfaces.iterator(); i.hasNext(); ) {
                     Reflective r = new JdiReflective(i.next());
                     rlist.add(new GenTypeClass(r));
                 }
-                
+
                 // interfaces with no direct superinterfaces have a supertype of Object
                 if (rlist.isEmpty()) {
                     rlist.add(new GenTypeClass(new JdiReflective("java.lang.Object", this.rclass)));
@@ -385,12 +310,12 @@ public class JdiReflective extends Reflective
 
         StringIterator s = new StringIterator(JdiUtils.getJdiUtils().genericSignature(rclass));
         List<GenTypeDeclTpar> l = getTypeParams(s);
-        Map<String,GenTypeDeclTpar> declTpars = new HashMap<String,GenTypeDeclTpar>();
+        Map<String, GenTypeDeclTpar> declTpars = new HashMap<String, GenTypeDeclTpar>();
         for (Iterator<GenTypeDeclTpar> i = l.iterator(); i.hasNext(); ) {
             GenTypeDeclTpar declTpar = i.next();
-            declTpars.put(declTpar.getTparName(), declTpar); 
+            declTpars.put(declTpar.getTparName(), declTpar);
         }
-        
+
         // go through each base type in turn.
         while (s.hasNext()) {
             // We now have a base.
@@ -399,41 +324,36 @@ public class JdiReflective extends Reflective
         }
         return rlist;
     }
-    
-    public boolean isAssignableFrom(Reflective r)
-    {
+
+    public boolean isAssignableFrom(Reflective r) {
         if (this.equals(r))
             return true;
-        
+
         // Any reference type, including arrays, can be assigned to Object
         if (getName().equals("java.lang.Object"))
             return true;
-        
+
         if (r instanceof JdiReflective) {
             JdiReflective jr = (JdiReflective) r;
-            
+
             jr.checkLoaded();
             return checkAssignability(rclass, jr.rclass);
-        }
-        else
+        } else
             return false;
     }
-    
+
     /**
      * Check that type b is assingable to a variable of type a.
      */
-    private static boolean checkAssignability(ReferenceType a, ReferenceType b)
-    {
-        while (true)
-        {
+    private static boolean checkAssignability(ReferenceType a, ReferenceType b) {
+        while (true) {
             if (a instanceof ClassType) {
                 if (b instanceof InterfaceType) {
-                    List<InterfaceType> l = ((ClassType)a).allInterfaces();
+                    List<InterfaceType> l = ((ClassType) a).allInterfaces();
                     return l.contains(b);
-                }
-                else if (b instanceof ClassType) {
+                } else if (b instanceof ClassType) {
                     ClassType classType = (ClassType) a;
-                    
+
                     while (classType != null) {
                         if (b.equals(classType))
                             return true;
@@ -441,44 +361,39 @@ public class JdiReflective extends Reflective
                     }
                 }
                 return false;
-            }
-            else if (a instanceof InterfaceType) {
-                if (! (b instanceof InterfaceType))
+            } else if (a instanceof InterfaceType) {
+                if (!(b instanceof InterfaceType))
                     return false;
-                
-                List<InterfaceType> l = new LinkedList<InterfaceType>(); 
+
+                List<InterfaceType> l = new LinkedList<InterfaceType>();
                 l.addAll(((InterfaceType) a).superinterfaces());
-                while (! l.isEmpty()) {
+                while (!l.isEmpty()) {
                     // get the first superinterface in the list
                     InterfaceType it = l.get(0);
                     if (a.equals(it))
                         return true;
-                    
+
                     l.addAll(it.superinterfaces());
                     l.remove(0);
                 }
                 return false;
-            }
-            else if (a instanceof ArrayType) {
-                if (! (b instanceof ArrayType))
+            } else if (a instanceof ArrayType) {
+                if (!(b instanceof ArrayType))
                     return false;
-                
+
                 try {
                     Type an = ((ArrayType) a).componentType();
                     Type bn = ((ArrayType) b).componentType();
-                
+
                     if (an instanceof ReferenceType && bn instanceof ReferenceType) {
                         a = (ReferenceType) an;
                         b = (ReferenceType) bn;
-                    }
-                    else
+                    } else
                         return false;
-                }
-                catch (ClassNotLoadedException cnle) {
+                } catch (ClassNotLoadedException cnle) {
                     return false;
                 }
-            }
-            else
+            } else
                 // unknown type
                 return false;
         }
@@ -486,16 +401,13 @@ public class JdiReflective extends Reflective
 
     /**
      * Find a class by name, using the given class loader.
-     * 
-     * @param name
-     *            The name of the class to find
-     * @param lclass
-     *            The loading class. The class loader of this class is used to
-     *            locate the desired class.
+     *
+     * @param name   The name of the class to find
+     * @param lclass The loading class. The class loader of this class is used to
+     *               locate the desired class.
      * @return A ClassType object representing the found class (or null)
      */
-    private static ReferenceType findClass(String name, ClassLoaderReference cl, VirtualMachine vm)
-    {
+    private static ReferenceType findClass(String name, ClassLoaderReference cl, VirtualMachine vm) {
         if (cl != null) {
             // See if the desired class was initiated by our class loader.
             Iterator<ReferenceType> i = cl.visibleClasses().iterator();
@@ -504,8 +416,7 @@ public class JdiReflective extends Reflective
                 if (ct.name().equals(name))
                     return ct;
             }
-        }
-        else {
+        } else {
             // A null classloader means the bootstrap class loader was used.
             // So look for the class with the correct name which was loaded
             // by the bootstrap loader.
@@ -516,26 +427,24 @@ public class JdiReflective extends Reflective
                     return ct;
             }
         }
-        
+
         // Try and load the class.
         VMReference vmr = VMReference.getVmForMachine(vm);
         if (vmr != null) {
-           return vmr.loadClass(name, cl);
+            return vmr.loadClass(name, cl);
         }
-        
+
         return null;
     }
 
     /**
      * Read a class name or type parameter name from a signature string.
-     * 
-     * @param i
-     *            An iterator into the string
+     *
+     * @param i An iterator into the string
      * @return the fully qualified class name
      */
     @OnThread(Tag.Any)
-    private static String readClassName(StringIterator i)
-    {
+    private static String readClassName(StringIterator i) {
         char c = i.next();
         String r = "";
         while (c != '<' && c != ';' && c != ':') {
@@ -549,19 +458,15 @@ public class JdiReflective extends Reflective
      * Generate a GenType structure from a type specification found in a
      * signature string, optionally mapping type parameter names to their actual
      * types.
-     * 
-     * @param i
-     *            a StringIterator through the signature string
-     * @param tparams
-     *            a mapping of type parameter names to types (or null)
-     * @param parent
-     *            the type in which the signature string is embedded. The class
-     *            loader of this type is used to locate embedded types.
+     *
+     * @param i       a StringIterator through the signature string
+     * @param tparams a mapping of type parameter names to types (or null)
+     * @param parent  the type in which the signature string is embedded. The class
+     *                loader of this type is used to locate embedded types.
      * @return The GenType structure determined from the signature.
      */
     private static GenTypeParameter fromSignature(StringIterator i,
-            Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
-    {
+                                                  Map<String, ? extends GenTypeParameter> tparams, ReferenceType parent) {
         char c = i.peek();
         if (c == '*') {
             // '*' represents an unbounded '?'. For instance, List<?>
@@ -579,8 +484,7 @@ public class JdiReflective extends Reflective
             GenTypeSolid t = (GenTypeSolid) typeFromSignature(i, null, parent);
             if (tparams != null) {
                 return new GenTypeExtends(t).mapTparsToTypes(tparams);
-            }
-            else {
+            } else {
                 return new GenTypeExtends(t);
             }
         }
@@ -591,25 +495,24 @@ public class JdiReflective extends Reflective
             GenTypeSolid t = (GenTypeSolid) fromSignature(i, null, parent);
             if (tparams != null) {
                 return new GenTypeSuper(t).mapTparsToTypes(tparams);
-            }
-            else {
+            } else {
                 return new GenTypeSuper(t);
             }
         }
-        
+
         return typeFromSignature(i, tparams, parent);
     }
-    
+
     /**
      * Derive a type from a type signature.
-     * @param i   An iterator through the signature
-     * @param tparams  The type parameters of the parent type (the type from where this signature comes);
-     *                 may be null.
-     * @param parent   The parent type
+     *
+     * @param i       An iterator through the signature
+     * @param tparams The type parameters of the parent type (the type from where this signature comes);
+     *                may be null.
+     * @param parent  The parent type
      */
     public static GenTypeParameter typeFromSignature(StringIterator i,
-            Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
-    {
+                                                     Map<String, ? extends GenTypeParameter> tparams, ReferenceType parent) {
         char c = i.next();
         if (c == '[') {
             // array
@@ -623,8 +526,7 @@ public class JdiReflective extends Reflective
             String tname = readClassName(i);
             if (tparams != null && tparams.get(tname) != null) {
                 return tparams.get(tname);
-            }
-            else {
+            } else {
                 return new GenTypeTpar(tname);
             }
         }
@@ -689,29 +591,28 @@ public class JdiReflective extends Reflective
         } while (i.peek() != '>');
         i.next(); // fetch the '>'
         c = i.next(); // fetch the trailing ';' or '.'
-        
+
         GenTypeClass result = new GenTypeClass(reflective, params);
 
         // if c is now '.', we have an inner class
         if (c == '.') {
             return innerFromSignature(i, basename, result, tparams, parent);
         }
-        
+
         // otherwise assume we have ';'
         return result;
     }
 
     private static GenTypeClass innerFromSignature(StringIterator i, String outerName, GenTypeClass outer,
-            Map<String,? extends GenTypeParameter> tparams, ReferenceType parent)
-    {
+                                                   Map<String, ? extends GenTypeParameter> tparams, ReferenceType parent) {
         String basename = readClassName(i);
         String innerName = outerName + '$' + basename;
         Reflective reflective = new JdiReflective(innerName, parent);
-            
+
         char c = i.current();
         if (c == ';')
             return new GenTypeClass(reflective, null, outer);
-        
+
         if (c == '<') {
             List<GenTypeParameter> params = new ArrayList<GenTypeParameter>();
             do {
@@ -723,23 +624,21 @@ public class JdiReflective extends Reflective
             } while (i.peek() != '>');
             i.next(); // fetch the '>'
             c = i.next(); // fetch the trailing ';' or '.'
-            
+
             GenTypeClass result = new GenTypeClass(reflective, params, outer);
-            
+
             // if c is now '.', we have an inner class
             if (c == '.')
                 return innerFromSignature(i, innerName, result, tparams, parent);
 
             return result;
-        }
-        else {
+        } else {
             Debug.message("Generic signature: expected '<', got '" + c + "' ??");
             return null;
         }
     }
 
-    private static JavaType getNonGenericType(String typeName, Type t, ClassLoaderReference clr, VirtualMachine vm)
-    {
+    private static JavaType getNonGenericType(String typeName, Type t, ClassLoaderReference clr, VirtualMachine vm) {
         if (t instanceof BooleanType)
             return JavaPrimitiveType.getBoolean();
         else if (t instanceof ByteType)
@@ -762,15 +661,14 @@ public class JdiReflective extends Reflective
             if (t == null) {
                 return new TextType(typeName);
             }
-            
+
             // The class may or may not be loaded.
             String tname = t.signature();
             if (tname.startsWith("[")) {
                 JavaType arrayType = typeFromSignature(new StringIterator(tname), null, (ReferenceType) t)
                         .asType();
                 return arrayType;
-            }
-            else {
+            } else {
                 tname = t.name();
             }
             Reflective ref = new JdiReflective(tname, clr, vm);
@@ -782,33 +680,29 @@ public class JdiReflective extends Reflective
      * Convert a type name (as returned from JdiField.typeName() and so on) to a binary name
      * that can be passed to a classloader.
      */
-    private static String typeNameToBinaryName(String typeName)
-    {
+    private static String typeNameToBinaryName(String typeName) {
         int arrIndex = typeName.indexOf('[');
         if (arrIndex == -1) {
             return typeName;
         }
-        
+
         String binName = "L" + typeName.substring(0, arrIndex) + ";";
         do {
             binName = "[" + binName;
             arrIndex = typeName.indexOf('[', arrIndex + 1);
         } while (arrIndex != -1);
-        
+
         return binName;
     }
-    
+
     /**
      * Determine the complete declared type of an instance field.
-     * 
-     * @param f
-     *            The field
-     * @param parent
-     *            The object in which the field is located
+     *
+     * @param f      The field
+     * @param parent The object in which the field is located
      * @return The type of the field value
      */
-    public static JavaType fromField(Field f, JdiObject parent)
-    {
+    public static JavaType fromField(Field f, JdiObject parent) {
         Type t = null;
 
         // For a field whose value is unset/null, the corresponding class
@@ -817,8 +711,7 @@ public class JdiReflective extends Reflective
 
         try {
             t = f.type();
-        }
-        catch (ClassNotLoadedException cnle) {
+        } catch (ClassNotLoadedException cnle) {
             t = findClass(typeNameToBinaryName(f.typeName()), f.declaringType().classLoader(), f.virtualMachine());
         }
 
@@ -830,19 +723,19 @@ public class JdiReflective extends Reflective
             return getNonGenericType(f.typeName(), t, parent.obj.referenceType().classLoader(), parent.obj
                     .virtualMachine());
         }
-        
+
         // generic version.
         GenTypeClass genType = parent.getGenType();
-        
+
         // Map from containing object type to the type in which the field was
         // declared. Then extract the type parameter mappings.
-        Map<String,GenTypeParameter> tparams = genType.mapToSuper(f.declaringType().name()).getMap();
+        Map<String, GenTypeParameter> tparams = genType.mapToSuper(f.declaringType().name()).getMap();
         if (tparams == null) {
             // raw parent
             Reflective r = new JdiReflective(f.typeName(), parent.obj.referenceType());
             return new GenTypeClass(r);
         }
-        
+
         StringIterator iterator = new StringIterator(gensig);
 
         // Parse the signature, using the determined tpar mappings.
@@ -851,15 +744,12 @@ public class JdiReflective extends Reflective
 
     /**
      * Determine the complete type of a class field.
-     * 
-     * @param f
-     *            The field
-     * @param parent
-     *            The object in which the field is located
+     *
+     * @param f      The field
+     * @param parent The object in which the field is located
      * @return The type of the field value
      */
-    public static JavaType fromField(Field f)
-    {
+    public static JavaType fromField(Field f) {
         Type t = null;
         ReferenceType parent = f.declaringType();
 
@@ -869,8 +759,7 @@ public class JdiReflective extends Reflective
 
         try {
             t = f.type();
-        }
-        catch (ClassNotLoadedException cnle) {
+        } catch (ClassNotLoadedException cnle) {
             t = findClass(typeNameToBinaryName(f.typeName()), f.declaringType().classLoader(), f.virtualMachine());
         }
 
@@ -887,48 +776,40 @@ public class JdiReflective extends Reflective
 
     /**
      * Determine the complete type of a local variable,
-     * 
-     * @param t
-     *            The type as returned by getType() on the variable, or null if that threw
-     *            a ClassNotLoadedException
-     * @param genericSignature
-     *            The generic signature of the variable
-     * @param typeName
-     *            The name of the variable type
-     * @param declaringType
-     *            The declaring type of the variable
+     *
+     * @param t                The type as returned by getType() on the variable, or null if that threw
+     *                         a ClassNotLoadedException
+     * @param genericSignature The generic signature of the variable
+     * @param typeName         The name of the variable type
+     * @param declaringType    The declaring type of the variable
      * @return The type of the field value
      */
-    public static JavaType fromLocalVar(Type t, String genericSignature, String typeName, ReferenceType declaringType)
-    {
+    public static JavaType fromLocalVar(Type t, String genericSignature, String typeName, ReferenceType declaringType) {
         if (t == null) {
             t = findClass(typeNameToBinaryName(typeName), declaringType.classLoader(), declaringType.virtualMachine());
         }
-        
+
         if (genericSignature == null) {
             return getNonGenericType(typeName, t, declaringType.classLoader(), declaringType.virtualMachine());
         }
 
         // if the generic signature wasn't null, get the type from it.
         StringIterator iterator = new StringIterator(genericSignature);
-        Map<String,GenTypeParameter> tparams = new HashMap<String,GenTypeParameter>();
+        Map<String, GenTypeParameter> tparams = new HashMap<String, GenTypeParameter>();
         addDefaultParamBases(tparams, new JdiReflective(declaringType));
         return typeFromSignature(iterator, tparams, declaringType).getTparCapture();
     }
-    
+
     /**
      * Determine the complete type of a local variable,
-     * 
-     * @param sf
-     *            The stack frame containing the variable
-     * @param var
-     *            The local variable
+     *
+     * @param sf  The stack frame containing the variable
+     * @param var The local variable
      * @return The type of the field value
      */
-    public static JavaType fromLocalVar(StackFrame sf, LocalVariable var)
-    {
+    public static JavaType fromLocalVar(StackFrame sf, LocalVariable var) {
         Type t = null;
-        
+
         // For a variable whose value is unset/null, the corresponding class
         // type may not have been loaded. In this case "var.type()" throws a
         // ClassNotLoadedException.
@@ -938,8 +819,7 @@ public class JdiReflective extends Reflective
 
         try {
             t = var.type();
-        }
-        catch (ClassNotLoadedException cnle) {
+        } catch (ClassNotLoadedException cnle) {
             t = findClass(typeNameToBinaryName(var.typeName()), declType.classLoader(), sf.virtualMachine());
         }
 
@@ -951,7 +831,7 @@ public class JdiReflective extends Reflective
 
         // if the generic signature wasn't null, get the type from it.
         StringIterator iterator = new StringIterator(gensig);
-        Map<String,GenTypeParameter> tparams = new HashMap<String,GenTypeParameter>();
+        Map<String, GenTypeParameter> tparams = new HashMap<String, GenTypeParameter>();
         addDefaultParamBases(tparams, new JdiReflective(declType));
         return typeFromSignature(iterator, tparams, declType).getTparCapture();
     }
@@ -960,88 +840,84 @@ public class JdiReflective extends Reflective
      * For all type parameters which don't already occur in the given Map,
      * add them in as the "default" given by the class definition. For instance
      * with List&lt;T&gt;, add in the mapping "T : ? extends Object".
+     *
      * @param tparams       The map (String -> GenTypeClass)
      * @param declaringType the type for which to add default mappings
      */
-    private static void addDefaultParamBases(Map<String,GenTypeParameter> tparams,
-            JdiReflective declaringType)
-    {
+    private static void addDefaultParamBases(Map<String, GenTypeParameter> tparams,
+                                             JdiReflective declaringType) {
         while (declaringType != null) {
             Iterator<GenTypeDeclTpar> i = declaringType.getTypeParams().iterator();
-            
-            while( i.hasNext() ) {
+
+            while (i.hasNext()) {
                 GenTypeDeclTpar tpar = i.next();
-                
+
                 String paramName = tpar.getTparName();
-                
-                GenTypeSolid [] ubounds = tpar.upperBounds();
+
+                GenTypeSolid[] ubounds = tpar.upperBounds();
                 GenTypeWildcard type = new GenTypeWildcard(IntersectionType.getIntersection(ubounds), null);
-                if( ! tparams.containsKey(paramName)) {
+                if (!tparams.containsKey(paramName)) {
                     tparams.put(paramName, type);
                 }
             }
             declaringType = declaringType.getOuterType();
         }
     }
-    
+
     /**
      * Get the reflective representing the outer class of this reflective,
      * or null if none.
      */
-    private JdiReflective getOuterType()
-    {
+    private JdiReflective getOuterType() {
         checkLoaded();
         String myName = getName();
         int x = myName.indexOf('$');
-        if (x != -1 && ! rclass.isStatic()) {
+        if (x != -1 && !rclass.isStatic()) {
             String outerName = myName.substring(0, x);
             return (JdiReflective) getRelativeClass(outerName);
-        }
-        else
+        } else
             return null;
     }
-    
+
     @Override
-    public Map<String,FieldReflective> getDeclaredFields()
-    {
+    public Map<String, FieldReflective> getDeclaredFields() {
         checkLoaded();
         List<Field> fields = rclass.fields();
-        Map<String,FieldReflective> rfields = new HashMap<String,FieldReflective>();
-        
+        Map<String, FieldReflective> rfields = new HashMap<String, FieldReflective>();
+
         for (Field field : fields) {
             String genSig = field.genericSignature();
             if (genSig == null) {
                 genSig = field.signature();
             }
-            
+
             StringIterator i = new StringIterator(genSig);
             JavaType ftype = typeFromSignature(i, null, rclass).getTparCapture();
             FieldReflective fref = new FieldReflective(field.name(),
                     ftype, field.modifiers(), this);
             rfields.put(field.name(), fref);
         }
-        
+
         return rfields;
     }
-    
+
     @Override
-    public Map<String,Set<MethodReflective>> getDeclaredMethods()
-    {
+    public Map<String, Set<MethodReflective>> getDeclaredMethods() {
         checkLoaded();
         List<Method> methods = rclass.methods();
-        Map<String,Set<MethodReflective>> methodMap = new HashMap<String,Set<MethodReflective>>();
-        
+        Map<String, Set<MethodReflective>> methodMap = new HashMap<String, Set<MethodReflective>>();
+
         for (Method method : methods) {
             if (method.isSynthetic()) {
                 continue;
             }
-            
+
             // Process the string signature to determine return and param types
             String genSig = method.genericSignature();
             if (genSig == null) {
                 genSig = method.signature();
             }
-            
+
             StringIterator i = new StringIterator(genSig);
             List<GenTypeDeclTpar> tparTypes = getTypeParams(i);
 
@@ -1049,36 +925,35 @@ public class JdiReflective extends Reflective
             if (c != '(') {
                 continue;
             }
-            
+
             List<JavaType> paramTypes = new ArrayList<JavaType>();
             while (i.peek() != ')') {
                 paramTypes.add(typeFromSignature(i, null, rclass).getTparCapture());
             }
-            
+
             i.next(); // skip ')'
             JavaType returnType = typeFromSignature(i, null, rclass).getTparCapture();
-            
+
             boolean isVarArgs = method.isVarArgs();
             int modifiers = method.modifiers();
-            
+
             MethodReflective mr = new MethodReflective(method.name(), returnType, tparTypes,
                     paramTypes, this, isVarArgs, modifiers);
-            
+
             Set<MethodReflective> mset = methodMap.get(mr.getName());
             if (mset == null) {
                 mset = new HashSet<MethodReflective>();
                 methodMap.put(mr.getName(), mset);
             }
-            
+
             mset.add(mr);
         }
-        
+
         return methodMap;
     }
 
     @Override
-    public List<ConstructorReflective> getDeclaredConstructors()
-    {
+    public List<ConstructorReflective> getDeclaredConstructors() {
         checkLoaded();
 
         return rclass.methods().stream().filter(m -> m.isConstructor() && !m.isSynthetic()).map(con -> {
@@ -1114,8 +989,7 @@ public class JdiReflective extends Reflective
 
 
     @Override
-    public Reflective getInnerClass(String name)
-    {
+    public Reflective getInnerClass(String name) {
         checkLoaded();
         // Look for already loaded types first:
         for (ReferenceType nested : rclass.nestedTypes()) {
@@ -1123,66 +997,55 @@ public class JdiReflective extends Reflective
                 return new JdiReflective(nested);
             }
         }
-        
+
         ClassLoaderReference sourceLoader = rclass.classLoader();
         VirtualMachine sourceVM = rclass.virtualMachine();
         ReferenceType nested = findClass(getName() + "$" + name, sourceLoader, sourceVM);
-        
+
         if (nested != null) {
             return new JdiReflective(nested);
         }
-        
+
         return null;
     }
 
     @Override
-    public String getModuleName()
-    {
-        try
-        {
+    public String getModuleName() {
+        try {
             return rclass.module() != null ? rclass.module().name() : null;
-        }
-        catch (UnsupportedOperationException e)
-        {
+        } catch (UnsupportedOperationException e) {
             return null;
         }
     }
 
     @OnThread(Tag.Any)
-    static class StringIterator
-    {
+    static class StringIterator {
         int i = 0;
         String s;
 
-        public StringIterator(String s)
-        {
+        public StringIterator(String s) {
             this.s = s;
             if (s == null)
                 Debug.message("StringIterator with null string??");
         }
 
-        public char current()
-        {
+        public char current() {
             return s.charAt(i - 1);
         }
 
-        public char next()
-        {
+        public char next() {
             return s.charAt(i++);
         }
 
-        public char peek()
-        {
+        public char peek() {
             return s.charAt(i);
         }
 
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
             return i < s.length();
         }
-        
-        public String getString()
-        {
+
+        public String getString() {
             return s;
         }
     }

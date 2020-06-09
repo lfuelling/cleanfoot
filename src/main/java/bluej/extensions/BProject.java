@@ -21,16 +21,16 @@
  */
 package bluej.extensions;
 
-import java.io.File;
-import java.net.URLClassLoader;
-import java.util.List;
-import java.util.ListIterator;
-
-import javafx.application.Platform;
 import bluej.editor.stride.FXTabbedEditor;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
+import javafx.application.Platform;
+
+import java.io.File;
+import java.net.URLClassLoader;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * A wrapper for a BlueJ project.
@@ -38,113 +38,110 @@ import bluej.pkgmgr.Project;
  * @author Clive Mille, Univeristy of Kent at Canterbury, 2002
  * @author Damiano Bolla, University of Kent at Canterbury, 2003,2004,2005
  */
-public class BProject
-{
+public class BProject {
     private final Identifier projectId;
-  
+
     /**
      * Constructor for a BProject.
      */
-    BProject (Identifier i_projectId)
-    {
+    BProject(Identifier i_projectId) {
         projectId = i_projectId;
     }
 
     /**
-     * Returns the name of this project. 
+     * Returns the name of this project.
      * This is what is displayed in the title bar of the frame after 'BlueJ'.
+     *
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public String getName() throws ProjectNotOpenException
-    {
+    public String getName() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
-        
+
         return thisProject.getProjectName();
     }
-    
+
     /**
-     * Returns the directory in which this project is stored. 
+     * Returns the directory in which this project is stored.
+     *
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public File getDir() throws ProjectNotOpenException
-    {
+    public File getDir() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
 
         return thisProject.getProjectDir();
     }
-    
+
     /**
-     * Requests a "save" of all open files in this project. 
+     * Requests a "save" of all open files in this project.
+     *
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public void save() throws ProjectNotOpenException
-    {
+    public void save() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
 
         thisProject.saveAll();
     }
-    
+
     /**
      * Saves any open files, then closes all frames belonging to this project.
+     *
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public void close() throws ProjectNotOpenException
-    {
+    public void close() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
 
         thisProject.saveAll();
-        PkgMgrFrame.closeProject (thisProject);
+        PkgMgrFrame.closeProject(thisProject);
     }
-    
+
     /**
      * Restarts the VM used to run user code for this project.
      * As a side-effect, removes all objects from the object bench.
+     *
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public void restartVM() throws ProjectNotOpenException
-    {
+    public void restartVM() throws ProjectNotOpenException {
         projectId.getBluejProject().restartVM();
     }
-    
+
     /**
      * Create and return a new package with the given fully qualified name.
      * The necessary directories and files will be created.
-     * 
+     *
      * @return the requested package, or null if it wasn't found
-     * @throws ProjectNotOpenException if the project has been closed by the user.
+     * @throws ProjectNotOpenException       if the project has been closed by the user.
      * @throws PackageAlreadyExistsException if the named package already exists in the project.
      */
-    public BPackage newPackage( String fullyQualifiedName )
-        throws ProjectNotOpenException, PackageAlreadyExistsException
-    {
+    public BPackage newPackage(String fullyQualifiedName)
+            throws ProjectNotOpenException, PackageAlreadyExistsException {
         Project bluejProject = projectId.getBluejProject();
 
         int result = bluejProject.newPackage(fullyQualifiedName);
 
-        if ( result == Project.NEW_PACKAGE_BAD_NAME ) {
-            throw new IllegalArgumentException("newPackage: Bad package name '"+fullyQualifiedName+"'");
-        }
-            
-        if ( result == Project.NEW_PACKAGE_EXIST ) {
-            throw new PackageAlreadyExistsException("newPackage: Package '"+fullyQualifiedName+"' already exists");
+        if (result == Project.NEW_PACKAGE_BAD_NAME) {
+            throw new IllegalArgumentException("newPackage: Bad package name '" + fullyQualifiedName + "'");
         }
 
-        if ( result == Project.NEW_PACKAGE_NO_PARENT ) {
-            throw new IllegalStateException("newPackage: Package '"+fullyQualifiedName+"' has no parent package");
+        if (result == Project.NEW_PACKAGE_EXIST) {
+            throw new PackageAlreadyExistsException("newPackage: Package '" + fullyQualifiedName + "' already exists");
         }
 
-        if ( result != Project.NEW_PACKAGE_DONE ) {
-            throw new IllegalStateException("newPackage: Unknown result code="+result);
+        if (result == Project.NEW_PACKAGE_NO_PARENT) {
+            throw new IllegalStateException("newPackage: Package '" + fullyQualifiedName + "' has no parent package");
+        }
+
+        if (result != Project.NEW_PACKAGE_DONE) {
+            throw new IllegalStateException("newPackage: Unknown result code=" + result);
         }
 
         Package pkg = bluejProject.getPackage(fullyQualifiedName);
 
-        if ( pkg == null ) {
-            throw new Error("newPackage: getPackage '"+fullyQualifiedName+"' returned null");
+        if (pkg == null) {
+            throw new Error("newPackage: getPackage '" + fullyQualifiedName + "' returned null");
         }
 
         Package reloadPkg = pkg;
-        for(int index=0; index<10 && reloadPkg != null; index++) {
+        for (int index = 0; index < 10 && reloadPkg != null; index++) {
             // This is needed since the GUI is not sync with the state
             // It would be better is core BlueJ did fix this..
             reloadPkg.reload();
@@ -153,40 +150,38 @@ public class BProject
 
         return pkg.getBPackage();
     }
-    
+
     /**
      * Get a package belonging to this project.
-     * 
+     *
      * @param name the fully-qualified name of the package
      * @return the requested package, or null if it wasn't found
-    * 
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public BPackage getPackage (String name) throws ProjectNotOpenException
-    {
+    public BPackage getPackage(String name) throws ProjectNotOpenException {
         Project bluejProject = projectId.getBluejProject();
-        Package pkg = bluejProject.getPackage (name);
+        Package pkg = bluejProject.getPackage(name);
         if (pkg == null) {
             return null;
         }
         return pkg.getBPackage();
     }
-    
+
     /**
      * Returns all packages belonging to this project.
+     *
      * @return The array of this project's packages, if none exist an empty array is returned.
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public BPackage[] getPackages() throws ProjectNotOpenException
-    {
+    public BPackage[] getPackages() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
 
         List<String> names = thisProject.getPackageNames();
-        BPackage[] packages = new BPackage [names.size()];
-        for (ListIterator<String> li = names.listIterator(); li.hasNext();) {
-            int i=li.nextIndex();
+        BPackage[] packages = new BPackage[names.size()];
+        for (ListIterator<String> li = names.listIterator(); li.hasNext(); ) {
+            int i = li.nextIndex();
             String name = li.next();
-            packages [i] = getPackage (name);
+            packages[i] = getPackage(name);
         }
         return packages;
     }
@@ -194,42 +189,38 @@ public class BProject
 
     /**
      * Returns a URLClassLoader that should be used to load project classes.
-     * Every time a project is compiled, even when the compilation is started from the GUI, 
+     * Every time a project is compiled, even when the compilation is started from the GUI,
      * a new URLClassLoader is created and if the Extension currently have a copy of the old one it should discard it
      * and use getClassLoader() to acquire the new one.
+     *
      * @return A class loader that should be used to load project classes.
      * @throws ProjectNotOpenException if the project has been closed by the user.
      */
-    public URLClassLoader getClassLoader() throws ProjectNotOpenException
-    {
+    public URLClassLoader getClassLoader() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
 
         return thisProject.getClassLoader();
     }
-    
+
     /**
      * Returns a string representation of this package object
      */
-    public String toString ()
-    {
+    public String toString() {
         try {
             Project thisProject = projectId.getBluejProject();
-            return "BProject: "+thisProject.getProjectName();
-        }
-        catch(ExtensionException exc) {
-            return "BProject: INVALID";  
+            return "BProject: " + thisProject.getProjectName();
+        } catch (ExtensionException exc) {
+            return "BProject: INVALID";
         }
     }
-    
-    void clearObjectBench() throws ProjectNotOpenException
-    {
+
+    void clearObjectBench() throws ProjectNotOpenException {
         Project thisProject = projectId.getBluejProject();
         thisProject.clearObjectBenches();
     }
-    
+
     //Package-visible:
-    Project getProject() throws ProjectNotOpenException
-    {
+    Project getProject() throws ProjectNotOpenException {
         return projectId.getBluejProject();
     }
 
@@ -243,12 +234,11 @@ public class BProject
      * @param url The URL to open in the web browser
      * @throws ProjectNotOpenException if the project has been closed by the user
      */
-    public void openWebViewTab(String url) throws ProjectNotOpenException
-    {
+    public void openWebViewTab(String url) throws ProjectNotOpenException {
         Project bjProject = projectId.getBluejProject();
         Platform.runLater(() -> {
             FXTabbedEditor fXTabbedEditor = bjProject.getDefaultFXTabbedEditor();
             fXTabbedEditor.openWebViewTab(url);
-        });        
+        });
     }
 }

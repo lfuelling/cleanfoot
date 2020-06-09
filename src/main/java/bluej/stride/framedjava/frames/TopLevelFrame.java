@@ -21,18 +21,7 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import bluej.utility.javafx.SharedTransition;
-import javafx.beans.binding.DoubleBinding;
-import javafx.beans.value.ObservableStringValue;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-
 import bluej.editor.stride.BirdseyeManager;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.TopLevelCodeElement;
 import bluej.stride.generic.CursorFinder;
@@ -41,52 +30,81 @@ import bluej.stride.generic.FrameCanvas;
 import bluej.stride.generic.RecallableFocus;
 import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.HeaderItem;
+import bluej.utility.javafx.SharedTransition;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.value.ObservableStringValue;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
-public interface TopLevelFrame<T extends CodeElement & TopLevelCodeElement> extends CodeFrame<T>, CursorFinder
-{
+import java.util.List;
+import java.util.stream.Stream;
+
+public interface TopLevelFrame<T extends CodeElement & TopLevelCodeElement> extends CodeFrame<T>, CursorFinder {
     BirdseyeManager prepareBirdsEyeView(SharedTransition animate);
 
     void addExtendsClassOrInterface(String className);
+
     void removeExtendsClass();
+
     void addImplements(String className);
+
     void removeExtendsOrImplementsInterface(String interfaceName);
 
-    enum BodyFocus { TOP, BOTTOM, BEST_PICK }
+    enum BodyFocus {TOP, BOTTOM, BEST_PICK}
 
     void focusOnBody(BodyFocus on);
+
     @OnThread(Tag.FXPlatform) void saved();
+
     boolean canDoBirdseye();
+
     void bindMinHeight(DoubleBinding prop);
+
     // Returned list should be treated as read-only; use addImport to add an import
     ObservableList<String> getImports();
+
     void addImport(String importSrc);
+
     void addDefaultConstructor();
+
     List<? extends Frame> getMethods();
+
     List<ConstructorFrame> getConstructors();
+
     void insertAtEnd(Frame frame);
+
     ObservableStringValue nameProperty();
+
     FrameCanvas getImportCanvas();
+
     void ensureImportCanvasShowing();
-    
+
     @OnThread(value = Tag.Any, ignoreParent = true)
     @Override
     T getCode();
-    
+
     // Imports that mirror Frame methods, to get around the fact that we are an interface:    
     Node getNode();
+
     @OnThread(Tag.FXPlatform) void flagErrorsAsOld();
+
     @OnThread(Tag.FXPlatform) void removeOldErrors();
+
     Stream<HeaderItem> getHeaderItems();
-    default Stream<EditableSlot> getEditableSlots()
-    {
+
+    default Stream<EditableSlot> getEditableSlots() {
         return getHeaderItems().map(HeaderItem::asEditable).filter(x -> x != null);
     }
+
     Stream<RecallableFocus> getFocusables();
+
     Stream<Frame> getAllFrames();
-    
+
     void restore(T target);
-    default void restoreCast(TopLevelCodeElement target)
-    {
-        restore((T)target);
+
+    default void restoreCast(TopLevelCodeElement target) {
+        restore((T) target);
     }
 }

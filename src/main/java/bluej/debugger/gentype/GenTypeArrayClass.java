@@ -23,39 +23,33 @@ package bluej.debugger.gentype;
 
 /**
  * This class represents array types for which we have a reflective.
- * 
+ *
  * @author Davin McCall
  */
-public class GenTypeArrayClass extends GenTypeClass
-{
+public class GenTypeArrayClass extends GenTypeClass {
     private final JavaType componentType;
-    
-    public GenTypeArrayClass(Reflective r, JavaType componentType)
-    {
+
+    public GenTypeArrayClass(Reflective r, JavaType componentType) {
         super(r);
         this.componentType = componentType;
     }
 
     @Override
-    public JavaType getArrayComponent()
-    {
+    public JavaType getArrayComponent() {
         return componentType;
     }
-    
+
     @Override
-    public String toString(NameTransform nt)
-    {
+    public String toString(NameTransform nt) {
         return componentType.toString(nt) + "[]";
     }
-    
+
     @Override
-    public GenTypeClass getErasedType()
-    {
+    public GenTypeClass getErasedType() {
         JavaType newComponentType = componentType.getErasedType();
         if (newComponentType != componentType) {
             return new GenTypeArrayClass(reflective, newComponentType);
-        }
-        else {
+        } else {
             return this;
         }
     }

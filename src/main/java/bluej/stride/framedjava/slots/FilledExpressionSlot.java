@@ -32,44 +32,40 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class FilledExpressionSlot extends ExpressionSlot<FilledExpressionSlotFragment>
-{
+public class FilledExpressionSlot extends ExpressionSlot<FilledExpressionSlotFragment> {
     public static final List<Hint> CONDITION_HINTS = Arrays.asList(
-        new Hint("isAtEdge()", "Is at the edge of the world"),
-        new Hint("isTouching(Crab.class)", "Is touching a Crab actor"),
-        new Hint("Greenfoot.isKeyDown(\"left\")", "Is the left arrow key pressed")
+            new Hint("isAtEdge()", "Is at the edge of the world"),
+            new Hint("isTouching(Crab.class)", "Is touching a Crab actor"),
+            new Hint("Greenfoot.isKeyDown(\"left\")", "Is the left arrow key pressed")
     );
 
     public static final List<Hint> EACH_HINTS = Arrays.asList(
-        new Hint("1..10", "Numbers 1 to 10 (inclusive)"),
-        new Hint("getIntersectingObjects(Crab.class)", "Touching Crab actors")
+            new Hint("1..10", "Numbers 1 to 10 (inclusive)"),
+            new Hint("getIntersectingObjects(Crab.class)", "Touching Crab actors")
     );
 
     public static final List<Hint> SRC_HINTS = Arrays.asList(
-        new Hint("getX()", "X coordinate"),
-        new Hint("Greenfoot.ask(\"How many?\")", "Get number from user")
+            new Hint("getX()", "X coordinate"),
+            new Hint("Greenfoot.ask(\"How many?\")", "Get number from user")
     );
 
     public FilledExpressionSlot(InteractionManager editor,
                                 Frame parentFrame, CodeFrame<?> parentCodeFrame,
                                 FrameContentRow row,
-                                String stylePrefix)
-    {
+                                String stylePrefix) {
         this(editor, parentFrame, parentCodeFrame, row, stylePrefix, Collections.emptyList());
     }
 
     public FilledExpressionSlot(InteractionManager editor,
-            Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
-            String stylePrefix, List<Hint> hints)
-    {
+                                Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
+                                String stylePrefix, List<Hint> hints) {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, hints);
     }
 
     @Override
-    protected FilledExpressionSlotFragment makeSlotFragment(String content, String javaCode)
-    {
+    protected FilledExpressionSlotFragment makeSlotFragment(String content, String javaCode) {
         return new FilledExpressionSlotFragment(content, javaCode, this);
     }
 
-    
+
 }

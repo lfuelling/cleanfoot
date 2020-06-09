@@ -21,75 +21,60 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.stream.Stream;
-
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.stride.framedjava.errors.SyntaxCodeError;
 import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.Frame;
 import bluej.stride.slots.ChoiceSlot;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.stream.Stream;
 
 /**
  * Construct the class using the static helper methods
- *
  */
-public class AccessPermissionFragment extends ChoiceSlotFragment
-{
+public class AccessPermissionFragment extends ChoiceSlotFragment {
     private final AccessPermission value;
     private ChoiceSlot<AccessPermission> slot;
-    
-    public AccessPermissionFragment(AccessPermission a)
-    {
+
+    public AccessPermissionFragment(AccessPermission a) {
         super(null);
         value = a;
     }
-    
+
     @OnThread(Tag.FX)
-    public AccessPermissionFragment(Frame f, ChoiceSlot<AccessPermission> s)
-    {
+    public AccessPermissionFragment(Frame f, ChoiceSlot<AccessPermission> s) {
         super(f);
-        this.value =  s.getValue(AccessPermission.EMPTY);
+        this.value = s.getValue(AccessPermission.EMPTY);
         this.slot = s;
     }
 
-    public AccessPermission getValue()
-    {
+    public AccessPermission getValue() {
         return value;
     }
-    
+
     /**
      * Gets the content of the slot, as a String.
      */
-    public String getContent()
-    {
+    public String getContent() {
         return value.toString();
     }
 
     @Override
-    public String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator)
-    {
+    public String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator) {
         return value.getJavaCode();
     }
 
-    public void registerSlot(ChoiceSlot<AccessPermission> slot)
-    {
+    public void registerSlot(ChoiceSlot<AccessPermission> slot) {
         this.slot = slot;
     }
-    
-    public ChoiceSlot<AccessPermission> getSlot()
-    {
+
+    public ChoiceSlot<AccessPermission> getSlot() {
         return slot;
     }
 
     @Override
-    public Stream<SyntaxCodeError> findEarlyErrors()
-    {
+    public Stream<SyntaxCodeError> findEarlyErrors() {
         return Stream.empty();
     }
 }

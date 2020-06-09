@@ -21,30 +21,29 @@
  */
 package bluej.stride.generic;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import bluej.parser.AssistContent;
 import bluej.parser.AssistContent.Access;
+import bluej.parser.AssistContent.CompletionKind;
+import bluej.parser.AssistContent.ParamInfo;
 import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.generic.InteractionManager.Kind;
+import bluej.utility.JavaUtils;
+import bluej.utility.Utility;
 import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import nu.xom.Attribute;
 import nu.xom.Element;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.parser.AssistContent;
-import bluej.parser.AssistContent.CompletionKind;
-import bluej.parser.AssistContent.ParamInfo;
-import bluej.stride.generic.InteractionManager.Kind;
-import bluej.utility.JavaUtils;
-import bluej.utility.Utility;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @OnThread(Tag.Any)
-public final class AssistContentThreadSafe
-{
+public final class AssistContentThreadSafe {
     private final String name;
     private final List<ParamInfo> params;
     private final String type;
@@ -57,8 +56,7 @@ public final class AssistContentThreadSafe
     private final String packageName;
 
     @OnThread(Tag.FXPlatform)
-    public AssistContentThreadSafe(AssistContent copyFrom)
-    {
+    public AssistContentThreadSafe(AssistContent copyFrom) {
         name = copyFrom.getName();
         params = copyFrom.getParams();
         type = copyFrom.getType();
@@ -70,16 +68,14 @@ public final class AssistContentThreadSafe
         typeKind = copyFrom.getTypeKind();
         packageName = copyFrom.getPackage();
     }
-    
+
     @OnThread(Tag.FXPlatform)
-    public static AssistContentThreadSafe copy(AssistContent copyFrom)
-    {
+    public static AssistContentThreadSafe copy(AssistContent copyFrom) {
         return new AssistContentThreadSafe(copyFrom);
     }
 
     @OnThread(Tag.Any)
-    public AssistContentThreadSafe(Access access, String declaringClass, String javadoc, CompletionKind kind, String name, String packageName, List<ParamInfo> params, List<String> superTypes, String type, Kind typeKind)
-    {
+    public AssistContentThreadSafe(Access access, String declaringClass, String javadoc, CompletionKind kind, String name, String packageName, List<ParamInfo> params, List<String> superTypes, String type, Kind typeKind) {
         this.access = access;
         this.declaringClass = declaringClass;
         this.javadoc = javadoc;
@@ -92,92 +88,110 @@ public final class AssistContentThreadSafe
         this.typeKind = typeKind;
     }
 
-    /** The name of the variable or method or type */
-    public String getName() { return name; }
-    
-    /** Will return empty list if it's a method with no parameters,
-     *  but null if it is a variable or type and thus can't have parameters */
-    public List<ParamInfo> getParams() { return params; }
-
-    /** Get the type for this completion (as a string).
-     *  For methods, this is the return type; for variables it is the type of the variable. 
-     *  Confusingly, for types this returns null (use getName instead). */
-    public String getType() { return type; }
-    
     /**
-     *  Get the access for this completion (as a string).
+     * The name of the variable or method or type
      */
-    public AssistContent.Access getAccessPermission() { return access; }
+    public String getName() {
+        return name;
+    }
 
-    /** Get the declaring class of this completion (as a string).
+    /**
+     * Will return empty list if it's a method with no parameters,
+     * but null if it is a variable or type and thus can't have parameters
+     */
+    public List<ParamInfo> getParams() {
+        return params;
+    }
+
+    /**
+     * Get the type for this completion (as a string).
+     * For methods, this is the return type; for variables it is the type of the variable.
+     * Confusingly, for types this returns null (use getName instead).
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Get the access for this completion (as a string).
+     */
+    public AssistContent.Access getAccessPermission() {
+        return access;
+    }
+
+    /**
+     * Get the declaring class of this completion (as a string).
      * Returns null if it is a local variable (i.e. not a member of a class)
-     * or a non-inner-class type. */
-    public String getDeclaringClass() { return declaringClass; }
-    
-    public CompletionKind getKind() { return kind; }
+     * or a non-inner-class type.
+     */
+    public String getDeclaringClass() {
+        return declaringClass;
+    }
+
+    public CompletionKind getKind() {
+        return kind;
+    }
 
     /**
      * Get the javadoc comment for this completion. The comment has been stripped of the
      * delimiters (slash-star at the start and star-slash at the end) and intermediate
      * star characters.
      */
-    public String getJavadoc() { return javadoc; }
-    
-    public String getPackage() { return packageName; }
+    public String getJavadoc() {
+        return javadoc;
+    }
 
-    public static Comparator<AssistContentThreadSafe> getComparator(String targetType)
-    {
-        return (a, b) -> { 
-            if (targetType != null)
-            {
+    public String getPackage() {
+        return packageName;
+    }
+
+    public static Comparator<AssistContentThreadSafe> getComparator(String targetType) {
+        return (a, b) -> {
+            if (targetType != null) {
                 // Anything matching target type goes ahead:
                 // Lower is better, so 0 if the types match
                 int compareTypes = Integer.compare(targetType.equals(a.getType()) ? 0 : 1, targetType.equals(b.getType()) ? 0 : 1);
-                
+
                 if (compareTypes != 0)
                     return compareTypes;
             }
-            
+
             int compareNames = a.getName().toLowerCase().compareTo(b.getName().toLowerCase());
-            
+
             if (compareNames != 0)
                 return compareNames;
-            
+
             // Fields before methods, methods sorted by number of params:
             int aParams = a.getParams() == null ? -1 : a.getParams().size();
             int bParams = b.getParams() == null ? -1 : b.getParams().size();
-            
+
             return Integer.compare(aParams, bParams);
         };
     }
 
-    public List<String> getSuperTypes()
-    {
+    public List<String> getSuperTypes() {
         return Collections.unmodifiableList(superTypes);
     }
-    
-    public Kind getTypeKind()
-    {
+
+    public Kind getTypeKind() {
         return typeKind;
     }
 
     @OnThread(Tag.FXPlatform)
-    public String getDocHTML()
-    {
+    public String getDocHTML() {
         String header = (getType() == null ? "" : Utility.escapeAngleBrackets(getType()))
-                          + " <b>" + getName() + "</b>";
-        if (getParams() != null)
-        {
-            header += "(" + getParams().stream().map(p -> { 
-               String type = Utility.escapeAngleBrackets(p.getUnqualifiedType());
-               if (p.getFormalName() != null)
-                   return type + "&nbsp;" + p.getFormalName();
-               else
-                   return type;
+                + " <b>" + getName() + "</b>";
+        if (getParams() != null) {
+            header += "(" + getParams().stream().map(p -> {
+                String type = Utility.escapeAngleBrackets(p.getUnqualifiedType());
+                if (p.getFormalName() != null)
+                    return type + "&nbsp;" + p.getFormalName();
+                else
+                    return type;
             }).collect(Collectors.joining(", ")) + ")";
         }
         header += "<br><br>"; // TODO make this proper HTML spacing
-        
+
         // Match font with that of a Label:
         Font font = new Label().getFont();
         String start = "<html><body style='font-family:" + font.getFamily() + ";font-size:" + font.getSize() + ";'>";
@@ -186,12 +200,10 @@ public final class AssistContentThreadSafe
         return start + header + JavaUtils.javadocToHtml(javadoc.replace("\n\n", "<br><br>")) + end;
     }
 
-    public boolean accessibleFromPackage(String pkgName)
-    {
+    public boolean accessibleFromPackage(String pkgName) {
         if (access == null)
             return true;
-        switch (access)
-        {
+        switch (access) {
             case PRIVATE:
                 return false;
             case PROTECTED:
@@ -205,8 +217,7 @@ public final class AssistContentThreadSafe
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -227,8 +238,7 @@ public final class AssistContentThreadSafe
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (params != null ? params.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
@@ -244,8 +254,7 @@ public final class AssistContentThreadSafe
 
     // For debugging:
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "AssistContentThreadSafe{" +
                 "access=" + access +
                 ", name='" + name + '\'' +
@@ -264,8 +273,7 @@ public final class AssistContentThreadSafe
      * Serialise the content of this item to XML.  Only valid and tested
      * for imported types at the moment.
      */
-    public Element toXML()
-    {
+    public Element toXML() {
         Element el = new Element("acts");
         if (name != null) el.addAttribute(new Attribute("name", name));
         if (type != null) el.addAttribute(new Attribute("type", type));
@@ -274,8 +282,7 @@ public final class AssistContentThreadSafe
         if (kind != null) el.addAttribute(new Attribute("kind", kind.toString()));
         if (typeKind != null) el.addAttribute(new Attribute("typeKind", typeKind.toString()));
         if (packageName != null) el.addAttribute(new Attribute("packageName", packageName));
-        if (params != null)
-        {
+        if (params != null) {
             throw new IllegalStateException();
             // We don't actually need to serialised params yet, just types:
             /*
@@ -285,19 +292,16 @@ public final class AssistContentThreadSafe
             el.appendChild(paramsEl);
             */
         }
-        if (superTypes != null)
-        {
+        if (superTypes != null) {
             Element superTypesEl = new Element("superTypes");
-            for (String superType : superTypes)
-            {
+            for (String superType : superTypes) {
                 Element superEl = new Element("superType");
                 superEl.addAttribute(new Attribute("superType", superType));
                 superTypesEl.appendChild(superEl);
             }
             el.appendChild(superTypesEl);
         }
-        if (javadoc != null)
-        {
+        if (javadoc != null) {
             Element javadocEl = new Element("javadoc");
             CodeElement.preserveWhitespace(javadocEl);
             javadocEl.appendChild(javadoc);
@@ -310,8 +314,7 @@ public final class AssistContentThreadSafe
     /**
      * Opposite of toXML; load this item from XML.
      */
-    public AssistContentThreadSafe(Element el)
-    {
+    public AssistContentThreadSafe(Element el) {
         if (!el.getLocalName().equals("acts")) throw new IllegalArgumentException();
         name = el.getAttributeValue("name");
         type = el.getAttributeValue("type");
@@ -323,11 +326,9 @@ public final class AssistContentThreadSafe
         ArrayList<ParamInfo> paramsList = null;
         ArrayList<String> superTypesList = null;
         String javadocStr = null;
-        for (int i = 0; i < el.getChildElements().size(); i++)
-        {
+        for (int i = 0; i < el.getChildElements().size(); i++) {
             Element subEl = el.getChildElements().get(i);
-            switch (subEl.getLocalName())
-            {
+            switch (subEl.getLocalName()) {
                 // We don't actually need to serialised params yet, just types:
                 /*
                 case "params":
@@ -341,8 +342,7 @@ public final class AssistContentThreadSafe
                 */
                 case "superTypes":
                     superTypesList = new ArrayList<>();
-                    for (int j = 0; j < subEl.getChildElements().size(); j++)
-                    {
+                    for (int j = 0; j < subEl.getChildElements().size(); j++) {
                         Element superTypeEl = subEl.getChildElements().get(j);
                         superTypesList.add(superTypeEl.getAttributeValue("superType"));
                     }
@@ -360,8 +360,7 @@ public final class AssistContentThreadSafe
     /**
      * Helper method for loading enums from a String
      */
-    private static <E extends Enum<E>> E loadEnum(E[] values, String src)
-    {
+    private static <E extends Enum<E>> E loadEnum(E[] values, String src) {
         for (E e : values)
             if (e.toString().equals(src))
                 return e;

@@ -24,27 +24,23 @@ package bluej.debugger.gentype;
 
 /**
  * An unbounded wildcard.
- * 
+ *
  * @author Davin McCall
  */
-public class GenTypeUnbounded extends GenTypeWildcard
-{
-    public GenTypeUnbounded()
-    {
+public class GenTypeUnbounded extends GenTypeWildcard {
+    public GenTypeUnbounded() {
         super(null, null);
     }
-    
+
     /**
      * A constructor where we recognise the real upper bound as "Object".
      */
-    public GenTypeUnbounded(GenTypeClass objectClass)
-    {
+    public GenTypeUnbounded(GenTypeClass objectClass) {
         super(objectClass, null);
     }
-    
+
     @Override
-    public String toTypeArgString(NameTransform nt)
-    {
+    public String toTypeArgString(NameTransform nt) {
         return "?";
     }
 }

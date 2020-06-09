@@ -27,15 +27,14 @@ import bluej.pkgmgr.PackageEditor;
 import bluej.pkgmgr.target.Target;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
-
-import java.util.Collection;
-import java.util.List;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -45,27 +44,26 @@ import threadchecker.Tag;
  * be inactive.
  */
 @OnThread(Tag.FXPlatform)
-public class SelectionController
-{
+public class SelectionController {
     private final PackageEditor graphEditor;
     private final Package graph;
-    
+
     private final Marquee marquee;
     private final SelectionSet selection;   // Contains the elements that have been selected
 
-    private boolean moving = false; 
+    private boolean moving = false;
     private boolean resizing = false;
 
     private final TraverseStrategy traverseStragegiImpl = new TraverseStrategyImpl();
 
-    
+
     /**
      * Create the controller for a given graph editor.
+     *
      * @param graphEditor
      * @param graph
      */
-    public SelectionController(PackageEditor graphEditor)
-    {
+    public SelectionController(PackageEditor graphEditor) {
         this.graphEditor = graphEditor;
         this.graph = graphEditor.getPackage();
         selection = new SelectionSet(Utility.filterList(graph.getVertices(), Target::isSelected));
@@ -76,10 +74,9 @@ public class SelectionController
     /**
      * A mouse-pressed event. Analyse what we should do with it.
      */
-    public void mousePressed(javafx.scene.input.MouseEvent evt)
-    {
-        int clickX = (int)evt.getX();
-        int clickY = (int)evt.getY();
+    public void mousePressed(javafx.scene.input.MouseEvent evt) {
+        int clickX = (int) evt.getX();
+        int clickY = (int) evt.getY();
 
         if (!isMultiselectionKeyDown(evt)) {
             selection.clear();
@@ -92,11 +89,10 @@ public class SelectionController
     /**
      * The mouse was released.
      */
-    public void mouseReleased(MouseEvent evt)
-    {
+    public void mouseReleased(MouseEvent evt) {
         marquee.stop();     // may or may not have had a marquee...
         graphEditor.repaint();
-        
+
         if (moving || resizing) {
             endMove();
             graphEditor.repaint();
@@ -104,27 +100,24 @@ public class SelectionController
 
         // We deselected the focused class while mouse was dragging,
         // now we need to reselect it if there is a focused class:
-        for (Target t : graph.getVertices())
-        {
+        for (Target t : graph.getVertices()) {
             // If it is focused and selected, it must have been in the marquee
             // so don't ruin the multi-select.
             // We only need to handle the case where it was focused (i.e. was
             // selected pre-marquee) and is not now selected (i.e. was not
             // in the final marquee):
-            if (t.isFocused() && !t.isSelected())
-            {
+            if (t.isFocused() && !t.isSelected()) {
                 selectOnly(t);
                 break;
             }
         }
     }
-    
+
     /**
      * A mouse-clicked event. This is only interesting if it was a double
      * click. If so, inform every element in the current selection.
      */
-    public void mouseClicked(MouseEvent evt)
-    {
+    public void mouseClicked(MouseEvent evt) {
         if (isButtonOne(evt)) {
             if (evt.getClickCount() > 1) {
                 selection.getSelected().forEach(target -> {
@@ -140,16 +133,13 @@ public class SelectionController
     /**
      * The mouse was dragged - either draw a marquee or move some classes.
      */
-    public void mouseDragged(MouseEvent evt)
-    {
+    public void mouseDragged(MouseEvent evt) {
         if (isButtonOne(evt)) {
             if (marquee.isActive()) {
-                marquee.move((int)evt.getX(), (int)evt.getY());
+                marquee.move((int) evt.getX(), (int) evt.getY());
                 graphEditor.repaint();
-            }
-            else
-            {
-                if(! selection.isEmpty()) {
+            } else {
+                if (!selection.isEmpty()) {
                     /*
                     int deltaX = snapToGrid((int)evt.getX() - dragStartX);
                     int deltaY = snapToGrid((int)evt.getY() - dragStartY);
@@ -172,8 +162,7 @@ public class SelectionController
      * Move the current selection to another selected class, depending on
      * current selection and the key pressed.
      */
-    public void navigate(KeyEvent evt)
-    {
+    public void navigate(KeyEvent evt) {
         Target currentTarget = findSingleVertex();
         currentTarget = traverseStragegiImpl.findNextVertex(graph, currentTarget, evt.getCode());
         selection.selectOnly(currentTarget);
@@ -182,10 +171,8 @@ public class SelectionController
 
     /**
      * End a move or resize gesture.
-     *
      */
-    private void endMove() 
-    {
+    private void endMove() {
         selection.moveStopped();
         moving = false;
         resizing = false;
@@ -194,14 +181,12 @@ public class SelectionController
     /**
      * Return the marquee of this conroller.
      */
-    public Marquee getMarquee()
-    {
+    public Marquee getMarquee() {
         return marquee;
     }
 
-    
-    private Target findSingleVertex()
-    {
+
+    private Target findSingleVertex() {
         Target vertex = selection.getAnyVertex();
 
         // if there is no selection we select an existing vertex
@@ -215,56 +200,50 @@ public class SelectionController
     /**
      * Clear the current selection.
      */
-    public void clearSelection()
-    {
+    public void clearSelection() {
         selection.clear();
     }
 
-    /** 
+    /**
      * Select all graph vertices.
      */
-    public void selectAll()
-    {
+    public void selectAll() {
         for (Target t : graph.getVertices())
             selection.add(t);
     }
-    
+
     /**
      * Clear the current selection.
      */
-    public void removeFromSelection(Target element)
-    {
+    public void removeFromSelection(Target element) {
         selection.remove(element);
     }
 
     /**
      * Add to the current selection
+     *
      * @param element
      */
-    public void addToSelection(Target element)
-    {
+    public void addToSelection(Target element) {
         selection.add(element);
     }
-   
+
     /**
      * Check whether this mouse event was from button one.
      * (Ctrl-button one on MacOS does not count - that posts the menu
      * so we consider that button two.)
      */
-    private boolean isButtonOne(MouseEvent evt)
-    {
+    private boolean isButtonOne(MouseEvent evt) {
         return !evt.isPopupTrigger() && evt.getButton() == MouseButton.PRIMARY;
     }
 
     /**
      * Check whether the key used for multiple selections is down.
      */
-    private boolean isMultiselectionKeyDown(MouseEvent evt)
-    {
+    private boolean isMultiselectionKeyDown(MouseEvent evt) {
         if (Config.isMacOS()) {
             return evt.isShiftDown() || evt.isMetaDown();
-        }
-        else {
+        } else {
             return evt.isShiftDown() || evt.isControlDown();
         }
 
@@ -273,25 +252,23 @@ public class SelectionController
     /**
      * Selects the one given target, and no others.
      */
-    public void selectOnly(Target target)
-    {
+    public void selectOnly(Target target) {
         selection.selectOnly(target);
     }
 
     /**
      * Gets an unordered list of all currently selected targets.
      */
-    public List<Target> getSelection()
-    {
+    public List<Target> getSelection() {
         return selection.getSelected();
     }
 
     /**
      * The selection listener will be run every time the selection has changed.
+     *
      * @param selectionListener
      */
-    public void addSelectionListener(FXPlatformConsumer<Collection<Target>> selectionListener)
-    {
+    public void addSelectionListener(FXPlatformConsumer<Collection<Target>> selectionListener) {
         selection.addListener(selectionListener);
     }
 }

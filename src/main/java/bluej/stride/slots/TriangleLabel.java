@@ -21,8 +21,11 @@
  */
 package bluej.stride.slots;
 
-import java.util.List;
-
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.FXConsumer;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,71 +40,73 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
-
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.javafx.FXConsumer;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.List;
 
 /**
  * A class for rotatable triangle to be used with hideable canvases.
  * In the default JavaFX font, the right-pointing triangle is much smaller than
- * the downward-pointing triangle, so we can't use the two triangles to toggle 
+ * the downward-pointing triangle, so we can't use the two triangles to toggle
  * the selection.  Instead, we always use the downward pointing one, but rotate it.
- * 
+ *
  * @author NCCB
  */
-public class TriangleLabel extends HBox implements HeaderItem
-{
+public class TriangleLabel extends HBox implements HeaderItem {
     private final SimpleBooleanProperty expanded;
     private final Canvas canvas = new Canvas(8, 10);
-    
+
     private final SimpleStyleableObjectProperty<Color> cssColorProperty = new SimpleStyleableObjectProperty<>(COLOR_META_DATA);
-    public final SimpleStyleableObjectProperty<Color> cssColorProperty() { return cssColorProperty; }
-    
+
+    public final SimpleStyleableObjectProperty<Color> cssColorProperty() {
+        return cssColorProperty;
+    }
+
     private static final CssMetaData<TriangleLabel, Color> COLOR_META_DATA =
             JavaFXUtil.cssColor("-bj-fill-color", TriangleLabel::cssColorProperty);
-    
-    private static final List <CssMetaData <? extends Styleable, ? > > cssMetaDataList =
-            JavaFXUtil.extendCss(HBox.getClassCssMetaData())
-              .add(COLOR_META_DATA)
-              .build();
-         
-    public static List <CssMetaData <? extends Styleable, ? > > getClassCssMetaData() { return cssMetaDataList; }
-    @Override public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() { return getClassCssMetaData(); }    
 
-    public TriangleLabel(InteractionManager editor, FXConsumer<SharedTransition> expand, FXConsumer<SharedTransition> shrink, SimpleBooleanProperty showing)
-    {        
+    private static final List<CssMetaData<? extends Styleable, ?>> cssMetaDataList =
+            JavaFXUtil.extendCss(HBox.getClassCssMetaData())
+                    .add(COLOR_META_DATA)
+                    .build();
+
+    public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
+        return cssMetaDataList;
+    }
+
+    @Override
+    public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
+        return getClassCssMetaData();
+    }
+
+    public TriangleLabel(InteractionManager editor, FXConsumer<SharedTransition> expand, FXConsumer<SharedTransition> shrink, SimpleBooleanProperty showing) {
         this.expanded = showing;
         JavaFXUtil.addChangeListener(cssColorProperty, c -> {
             GraphicsContext g = this.canvas.getGraphicsContext2D();
             g.clearRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
             g.setFill(c);
-            g.fillPolygon(new double[] {1, 7, 1}, new double[] {1, 5, 9}, 3);
+            g.fillPolygon(new double[]{1, 7, 1}, new double[]{1, 5, 9}, 3);
         });
-        
+
         JavaFXUtil.addStyleClass(this, "triangle-label");
-        
+
         getChildren().add(this.canvas);
         setAlignment(Pos.BASELINE_LEFT);
         setFillHeight(false);
 
-        addEventFilter(MouseEvent.MOUSE_CLICKED, e -> { expanded.set(!expanded.get()); e.consume(); });
+        addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
+            expanded.set(!expanded.get());
+            e.consume();
+        });
         JavaFXUtil.addChangeListener(expanded, new FXConsumer<Boolean>() {
             private SharedTransition transition = null;
 
             @Override
-            public void accept(Boolean nowExpanded)
-            {
-                if (nowExpanded)
-                {
+            public void accept(Boolean nowExpanded) {
+                if (nowExpanded) {
                     JavaFXUtil.runNowOrLater(() -> animate(true));
-                }
-                else
-                {
+                } else {
                     JavaFXUtil.runNowOrLater(() -> {
                         animate(false);
                         editor.getSelection().clear();
@@ -110,10 +115,8 @@ public class TriangleLabel extends HBox implements HeaderItem
             }
 
             @OnThread(Tag.FXPlatform)
-            private void animate(boolean expandAnim)
-            {
-                if (transition != null)
-                {
+            private void animate(boolean expandAnim) {
+                if (transition != null) {
                     transition.stop();
                     transition = null;
                 }
@@ -129,21 +132,22 @@ public class TriangleLabel extends HBox implements HeaderItem
             }
         });
     }
-    @Override
-    public ObservableList<Node> getComponents()
-    {
-        return FXCollections.observableArrayList(this);
-    }
-    @Override
-    public EditableSlot asEditable()
-    {
-        return null;
-    }
-    
-    public SimpleBooleanProperty expandedProperty() { return expanded; }
 
     @Override
-    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animate)
-    {
+    public ObservableList<Node> getComponents() {
+        return FXCollections.observableArrayList(this);
+    }
+
+    @Override
+    public EditableSlot asEditable() {
+        return null;
+    }
+
+    public SimpleBooleanProperty expandedProperty() {
+        return expanded;
+    }
+
+    @Override
+    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animate) {
     }
 }

@@ -31,16 +31,14 @@ import java.util.Arrays;
  * Given a list of StatusEntry(s) returns a table model which allows them to
  * be edited in a JTable.
  * This is only for Non DVCS providers. It aims to eliminate some confusion in conditions.
- * 
+ *
  * @author Amjad Altadmri
  */
-public class StatusTableModelNonDVCS extends StatusTableModel
-{
+public class StatusTableModelNonDVCS extends StatusTableModel {
     /**
      *
      */
-    public StatusTableModelNonDVCS(Project project, int initialRows)
-    {
+    public StatusTableModelNonDVCS(Project project, int initialRows) {
         super(project, initialRows);
         statusLabel = Config.getString("team.status");
         labelsList = Arrays.asList(resourceLabel, versionLabel, statusLabel);
@@ -49,12 +47,11 @@ public class StatusTableModelNonDVCS extends StatusTableModel
     /**
      * Find the table entry at a particular row and column
      *
-     * @param   row     the table row
-     * @param   col     the table column
-     * @return          the Object at that location in the table
+     * @param row the table row
+     * @param col the table column
+     * @return the Object at that location in the table
      */
-    public Object getValueAt(int row, int col)
-    {
+    public Object getValueAt(int row, int col) {
         TeamStatusInfo info = resources.get(row);
         switch (col) {
             case 0:

@@ -28,28 +28,27 @@ import java.io.File;
 
 /**
  * Team status information for a file.
- * 
+ *
  * <p>For "regular" non-distributed version control, the single status reflects both the changes
  * made locally and (potentially) any changes made in later versions in the repository.
- * 
+ *
  * <p>For distributed version control with non-linear history (Git), the general status indicates
  * changes between the local working copy and the head of the local branch, and the "remote"
  * status indicates differences between the head of the local branch and the head of the remote
  * branch. Note that the staging area is largely irrelevant.
- * 
+ *
  * @author Davin McCall
  */
-public class TeamStatusInfo
-{
+public class TeamStatusInfo {
     private final static String prefix = "team.statusinfo.";
 
     private final static Color UPTODATE_COLOR = Color.BLACK;
-    private final static Color CONFLICT_COLOR = Color.rgb(137,13,19);    // darker red
-    private final static Color NEEDSUPDATE_COLOR = Color.rgb(11,57,120); // blue
-    private final static Color REMOVED_COLOR = Color.rgb(135,150,170);   // grey-blue
-    private final static Color NEEDSCOMMIT_COLOR = Color.rgb(10,85,15);  // green
-    private final static Color DELETED_COLOR = Color.rgb(122,143,123);   // grey-green
-    
+    private final static Color CONFLICT_COLOR = Color.rgb(137, 13, 19);    // darker red
+    private final static Color NEEDSUPDATE_COLOR = Color.rgb(11, 57, 120); // blue
+    private final static Color REMOVED_COLOR = Color.rgb(135, 150, 170);   // grey-blue
+    private final static Color NEEDSCOMMIT_COLOR = Color.rgb(10, 85, 15);  // green
+    private final static Color DELETED_COLOR = Color.rgb(122, 143, 123);   // grey-green
+
     private final File file;
     private final String localVersion;
     private final String remoteVersion;
@@ -57,23 +56,32 @@ public class TeamStatusInfo
     private Status remoteStatus;
 
     /**
-     * A single status value for either overall/local or remote status. 
+     * A single status value for either overall/local or remote status.
      */
-    public enum Status
-    {
-        /** The file is up-to-date, the local revision is the same as in the repository */
+    public enum Status {
+        /**
+         * The file is up-to-date, the local revision is the same as in the repository
+         */
         UP_TO_DATE("upToDate", "", "", UPTODATE_COLOR),
-        
-        /** The file doesn't exist locally, but is in the repository */
+
+        /**
+         * The file doesn't exist locally, but is in the repository
+         */
         NEEDS_CHECKOUT("needsCheckout", "", "dcvs.remote.needs.pull", NEEDSUPDATE_COLOR),
-        
-        /** The file has been deleted locally, but the deletion hasn't been committed yet */
+
+        /**
+         * The file has been deleted locally, but the deletion hasn't been committed yet
+         */
         DELETED("deleted", "dcvs.local.deleted", "dcvs.remote.deleted", DELETED_COLOR),
-        
-        /** The repository version is newer */
+
+        /**
+         * The repository version is newer
+         */
         NEEDS_UPDATE("needsUpdate", "", "dcvs.remote.needs.pull", NEEDSUPDATE_COLOR),
 
-        /** The local version has been modified */
+        /**
+         * The local version has been modified
+         */
         NEEDS_COMMIT("needsCommit", "dcvs.local.modified", "dcvs.remote.modified", NEEDSCOMMIT_COLOR),
 
         /**
@@ -82,17 +90,21 @@ public class TeamStatusInfo
          */
         NEEDS_MERGE("needsMerge", "needsMerge", "needsMerge"),
 
-        /** The file exists locally, but not in the repository */
+        /**
+         * The file exists locally, but not in the repository
+         */
         NEEDS_ADD("needsAdd", "dcvs.local.new", "dcvs.remote.new", NEEDSCOMMIT_COLOR),
 
-        /** The file exists locally, but has been removed in the repository */
+        /**
+         * The file exists locally, but has been removed in the repository
+         */
         REMOVED("removed", "", "dcvs.remote.removed", REMOVED_COLOR),
 
         /**
          * An unresolved conflict. This can happen when:<ul>
          * <li>when two binary files have been modified maybe?
          * </ul><p>
-         *
+         * <p>
          * The only way out is to either delete the file locally, or do a forced
          * commit or a forced update.
          */
@@ -105,10 +117,14 @@ public class TeamStatusInfo
          */
         HAS_CONFLICTS("hasConflicts", "hasConflicts", "hasConflicts"),
 
-        /** Unknown */
+        /**
+         * Unknown
+         */
         WEIRD("weird", "weird", "weird"),
 
-        /** It has no status, only used for default constructor while waiting for cvs */
+        /**
+         * It has no status, only used for default constructor while waiting for cvs
+         */
         BLANK("", "", ""),
 
         /**
@@ -127,37 +143,37 @@ public class TeamStatusInfo
          */
         CONFLICT_LDRM("conflictLDRM", "conflictLDRM", "conflictLDRM"),
 
-        /** The file was renamed **/
+        /**
+         * The file was renamed
+         **/
         RENAMED("renamed", "renamed", "renamed"),
 
-        /** File needs to be pushed to remote repository */
+        /**
+         * File needs to be pushed to remote repository
+         */
         NEEDS_PUSH("dcvs.needsPush", "", "dcvs.needsPush");
 
         private final String statusString;
         private final String dcvsStatusString;
         private final String dcvsRemoteStatusString;
-        private final Color  color;
+        private final Color color;
 
-        Status(String statusString, String dcvsStatusString, String dcvsRemoteStatusString)
-        {
+        Status(String statusString, String dcvsStatusString, String dcvsRemoteStatusString) {
             this(statusString, dcvsStatusString, dcvsRemoteStatusString, CONFLICT_COLOR);
         }
 
-        Status(String statusString, String dcvsStatusString, String dcvsRemoteStatusString, Color color)
-        {
+        Status(String statusString, String dcvsStatusString, String dcvsRemoteStatusString, Color color) {
             this.statusString = statusString;
             this.dcvsStatusString = dcvsStatusString;
             this.dcvsRemoteStatusString = dcvsRemoteStatusString;
             this.color = color;
         }
 
-        public String getStatusString()
-        {
+        public String getStatusString() {
             return statusString.isEmpty() ? "" : Config.getString(prefix + statusString);
         }
 
-        public String getDCVSStatusString(boolean remote)
-        {
+        public String getDCVSStatusString(boolean remote) {
             String label = (remote) ? dcvsRemoteStatusString : dcvsStatusString;
             return label.isEmpty() ? "" : Config.getString(prefix + label);
         }
@@ -165,41 +181,37 @@ public class TeamStatusInfo
         /**
          * get the colour for the given status ID value
          */
-        public Color getStatusColour()
-        {
+        public Color getStatusColour() {
             return color;
         }
     }
-    
+
     /**
-     * Default "blank" status info. Used to pre-populate status table whilst 
+     * Default "blank" status info. Used to pre-populate status table whilst
      * awaiting repository response.
      */
-    public TeamStatusInfo()
-    {
+    public TeamStatusInfo() {
         this(new File(""), "", "", Status.BLANK, Status.BLANK);
     }
 
     /**
      * constructor used with DVCS.
      *
-     * @param file file in the local file system.
-     * @param localVersion file version in the local repository.
+     * @param file          file in the local file system.
+     * @param localVersion  file version in the local repository.
      * @param remoteVersion file version in the remote server.
-     * @param status file status in the local repository.
-     * @param remoteStatus file status in the remote server.
+     * @param status        file status in the local repository.
+     * @param remoteStatus  file status in the remote server.
      */
-    public TeamStatusInfo(File file, String localVersion, String remoteVersion, Status status, Status remoteStatus)
-    {
+    public TeamStatusInfo(File file, String localVersion, String remoteVersion, Status status, Status remoteStatus) {
         this(file, localVersion, remoteVersion, status);
         this.remoteStatus = remoteStatus;
     }
-    
+
     /**
      * Constructor for TeamStatusInfo.
      */
-    public TeamStatusInfo(File file, String localVersion, String remoteVersion, Status status)
-    {
+    public TeamStatusInfo(File file, String localVersion, String remoteVersion, Status status) {
         this.file = file;
         this.localVersion = localVersion;
         this.remoteVersion = remoteVersion;
@@ -213,49 +225,40 @@ public class TeamStatusInfo
      * @param local A flag to select which status is needed
      * @return The local or remote status of the file
      */
-    public Status getStatus(boolean local)
-    {
+    public Status getStatus(boolean local) {
         return local ? status : remoteStatus;
     }
-    
-    public File getFile()
-    {
+
+    public File getFile() {
         return file;
     }
-    
-    public String getLocalVersion()
-    {
+
+    public String getLocalVersion() {
         return localVersion;
     }
-    
-    public String getRepositoryVersion()
-    {
+
+    public String getRepositoryVersion() {
         return remoteVersion;
     }
-    
-    public Status getStatus()
-    {
+
+    public Status getStatus() {
         return status;
     }
-    
-    public void setStatus(Status s)
-    {
+
+    public void setStatus(Status s) {
         status = s;
     }
-    
-    public Status getRemoteStatus()
-    {
+
+    public Status getRemoteStatus() {
         return remoteStatus;
     }
 
-    public void setRemoteStatus(Status remoteStatus)
-    {
+    public void setRemoteStatus(Status remoteStatus) {
         this.remoteStatus = remoteStatus;
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getFile().getName();
     }
 }

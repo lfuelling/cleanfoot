@@ -30,17 +30,15 @@ package bluej.extensions.event;
  * <p>
  * The interfaces are split for the reason of backward compatibility.
  * </p>
- * 
+ *
  * @author Simon Gerlach
  */
-public interface ClassListener2 extends ClassListener
-{
+public interface ClassListener2 extends ClassListener {
     /**
      * A class has been removed. The removed class can be acquired from the
      * passed in {@link ClassEvent} object.
-     * 
-     * @param event
-     *            A <code>ClassEvent</code> object which describes the event.
+     *
+     * @param event A <code>ClassEvent</code> object which describes the event.
      */
     void classRemoved(ClassEvent event);
 }

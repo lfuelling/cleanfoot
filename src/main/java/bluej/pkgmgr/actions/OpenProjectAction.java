@@ -30,16 +30,13 @@ import bluej.pkgmgr.PkgMgrFrame;
  * window.
  */
 
-final public class OpenProjectAction extends PkgMgrAction
-{
-    
-    public OpenProjectAction(PkgMgrFrame pmf)
-    {
+final public class OpenProjectAction extends PkgMgrAction {
+
+    public OpenProjectAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.open");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doOpen();
     }

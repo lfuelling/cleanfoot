@@ -21,18 +21,14 @@
  */
 package greenfoot.sound;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.TargetDataLine;
+import javax.sound.sampled.*;
 
 /**
  * Gets the overall level of the default microphone plugged into the system.
+ *
  * @author Michael
  */
-public class MicLevelGrabber
-{
+public class MicLevelGrabber {
     private static final MicLevelGrabber INSTANCE = new MicLevelGrabber();
     private final AudioFormat format;
     private int level;
@@ -43,8 +39,7 @@ public class MicLevelGrabber
     /**
      * Create a new mic level grabber and initialise the updator.
      */
-    private MicLevelGrabber()
-    {
+    private MicLevelGrabber() {
         format = new AudioFormat(22050, 8, 1, true, true);
         updator = () -> {
             try {
@@ -58,20 +53,17 @@ public class MicLevelGrabber
                 line.close();
                 level = (int) ((getRMS(buffer, bytesRead) / 127) * 100);
                 reportedFailure = false;
-            }
-            catch (LineUnavailableException ex) {
-                if (! reportedFailure) {
+            } catch (LineUnavailableException ex) {
+                if (!reportedFailure) {
                     System.err.println("Couldn't get mic level: line unavailable");
                     reportedFailure = true;
                 }
-            }
-            catch (IllegalArgumentException iae) {
-                if (! reportedFailure) {
+            } catch (IllegalArgumentException iae) {
+                if (!reportedFailure) {
                     System.err.println("Couldn't get mic level: can't match 22050,8,1 audio format");
                     reportedFailure = true;
                 }
-            }
-            finally {
+            } finally {
                 running = false;
             }
         };
@@ -79,10 +71,10 @@ public class MicLevelGrabber
 
     /**
      * Get the singleton instance of this class.
+     *
      * @return the instance.
      */
-    public static MicLevelGrabber getInstance()
-    {
+    public static MicLevelGrabber getInstance() {
         return INSTANCE;
     }
 
@@ -91,11 +83,10 @@ public class MicLevelGrabber
      * level. It will most likely be the previous result that's returned,
      * however for things like meters where the level is being constantly
      * monitored this shouldn't be a problem.
-     * 
-     * @return  a microphone input level, between 0 and 100
+     *
+     * @return a microphone input level, between 0 and 100
      */
-    public int getLevel()
-    {
+    public int getLevel() {
         updateLevel();
         return level;
     }
@@ -104,8 +95,7 @@ public class MicLevelGrabber
      * Spawn off the thread to update the mic level value, if it isn't already
      * running.
      */
-    private synchronized void updateLevel()
-    {
+    private synchronized void updateLevel() {
         if (!running) {
             running = true;
             new Thread(updator).start();
@@ -114,12 +104,12 @@ public class MicLevelGrabber
 
     /**
      * Get the root mean square average of an array of bytes.
+     *
      * @param arr the array of bytes.
      * @param lim the index to read up to in the array.
      * @return the root mean square of the values.
      */
-    private static double getRMS(byte[] arr, int lim)
-    {
+    private static double getRMS(byte[] arr, int lim) {
         double average = 0;
         for (int i = 0; i < arr.length && i < lim; i++) {
             average += arr[i] * arr[i];

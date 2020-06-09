@@ -21,18 +21,14 @@
  */
 package bluej.editor.stride;
 
-import javafx.scene.Node;
-
 import bluej.stride.generic.FrameCursor;
-import bluej.utility.javafx.FXConsumer;
-import bluej.utility.javafx.FXRunnable;
+import javafx.scene.Node;
 
 /**
  * An interface implemented by ClassFrame/InterfaceFrame, providing methods
  * needed by FrameEditorTab to control the bird's eye view.
  */
-public interface BirdseyeManager
-{
+public interface BirdseyeManager {
     /**
      * Gets the graphical Node corresponding to the frame around which the bird's eye view
      * selection rectangle should be drawn
@@ -47,8 +43,8 @@ public interface BirdseyeManager
 
     /**
      * Notify about a click at the given scene X/Y.
-     *
-     * The return value will be non-null if there was a frame, 
+     * <p>
+     * The return value will be non-null if there was a frame,
      * or null if click wasn't on a frame.  Either way, bird's eye view will have been closed.
      */
     FrameCursor getClickedTarget(double sceneX, double sceneY);

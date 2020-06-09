@@ -21,60 +21,58 @@
  */
 package bluej.stride.generic;
 
-import java.util.IdentityHashMap;
-
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-
 import bluej.Config;
 import bluej.editor.stride.CodeOverlayPane;
 import bluej.stride.generic.InteractionManager.ShortcutKey;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class SuggestedFollowUpDisplay
-{
+import java.util.IdentityHashMap;
+
+public class SuggestedFollowUpDisplay {
     private final InteractionManager editor;
     private final FXRunnable action;
     private final VBox content = new VBox();
     // It makes sense to only allow one of these displays per editor.  So we keep track,
     // and if we try to show a second display in the same editor, we hide the existing one:
     private static final IdentityHashMap<InteractionManager, SuggestedFollowUpDisplay> displays = new IdentityHashMap<>();
-    
-    public SuggestedFollowUpDisplay(InteractionManager editor, String text, FXRunnable action)
-    {
+
+    public SuggestedFollowUpDisplay(InteractionManager editor, String text, FXRunnable action) {
         this.editor = editor;
         this.action = action;
         JavaFXUtil.addStyleClass(content, "suggested-followup-pane");
 
         Button yes = new Button("Yes (" + Config.getKeyCodeForYesNo(ShortcutKey.YES_ANYWHERE) + ")");
-        yes.setOnAction(e -> { action.run(); hide(); });
+        yes.setOnAction(e -> {
+            action.run();
+            hide();
+        });
 
         Button no = new Button("No (" + Config.getKeyCodeForYesNo(ShortcutKey.NO_ANYWHERE) + ")");
         no.setOnAction(e -> hide());
-        
+
         HBox hbox = new HBox(yes, no);
         JavaFXUtil.addStyleClass(hbox, "suggested-followup-hbox");
-        
+
         content.getChildren().addAll(new Label(text), hbox);
-        
+
         CodeOverlayPane.setDropShadow(content);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void showBefore(final Node n)
-    {
+    public void showBefore(final Node n) {
         // Remove any previous display for this editor:
-        if (displays.get(editor) != null)
-        {
+        if (displays.get(editor) != null) {
             displays.get(editor).hide(); // Will also remove it from the map
         }
-        
+
         editor.getCodeOverlayPane().addOverlay(content, n, null, content.heightProperty().add(5.0).negate());
         // Make suggestions appear underneath everything else in the overlay pane, to avoid
         // them getting in the way of code completion:
@@ -82,29 +80,24 @@ public class SuggestedFollowUpDisplay
         displays.put(editor, this);
     }
 
-    public void hide()
-    {
+    public void hide() {
         JavaFXUtil.runNowOrLater(() -> editor.getCodeOverlayPane().removeOverlay(content));
         displays.remove(editor);
     }
 
     @OnThread(Tag.FXPlatform)
-    public static void shortcutTyped(InteractionManager editor, ShortcutKey key)
-    {
+    public static void shortcutTyped(InteractionManager editor, ShortcutKey key) {
         SuggestedFollowUpDisplay display = displays.get(editor);
-        if (display != null)
-        {
+        if (display != null) {
             if (key == ShortcutKey.YES_ANYWHERE)
                 display.action.run();
             display.hide();
         }
     }
 
-    public static void modificationIn(InteractionManager editor)
-    {
+    public static void modificationIn(InteractionManager editor) {
         SuggestedFollowUpDisplay display = displays.get(editor);
-        if (display != null)
-        {
+        if (display != null) {
             display.hide();
         }
     }

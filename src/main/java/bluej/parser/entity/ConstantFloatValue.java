@@ -25,33 +25,30 @@ import bluej.debugger.gentype.JavaType;
 
 /**
  * Represents a value entity with a known (constant) floating point value (single or double precision).
- * 
+ *
  * @author Davin McCall
  */
-public class ConstantFloatValue extends ValueEntity
-{
+public class ConstantFloatValue extends ValueEntity {
     private final double value;
-    
+
     /**
      * Construct a floating-point constant value entity
-     * @param valueType  The type of the value (float or double)
-     * @param value      The known value
+     *
+     * @param valueType The type of the value (float or double)
+     * @param value     The known value
      */
-    public ConstantFloatValue(JavaType valueType, double value)
-    {
+    public ConstantFloatValue(JavaType valueType, double value) {
         super(valueType);
         this.value = value;
     }
-    
+
     @Override
-    public boolean hasConstantFloatValue()
-    {
+    public boolean hasConstantFloatValue() {
         return true;
     }
-    
+
     @Override
-    public double getConstantFloatValue()
-    {
+    public double getConstantFloatValue() {
         return value;
     }
 }

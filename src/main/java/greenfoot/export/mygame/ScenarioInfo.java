@@ -21,24 +21,19 @@
  */
 package greenfoot.export.mygame;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.*;
+
 /**
  * Holds various information about a scenario that is persisted when the scenario is saved.
- * @see ExportInfo
- * 
+ *
  * @author Davin McCall
+ * @see ExportInfo
  */
 @OnThread(Tag.Any)
-public class ScenarioInfo
-{
+public class ScenarioInfo {
     private String title;
     private String shortDescription;
     private String longDescription;
@@ -47,7 +42,7 @@ public class ScenarioInfo
     private boolean includeSource;
     private boolean locked;
     private boolean hideControls;
-    
+
     private static final String PUBLISH_TITLE = "publish.title";
     private static final String PUBLISH_SHORT_DESC = "publish.shortDesc";
     private static final String PUBLISH_LONG_DESC = "publish.longDesc";
@@ -59,16 +54,14 @@ public class ScenarioInfo
     /**
      * Construct a scenario info object without loading any properties.
      */
-    public ScenarioInfo()
-    {
+    public ScenarioInfo() {
         // Nothing to do.
     }
 
     /**
      * Construct a scenario info object by copying fields from another.
      */
-    public ScenarioInfo(ScenarioInfo src)
-    {
+    public ScenarioInfo(ScenarioInfo src) {
         title = src.title;
         shortDescription = src.shortDescription;
         longDescription = src.longDescription;
@@ -83,19 +76,17 @@ public class ScenarioInfo
      *
      * @param properties The project's properties.
      */
-    public ScenarioInfo(Properties properties)
-    {
+    public ScenarioInfo(Properties properties) {
         load(properties);
     }
 
     /**
      * Sets the exported scenario's title, if it is not null, after trimming.
-     * @param title  The title as String. Could be null.
+     *
+     * @param title The title as String. Could be null.
      */
-    public void setTitle(String title)
-    {
-        if (title != null)
-        {
+    public void setTitle(String title) {
+        if (title != null) {
             this.title = title.trim();
         }
     }
@@ -103,131 +94,118 @@ public class ScenarioInfo
     /**
      * Returns the scenario title.
      */
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
     /**
      * Sets the scenario's short description.
      */
-    public void setShortDescription(String shortDesc)
-    {
+    public void setShortDescription(String shortDesc) {
         shortDescription = shortDesc;
     }
 
     /**
      * Returns the scenario short description.
      */
-    public String getShortDescription()
-    {
+    public String getShortDescription() {
         return shortDescription;
     }
 
     /**
      * Sets the scenario description.
      */
-    public void setLongDescription(String longDesc)
-    {
+    public void setLongDescription(String longDesc) {
         longDescription = longDesc;
     }
 
     /**
      * Returns the scenario description.
      */
-    public String getLongDescription()
-    {
+    public String getLongDescription() {
         return longDescription;
     }
 
     /**
      * Sets the list of the scenario's tags.
-     * @param tags  A list of strings each represents an individual tag.
+     *
+     * @param tags A list of strings each represents an individual tag.
      */
-    public void setTags(List<String> tags)
-    {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 
     /**
      * Returns a list of the scenario's tags.
      */
-    public List<String> getTags()
-    {
+    public List<String> getTags() {
         return tags;
     }
 
     /**
      * Sets the scenario's URL.
      */
-    public void setUrl(String url)
-    {
+    public void setUrl(String url) {
         this.url = url;
     }
 
     /**
      * Returns the scenario's URL.
      */
-    public String getUrl()
-    {
+    public String getUrl() {
         return url;
     }
 
     /**
      * Returns True if the source code is included, false otherwise.
      */
-    public boolean isIncludeSource()
-    {
+    public boolean isIncludeSource() {
         return includeSource;
     }
 
     /**
      * Sets if the source code should be included or not.
+     *
      * @param includeSource True if the source code should be included.
      */
-    public void setIncludeSource(boolean includeSource)
-    {
+    public void setIncludeSource(boolean includeSource) {
         this.includeSource = includeSource;
     }
 
     /**
      * Returns True if the scenario is locked, false otherwise.
      */
-    public boolean isLocked()
-    {
+    public boolean isLocked() {
         return locked;
     }
 
     /**
      * Sets if the scenario is locked or not.
+     *
      * @param locked True if the scenario should be locked.
      */
-    public void setLocked(boolean locked)
-    {
+    public void setLocked(boolean locked) {
         this.locked = locked;
     }
 
     /**
      * Returns True if the exported scenario's controls are hidden, false otherwise.
      */
-    public boolean isHideControls()
-    {
+    public boolean isHideControls() {
         return hideControls;
     }
 
     /**
      * Sets True if the exported scenario's controls should be hidden, false otherwise.
      */
-    public void setHideControls(boolean hideControls)
-    {
+    public void setHideControls(boolean hideControls) {
         this.hideControls = hideControls;
     }
 
     /**
      * Stores the scenario information into the specified project properties.
      */
-    public void store(Properties properties)
-    {
+    public void store(Properties properties) {
         setPropertyIfNotNull(properties, PUBLISH_TITLE, getTitle());
         setPropertyIfNotNull(properties, PUBLISH_SHORT_DESC, getShortDescription());
         setPropertyIfNotNull(properties, PUBLISH_LONG_DESC, getLongDescription());
@@ -244,10 +222,8 @@ public class ScenarioInfo
      * @param key        Property's name to be set.
      * @param value      Property's value as string. Could be null.
      */
-    private void setPropertyIfNotNull(Properties properties, String key, String value)
-    {
-        if (value != null)
-        {
+    private void setPropertyIfNotNull(Properties properties, String key, String value) {
+        if (value != null) {
             properties.setProperty(key, value);
         }
     }
@@ -255,8 +231,7 @@ public class ScenarioInfo
     /**
      * Returns all the tags as one joined string. They are separated by spaces.
      */
-    private String getTagsAsString()
-    {
+    private String getTagsAsString() {
         List<String> tags = getTags();
         return tags == null ? null : String.join(" ", tags);
     }
@@ -264,8 +239,7 @@ public class ScenarioInfo
     /**
      * Attempts to load previously saved ScenarioInfo for this project.
      */
-    public void load(Properties properties)
-    {
+    public void load(Properties properties) {
         setTitle(properties.getProperty(PUBLISH_TITLE, ""));
         setShortDescription(properties.getProperty(PUBLISH_SHORT_DESC, ""));
         setLongDescription(properties.getProperty(PUBLISH_LONG_DESC, ""));
@@ -273,8 +247,7 @@ public class ScenarioInfo
 
         List<String> tagList = new LinkedList<>();
         String tags = properties.getProperty(PUBLISH_TAGS);
-        if (tags != null)
-        {
+        if (tags != null) {
             Collections.addAll(tagList, tags.split(" "));
         }
         setTags(tagList);

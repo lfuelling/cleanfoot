@@ -27,15 +27,12 @@ import bluej.pkgmgr.PkgMgrFrame;
  * User chooses "open non-BlueJ". This allows them to choose a directory to
  * open as a project.
  */
-final public class OpenNonBlueJAction extends PkgMgrAction
-{
-    public OpenNonBlueJAction(PkgMgrFrame pmf)
-    {
+final public class OpenNonBlueJAction extends PkgMgrAction {
+    public OpenNonBlueJAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.openNonBlueJ");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doOpenNonBlueJ();
     }

@@ -21,10 +21,6 @@
  */
 package bluej.stride.framedjava.errors;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import bluej.compiler.Diagnostic.DiagnosticOrigin;
 import bluej.stride.framedjava.ast.StringSlotFragment;
 import bluej.stride.framedjava.errors.Correction.SimpleCorrectionInfo;
@@ -32,8 +28,11 @@ import bluej.stride.framedjava.slots.ExpressionSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class UndeclaredVariableInExpressionError extends DirectSlotError
-{
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+public class UndeclaredVariableInExpressionError extends DirectSlotError {
     private final String varName;
     private final int startPosInSlot;
     private final int endPosInSlot;
@@ -43,16 +42,15 @@ public class UndeclaredVariableInExpressionError extends DirectSlotError
      * Creates an error about an undeclared variable being used in an expression. The quick fixes
      * will be to switch the variable name to another similarly spelt variable.
      *
-     * @param slotFragment The fragment with the error.
-     * @param varName The name of the variable which is used, but not declared
-     * @param startPosInSlot The start position in the slot of the variable name (inclusive)
-     * @param endPosInSlot The end position in the slot of the variable name (exclusive)
-     * @param slot The slot with the error (which will contain slotFragment).
+     * @param slotFragment        The fragment with the error.
+     * @param varName             The name of the variable which is used, but not declared
+     * @param startPosInSlot      The start position in the slot of the variable name (inclusive)
+     * @param endPosInSlot        The end position in the slot of the variable name (exclusive)
+     * @param slot                The slot with the error (which will contain slotFragment).
      * @param possibleCorrections The possible other variable names (unfiltered: all variable names which are in scope)
      */
     @OnThread(Tag.FXPlatform)
-    public UndeclaredVariableInExpressionError(StringSlotFragment slotFragment, String varName, int startPosInSlot, int endPosInSlot, ExpressionSlot slot, Set<String> possibleCorrections)
-    {
+    public UndeclaredVariableInExpressionError(StringSlotFragment slotFragment, String varName, int startPosInSlot, int endPosInSlot, ExpressionSlot slot, Set<String> possibleCorrections) {
         super(slotFragment, DiagnosticOrigin.STRIDE_LATE);
         this.varName = varName;
         this.startPosInSlot = startPosInSlot;
@@ -62,33 +60,28 @@ public class UndeclaredVariableInExpressionError extends DirectSlotError
     }
 
     @Override
-    public int getStartPosition()
-    {
+    public int getStartPosition() {
         return startPosInSlot;
     }
 
     @Override
-    public int getEndPosition()
-    {
+    public int getEndPosition() {
         return endPosInSlot;
-    }    
+    }
 
     @Override
     @OnThread(Tag.Any)
-    public String getMessage()
-    {
+    public String getMessage() {
         return "Undeclared variable: " + varName;
     }
 
     @Override
-    public List<? extends FixSuggestion> getFixSuggestions()
-    {
+    public List<? extends FixSuggestion> getFixSuggestions() {
         return corrections;
     }
 
     @Override
-    public boolean isJavaPos()
-    {
+    public boolean isJavaPos() {
         return true;
     }
 }

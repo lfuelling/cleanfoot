@@ -21,49 +21,44 @@
  */
 package greenfoot.util;
 
-import java.io.IOException;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import java.awt.Desktop;
-
 import bluej.Config;
 import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  * A class containing static methods for the purposes of launching external
  * programs. This will probably primarily be used for the editing of media
  * files, i.e. image and sound editing.
- * 
+ *
  * @author Michael Berry (mjrb4)
  * @version 18/05/09
  */
-public class ExternalAppLauncher
-{
+public class ExternalAppLauncher {
     private static final String imageEditor = Config.getPropString("greenfoot.editor.image", null);
 
     /**
      * Opens a file using the OS default program for that file type.
-     * 
+     *
      * @param file the file to open.
      */
     @OnThread(Tag.Swing)
-    public static void openFile(File file)
-    {
+    public static void openFile(File file) {
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop desktop = Desktop.getDesktop();
                 desktop.open(file);
-            }
-            else {
+            } else {
                 throw new RuntimeException(
                         "Cannot open editor for the file, because the Desktop class is not supported on this platform.");
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -72,32 +67,30 @@ public class ExternalAppLauncher
      * Opens an image for editing using the OS default editor for that file
      * type. Only difference from editFile is that this method uses a specific
      * override for images as specified in greenfoot.defs.
-     * 
+     *
      * @param file the file to open for editing.
      */
     @OnThread(Tag.Swing)
-    public static void editImage(File file)
-    {
+    public static void editImage(File file) {
         boolean success = false;
         if (imageEditor != null) {
             success = launchProgram(new File(imageEditor), file.toString());
-            if(!success) {
+            if (!success) {
                 System.err.println("Could not launch the external program: " + imageEditor);
-            } 
+            }
         }
-        if(!success) {
+        if (!success) {
             editFile(file);
         }
     }
 
     /**
      * Opens a file for editing using the OS default editor for that file type.
-     * 
+     *
      * @param file the file to open for editing.
      */
     @OnThread(Tag.Swing)
-    private static void editFile(File file)
-    {
+    private static void editFile(File file) {
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop desktop = Desktop.getDesktop();
@@ -106,15 +99,13 @@ public class ExternalAppLauncher
                 } else {
                     // They're probably on Linux; let's take our best guess
                     // and use GIMP:
-                    Runtime.getRuntime().exec(new String []{"gimp", file.getAbsolutePath()}, null, null);
+                    Runtime.getRuntime().exec(new String[]{"gimp", file.getAbsolutePath()}, null, null);
                 }
-            }
-            else {
+            } else {
                 throw new RuntimeException(
                         "Cannot open editor for the file, because the Desktop class is not supported on this platform.");
             }
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Debug.reportError("Error editing image", ex);
         }
     }
@@ -122,12 +113,11 @@ public class ExternalAppLauncher
     /**
      * Launch an external application with a single parameter. This is usually
      * the file that the application should open.
-     * 
+     *
      * @param path the path of the application to launch.
      * @param file the file to open in the application.
      */
-    public static boolean launchProgram(File program, String file)
-    {
+    public static boolean launchProgram(File program, String file) {
         if (Config.isMacOS() && program.isDirectory()) {
             // If we are on a mac, and the program is a directory, we should use
             // the 'open' command.
@@ -139,35 +129,30 @@ public class ExternalAppLauncher
             try {
                 execWithOutput(cmd);
                 return true;
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
-        }
-        else if (program.canExecute()) {
+        } else if (program.canExecute()) {
             String[] cmd = new String[2];
             cmd[0] = program.toString();
             cmd[1] = file;
             try {
                 execWithOutput(cmd);
                 return true;
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
-        return false;    
-        
+        return false;
+
     }
 
     /**
      * Use Runtime.getRuntime().exec to execute the given command and redirect
      * the output from the process to System.out and errors to System.err.
-     * 
      */
     private static void execWithOutput(String[] cmd)
-        throws IOException
-    {
+            throws IOException {
         Process p = Runtime.getRuntime().exec(cmd);
         StreamRedirector errRedirector = new StreamRedirector(p.getErrorStream(), System.err);
         errRedirector.start();
@@ -177,22 +162,19 @@ public class ExternalAppLauncher
 
     /**
      * Class that redirects from an inputstream to an outputstream.
-     * 
+     *
      * @author Poul Henriksen
      */
-    private static class StreamRedirector extends Thread
-    {
+    private static class StreamRedirector extends Thread {
         private final OutputStream target;
         private final InputStream source;
 
-        public StreamRedirector(InputStream source, OutputStream target)
-        {
+        public StreamRedirector(InputStream source, OutputStream target) {
             this.source = source;
             this.target = target;
         }
 
-        public void run()
-        {
+        public void run() {
             int len = 0;
             while (len != -1) {
                 // CharBuffer target = CharBuffer.allocate(20);
@@ -203,8 +185,7 @@ public class ExternalAppLauncher
                         target.write(bytes, 0, len);
                         target.flush();
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

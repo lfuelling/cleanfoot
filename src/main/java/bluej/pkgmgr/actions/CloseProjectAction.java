@@ -22,25 +22,21 @@
 package bluej.pkgmgr.actions;
 
 import bluej.pkgmgr.PkgMgrFrame;
-import javafx.application.Platform;
 
 /**
  * User chooses "close project". Save & close the current project. If the command
  * was issued from a menu, always keep the last window open, otherwise close
  * the window regardless.
- * 
+ *
  * @author Davin McCall
  * @version $Id: CloseProjectAction.java 16695 2016-10-07 11:34:53Z nccb $
  */
-final public class CloseProjectAction extends PkgMgrAction
-{
-    public CloseProjectAction(PkgMgrFrame pmf)
-    {
+final public class CloseProjectAction extends PkgMgrAction {
+    public CloseProjectAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.close");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doClose(true, true);
     }

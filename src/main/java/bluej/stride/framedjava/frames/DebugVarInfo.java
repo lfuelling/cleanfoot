@@ -22,18 +22,17 @@
 package bluej.stride.framedjava.frames;
 
 import javafx.scene.Node;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public interface DebugVarInfo
-{
+public interface DebugVarInfo {
     @OnThread(Tag.FXPlatform)
     Node getDisplay(DebugVarInfo prev);
+
     /**
      * Gets a String that will change whenever the contents of the variable changes.
      * Used to decide whether a variable has changed since last display
      */
     @OnThread(Tag.FXPlatform)
-    String getInternalValueString(); 
+    String getInternalValueString();
 }

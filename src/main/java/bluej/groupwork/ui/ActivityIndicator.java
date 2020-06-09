@@ -29,19 +29,16 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
-public class ActivityIndicator extends StackPane
-{
+public class ActivityIndicator extends StackPane {
     private final ProgressBar progressBar;
     private final Label messageLabel;
     private Timeline animation;
 
-    public ActivityIndicator()
-    {
+    public ActivityIndicator() {
         progressBar = new ProgressBar();
         progressBar.setVisible(false);
         getChildren().add(progressBar);
@@ -49,41 +46,39 @@ public class ActivityIndicator extends StackPane
         messageLabel.setVisible(false);
         getChildren().add(messageLabel);
     }
-    
+
     /**
      * Set the activity indicator's running state. This is safe to call
      * from any thread.
-     * 
-     * @param running  The new running state
+     *
+     * @param running The new running state
      */
-    public void setRunning(boolean running)
-    {
+    public void setRunning(boolean running) {
         messageLabel.setVisible(!running);
         progressBar.setVisible(running);
-        if (animation != null)
-        {
+        if (animation != null) {
             // Either way, we stop the animation (later we restart, or leave stopped):
             animation.stop();
             animation = null;
         }
-        
-        if (running)
-        {
+
+        if (running) {
             animation = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(progressBar.progressProperty(), 0.0)),
-                new KeyFrame(Duration.millis(1000), new KeyValue(progressBar.progressProperty(), 1.0)));
+                    new KeyFrame(Duration.ZERO, new KeyValue(progressBar.progressProperty(), 0.0)),
+                    new KeyFrame(Duration.millis(1000), new KeyValue(progressBar.progressProperty(), 1.0)));
             animation.setAutoReverse(true);
             animation.setCycleCount(Animation.INDEFINITE);
             animation.playFromStart();
         }
     }
+
     /**
      * Set message to display when the activity indicator is not in a running state.
-     * @param msg 
+     *
+     * @param msg
      */
-    public void setMessage(String msg)
-    {
-        if (msg != null){
+    public void setMessage(String msg) {
+        if (msg != null) {
             messageLabel.setText(msg);
         }
     }

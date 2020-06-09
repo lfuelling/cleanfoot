@@ -23,34 +23,30 @@ package bluej.stride.generic;
 
 import java.util.function.Function;
 
-public class DefaultFrameFactory<T extends Frame> implements FrameFactory<T>
-{
+public class DefaultFrameFactory<T extends Frame> implements FrameFactory<T> {
     private final Class<T> cls;
     private final Function<InteractionManager, T> create;
 
     /**
      * You typically use this in a static getFactory() method as follows:
-     * 
+     * <p>
      * public static FrameFactory<BlankFrame> getFactory()
      * {
-     *     return new DefaultFrameFactory<>(BlankFrame.class, BlankFrame::new);
+     * return new DefaultFrameFactory<>(BlankFrame.class, BlankFrame::new);
      * }
      */
-    public DefaultFrameFactory(Class<T> cls, Function<InteractionManager, T> create)
-    {
+    public DefaultFrameFactory(Class<T> cls, Function<InteractionManager, T> create) {
         this.cls = cls;
         this.create = create;
     }
-    
+
     @Override
-    public T createBlock(InteractionManager editor)
-    {
+    public T createBlock(InteractionManager editor) {
         return create.apply(editor);
     }
 
     @Override
-    public Class<T> getBlockClass()
-    {
+    public Class<T> getBlockClass() {
         return cls;
     }
 

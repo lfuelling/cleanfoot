@@ -23,18 +23,16 @@ package bluej.parser;
 
 /**
  * A line/column location in a source file.
- *
+ * <p>
  * Note that all line/column numbers start counting from 1.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class SourceLocation
-{
+public class SourceLocation {
     private final int line;
     private final int column;
-    
-    public SourceLocation(int line, int column)
-    {
+
+    public SourceLocation(int line, int column) {
         if (line < 1 || column < 1) {
             throw new IllegalArgumentException("line/column numbers must be > 0");
         }
@@ -46,23 +44,21 @@ public class SourceLocation
     /**
      * Gets the line number of this location
      */
-    public int getLine()
-    {
+    public int getLine() {
         return line;
     }
 
     /**
      * gets the column where this node reside
+     *
      * @return <code>int</code>
      */
-    public int getColumn()
-    {
+    public int getColumn() {
         return column;
     }
 
     @Override
-    public String toString()
-    {   
+    public String toString() {
         return "<" + line + "," + column + ">";
     }
 }

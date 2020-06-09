@@ -22,8 +22,7 @@
 package bluej.stride.framedjava.frames;
 
 // Provisional list of block categories:
-public enum StrideCategory
-{
+public enum StrideCategory {
     // Order here matters for the sidebar:
     CALL,
     ASSIGNMENT,
@@ -40,7 +39,7 @@ public enum StrideCategory
     TRY,
     BREAK,
     THROW,
-    
+
     CASE,
 
     INTERFACE_METHOD,

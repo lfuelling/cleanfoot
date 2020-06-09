@@ -21,68 +21,62 @@
  */
 package bluej.testmgr.record;
 
+import bluej.pkgmgr.PkgMgrFrame;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-
-import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * From an existing unit test we create an invoker record
  * that represents all the existing fixture declarations
  * and setup code.
- * 
- * @author  Andrew Patterson
+ *
+ * @author Andrew Patterson
  */
-public class ExistingFixtureInvokerRecord extends InvokerRecord
-{
+public class ExistingFixtureInvokerRecord extends InvokerRecord {
     private final List<String> fieldsSrc;
     private String setUpSrc;
-    
+
     /**
      * Records a method call that returns a result to the user.
-     * 
-     * @param returnType  the Class of the return type of the method
-     * @param command     the method statement to execute
+     *
+     * @param returnType the Class of the return type of the method
+     * @param command    the method statement to execute
      */
-    public ExistingFixtureInvokerRecord()
-    {
+    public ExistingFixtureInvokerRecord() {
         fieldsSrc = new ArrayList<String>();
     }
-    
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
     }
 
-    public void addFieldDeclaration(String fieldDecl)
-    {
+    public void addFieldDeclaration(String fieldDecl) {
         fieldsSrc.add(fieldDecl);
     }
-    
-    public void setSetupMethod(String setupMethodSrc)
-    {
+
+    public void setSetupMethod(String setupMethodSrc) {
         setUpSrc = setupMethodSrc;
     }
-    
+
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return a String representing the object declaration
-     *         src or null if there is none.
+     * src or null if there is none.
      */
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
+    public String toFixtureDeclaration(String firstIndent) {
         StringBuffer sb = new StringBuffer();
 
         ListIterator<String> it = fieldsSrc.listIterator();
-                
-        while(it.hasNext()) {
+
+        while (it.hasNext()) {
             String fieldDecl = it.next();
-                    
+
             sb.append(firstIndent);
             sb.append(fieldDecl);
             sb.append('\n');
@@ -90,17 +84,16 @@ public class ExistingFixtureInvokerRecord extends InvokerRecord
 
         return sb.toString();
     }
-    
+
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String reprenting the object initialisation
-     *         src or null if there is none. 
+     * src or null if there is none.
      */
     @Override
-    public String toFixtureSetup(String secondIndent)
-    {
+    public String toFixtureSetup(String secondIndent) {
         StringBuffer sb = new StringBuffer();
         sb.append(secondIndent);
         sb.append(setUpSrc);
@@ -112,18 +105,16 @@ public class ExistingFixtureInvokerRecord extends InvokerRecord
     /**
      * Construct a portion of a test method for this
      * invoker record.
-     * 
+     *
      * @return a String representing the test method src
      */
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         return null;
     }
 
     @Override
-    public String toExpression()
-    {
+    public String toExpression() {
         throw new RuntimeException("Method not implemented for this type.");
     }
 }

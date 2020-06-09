@@ -25,14 +25,13 @@ import bluej.stride.framedjava.frames.StrideCategory;
 
 /**
  * A utility predicate-like class for checking which frames are accepted in a given canvas.
- * 
+ * <p>
  * We need two methods because there isn't a one-to-one correspondence between category
  * and frame.  Specifically, var frames can be inserted in three categories (var, local constant, class constant)
  * and only accepted by certain canvases, but after insertion, they can be moved around
  * freely between canvases.
  */
-public interface FrameTypeCheck
-{
+public interface FrameTypeCheck {
     /**
      * Checks if the given category can be inserted as new.
      */

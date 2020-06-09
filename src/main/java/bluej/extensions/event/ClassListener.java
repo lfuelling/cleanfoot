@@ -23,16 +23,15 @@ package bluej.extensions.event;
 
 /**
  * This interface allows you to listen for class events.
- * 
+ *
  * <p>Currently the only event is the "state changed" event which can
  * be used to detect when a class becomes uncompiled (i.e. the source is
- * changed) or compiled. 
- * 
+ * changed) or compiled.
+ *
  * @author Davin McCall
  * @version $Id: ClassListener.java 6215 2009-03-30 13:28:25Z polle $
  */
-public interface ClassListener
-{
+public interface ClassListener {
     /**
      * The class state changed. This means that the class source was
      * changed so that the class is now uncompiled, or the class was

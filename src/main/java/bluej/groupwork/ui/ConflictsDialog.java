@@ -24,22 +24,17 @@ package bluej.groupwork.ui;
 import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXCustomizedDialog;
-
-import java.util.Iterator;
-import java.util.List;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A dialog which presents conflicts after an update.
@@ -48,22 +43,20 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class ConflictsDialog extends FXCustomizedDialog<Void>
-{
+public class ConflictsDialog extends FXCustomizedDialog<Void> {
     private final List<String> bluejConflicts;
     private final List<String> nonBluejConflicts;
     private final Project project;
 
     /**
      * Constructor for ConflictsDialog.
-     * 
-     * @param project   the project in which the conflicts occurred. 
-     * @param bluejConflicts     the conflicting files which are managed by BlueJ (*.java, README.txt)
-     * @param nonBlueJConflicts  other conflicting files
+     *
+     * @param project           the project in which the conflicts occurred.
+     * @param bluejConflicts    the conflicting files which are managed by BlueJ (*.java, README.txt)
+     * @param nonBlueJConflicts other conflicting files
      */
     public ConflictsDialog(Project project, Window owner,
-                           List<String> bluejConflicts, List<String> nonBlueJConflicts)
-    {
+                           List<String> bluejConflicts, List<String> nonBlueJConflicts) {
         super(owner, "team.conflicts.title", "team-conflicts");
         this.project = project;
         this.bluejConflicts = bluejConflicts;
@@ -71,25 +64,21 @@ public class ConflictsDialog extends FXCustomizedDialog<Void>
 
         getDialogPane().setContent(makeMainPane());
         getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
-        if (owner != null)
-        {
+        if (owner != null) {
             setLocationRelativeTo(owner);
         }
     }
 
-    private Pane makeMainPane()
-    {
+    private Pane makeMainPane() {
         VBox mainPanel = new VBox();
 
-        if (! bluejConflicts.isEmpty())
-        {
+        if (!bluejConflicts.isEmpty()) {
             Pane bluejConflictsPanel = makeConflictsPanel(
                     Config.getString("team.conflicts.classes"), bluejConflicts);
             mainPanel.getChildren().add(bluejConflictsPanel);
         }
 
-        if (! nonBluejConflicts.isEmpty())
-        {
+        if (!nonBluejConflicts.isEmpty()) {
             Pane nonBluejConflictsPanel = makeConflictsPanel(
                     Config.getString("team.conflicts.files"), nonBluejConflicts);
             mainPanel.getChildren().add(nonBluejConflictsPanel);
@@ -108,15 +97,14 @@ public class ConflictsDialog extends FXCustomizedDialog<Void>
         return mainPanel;
     }
 
-    private Pane makeConflictsPanel(String headline, List<String> conflicts)
-    {
+    private Pane makeConflictsPanel(String headline, List<String> conflicts) {
         VBox labelPanel = new VBox();
         labelPanel.setAlignment(Pos.BASELINE_LEFT);
 
         VBox conflictsPanel = new VBox();
         conflictsPanel.setAlignment(Pos.BASELINE_LEFT);
 
-        for (Iterator<String> i = conflicts.iterator(); i.hasNext();) {
+        for (Iterator<String> i = conflicts.iterator(); i.hasNext(); ) {
             String conflict = i.next();
             conflictsPanel.getChildren().add(new Label(conflict));
         }
@@ -126,8 +114,8 @@ public class ConflictsDialog extends FXCustomizedDialog<Void>
         scrollPane.setFitToHeight(true);
 
         labelPanel.getChildren().addAll(new Label(headline),
-                                        new Separator(Orientation.VERTICAL),
-                                        scrollPane);
+                new Separator(Orientation.VERTICAL),
+                scrollPane);
 
         return labelPanel;
     }

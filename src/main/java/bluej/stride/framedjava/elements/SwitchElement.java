@@ -21,39 +21,29 @@
  */
 package bluej.stride.framedjava.elements;
 
+import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.SwitchFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.Utility;
+import nu.xom.Element;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Utility;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaContainerDebugHandler;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.SwitchFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-public class SwitchElement extends ContainerCodeElement implements JavaSingleLineDebugHandler
-{
+public class SwitchElement extends ContainerCodeElement implements JavaSingleLineDebugHandler {
     public static final String ELEMENT = "switch";
     private final FilledExpressionSlotFragment expression;
     private final List<CodeElement> casesContents;
     private final List<CodeElement> defaultContents;
     private SwitchFrame frame;
-    
+
     public SwitchElement(SwitchFrame frame, FilledExpressionSlotFragment expression, List<? extends CodeElement> casesContents,
-                         List<CodeElement> defaultContents, boolean enabled)
-    {
+                         List<CodeElement> defaultContents, boolean enabled) {
         this.frame = frame;
         this.expression = expression;
         this.casesContents = new ArrayList<>(casesContents);
@@ -68,37 +58,36 @@ public class SwitchElement extends ContainerCodeElement implements JavaSingleLin
     }
 
     @Override
-    public List<CodeElement> childrenUpTo(CodeElement c)
-    {
+    public List<CodeElement> childrenUpTo(CodeElement c) {
         if (casesContents.contains(c)) {
             return casesContents.subList(0, casesContents.indexOf(c));
-        }
-        else if (defaultContents != null && defaultContents.contains(c)) {
+        } else if (defaultContents != null && defaultContents.contains(c)) {
             return defaultContents.subList(0, defaultContents.indexOf(c));
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         List<JavaSource> contentsJavaSource = CodeElement.toJavaCodes(casesContents);
         if (defaultContents != null) {
-            JavaContainerDebugHandler defaultHandler = debug -> { return frame.getDefaultDebug().showDebugAtEnd(debug);};
+            JavaContainerDebugHandler defaultHandler = debug -> {
+                return frame.getDefaultDebug().showDebugAtEnd(debug);
+            };
             contentsJavaSource.add(JavaSource.createCompoundStatement(frame, this, this, defaultHandler, Arrays.asList(f(frame, "default :")),
                     CodeElement.toJavaCodes(defaultContents)));
         }
 
-        JavaContainerDebugHandler casesHandler = debug -> { return frame.getCasesDebug().showDebugAtEnd(debug);};
+        JavaContainerDebugHandler casesHandler = debug -> {
+            return frame.getCasesDebug().showDebugAtEnd(debug);
+        };
         return JavaSource.createCompoundStatement(frame, this, this, casesHandler, Arrays.asList(f(frame, "switch ("),
                 expression, f(frame, ")")), contentsJavaSource);
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement switchEl = new LocatableElement(this, ELEMENT);
         switchEl.addAttributeStructured("expression", expression);
         addEnableAttribute(switchEl);
@@ -116,9 +105,8 @@ public class SwitchElement extends ContainerCodeElement implements JavaSingleLin
 
         return switchEl;
     }
-    
-    public SwitchElement(Element el)
-    {
+
+    public SwitchElement(Element el) {
         expression = new FilledExpressionSlotFragment(el.getAttributeValue("expression"), el.getAttributeValue("expression-java"));
         casesContents = new ArrayList<>();
         Element casesEl = el.getChildElements("cases").get(0);
@@ -138,11 +126,9 @@ public class SwitchElement extends ContainerCodeElement implements JavaSingleLin
                 defaultContents.add(member);
                 member.setParent(this);
             }
-        }
-        else if (el.getChildElements("default").size() == 0) {
+        } else if (el.getChildElements("default").size() == 0) {
             defaultContents = null;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
 
@@ -150,8 +136,7 @@ public class SwitchElement extends ContainerCodeElement implements JavaSingleLin
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new SwitchFrame(editor, expression, isEnable());
         casesContents.forEach(c -> frame.getCasesCanvas().insertBlockAfter(c.createFrame(editor), null));
 
@@ -163,26 +148,22 @@ public class SwitchElement extends ContainerCodeElement implements JavaSingleLin
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
     }
 
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    public Stream<CodeElement> streamContained()
-    {
+    public Stream<CodeElement> streamContained() {
         return Utility.concat(streamContained(casesContents), streamContained(defaultContents));
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.of(expression);
     }
 }

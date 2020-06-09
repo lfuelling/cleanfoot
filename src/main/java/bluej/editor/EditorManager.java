@@ -21,9 +21,6 @@
  */
 package bluej.editor;
 
-import java.nio.charset.Charset;
-import java.util.function.Supplier;
-
 import bluej.editor.moe.MoeEditorManager;
 import bluej.editor.stride.FXTabbedEditor;
 import bluej.parser.entity.EntityResolver;
@@ -31,15 +28,16 @@ import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.FXSupplier;
 
+import java.nio.charset.Charset;
+
 /**
  * Interface between the editor manager and the rest of BlueJ.
  *
- * @author  Michael Cahill
- * @author  Michael Kolling
- * @author  Bruce Quig
+ * @author Michael Cahill
+ * @author Michael Kolling
+ * @author Bruce Quig
  */
-public abstract class EditorManager
-{
+public abstract class EditorManager {
 
     private static final EditorManager theEditorManager = new MoeEditorManager();
 
@@ -48,8 +46,7 @@ public abstract class EditorManager
      *
      * @returns the singleton EditorManager instance
      */
-    public static EditorManager getEditorManager()
-    {
+    public static EditorManager getEditorManager() {
         return theEditorManager;
     }
 
@@ -59,26 +56,25 @@ public abstract class EditorManager
      * is initially hidden; a call to "Editor.show()" is needed to make
      * it visible after opening it.
      *
-     * @param filename     name of the source file to open (may be null)
-     * @param docFilename  name of the corresponding javadoc file
-     * @param charset      the character set of the file contents 
-     * @param windowTitle  title of window (usually class name)
-     * @param watcher      an watcher to be notified of edit events
-     * @param compiled     true, if the class has been compiled
-     * @param projectResolver   A resolver for external symbols
-     * @param javadocResolver   A resolver for javadoc on external methods
-     * 
-     * @return          the new editor, or null if there was a problem
+     * @param filename        name of the source file to open (may be null)
+     * @param docFilename     name of the corresponding javadoc file
+     * @param charset         the character set of the file contents
+     * @param windowTitle     title of window (usually class name)
+     * @param watcher         an watcher to be notified of edit events
+     * @param compiled        true, if the class has been compiled
+     * @param projectResolver A resolver for external symbols
+     * @param javadocResolver A resolver for javadoc on external methods
+     * @return the new editor, or null if there was a problem
      */
-    public abstract Editor openClass(String filename, 
-        String docFilename,
-        Charset charset,
-        String windowTitle,
-        FXSupplier<FXTabbedEditor> fxTabbedEditor,
-        EditorWatcher watcher, 
-        boolean compiled,
-        EntityResolver projectResolver,
-        JavadocResolver javadocResolver, FXPlatformRunnable callbackOnOpen);
+    public abstract Editor openClass(String filename,
+                                     String docFilename,
+                                     Charset charset,
+                                     String windowTitle,
+                                     FXSupplier<FXTabbedEditor> fxTabbedEditor,
+                                     EditorWatcher watcher,
+                                     boolean compiled,
+                                     EntityResolver projectResolver,
+                                     JavadocResolver javadocResolver, FXPlatformRunnable callbackOnOpen);
 
 
     /**
@@ -89,10 +85,10 @@ public abstract class EditorManager
      * A call to "Editor::show" is needed to make is visible after
      * opening it.
      *
-     * @param filename          name of the source file to open (may be null)
-     * @param windowTitle       title of window (usually class name)
-     * @param watcher           an object interested in editing events
-     * @returns                 the new editor, or null if there was a problem
+     * @param filename    name of the source file to open (may be null)
+     * @param windowTitle title of window (usually class name)
+     * @param watcher     an object interested in editing events
+     * @returns the new editor, or null if there was a problem
      */
     public abstract Editor openText(String filename, Charset charset, String windowTitle,
                                     FXSupplier<FXTabbedEditor> fxTabbedEditor);

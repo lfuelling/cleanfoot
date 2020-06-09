@@ -21,31 +21,29 @@
  */
 package bluej.views;
 
-import java.lang.reflect.Constructor;
-import java.util.List;
-
-import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.JavaType;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Constructor;
+import java.util.List;
+
 /**
  * A representation of a Java constructor in BlueJ
- * 
+ *
  * @author Michael Cahill
  * @author Michael Kolling
  */
-public final class ConstructorView extends CallableView
-{
+public final class ConstructorView extends CallableView {
     @OnThread(Tag.Any)
     private final Constructor<?> cons;
 
     /**
      * Constructor.
      */
-    public ConstructorView(View view, Constructor<?> cons)
-    {
+    public ConstructorView(View view, Constructor<?> cons) {
         super(view);
         this.cons = cons;
     }
@@ -53,41 +51,35 @@ public final class ConstructorView extends CallableView
     /**
      * Returns a string describing this Constructor.
      */
-    public String toString()
-    {
+    public String toString() {
         return cons.toString();
     }
 
     @OnThread(Tag.Any)
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return cons.getModifiers();
     }
 
     /**
      * Returns a boolean indicating whether this method has parameters
      */
-    public boolean hasParameters()
-    {
+    public boolean hasParameters() {
         return (cons.getParameterTypes().length > 0);
     }
 
-    public boolean isGeneric()
-    {
+    public boolean isGeneric() {
         return !JavaUtils.getJavaUtils().getTypeParams(cons).isEmpty();
     }
-    
-    public boolean isConstructor()
-    {
+
+    public boolean isConstructor() {
         return true;
     }
 
     /**
      * Returns a signature string in the format
-     *  name(type,type,type)
+     * name(type,type,type)
      */
-    public String getSignature()
-    {
+    public String getSignature() {
         return JavaUtils.getSignature(cons);
     }
 
@@ -95,12 +87,10 @@ public final class ConstructorView extends CallableView
      * Get a short String describing this member. A description is similar
      * to the signature, but it has parameter names in it instead of types.
      */
-    public String getShortDesc() 
-    {
+    public String getShortDesc() {
         try {
             return JavaUtils.getJavaUtils().getShortDesc(cons, getParamNames());
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             return ""; // TODO handle better
         }
     }
@@ -110,50 +100,43 @@ public final class ConstructorView extends CallableView
      * similar to the short description, but it has type names and parameters
      * included.
      */
-    public String getLongDesc() 
-    {
+    public String getLongDesc() {
         try {
             return JavaUtils.getJavaUtils().getLongDesc(cons, getParamNames());
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             return ""; // TODO handle better
         }
     }
-    
+
     /**
      * Get an array of Class objects representing constructor's parameters
+     *
      * @returns array of Class objects
      */
-    public Class<?>[] getParameters()
-    {
+    public Class<?>[] getParameters() {
         return cons.getParameterTypes();
     }
-    
+
     @Override
-    public String[] getParamTypeStrings() 
-    {
+    public String[] getParamTypeStrings() {
         try {
             return JavaUtils.getJavaUtils().getParameterTypes(cons);
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             return new String[0]; // TODO handle better
         }
     }
-    
+
     @Override
-    public JavaType[] getParamTypes(boolean raw)
-    {
+    public JavaType[] getParamTypes(boolean raw) {
         try {
             return JavaUtils.getJavaUtils().getParamGenTypes(cons);
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             return new JavaType[0]; // TODO handle better
         }
     }
-    
+
     @Override
-    public GenTypeDeclTpar[] getTypeParams()
-    {
+    public GenTypeDeclTpar[] getTypeParams() {
         JavaUtils jutils = JavaUtils.getJavaUtils();
         List<GenTypeDeclTpar> tparams = jutils.getTypeParams(cons);
         return tparams.toArray(new GenTypeDeclTpar[tparams.size()]);
@@ -162,8 +145,7 @@ public final class ConstructorView extends CallableView
     /**
      * Whether this method has a var arg.
      */
-    public boolean isVarArgs()
-    {
+    public boolean isVarArgs() {
         return JavaUtils.getJavaUtils().isVarArgs(cons);
     }
 }

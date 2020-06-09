@@ -38,14 +38,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -63,49 +56,40 @@ import threadchecker.Tag;
 /**
  * A JavaFX based user interface to run tests.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public @OnThread(Tag.FXPlatform) class TestDisplayFrame
-{
+public @OnThread(Tag.FXPlatform) class TestDisplayFrame {
     // -- static singleton factory method --
     @OnThread(Tag.FXPlatform)
     private static TestDisplayFrame singleton = null;
     @OnThread(Tag.FXPlatform)
     private static final BooleanProperty frameShowing = new SimpleBooleanProperty(false);
-    
+
     @OnThread(Tag.FXPlatform)
-    public static TestDisplayFrame getTestDisplay()
-    {
-        if(singleton == null) {
+    public static TestDisplayFrame getTestDisplay() {
+        if (singleton == null) {
             singleton = new TestDisplayFrame();
         }
         return singleton;
     }
 
-    public static BooleanProperty showingProperty()
-    {
+    public static BooleanProperty showingProperty() {
         return frameShowing;
     }
 
-    static
-    {
+    static {
         JavaFXUtil.addChangeListenerPlatform(frameShowing, doShow -> {
             TestDisplayFrame testDisplayFrame = getTestDisplay();
 
             // Note that we can end up here due to the window state changing,
             // so be careful not to end up in a loop by showing/hiding again:
-            if (doShow)
-            {
-                if (!testDisplayFrame.frame.isShowing())
-                {
+            if (doShow) {
+                if (!testDisplayFrame.frame.isShowing()) {
                     testDisplayFrame.frame.show();
                 }
                 testDisplayFrame.frame.toFront();
-            }
-            else
-            {
-                if (testDisplayFrame.frame.isShowing())
-                {
+            } else {
+                if (testDisplayFrame.frame.isShowing()) {
                     testDisplayFrame.frame.hide();
                 }
             }
@@ -116,12 +100,18 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     private final Image errorIcon = Config.getFixedImageAsFXImage("error.gif");
     private final Image okIcon = Config.getFixedImageAsFXImage("ok.gif");
 
-    /** The actual window */
+    /**
+     * The actual window
+     */
     private Stage frame;
 
-    /** The list of test results which is displayed in testNames */
+    /**
+     * The list of test results which is displayed in testNames
+     */
     private ObservableList<DebuggerTestResult> testEntries;
-    /** The top list of test names */
+    /**
+     * The top list of test names
+     */
     private ListView<DebuggerTestResult> testNames;
     private ProgressBar progressBar;
 
@@ -129,8 +119,10 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     private final SimpleIntegerProperty failureCount;
     private final SimpleIntegerProperty totalTimeMs;
     private final SimpleIntegerProperty testTotal;
-    /** Keeps track of whether we are running a single test
-     * or multiple tests */
+    /**
+     * Keeps track of whether we are running a single test
+     * or multiple tests
+     */
     private boolean doingMultiple;
 
     // Bindings passed to bindPseudoclass can get GCed, so we need to keep track
@@ -138,16 +130,17 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     private BooleanBinding hasErrors;
     private BooleanBinding hasFailures;
     private BooleanBinding hasFailuresOrErrors;
-        
+
     // private FailureDetailView fdv;
-    /** The text field showing the exception message */
+    /**
+     * The text field showing the exception message
+     */
     private TextArea exceptionMessageField;
     private Button showSourceButton;
 
     private Project project;
 
-    public TestDisplayFrame()
-    {
+    public TestDisplayFrame() {
         testTotal = new SimpleIntegerProperty(0);
         errorCount = new SimpleIntegerProperty(0);
         failureCount = new SimpleIntegerProperty(0);
@@ -160,11 +153,9 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     /**
      * Show or hide the test display window.
      */
-    public void showTestDisplay(boolean doShow)
-    {
+    public void showTestDisplay(boolean doShow) {
         frameShowing.set(doShow);
-        if (doShow)
-        {
+        if (doShow) {
             frame.toFront();
         }
     }
@@ -172,8 +163,7 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     /**
      * Create the user-interface for the error display dialog.
      */
-    protected void createUI()
-    {
+    protected void createUI() {
         frame = new Stage();
         frame.setTitle(Config.getString("testdisplay.title"));
         frame.setOnShown(e -> {
@@ -209,7 +199,7 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
         JavaFXUtil.addStyleClass(testNames, "test-names");
         testNames.setItems(testEntries);
         testNames.setCellFactory(col -> new TestResultCell());
-        
+
         mainDivider.getItems().add(testNames);
         VBox content = new VBox();
         mainDivider.getItems().add(content);
@@ -250,7 +240,7 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
         hasFailures = Bindings.greaterThan(failureCount, 0);
         JavaFXUtil.bindPseudoclass(failurePanel, "bj-non-zero", hasFailures);
         HBox.setHgrow(failurePanel, Priority.ALWAYS);
-        
+
         counterPanel.getChildren().addAll(
                 new Label(Config.getString("testdisplay.counter.runs")),
                 fNumberOfRuns,
@@ -279,12 +269,12 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
 
         Button closeButton = new Button(Config.getString("close"));
         closeButton.setOnAction(e -> frame.hide());
-            
+
         // Panel for "show source" and "close" buttons
         BorderPane buttonPanel = new BorderPane();
         buttonPanel.setLeft(showSourceButton);
         buttonPanel.setRight(closeButton);
-            
+
         content.getChildren().add(buttonPanel);
         VBox surround = new VBox(mainDivider);
         VBox.setVgrow(mainDivider, Priority.ALWAYS);
@@ -292,20 +282,18 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
         JavaFXUtil.addStyleClass(content, "test-results-content");
         frame.setScene(new Scene(surround));
         Config.addTestsStylesheets(frame.getScene());
-        
+
         surround.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            if (e.getCode() == KeyCode.ESCAPE)
-            {
+            if (e.getCode() == KeyCode.ESCAPE) {
                 frame.hide();
                 e.consume();
             }
         });
     }
 
-    protected void reset()
-    {
+    protected void reset() {
         testEntries.clear();
-        
+
         errorCount.set(0);
         failureCount.set(0);
         totalTimeMs.set(0);
@@ -314,36 +302,33 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
         exceptionMessageField.setText("");
         showSourceButton.setDisable(true);
     }
-    
+
     /**
      * Indicate that we are starting a bunch of tests.
-     * 
-     * @param num  The total number of tests to be run
+     *
+     * @param num The total number of tests to be run
      */
-    public void startMultipleTests(Project proj, int num)
-    {
+    public void startMultipleTests(Project proj, int num) {
         this.project = proj;
-        doingMultiple = true;    
-        
+        doingMultiple = true;
+
         reset();
         testTotal.set(num);
         showTestDisplay(true);
     }
-    
-    public void endMultipleTests()
-    {
+
+    public void endMultipleTests() {
         doingMultiple = false;
-    }  
+    }
 
     /**
      * Tell the dialog we are about to start a test run.
-     * 
-     * @param num   the number of tests we will run
+     *
+     * @param num the number of tests we will run
      */
-    public void startTest(Project proj, int num)
-    {
+    public void startTest(Project proj, int num) {
         this.project = proj;
-        if (! doingMultiple) {
+        if (!doingMultiple) {
             reset();
             testTotal.set(num);
         }
@@ -351,16 +336,15 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
 
     /**
      * Add a test result to the test displayer.
-     * 
-     * @param dtr  The test result to add
-     * @param quiet  True if the result should be added "quietly" (do not make
-     *               test frame visible or bring it to front)
+     *
+     * @param dtr   The test result to add
+     * @param quiet True if the result should be added "quietly" (do not make
+     *              test frame visible or bring it to front)
      */
-    public void addResult(DebuggerTestResult dtr, boolean quiet)
-    {
+    public void addResult(DebuggerTestResult dtr, boolean quiet) {
         addResultQuietly(dtr);
 
-        if (! quiet) {
+        if (!quiet) {
             showTestDisplay(true);
         }
     }
@@ -368,11 +352,10 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
     /**
      * Add a test result to the test displayer but do not
      * bring the test display window to the front.
-     * 
-     * @param dtr  The test result to add
-     */ 
-    public void addResultQuietly(final DebuggerTestResult dtr)
-    {
+     *
+     * @param dtr The test result to add
+     */
+    public void addResultQuietly(final DebuggerTestResult dtr) {
         if (!dtr.isSuccess()) {
             if (dtr.isFailure())
                 failureCount.set(failureCount.get() + 1);
@@ -384,18 +367,15 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
         testEntries.add(dtr);
     }
 
-    public Window getWindow()
-    {
+    public Window getWindow() {
         return frame;
     }
 
     @OnThread(Tag.FX)
-    private class TestResultCell extends ListCell<DebuggerTestResult>
-    {
+    private class TestResultCell extends ListCell<DebuggerTestResult> {
         private final ImageView imageView;
 
-        public TestResultCell()
-        {
+        public TestResultCell() {
             setEditable(false);
             setText("");
             imageView = new ImageView();
@@ -408,44 +388,36 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
         }
 
         @Override
-        public void updateItem(DebuggerTestResult item, boolean empty)
-        {
+        public void updateItem(DebuggerTestResult item, boolean empty) {
             super.updateItem(item, empty);
-            if (item == null || empty)
-            {
+            if (item == null || empty) {
                 imageView.setImage(null);
                 setText("");
-            }
-            else
-            {
+            } else {
                 if (item.isSuccess())
                     imageView.setImage(okIcon);
                 else if (item.isFailure())
                     imageView.setImage(failureIcon);
                 else
                     imageView.setImage(errorIcon);
-                
+
                 // This checks if the JUnit executes all tests at the same time,
                 // We have used zero execution time for individual test as there is no way so
                 // far to extract the runtime of individual test.
-                if (item.getRunTimeMs() == 0)
-                {
+                if (item.getRunTimeMs() == 0) {
                     setText(item.getName());
-                }
-                else
-                {
+                } else {
                     setText(item.getName() + " (" + item.getRunTimeMs() + "ms)");
                 }
             }
         }
     }
-    
-    private void selected(DebuggerTestResult dtr)
-    {
+
+    private void selected(DebuggerTestResult dtr) {
         if (dtr != null && (dtr.isError() || dtr.isFailure())) {
             // fdv.showFailure(dtr.getExceptionMessage() + "\n---\n" + dtr.getTrace());
             exceptionMessageField.setText(dtr.getExceptionMessage()
-                + "\n---\n" + dtr.getTrace());
+                    + "\n---\n" + dtr.getTrace());
             exceptionMessageField.positionCaret(0);
 
             showSourceButton.setDisable(dtr.getExceptionLocation() == null);
@@ -454,25 +426,22 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
             showSourceButton.setDisable(true);
         }
     }
-    
+
     /**
      * Set the total execution time of tests.
+     *
      * @param value the value to which the totalTimeMs variable will be set to
      */
     @OnThread(Tag.FXPlatform)
-    public void setTotalTimeMs(int value)
-    {
+    public void setTotalTimeMs(int value) {
         totalTimeMs.set(value);
     }
 
-    private void showSource(DebuggerTestResult dtr)
-    {
-        if ((dtr != null) && (dtr.isError() || dtr.isFailure()))
-        {
+    private void showSource(DebuggerTestResult dtr) {
+        if ((dtr != null) && (dtr.isError() || dtr.isFailure())) {
             SourceLocation exceptionLocation = dtr.getExceptionLocation();
 
-            if (exceptionLocation == null)
-            {
+            if (exceptionLocation == null) {
                 return;
             }
 
@@ -480,8 +449,7 @@ public @OnThread(Tag.FXPlatform) class TestDisplayFrame
 
             Package spackage = project.getPackage(packageName);
 
-            if (spackage == null)
-            {
+            if (spackage == null) {
                 return;
             }
 

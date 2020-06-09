@@ -25,7 +25,7 @@ import greenfoot.Actor;
 import greenfoot.World;
 import greenfoot.WorldVisitor;
 
-import java.awt.Point;
+import java.awt.*;
 
 /**
  * A helper class which can be instantiated to fetch a reference to the
@@ -33,8 +33,7 @@ import java.awt.Point;
  * in the interface.  If the location is outside the world, or there are no
  * actors at that point, the world is picked instead.
  */
-public class PickActorHelper
-{
+public class PickActorHelper {
     // Special fields examined by GreenfootDebugHandler.  Do not rename
     // without also renaming there:
     public Actor[] actorPicks;
@@ -46,13 +45,12 @@ public class PickActorHelper
      * Finds an actor at the given location.  If the location is invalid
      * or there are no actors there, the world is picked instead.
      *
-     * @param sx       The x pixel coordinate in the world (will be an integer)
-     * @param sy       The y pixel coordinate in the world (will be an integer)
-     * @param spickId  The pick request ID
-     * @param requestType  The request type.  If "drag", a drag on that actor will begin.
+     * @param sx          The x pixel coordinate in the world (will be an integer)
+     * @param sy          The y pixel coordinate in the world (will be an integer)
+     * @param spickId     The pick request ID
+     * @param requestType The request type.  If "drag", a drag on that actor will begin.
      */
-    public PickActorHelper(String sx, String sy, String spickId, String requestType)
-    {
+    public PickActorHelper(String sx, String sy, String spickId, String requestType) {
         int x = Integer.parseInt(sx);
         int y = Integer.parseInt(sy);
         int pickId = Integer.parseInt(spickId);
@@ -62,20 +60,15 @@ public class PickActorHelper
             WorldHandler worldHandler = WorldHandler.getInstance();
             this.worldPick = worldHandler.getWorld();
             if (worldPick != null && x >= 0 && x < WorldVisitor.getWidthInPixels(worldPick)
-                    && y >= 0 && y < WorldVisitor.getHeightInPixels(worldPick))
-            {
+                    && y >= 0 && y < WorldVisitor.getHeightInPixels(worldPick)) {
                 this.actorPicks = WorldVisitor.getObjectsAtPixel(this.worldPick, x, y).toArray(new Actor[0]);
-            }
-            else
-            {
+            } else {
                 this.actorPicks = new Actor[0];
             }
             this.pickId = pickId;
-            if ("drag".equals(requestType))
-            {
+            if ("drag".equals(requestType)) {
                 // If there are any actors at that point, drag the topmost one:
-                if (actorPicks.length > 0)
-                {
+                if (actorPicks.length > 0) {
                     // The top-most actor is actually the last in the list:
                     Actor topMost = actorPicks[actorPicks.length - 1];
                     worldHandler.startDrag(topMost, new Point(x, y), this.pickId);
@@ -89,8 +82,7 @@ public class PickActorHelper
      * A special method which will have a breakpoint set by GreenfootDebugHandler.  Do
      * not remove/inline/rename without also editing that class.
      */
-    public void picked()
-    {
+    public void picked() {
         // Used as a special breakpoint signifier so that JDI can be used to inspect the picks field
     }
 }

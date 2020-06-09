@@ -21,13 +21,7 @@
  */
 package bluej.utility;
 
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeDeclTpar;
-import bluej.debugger.gentype.GenTypeParameter;
-import bluej.debugger.gentype.GenTypeSolid;
-import bluej.debugger.gentype.JavaPrimitiveType;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.Reflective;
+import bluej.debugger.gentype.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -35,52 +29,44 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Utilities for dealing with reflection, which must behave differently for
  * Java 1.4 / 1.5. Use the factory method "getJavaUtils" to retrieve an object
- * to use. 
- *   
+ * to use.
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public abstract class JavaUtils
-{
+public abstract class JavaUtils {
     private static JavaUtils jutils;
-    
+
     /**
      * Factory method. Returns a JavaUtils object.
+     *
      * @return an object supporting the appropriate feature set
      */
-    public static JavaUtils getJavaUtils()
-    {
-        if( jutils != null ) {
+    public static JavaUtils getJavaUtils() {
+        if (jutils != null) {
             return jutils;
         }
-        
+
         jutils = new JavaUtils15();
         return jutils;
     }
-    
+
     /**
      * Get a "signature" description of a method.
      * Looks like:  void method(int, int, int)
-     *   (ie. excludes parameter names)
+     * (ie. excludes parameter names)
+     *
      * @param method The method to get the signature for
      * @return the signature string
      */
-    public static String getSignature(Method method)
-    {
+    public static String getSignature(Method method) {
         String name = getFQTypeName(method.getReturnType()).replace('$', '.') + " " + method.getName();
         Class<?>[] params = method.getParameterTypes();
         return makeSignature(name, params);
@@ -90,8 +76,7 @@ public abstract class JavaUtils
      * Get a fully-qualified type name. For array types return the base type
      * name plus the appropriate number of "[]" qualifiers.
      */
-    static public String getFQTypeName(Class<?> type)
-    {
+    static public String getFQTypeName(Class<?> type) {
         // Early exit for common case:
         if (!type.isArray())
             return type.getName();
@@ -112,8 +97,7 @@ public abstract class JavaUtils
     /**
      * Build the signature string. Format: name(type,type,type)
      */
-    private static String makeSignature(String name, Class<?>[] params)
-    {
+    private static String makeSignature(String name, Class<?>[] params) {
         StringBuffer sb = new StringBuffer();
         sb.append(name);
         sb.append("(");
@@ -130,270 +114,259 @@ public abstract class JavaUtils
     /**
      * Get a "signature" description of a constructor.
      * Looks like:  ClassName(int, int, int)
-     *   (ie. excludes parameter names)
+     * (ie. excludes parameter names)
+     *
      * @param cons the Constructor to get the signature for
      * @return the signature string
      */
-    public static String getSignature(Constructor<?> cons)
-    {
+    public static String getSignature(Constructor<?> cons) {
         String name = JavaNames.getBase(cons.getName());
         Class<?>[] params = cons.getParameterTypes();
         return makeSignature(name, params);
     }
- 
+
     /**
      * Translate escape characters into their source representation.
      * The result is suitable for inserting into Java source (between quotes).
      */
-    public static String escapeString(String s)
-    {
+    public static String escapeString(String s) {
         StringBuffer outBuf = new StringBuffer();
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '\b') {
                 outBuf.append("\\b");
-            }
-            else if (c == '\t') {
+            } else if (c == '\t') {
                 outBuf.append("\\t");
-            }
-            else if (c == '\n') {
+            } else if (c == '\n') {
                 outBuf.append("\\n");
-            }
-            else if (c == '\f') {
+            } else if (c == '\f') {
                 outBuf.append("\\f");
-            }
-            else if (c == '\r') {
+            } else if (c == '\r') {
                 outBuf.append("\\r");
-            }
-            else if (c == '\\') {
+            } else if (c == '\\') {
                 outBuf.append("\\\\");
-            }
-            else if (c == '\"') {
+            } else if (c == '\"') {
                 outBuf.append("\\\"");
-            }
-            else if (c < 32) {
+            } else if (c < 32) {
                 String uescape = Integer.toHexString(c);
                 uescape = "0000".substring(uescape.length()) + uescape;
                 outBuf.append("\\u" + uescape);
-            }
-            else {
+            } else {
                 outBuf.append(c);
             }
         }
-        
+
         return outBuf.toString();
     }
-    
+
     /**
      * Get a "short description" of a method. This is like the signature,
      * but substitutes the parameter names for their types.
-     * 
-     * @param method   The method to get the description of
-     * @param paramnames  The parameter names of the method
+     *
+     * @param method     The method to get the description of
+     * @param paramnames The parameter names of the method
      * @return The description.
      */
-    abstract public String getShortDesc(Method method, String [] paramnames)
-        throws ClassNotFoundException;
+    abstract public String getShortDesc(Method method, String[] paramnames)
+            throws ClassNotFoundException;
 
     /**
      * Get a "short description" of a method, and map class type parameters to
      * the given types. A short description is like the signature, but
      * substitutes the parameter names for their types. Generic method type
      * parameters are left unmapped.
-     * 
-     * @param method   The method to get the description of
+     *
+     * @param method     The method to get the description of
      * @param paramnames The parameter names of the method
-     * @param tparams  The map (String -> GenType) for class type parameters
+     * @param tparams    The map (String -> GenType) for class type parameters
      * @return The description.
      */
-    abstract public String getShortDesc(Method method, String [] paramnames,
-            Map<String,GenTypeParameter> tparams) throws ClassNotFoundException;
+    abstract public String getShortDesc(Method method, String[] paramnames,
+                                        Map<String, GenTypeParameter> tparams) throws ClassNotFoundException;
 
     /**
      * Get a long String describing the method. A long description is
      * similar to the short description, but it has type names and parameters
      * included.
      */
-    abstract public String getLongDesc(Method method, String [] paramnames)
-        throws ClassNotFoundException;
-    
+    abstract public String getLongDesc(Method method, String[] paramnames)
+            throws ClassNotFoundException;
+
     /**
      * Get a long String describing the method, with class type parameters
      * mapped to their instantiation types. A long description is similar to a
      * short description, but it has type names of parameters included.
-     * 
-     * @param method   The method to get the description of
-     * @param paramnames  The parameters names of the method
-     * @param tparams  The map (String -> GenType) for class type parameters
+     *
+     * @param method     The method to get the description of
+     * @param paramnames The parameters names of the method
+     * @param tparams    The map (String -> GenType) for class type parameters
      * @return The long description string.
      */
-    abstract public String getLongDesc(Method method, String [] paramnames,
-            Map<String,GenTypeParameter> tparams) throws ClassNotFoundException;
-    
+    abstract public String getLongDesc(Method method, String[] paramnames,
+                                       Map<String, GenTypeParameter> tparams) throws ClassNotFoundException;
+
     /**
      * Get a "short description" of a constructor. This is like the signature,
      * but substitutes the parameter names for their types.
-     * 
-     * @param constructor   The constructor to get the description of
+     *
+     * @param constructor The constructor to get the description of
      * @return The description.
      */
-    abstract public String getShortDesc(Constructor<?> constructor, String [] paramnames)
-        throws ClassNotFoundException;
-    
+    abstract public String getShortDesc(Constructor<?> constructor, String[] paramnames)
+            throws ClassNotFoundException;
+
     /**
      * Get a long String describing the constructor. A long description is
      * similar to the short description, but it has type names and parameters
      * included.
      */
-    abstract public String getLongDesc(Constructor<?> constructor, String [] paramnames)
-        throws ClassNotFoundException;
-    
+    abstract public String getLongDesc(Constructor<?> constructor, String[] paramnames)
+            throws ClassNotFoundException;
+
     abstract public boolean isVarArgs(Constructor<?> cons);
-    
-    abstract public boolean isVarArgs(Method method);    
-   
+
+    abstract public boolean isVarArgs(Method method);
+
     abstract public boolean isSynthetic(Method method);
-    
+
     abstract public boolean isEnum(Class<?> cl);
-    
+
     /**
      * Get the return type of a method.
      */
     abstract public JavaType getReturnType(Method method) throws ClassNotFoundException;
-    
+
     abstract public JavaType getRawReturnType(Method method);
 
     /**
      * Get the declared type of a field.
      */
     abstract public JavaType getFieldType(Field field) throws ClassNotFoundException;
-    
+
     abstract public JavaType getRawFieldType(Field field);
-    
+
     /**
      * Get a list of the type parameters for a generic method.
      * (return an empty list if the method is not generic).
-     * 
-     * @param method   The method fro which to find the type parameters
-     * @return  A list of GenTypeDeclTpar
+     *
+     * @param method The method fro which to find the type parameters
+     * @return A list of GenTypeDeclTpar
      */
     abstract public List<GenTypeDeclTpar> getTypeParams(Method method);
-    
+
     /**
      * Get a list of the type parameters for a generic constructor.
      * (return an empty list if the method is not generic).
-     * 
-     * @param cons   The constructors for which to find the type parameters
-     * @return  A list of GenTypeDeclTpar
+     *
+     * @param cons The constructors for which to find the type parameters
+     * @return A list of GenTypeDeclTpar
      */
     abstract public List<GenTypeDeclTpar> getTypeParams(Constructor<?> cons);
-    
+
     /**
      * Get a list of the type parameters for a class. Return an empty list if
      * the class is not generic.
-     * 
+     *
      * @param cl the class
      * @return A List of GenTypeDeclTpar
      */
     abstract public List<GenTypeDeclTpar> getTypeParams(Class<?> cl);
-    
+
     /**
      * Get the declared supertype of a class.
      */
     abstract public GenTypeClass getSuperclass(Class<?> cl) throws ClassNotFoundException;
-    
+
     /**
      * Get a list of the interfaces directly implemented by the given class.
-     * @param cl  The class for which to find the interfaces
-     * @return    An array of interfaces
+     *
+     * @param cl The class for which to find the interfaces
+     * @return An array of interfaces
      */
-    abstract public GenTypeClass [] getInterfaces(Class<?> cl) throws ClassNotFoundException;
-    
+    abstract public GenTypeClass[] getInterfaces(Class<?> cl) throws ClassNotFoundException;
+
     /**
      * Gets an array of nicely formatted strings with the types of the parameters.
      * Include the ellipsis (...) for a varargs method.
-     * 
+     *
      * @param method The method to get the parameters for.
      */
     abstract public String[] getParameterTypes(Method method) throws ClassNotFoundException;
-    
+
     /**
      * Get an array containing the argument types of the method.
-     * 
+     * <p>
      * In the case of a varargs method, the last argument will be an array
      * type.
-     * 
-     * @param method  the method whose argument types to get
-     * @param raw     whether to return the raw versions of argument types
-     * @return  the argument types
+     *
+     * @param method the method whose argument types to get
+     * @param raw    whether to return the raw versions of argument types
+     * @return the argument types
      */
     abstract public JavaType[] getParamGenTypes(Method method, boolean raw) throws ClassNotFoundException;
-    
+
     /**
      * Gets an array of nicely formatted strings with the types of the parameters.
      * Include the ellipsis (...) for a varargs constructor.
-     * 
+     *
      * @param constructor The constructor to get the parameters for.
      */
     abstract public String[] getParameterTypes(Constructor<?> constructor) throws ClassNotFoundException;
-    
+
     /**
      * Get an array containing the argument types of the method.
-     * 
+     * <p>
      * In the case of a varargs method, the last argument will be an array
      * type.
-     * 
-     * @param constructor  the constructor whose argument types to get
-     * @return  the argument types
+     *
+     * @param constructor the constructor whose argument types to get
+     * @return the argument types
      */
     abstract public JavaType[] getParamGenTypes(Constructor<?> constructor) throws ClassNotFoundException;
-    
+
     /**
      * Change a list of type parameters (with bounds) into a map, which maps
      * the name of the parameter to its bounding type.
-     * 
-     * @param tparams   A list of GenTypeDeclTpar
-     * @return          A map (String -> GenTypeSolid)
+     *
+     * @param tparams A list of GenTypeDeclTpar
+     * @return A map (String -> GenTypeSolid)
      */
-    public static Map<String,GenTypeSolid> TParamsToMap(List<GenTypeDeclTpar> tparams)
-    {
-        Map<String,GenTypeSolid> rmap = new HashMap<String,GenTypeSolid>();
-        for( Iterator<GenTypeDeclTpar> i = tparams.iterator(); i.hasNext(); ) {
+    public static Map<String, GenTypeSolid> TParamsToMap(List<GenTypeDeclTpar> tparams) {
+        Map<String, GenTypeSolid> rmap = new HashMap<String, GenTypeSolid>();
+        for (Iterator<GenTypeDeclTpar> i = tparams.iterator(); i.hasNext(); ) {
             GenTypeDeclTpar n = i.next();
             rmap.put(n.getTparName(), n.getBound().mapTparsToTypes(rmap).getUpperBound().asSolid());
         }
         return rmap;
     }
-    
+
     /**
      * Check whether a member of some container type can be accessed from another type
      * according to its modifiers.
-     * 
+     *
      * @param container  The type containing the member to which access is being checked
      * @param targetType The type of the expression from which the member is accessed
      * @param accessor   The type trying to access the member
      * @param modifiers  The modifiers of the member
      * @param isStatic   True if the access is a in static context; false if not
-     * 
-     * @return  true if the access is allowed, false otherwise
+     * @return true if the access is allowed, false otherwise
      */
     public static boolean checkMemberAccess(Reflective container, GenTypeSolid targetType,
-            Reflective accessor, int modifiers, boolean isStatic)
-    {
+                                            Reflective accessor, int modifiers, boolean isStatic) {
         // Access from a static context can only access static members
         if (isStatic && !Modifier.isStatic(modifiers))
             return false;
-        
+
         if (Modifier.isPublic(modifiers)) {
             return true;
         }
-        
+
         if (accessor == null) {
             return false;
         }
-        
+
         String accessorName = accessor.getName();
-        if (! Modifier.isPrivate(modifiers)) {
+        if (!Modifier.isPrivate(modifiers)) {
             String cpackage = JavaNames.getPrefix(container.getName());
             if (accessorName.startsWith(cpackage)
                     && accessorName.indexOf('.', cpackage.length() + 1) == -1) {
@@ -401,12 +374,12 @@ public abstract class JavaUtils
                 return true;
             }
         }
-        
+
         // access class == container class, then access is always allowed
         if (accessorName.equals(container.getName())) {
             return true;
         }
-        
+
         Reflective outer = accessor.getOuterClass();
         if (outer != null) {
             // Inner classes can access outer class members with outer class privileges
@@ -415,7 +388,7 @@ public abstract class JavaUtils
                 return true;
             }
         }
-        
+
         // Protected access is allowed if the targetType is a subtype of the acessType
         Set<Reflective> targetSupers = new HashSet<Reflective>();
         targetType.erasedSuperTypes(targetSupers);
@@ -426,10 +399,10 @@ public abstract class JavaUtils
                 break;
             }
         }
-        
+
         List<Reflective> supers = accessor.getSuperTypesR();
         Set<String> done = new HashSet<String>();
-        while (! supers.isEmpty()) {
+        while (!supers.isEmpty()) {
             Reflective r = supers.remove(0);
             if (done.add(r.getName())) {
                 if (r.getName().equals(container.getName())) {
@@ -445,24 +418,23 @@ public abstract class JavaUtils
                 }
             }
         }
-        
+
         return false;
     }
 
     /**
      * Make a descriptive signature. This includes the method/constructor name (which may
      * be preceded by type parameters), and parameter types or names or types and names.
-     * (The type is always substituted if the name is missing). 
-     * 
-     * @param name       The method/constructor name (including preceding
-     *                          type parameters if any)
-     * @param paramTypes   The parameter types
-     * @param paramNames   The parameter names (may be null)
-     * @param includeTypeNames   True if the parameter type should always be included
-     * @param isVarArgs      True if the method is varargs (requires ellipsis insertion)
+     * (The type is always substituted if the name is missing).
+     *
+     * @param name             The method/constructor name (including preceding
+     *                         type parameters if any)
+     * @param paramTypes       The parameter types
+     * @param paramNames       The parameter names (may be null)
+     * @param includeTypeNames True if the parameter type should always be included
+     * @param isVarArgs        True if the method is varargs (requires ellipsis insertion)
      */
-    protected static String makeDescription(String name, String[] paramTypes, String[] paramNames, boolean includeTypeNames, boolean isVarArgs)
-    {
+    protected static String makeDescription(String name, String[] paramTypes, String[] paramNames, boolean includeTypeNames, boolean isVarArgs) {
         StringBuffer sb = new StringBuffer();
         sb.append(name);
         sb.append("(");
@@ -475,12 +447,11 @@ public abstract class JavaUtils
                 }
                 sb.append("...");
                 typePrinted = true;
-            }
-            else if (includeTypeNames || paramNames == null || paramNames[j] == null) {                              
+            } else if (includeTypeNames || paramNames == null || paramNames[j] == null) {
                 sb.append(paramTypes[j]);
                 typePrinted = true;
             }
-            
+
             if (paramNames != null && paramNames[j] != null) {
                 if (typePrinted)
                     sb.append(" ");
@@ -492,35 +463,33 @@ public abstract class JavaUtils
         sb.append(")");
         return sb.toString();
     }
-    
+
     /**
      * Convert a javadoc comment to a string with just the comment body, i.e. strip the
      * leading asterisks.
      */
-    public static String javadocToString(String javadoc)
-    {
+    public static String javadocToString(String javadoc) {
         String eol = System.getProperty("line.separator");
-        
+
         if (javadoc == null || javadoc.length() < 5) {
             return null;
         }
-        
+
         StringBuffer outbuf = new StringBuffer();
-        
+
         String str = javadoc;
         if (javadoc.charAt(0) == '/') {
             if (javadoc.charAt(1) == '*') {
                 if (javadoc.charAt(2) == '*') {
                     // remove "/**" and "*/"
                     str = javadoc.substring(3, javadoc.length() - 2);
-                }
-                else {
+                } else {
                     // remove "/*" and "*/"
                     str = javadoc.substring(2, javadoc.length() - 2);
                 }
             }
         }
-        
+
         int nl = str.indexOf('\n');
         int cr = str.indexOf('\r');
         int pos = 0;
@@ -528,13 +497,13 @@ public abstract class JavaUtils
             int lineEnd = Math.min(nl, cr);
             lineEnd = (nl == -1) ? cr : lineEnd;
             lineEnd = (cr == -1) ? nl : lineEnd;
-            
+
             String line = str.substring(pos, lineEnd);
             line = stripLeadingStars(line);
-            
+
             outbuf.append(line);
             outbuf.append(eol);
-            
+
             pos = lineEnd + 1;
             if (pos == nl) {
                 pos++;
@@ -543,43 +512,38 @@ public abstract class JavaUtils
             nl = str.indexOf('\n', pos);
             cr = str.indexOf('\r', pos);
         }
-        
+
         String line = stripLeadingStars(str.substring(pos)).trim();
         if (line.length() > 0) {
             outbuf.append(line);
         }
-        
+
         return outbuf.toString();
     }
-    
-    public static class Javadoc
-    {
+
+    public static class Javadoc {
         private final String intro;
         private final List<String> blocks;
-        
-        public Javadoc(String intro, List<String> blocks)
-        {
+
+        public Javadoc(String intro, List<String> blocks) {
             this.intro = intro;
             this.blocks = blocks;
         }
-        
-        public String getHeader()
-        {
+
+        public String getHeader() {
             return intro;
         }
-        
+
         // Minus the leading '@'
-        public List<String> getBlocks()
-        {
+        public List<String> getBlocks() {
             return blocks;
         }
     }
-    
-    public static Javadoc parseJavadoc(String javadocString)
-    {
+
+    public static Javadoc parseJavadoc(String javadocString) {
         if (javadocString == null)
             return null;
-        
+
         // find the first block tag
         int i;
         for (i = 0; i < javadocString.length(); i++) {
@@ -596,28 +560,27 @@ public abstract class JavaUtils
                 i++;
             }
         }
-        
+
         if (i >= javadocString.length()) {
             return new Javadoc(javadocString, Collections.emptyList());
         }
-        
+
         // Process the block tags
         String header = javadocString.substring(0, i);
         String blocksText = javadocString.substring(i);
         String[] lines = Utility.splitLines(blocksText);
 
         List<String> blocks = getBlockTags(lines);
-        
+
         return new Javadoc(header, blocks);
     }
-    
+
 
     /**
      * Strip leading asterisk characters (and any preceding whitespace) from a single
      * line of text.
      */
-    private static String stripLeadingStars(String s)
-    {
+    private static String stripLeadingStars(String s) {
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '*') {
                 do {
@@ -626,18 +589,17 @@ public abstract class JavaUtils
                 s = s.substring(i);
                 break;
             }
-            if (! Character.isWhitespace(s.charAt(i))) {
+            if (!Character.isWhitespace(s.charAt(i))) {
                 break;
             }
         }
         return s;
     }
-    
+
     /**
      * Get a GenType corresponding to the (raw) class c
      */
-    public static JavaType genTypeFromClass(Class<?> c)
-    {
+    public static JavaType genTypeFromClass(Class<?> c) {
         if (c.isPrimitive()) {
             if (c == boolean.class)
                 return JavaPrimitiveType.getBoolean();
@@ -665,8 +627,8 @@ public abstract class JavaUtils
         }
         return new GenTypeClass(new JavaReflective(c));
     }
-    
-//    private static final Pattern headerPattern = Pattern.compile("{1,}\\s@\\w");
+
+    //    private static final Pattern headerPattern = Pattern.compile("{1,}\\s@\\w");
     private static final Pattern paramNamePattern = Pattern.compile("param\\s+\\w"); // regular expression for the parameter name
     private static final Pattern paramDescPattern = Pattern.compile("\\s+\\w");  // regular expression for the parameter description
 
@@ -674,8 +636,7 @@ public abstract class JavaUtils
      * Convert javadoc comment body (as extracted by javadocToString for instance)
      * to HTML suitable for display by HTMLEditorKit.
      */
-    public static String javadocToHtml(String javadocString)
-    {
+    public static String javadocToHtml(String javadocString) {
         String javadocStringCodeTagged = convertCodeTokens(javadocString);
         Javadoc j = parseJavadoc(javadocStringCodeTagged);
 
@@ -683,7 +644,7 @@ public abstract class JavaUtils
         StringBuilder params = new StringBuilder();
         params.append("<h3>Parameters</h3>").append("<table border=0>");
         boolean hasParamDoc = false;
-        
+
 
         for (String block : j.getBlocks()) {
             Matcher matcher = paramNamePattern.matcher(block); //search the current block
@@ -718,8 +679,7 @@ public abstract class JavaUtils
         return result;
     }
 
-    private static String convertCodeTokens(String rawString)
-    {
+    private static String convertCodeTokens(String rawString) {
         String result = rawString;
 
         int startIndex;
@@ -729,12 +689,10 @@ public abstract class JavaUtils
             for (int i = startIndex + 6; i < result.length(); i++) {
                 if (result.charAt(i) == '{') {
                     insideOpeningBrackets++;
-                }
-                else if (result.charAt(i) == '}') {
+                } else if (result.charAt(i) == '}') {
                     if (insideOpeningBrackets != 0) {
                         insideOpeningBrackets--;
-                    }
-                    else {
+                    } else {
                         endIndex = i;
                         break;
                     }
@@ -745,8 +703,7 @@ public abstract class JavaUtils
         return result;
     }
 
-    private static String makeCommentColour(String text)
-    {
+    private static String makeCommentColour(String text) {
         return "<font color='#994400'>" + text + "</font>";
     }
 
@@ -755,8 +712,7 @@ public abstract class JavaUtils
      * with some block tags potentially flowing over more than one line, return
      * a list of Strings corresponding to each block tag with its complete text.
      */
-    private static List<String> getBlockTags(String[] lines)
-    {
+    private static List<String> getBlockTags(String[] lines) {
         LinkedList<String> blocks = new LinkedList<>();
         StringBuilder cur = new StringBuilder();
         for (String line : lines) {
@@ -775,8 +731,7 @@ public abstract class JavaUtils
         return blocks;
     }
 
-    private static String convertBlockTag(String block)
-    {
+    private static String convertBlockTag(String block) {
         int spaceIndex = block.indexOf(' ');
         if (spaceIndex < 0) {
             return "";
@@ -786,8 +741,7 @@ public abstract class JavaUtils
         return "<b>" + block.substring(0, spaceIndex) + "</b> - " + makeCommentColour(block.substring(spaceIndex));
     }
 
-    public static String escapeAngleBrackets(String sig)
-    {
+    public static String escapeAngleBrackets(String sig) {
         return sig.replace("<", "&lt;").replace(">", "&gt;");
     }
 

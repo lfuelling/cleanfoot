@@ -30,72 +30,58 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * This class adapts CompileObserver messages to run on the JavaFX GUI thread.
- * 
+ *
  * @author Davin McCall
  */
-final public class EventqueueCompileObserverAdapter implements CompileObserver
-{
+final public class EventqueueCompileObserverAdapter implements CompileObserver {
     private final FXCompileObserver link;
 
     /**
      * Constructor for EventqueueCompileObserver. The link parameter is a compiler
      * observer; all messages will be passed on to it, but on the GUI thread.
      */
-    public EventqueueCompileObserverAdapter(FXCompileObserver link)
-    {
+    public EventqueueCompileObserverAdapter(FXCompileObserver link) {
         this.link = link;
     }
-    
+
     /**
      * This method switches execution to the GUI thread.
      */
-    private void runOnEventQueue(FXPlatformRunnable action)
-    {
+    private void runOnEventQueue(FXPlatformRunnable action) {
         CompletableFuture<Optional<Throwable>> f = new CompletableFuture<>();
         Platform.runLater(() -> {
-            try
-            {
+            try {
                 action.run();
-            }
-            catch (Throwable t)
-            {
+            } catch (Throwable t) {
                 f.complete(Optional.of(t));
-            }
-            finally
-            {
+            } finally {
                 if (!f.isDone())
                     f.complete(Optional.empty());
             }
         });
-        try
-        {
+        try {
             Optional<Throwable> optThrow = f.get();
             if (optThrow.isPresent())
                 throw new RuntimeException(optThrow.get());
-        }
-        catch (InterruptedException | ExecutionException e)
-        {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     // ---------------- CompileObserver interface ---------------------
 
     @Override
-    public synchronized void compilerMessage(Diagnostic diagnostic, CompileType type)
-    {
+    public synchronized void compilerMessage(Diagnostic diagnostic, CompileType type) {
         runOnEventQueue(() -> link.compilerMessage(diagnostic, type));
     }
 
     @Override
-    public synchronized void startCompile(CompileInputFile[] csources, CompileReason reason, CompileType type, int compilationSequence)
-    {
+    public synchronized void startCompile(CompileInputFile[] csources, CompileReason reason, CompileType type, int compilationSequence) {
         runOnEventQueue(() -> link.startCompile(csources, reason, type, compilationSequence));
     }
 
     @Override
-    public synchronized void endCompile(CompileInputFile[] sources, boolean successful, CompileType type, int compilationSequence)
-    {
+    public synchronized void endCompile(CompileInputFile[] sources, boolean successful, CompileType type, int compilationSequence) {
         runOnEventQueue(() -> link.endCompile(sources, successful, type, compilationSequence));
     }
 }

@@ -21,25 +21,23 @@
  */
 package bluej.stride.generic;
 
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javafx.collections.ObservableList;
+import bluej.stride.slots.HeaderItem;
+import bluej.utility.javafx.SharedTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 
-import bluej.stride.slots.HeaderItem;
-import bluej.utility.javafx.SharedTransition;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * An interface for an item within a Frame; either a FrameContentRow or FrameContentCanvas
  */
-public interface FrameContentItem
-{
+public interface FrameContentItem {
     /**
      * Gets all header items, all the way down in the children
      */
     Stream<HeaderItem> getHeaderItemsDeep();
+
     /**
      * Gets header items that are directly in this item
      */
@@ -56,8 +54,11 @@ public interface FrameContentItem
     Optional<FrameCanvas> getCanvas();
 
     boolean focusLeftEndFromPrev();
+
     boolean focusRightEndFromNext();
+
     boolean focusTopEndFromPrev();
+
     boolean focusBottomEndFromNext();
 
     void setView(Frame.View oldView, Frame.View newView, SharedTransition animation);

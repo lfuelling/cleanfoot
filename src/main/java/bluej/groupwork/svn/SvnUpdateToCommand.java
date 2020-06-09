@@ -21,57 +21,32 @@
  */
 package bluej.groupwork.svn;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javafx.application.Platform;
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.ConflictDescriptor;
-import org.tigris.subversion.javahl.ConflictResult;
-import org.tigris.subversion.javahl.Depth;
-import org.tigris.subversion.javahl.NodeKind;
-import org.tigris.subversion.javahl.Notify2;
-import org.tigris.subversion.javahl.NotifyAction;
-import org.tigris.subversion.javahl.NotifyInformation;
-import org.tigris.subversion.javahl.NotifyStatus;
-import org.tigris.subversion.javahl.PropertyData;
-import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.SVNClientInterface;
-import org.tigris.subversion.javahl.Status;
-import org.tigris.subversion.javahl.StatusCallback;
-import org.tigris.subversion.javahl.SubversionException;
-
-import bluej.groupwork.TeamworkCommandAborted;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.groupwork.UpdateListener;
-import bluej.groupwork.UpdateResults;
+import bluej.groupwork.*;
 import bluej.utility.Debug;
+import javafx.application.Platform;
+import org.tigris.subversion.javahl.Revision;
+import org.tigris.subversion.javahl.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+import java.util.*;
+
 /**
  * Subversion command to update to a particular revision.
- * 
+ *
  * @author Davin McCall
  */
-public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
-{
+public class SvnUpdateToCommand extends SvnCommand implements UpdateResults {
     private final long version;
     private final Set<File> files;
     private final Set<File> forceFiles;
     private final UpdateListener listener;
     private final List<File> conflicts = new ArrayList<File>();
     private final Set<File> binaryConflicts = new HashSet<File>();
-    
+
     public SvnUpdateToCommand(SvnRepository repository, UpdateListener listener,
-            long version, Set<File> files, Set<File> forceFiles)
-    {
+                              long version, Set<File> files, Set<File> forceFiles) {
         super(repository);
         this.version = version;
         this.files = files;
@@ -80,8 +55,7 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
     }
 
     @OnThread(Tag.Worker)
-    protected TeamworkCommandResult doCommand()
-    {
+    protected TeamworkCommandResult doCommand() {
         SVNClientInterface client = getClient();
 
         // The subversion client library gives us update notifications before
@@ -92,9 +66,9 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
         final List<File> updatedList = new ArrayList<File>();
         final List<File> removedList = new ArrayList<File>();
         final List<File> removedDirs = new ArrayList<File>();
-        
+
         try {
-            String [] paths = new String[forceFiles.size() + files.size()];
+            String[] paths = new String[forceFiles.size() + files.size()];
             int j = 0;
             for (Iterator<File> i = forceFiles.iterator(); i.hasNext(); ) {
                 File file = i.next();
@@ -108,8 +82,7 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
             }
 
             client.notification2(new Notify2() {
-                public void onNotify(NotifyInformation ninfo)
-                {
+                public void onNotify(NotifyInformation ninfo) {
                     // System.out.println("NotifyInfo:");
                     // System.out.println("  path: " + ninfo.getPath());
                     // System.out.println("  revision: " + ninfo.getRevision());
@@ -118,7 +91,7 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
                     // System.out.println("  contentstate: " + NotifyStatus.statusNames[ninfo.getContentState()]);
                     // System.out.println("  node kind = " + NodeKind.getNodeKindName(ninfo.getKind()));
                     // System.out.println("  mimetype = " + ninfo.getMimeType());
-                    
+
                     if (ninfo.getKind() == NodeKind.file
                             || ninfo.getKind() == NodeKind.none) {
                         int action = ninfo.getAction();
@@ -127,68 +100,58 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
                             if (action == NotifyAction.update_add
                                     || action == NotifyAction.restore) {
                                 addedList.add(file);
-                            }
-                            else if (action == NotifyAction.update_update) {
+                            } else if (action == NotifyAction.update_update) {
                                 updatedList.add(file);
                                 if (ninfo.getContentState() == NotifyStatus.conflicted) {
                                     conflicts.add(file);
                                 }
-                            }
-                            else if (action == NotifyAction.update_delete) {
+                            } else if (action == NotifyAction.update_delete) {
                                 removedList.add(file);
-                            }
-                            else if (action == NotifyAction.tree_conflict) {
+                            } else if (action == NotifyAction.tree_conflict) {
                                 // We get this if the file has been removed in
                                 // repository, but modified here.
                                 binaryConflicts.add(file);
                             }
                         }
-                    }
-                    else if (ninfo.getKind() == NodeKind.dir) {
+                    } else if (ninfo.getKind() == NodeKind.dir) {
                         int action = ninfo.getAction();
                         if (action == NotifyAction.update_delete) {
                             removedDirs.add(new File(ninfo.getPath()));
                         }
                     }
-                    
+
                 }
             });
-            
+
             client.update(paths, Revision.getInstance(version),
                     Depth.immediates, false, false, false);
-        }
-        catch (ClientException ce) {
+        } catch (ClientException ce) {
             if (isCancelled()) {
                 return new TeamworkCommandAborted();
             } else {
                 return new TeamworkCommandError(ce.getMessage(), ce.getLocalizedMessage());
             }
-        }
-        finally {
+        } finally {
             client.notification2(null);
 
             Platform.runLater(() ->
             {
                 Iterator<File> i;
-                for (i = addedList.iterator(); i.hasNext(); )
-                {
+                for (i = addedList.iterator(); i.hasNext(); ) {
                     listener.fileModified(i.next());
                 }
-                for (i = updatedList.iterator(); i.hasNext(); )
-                {
+                for (i = updatedList.iterator(); i.hasNext(); ) {
                     listener.fileModified(i.next());
                 }
-                for (i = removedList.iterator(); i.hasNext(); )
-                {
+                for (i = removedList.iterator(); i.hasNext(); ) {
                     listener.fileRemoved(i.next());
                 }
-                for (i = removedDirs.iterator(); i.hasNext(); )
-                {
+                for (i = removedDirs.iterator(); i.hasNext(); ) {
                     listener.dirRemoved(i.next());
                 }
             });
-            
-            if (! conflicts.isEmpty()) {
+
+            if (!conflicts.isEmpty()) {
                 Iterator<File> i;
                 for (i = conflicts.iterator(); i.hasNext(); ) {
                     File file = i.next();
@@ -199,53 +162,46 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
                             // This is a binary file
                             i.remove();
                             binaryConflicts.add(file);
-                        }
-                        else {
+                        } else {
                             // remove all the extraneous files that subversion generates
                             client.resolve(file.getAbsolutePath(), 0, ConflictResult.chooseMerged);
                         }
-                    }
-                    catch (SubversionException se) {
+                    } catch (SubversionException se) {
                         Debug.message("Subversion client exception when resolving conflicts: " + se.getLocalizedMessage());
                         Debug.message("   (on file: " + file + ")");
                     }
                 }
             }
-            if (! conflicts.isEmpty() || ! binaryConflicts.isEmpty()) {
+            if (!conflicts.isEmpty() || !binaryConflicts.isEmpty()) {
                 Platform.runLater(() -> listener.handleConflicts(this));
             }
         }
-        
+
         return new TeamworkCommandResult();
     }
 
     @Override
-    public boolean mergeCommitNeeded()
-    {
+    public boolean mergeCommitNeeded() {
         // Subversion never requires a merge commit.
         return false;
     }
-    
+
     @Override
-    public Set<File> getBinaryConflicts()
-    {
+    public Set<File> getBinaryConflicts() {
         return binaryConflicts;
     }
-    
+
     @Override
-    public List<File> getConflicts()
-    {
+    public List<File> getConflicts() {
         return conflicts;
     }
-    
+
     @Override
-    public void overrideFiles(final Set<File> files)
-    {
+    public void overrideFiles(final Set<File> files) {
         final SVNClientInterface client = getRepository().getClient();
 
         StatusCallback scb = new StatusCallback() {
-            public void doStatus(Status status)
-            {
+            public void doStatus(Status status) {
                 File file = new File(status.getPath());
                 try {
                     ConflictDescriptor cd = status.getConflictDescriptor();
@@ -265,21 +221,19 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
                             client.resolve(file.getAbsolutePath(), 0, ConflictResult.chooseMerged);
 
                             // That leaves the file in the "added" status.
-                            boolean keepLocal = ! files.contains(file); 
+                            boolean keepLocal = !files.contains(file);
 
                             // Doing a remove will either remove the "added" status
                             // (keepLocal == true) or completely remove the file.
-                            String [] paths = new String[] { file.getPath() };
+                            String[] paths = new String[]{file.getPath()};
                             client.remove(paths, "", true, keepLocal, Collections.emptyMap());
-                            
-                            if (!keepLocal)
-                            {
+
+                            if (!keepLocal) {
                                 Platform.runLater(() -> listener.fileRemoved(file));
                             }
 
                             return;
-                        }
-                        else if (action == ConflictDescriptor.Action.edit
+                        } else if (action == ConflictDescriptor.Action.edit
                                 && reason == ConflictDescriptor.Reason.deleted) {
                             // Locally deleted, but modifications in the repository.
                             // Shouldn't see this normally, seeing as BlueJ does a
@@ -297,26 +251,23 @@ public class SvnUpdateToCommand extends SvnCommand implements UpdateResults
                     if (files.contains(file)) {
                         // override with repository version
                         client.resolve(file.getAbsolutePath(), 0, ConflictResult.chooseTheirsFull);
-                    }
-                    else {
+                    } else {
                         // keep working copy version
                         client.resolve(file.getAbsolutePath(), 0, ConflictResult.chooseMineFull);
                     }
-                }
-                catch (SubversionException sve) {
+                } catch (SubversionException sve) {
                     Debug.message("Subversion library exception trying to resolve binary conflict: " + sve.getLocalizedMessage());
                     Debug.message("   (on file: " + file + ")");
                 }
-            } 
+            }
         };
-        
+
         for (Iterator<File> i = binaryConflicts.iterator(); i.hasNext(); ) {
             File file = i.next();
             try {
                 client.status(file.getAbsolutePath(), Depth.empty, false,
                         true, true, true, new String[0], scb);
-            }
-            catch (ClientException ce) {
+            } catch (ClientException ce) {
                 Debug.message("Subversion library exception trying to resolve binary conflict: " + ce.getLocalizedMessage());
                 Debug.message("   (on file: " + file + ")");
             }

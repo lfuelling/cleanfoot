@@ -26,7 +26,6 @@ import bluej.Config;
 import greenfoot.export.Exporter;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.CheckBox;
@@ -34,7 +33,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -46,8 +44,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public abstract class ExportTab extends Tab
-{
+public abstract class ExportTab extends Tab {
     protected final CheckBox lockScenario = new CheckBox(Config.getString("export.lock.label"));
     protected final CheckBox hideControls = new CheckBox(Config.getString("export.controls.label"));
 
@@ -60,8 +57,7 @@ public abstract class ExportTab extends Tab
      * @param scenarioInfo The scenario info needed for different export functions.
      * @param iconName     The name of the icon file.
      */
-    public ExportTab(ScenarioInfo scenarioInfo, String iconName)
-    {
+    public ExportTab(ScenarioInfo scenarioInfo, String iconName) {
         setClosable(false);
         this.scenarioInfo = scenarioInfo;
         ImageView imageView = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(iconName)));
@@ -81,11 +77,10 @@ public abstract class ExportTab extends Tab
      * This method will be called when the user is about to export the scenario
      * with information from this tab. Will be called from the event thread
      * and will not publish until this method returns.
-     * 
+     *
      * @return Whether to continue publishing. Continues if true, cancels if false.
      */
-    public boolean prePublish()
-    {
+    public boolean prePublish() {
         updateInfoFromFields();
         return true;
     }
@@ -93,36 +88,33 @@ public abstract class ExportTab extends Tab
     /**
      * This method will be called when the scenario has been published with the
      * information from this tab.
-     * 
+     *
      * @param success Whether the publish was successful
      */
-    public void postPublish(boolean success)
-    {
+    public void postPublish(boolean success) {
         // Nothing special to do here
     }
 
     /**
      * Return true if the user wants to lock the scenario.
      */
-    public boolean isLockScenario()
-    {
+    public boolean isLockScenario() {
         return lockScenario.isSelected();
     }
-    
+
     /**
      * Return true if the user wants to hide the scenario controls.
+     *
      * @return true if the hide controls checkbox is selected.
      */
-    public boolean isHideControls()
-    {
+    public boolean isHideControls() {
         return hideControls.isSelected();
     }
 
     /**
      * Add a shared style class for the tab contents.
      */
-    protected void applySharedStyle()
-    {
+    protected void applySharedStyle() {
         getContent().getStyleClass().add("export-tab-content");
     }
 
@@ -130,7 +122,7 @@ public abstract class ExportTab extends Tab
      * Return the export function for the tab.
      */
     public abstract Exporter.ExportFunction getFunction();
-    
+
     /**
      * Update stored scenario information with the current values entered in the dialog.
      * The stored scenario information is saved with the scenario, so the user does not need to

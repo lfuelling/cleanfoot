@@ -27,32 +27,28 @@ import bluej.groupwork.ui.CheckConnectionDialog;
 import bluej.groupwork.ui.TeamSettingsPanel;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXPlatformSupplier;
-
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * Test the username, password, host, etc. settings to make sure they are valid
- * 
+ *
  * @author fisker
  */
 @OnThread(Tag.FXPlatform)
-public class ValidateConnectionAction extends TeamAction
-{
+public class ValidateConnectionAction extends TeamAction {
     private final TeamSettingsPanel teamSettingsPanel;
     private final FXPlatformSupplier<Window> owner;
-    
-    public ValidateConnectionAction(TeamSettingsPanel teamSettingsPanel, FXPlatformSupplier<Window> owner)
-    {
+
+    public ValidateConnectionAction(TeamSettingsPanel teamSettingsPanel, FXPlatformSupplier<Window> owner) {
         super("team.settings.checkConnection", true);
         this.teamSettingsPanel = teamSettingsPanel;
         this.owner = owner;
     }
-    
+
     @Override
-    protected void actionPerformed(Project project)
-    {
+    protected void actionPerformed(Project project) {
         TeamworkProvider provider = teamSettingsPanel.getSelectedProvider();
         TeamSettings settings = teamSettingsPanel.getSettings();
         new CheckConnectionDialog(owner.get(), provider, settings).showAndCheck();

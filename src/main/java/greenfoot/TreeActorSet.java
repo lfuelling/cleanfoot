@@ -29,55 +29,53 @@ import java.util.*;
 /**
  * A set which allows specifying iteration order according to class of contained
  * objects.
- * 
+ *
  * <p>TreeActorSet is really an ordered "set of sets". Each set corresponds to
  * a class; any actors of that class are put in the set, along with any actors
  * of subclasses as long as there isn't a more appropriate set for them.
- * 
+ *
  * @author Davin McCall
  */
-public class TreeActorSet extends AbstractSet<Actor>
-{
+public class TreeActorSet extends AbstractSet<Actor> {
     private final List<ActorSet> subSets;
-    
-    /** ActorSet for objects of a class without a specific z-order */
+
+    /**
+     * ActorSet for objects of a class without a specific z-order
+     */
     private final ActorSet generalSet;
-    
+
     private HashMap<Class<?>, ActorSet> classSets;
-    
+
     /**
      * Construct an empty TreeActorSet.
      */
-    public TreeActorSet()
-    {
+    public TreeActorSet() {
         subSets = new LinkedList<ActorSet>();
         generalSet = new ActorSet();
         subSets.add(generalSet);
-        
+
         classSets = new HashMap<Class<?>, ActorSet>();
     }
-    
+
     /**
      * Set the iteration order of objects. The first given class will have
      * objects of its class last in the iteration order, the next will have
      * objects second last in iteration order, and so on. This hold if it is
      * reversed. If it is not reversed it will return the first one first and so
      * on.
-     * 
+     * <p>
      * Objects not belonging to any of the specified classes will be first in
      * the iteration order if reversed, or last if not reversed
-     * 
-     * @param reverse
-     *            Whether to reverse the order or not. 
+     *
+     * @param reverse Whether to reverse the order or not.
      */
-    public void setClassOrder(boolean reverse, Class<?> ... classes)
-    {
+    public void setClassOrder(boolean reverse, Class<?>... classes) {
         HashMap<Class<?>, ActorSet> oldClassSets = classSets;
         classSets = new HashMap<Class<?>, ActorSet>();
-        
+
         // A list of classes we need to sweep the superclass set of
         LinkedList<Class<?>> sweepClasses = new LinkedList<Class<?>>();
-        
+
         // For each listed class, use the ActorSet from the original classSets
         // if it exists, or create a new one if not
         for (int i = 0; i < classes.length; i++) {
@@ -91,27 +89,26 @@ public class TreeActorSet extends AbstractSet<Actor>
             }
             classSets.put(classes[i], oldSet);
         }
-        
+
         // There may be objects in a set for some class A which
         // belong in the set for class B which is derived from A.
         // Now we'll "sweep" such sets.
 
         Set<Class<?>> sweptClasses = new HashSet<Class<?>>();
-        
-        while (! sweepClasses.isEmpty()) {
+
+        while (!sweepClasses.isEmpty()) {
             Class<?> sweepClass = sweepClasses.removeFirst().getSuperclass();
             ActorSet sweepSet = classSets.get(sweepClass);
             while (sweepSet == null) {
                 sweepClass = sweepClass.getSuperclass();
                 if (sweepClass == null) {
                     sweepSet = generalSet;
-                }
-                else {
+                } else {
                     sweepSet = classSets.get(sweepClass);
                 }
             }
-            
-            if (! sweptClasses.contains(sweepClass)) {
+
+            if (!sweptClasses.contains(sweepClass)) {
                 sweptClasses.add(sweepClass);
                 // go through sweep set
                 Iterator<Actor> i = sweepSet.iterator();
@@ -125,43 +122,40 @@ public class TreeActorSet extends AbstractSet<Actor>
                 }
             }
         }
-        
+
         // Now, for any old subsets not yet handled, move all the actors into
         // the appropriate set. ("Not yet handled" means that the old subset
         // has no equivalent in the new sets).
-        Iterator<Map.Entry<Class<?>,ActorSet>> ei = oldClassSets.entrySet().iterator();
-        for ( ; ei.hasNext(); ) {
-            Map.Entry<Class<?>,ActorSet> entry = ei.next();
+        Iterator<Map.Entry<Class<?>, ActorSet>> ei = oldClassSets.entrySet().iterator();
+        for (; ei.hasNext(); ) {
+            Map.Entry<Class<?>, ActorSet> entry = ei.next();
             ActorSet destinationSet = setForClass(entry.getKey());
             destinationSet.addAll(entry.getValue());
         }
-        
+
         // Finally, re-create the subsets list
         subSets.clear();
-        if(reverse) {
+        if (reverse) {
             subSets.add(generalSet);
             for (int i = classes.length; i > 0; ) {
                 subSets.add(classSets.get(classes[--i]));
             }
-        }
-        else {
+        } else {
             for (int i = 0; i < classes.length; i++) {
                 subSets.add(classSets.get(classes[i]));
             }
             subSets.add(generalSet);
         }
     }
-    
+
     @OnThread(value = Tag.Simulation, ignoreParent = true)
-    public Iterator<Actor> iterator()
-    {
+    public Iterator<Actor> iterator() {
         return new TasIterator();
     }
 
     @OnThread(value = Tag.Simulation, ignoreParent = true)
     @Override
-    public int size()
-    {
+    public int size() {
         int size = 0;
         for (Iterator<ActorSet> i = subSets.iterator(); i.hasNext(); ) {
             size += i.next().size();
@@ -171,65 +165,58 @@ public class TreeActorSet extends AbstractSet<Actor>
 
     @OnThread(value = Tag.Simulation, ignoreParent = true)
     @Override
-    public boolean add(Actor o)
-    {
+    public boolean add(Actor o) {
         if (o == null) {
             throw new UnsupportedOperationException("Cannot add null actor.");
         }
-        
+
         return setForActor(o).add(o);
     }
-    
-    public boolean remove(Actor o)
-    {
+
+    public boolean remove(Actor o) {
         return setForActor(o).remove(o);
     }
 
     @OnThread(value = Tag.Simulation, ignoreParent = true)
-    public boolean contains(Actor o)
-    {
+    public boolean contains(Actor o) {
         return setForActor(o).containsActor(o);
     }
-    
+
     /**
      * Get the actor set for a particular actor, depending on its class.
      */
-    private ActorSet setForActor(Actor o)
-    {
+    private ActorSet setForActor(Actor o) {
         Class<?> oClass = o.getClass();
         return setForClass(oClass);
     }
-    
-    private ActorSet setForClass(Class<?> oClass)
-    {
+
+    private ActorSet setForClass(Class<?> oClass) {
         ActorSet set = classSets.get(oClass);
-        
+
         // There might be a set for some superclass
         while (set == null && oClass != Object.class) {
             oClass = oClass.getSuperclass();
             set = classSets.get(oClass);
         }
-        
+
         if (set == null) {
             set = generalSet;
         }
         return set;
     }
-    
+
     /**
      * An iterator for a TreeActorSet
-     * 
+     *
      * @author Davin McCall
      */
     @OnThread(Tag.Simulation)
-    class TasIterator implements Iterator<Actor>
-    {
+    class TasIterator implements Iterator<Actor> {
         private final Iterator<ActorSet> setIterator;
         private ActorSet currentSet;
         private Iterator<Actor> actorIterator;
-        
-        public TasIterator()
-        {
+
+        public TasIterator() {
             setIterator = subSets.iterator();
             currentSet = setIterator.next();
             while (currentSet.isEmpty() && setIterator.hasNext()) {
@@ -239,36 +226,33 @@ public class TreeActorSet extends AbstractSet<Actor>
         }
 
         @OnThread(value = Tag.Simulation, ignoreParent = true)
-        public void remove()
-        {
+        public void remove() {
             actorIterator.remove();
         }
 
         @OnThread(value = Tag.Simulation, ignoreParent = true)
-        public Actor next()
-        {
+        public Actor next() {
             hasNext(); // update iterator if necessary
             return actorIterator.next();
         }
 
         @OnThread(value = Tag.Simulation, ignoreParent = true)
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
             if (actorIterator.hasNext()) {
                 return true;
             }
-            
-            if (! setIterator.hasNext()) {
+
+            if (!setIterator.hasNext()) {
                 return false;
             }
-            
+
             while (setIterator.hasNext()) {
                 currentSet = setIterator.next();
-                if (! currentSet.isEmpty()) {
+                if (!currentSet.isEmpty()) {
                     break;
                 }
             }
-            
+
             actorIterator = currentSet.iterator();
             return actorIterator.hasNext();
         }

@@ -21,27 +21,25 @@
  */
 package bluej.extensions;
 
-import java.awt.Graphics2D;
-
-import javax.swing.JMenuItem;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.extensions.BDependency.Type;
 import bluej.extensions.event.ExtensionEvent;
 import bluej.extmgr.ExtensionMenu;
 import bluej.extmgr.ExtensionPrefManager;
 import bluej.extmgr.ExtensionWrapper;
+import bluej.pkgmgr.Layer;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.Layer;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.pkgmgr.target.DependentTarget;
-
 import com.sun.jdi.Value;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /**
@@ -49,23 +47,20 @@ import com.sun.jdi.Value;
  * BlueJ-internal packages (extmgr) to provide access to methods which
  * shouldn't be documented in the Extensions API Javadoc. By using this class,
  * those methods can be made package-local.
- *
+ * <p>
  * This class should be excluded when the Javadoc API documentation is generated.
  */
-public final class ExtensionBridge
-{
-    public static void delegateEvent(BlueJ thisBluej, ExtensionEvent anEvent)
-    {
+public final class ExtensionBridge {
+    public static void delegateEvent(BlueJ thisBluej, ExtensionEvent anEvent) {
         thisBluej.delegateEvent(anEvent);
     }
 
-    public static Object getVal(PkgMgrFrame aFrame, String instanceName, Value val)
-    {
+    public static Object getVal(PkgMgrFrame aFrame, String instanceName, Value val) {
         return BField.doGetVal(aFrame, instanceName, val);
     }
 
     public static BlueJ newBluej(ExtensionWrapper aWrapper,
-        ExtensionPrefManager aPrefManager) {
+                                 ExtensionPrefManager aPrefManager) {
         return new BlueJ(aWrapper, aPrefManager);
     }
 
@@ -98,8 +93,7 @@ public final class ExtensionBridge
                 classTarget.getQualifiedName()));
     }
 
-    public static BDependency newBDependency(Dependency dependency, Type type)
-    {
+    public static BDependency newBDependency(Dependency dependency, Type type) {
         DependentTarget from = dependency.getFrom();
         DependentTarget to = dependency.getTo();
         Package bluejPackage = from.getPackage();
@@ -111,60 +105,49 @@ public final class ExtensionBridge
                 new Identifier(bluejProject, bluejPackage, qualifiedNameTo), type);
     }
 
-    public static void ChangeBClassName(BClass bClass, String newName)
-    {
+    public static void ChangeBClassName(BClass bClass, String newName) {
         bClass.nameChanged(newName);
     }
-    
-    public static void changeBClassTargetName(BClassTarget bClassTarget, String newName)
-    {
+
+    public static void changeBClassTargetName(BClassTarget bClassTarget, String newName) {
         bClassTarget.nameChanged(newName);
     }
 
-    public static void changeBDependencyOriginName(BDependency bDependency, String newOriginName)
-    {
+    public static void changeBDependencyOriginName(BDependency bDependency, String newOriginName) {
         bDependency.originNameChanged(newOriginName);
     }
 
-    public static void changeBDependencyTargetName(BDependency bDependency, String newTargetName)
-    {
+    public static void changeBDependencyTargetName(BDependency bDependency, String newTargetName) {
         bDependency.targetNameChanged(newTargetName);
     }
 
-    public static JMenuItem getMenuItem(BlueJ aBluej, ExtensionMenu attachedObject)
-    {
+    public static JMenuItem getMenuItem(BlueJ aBluej, ExtensionMenu attachedObject) {
         return aBluej.getMenuItem(attachedObject);
     }
 
     public static void postMenuItem(BlueJ aBluej, ExtensionMenu attachedObject,
-        JMenuItem onThisItem)
-    {
+                                    JMenuItem onThisItem) {
         aBluej.postMenuItem(attachedObject, onThisItem);
     }
-    
-    public static void clearObjectBench(BProject project) throws ProjectNotOpenException
-    {
+
+    public static void clearObjectBench(BProject project) throws ProjectNotOpenException {
         project.clearObjectBench();
     }
 
     public static void drawExtensionClassTarget(BlueJ bluej, Layer layer,
-            BClassTarget bClassTarget, Graphics2D graphics, int width, int height)
-    {
+                                                BClassTarget bClassTarget, Graphics2D graphics, int width, int height) {
         bluej.drawExtensionClassTarget(layer, bClassTarget, graphics, width, height);
     }
 
-    public static Project getProject(BProject bProject) throws ProjectNotOpenException
-    {
+    public static Project getProject(BProject bProject) throws ProjectNotOpenException {
         return bProject.getProject();
     }
 
-    public static PkgMgrFrame getPkgMgrFrame(BPackage pkg) throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public static PkgMgrFrame getPkgMgrFrame(BPackage pkg) throws ProjectNotOpenException, PackageNotFoundException {
         return pkg.getPkgMgrFrame();
     }
 
-    public static Object getFieldValue(BField field, BObject bObject, boolean unpackArray) throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public static Object getFieldValue(BField field, BObject bObject, boolean unpackArray) throws ProjectNotOpenException, PackageNotFoundException {
         return field.getValue(bObject, unpackArray);
     }
 }

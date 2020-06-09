@@ -27,39 +27,34 @@ import bluej.parser.nodes.JavaParentNode;
 /**
  * An entity resolver which resolves from a JavaParentNode at a particular position.
  * Used to resolve correctly when the position is important, i.e. forward references are not allowed.
- * 
+ *
  * @author Davin McCall
  */
-public class PositionedResolver implements EntityResolver
-{
+public class PositionedResolver implements EntityResolver {
     private final JavaParentNode parentNode;
     private final int fromPosition;
-    
+
     /**
      * Construct a new PositionedResolver, resolving against the given parent node at the given position.
      */
-    public PositionedResolver(JavaParentNode parentNode, int fromPosition)
-    {
+    public PositionedResolver(JavaParentNode parentNode, int fromPosition) {
         this.parentNode = parentNode;
         this.fromPosition = fromPosition;
     }
-    
+
     @Override
     public PackageOrClass resolvePackageOrClass(String name,
-            Reflective querySource)
-    {
+                                                Reflective querySource) {
         return parentNode.resolvePackageOrClass(name, querySource, fromPosition);
     }
 
     @Override
-    public TypeEntity resolveQualifiedClass(String name)
-    {
+    public TypeEntity resolveQualifiedClass(String name) {
         return parentNode.resolveQualifiedClass(name);
     }
 
     @Override
-    public JavaEntity getValueEntity(String name, Reflective querySource)
-    {
+    public JavaEntity getValueEntity(String name, Reflective querySource) {
         return parentNode.getValueEntity(name, querySource, fromPosition);
     }
 }

@@ -52,79 +52,90 @@ import java.util.concurrent.atomic.AtomicReference;
  * Lives on the Simulation VM (aka debug VM), and handles communications with the server
  * (see {@link VMCommsMain})
  */
-public class VMCommsSimulation
-{
-    private final WorldRenderer worldRenderer;    
+public class VMCommsSimulation {
+    private final WorldRenderer worldRenderer;
 
-    /** Available old world images for painting onto: */
+    /**
+     * Available old world images for painting onto:
+     */
     private final BlockingQueue<BufferedImage> worldImagesForPainting = new ArrayBlockingQueue<BufferedImage>(3);
-    /** The current image waiting to send (may be null if none): */
+    /**
+     * The current image waiting to send (may be null if none):
+     */
     private final AtomicReference<BufferedImage> worldImageForSending = new AtomicReference<>(null);
     // These variables are shared with the remote communications thread and need synchronised access:
-    /** The prompt for Greenfoot.ask() */
+    /**
+     * The prompt for Greenfoot.ask()
+     */
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private String pAskPrompt;
-    /** The ask request identifier */
+    /**
+     * The ask request identifier
+     */
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private int pAskId;
-    /** The answer received from an ask */
+    /**
+     * The answer received from an ask
+     */
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private String askAnswer;
 
-    /** The status of entering delay loop */
+    /**
+     * The status of entering delay loop
+     */
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private boolean delayLoopEntered;
 
     private final ShadowProjectProperties projectProperties;
-    
+
     /**
      * Shared memory documentation (this comment may get moved to somewhere more appropriate later).
-     *
+     * <p>
      * The shared memory consists of two successive lumps of memory. One is used by the server VM to
      * transmit data, and the other is used by the debug VM for the same purpose. File locks protect
      * both regions to prevent (in cases where it matters) either side from reading a potentially
      * incomplete data frame while the other side is still writing it. The locking protocol is
      * described in VMCommsMain.
-     * 
+     * <p>
      * Its format is as follows, where each position is an integer position (i.e. bytes times four):
-     * 
+     * <p>
      * Server area (16kb):
      * Pos 0: Reserved. Currently this region is locked independently; the "real" server area starts
-     *        following this position.
+     * following this position.
      * Pos 1: When the number is negative, it indicates that the server VM has sent back
-     *        information to the debug VM to read.  This includes keyboard and mouse events,
-     *        as shown below.
+     * information to the debug VM to read.  This includes keyboard and mouse events,
+     * as shown below.
      * Pos 2: The last consumed image frame received from the debug VM. Note that the debug VM
-     *        should not update the image in the buffer until the current image is consumed
-     *        (otherwise there may be paint artifacts such as tearing). 
+     * should not update the image in the buffer until the current image is consumed
+     * (otherwise there may be paint artifacts such as tearing).
      * Pos 3: Count of commands (C), can be zero
      * Pos 4 onwards:
-     *        Commands.  Each command begins with an integer sequence ID, then has
-     *        an integer length (L), followed by L integers (L >= 1).
-     *        The first integer of the L integers is always the
-     *        command type, and the amount of other integers depend on the command.  For example,
-     *        GreenfootStage.COMMAND_RUN just has the command type integer and no more, whereas
-     *        mouse events have four integers.
-     *
+     * Commands.  Each command begins with an integer sequence ID, then has
+     * an integer length (L), followed by L integers (L >= 1).
+     * The first integer of the L integers is always the
+     * command type, and the amount of other integers depend on the command.  For example,
+     * GreenfootStage.COMMAND_RUN just has the command type integer and no more, whereas
+     * mouse events have four integers.
+     * <p>
      * Debug VM area (10M - 16kb): [Positions relative to beginning]
-     * 
+     * <p>
      * Pos 0: Sequence index when the current (included) image was painted (the image is included
-     *        unchanged in subsequent frames).
+     * unchanged in subsequent frames).
      * Pos 1: Width of world image in pixels (W)
      * Pos 2: Height of world image in pixels (H)
      * Pos 3 incl to 3+(W*H) excl, if W and H are both greater than zero:
-     *        W * H pixels one row at a time with no gaps, each pixel is one
-     *        integer, in BGRA form, i.e. blue is highest 8 bits, alpha is lowest.
+     * W * H pixels one row at a time with no gaps, each pixel is one
+     * integer, in BGRA form, i.e. blue is highest 8 bits, alpha is lowest.
      * Pos 3+(W*H): Sequence ID of most recently processed command, or -1 if N/A.
      * Pos 4+(W*H): Stopped-with-error count.  (If this goes up, server VM will bring terminal to front)
      * Pos 5+(W*H) and 6+(W*H): Two ints (highest bits first) with value of System.currentTimeMillis()
-     *                          at the point when some execution that may contain user code last started on
-     *                          the simulation thread, or 0L if user code is not currently running.
+     * at the point when some execution that may contain user code last started on
+     * the simulation thread, or 0L if user code is not currently running.
      * Pos 7+(W*H): The current simulation speed (1 to 100)
      * Pos 8+(W*H): world counter if a world is currently installed, or 0 if there is no world.
      * Pos 9+(W*H): The world cell size in pixels
      * Pos 10+(W*H): -1 if not currently awaiting a Greenfoot.ask() answer.
-     *              If awaiting, it is count (P) of following codepoints which make up prompt.
+     * If awaiting, it is count (P) of following codepoints which make up prompt.
      * Pos 11+(W*H) to 11+(W*H)+P excl: codepoints making up ask prompt.
      * Pos 11+(W*H)+P: 1 if the the delay loop is currently running, or 0 otherwise.
      */
@@ -136,7 +147,7 @@ public class VMCommsSimulation
     private int lastAckCommand = -1;
     private int lastPaintSeq = -1; // last paint sequence
     private int lastPaintSize; // number of ints last transmitted as image
-    
+
     // How many times have we stopped with an error?  We continuously send the count to the
     // server VM, so that the server VM can observe changes in the count (only ever increases).
     private int stoppedWithErrorCount = 0;
@@ -150,96 +161,83 @@ public class VMCommsSimulation
 
     /**
      * Construct a VMCommsSimulation.
-     * 
-     * @param world The world which we are the canvas for.
+     *
+     * @param world       The world which we are the canvas for.
      * @param shmFilePath The path to the shared-memory file to be mmap-ed for communication
      */
     @SuppressWarnings("resource")
     @OnThread(Tag.Any)
-    public VMCommsSimulation(ShadowProjectProperties projectProperties, String shmFilePath, int fileSize)
-    {
+    public VMCommsSimulation(ShadowProjectProperties projectProperties, String shmFilePath, int fileSize) {
         this.projectProperties = projectProperties;
         worldRenderer = new WorldRenderer();
-        try
-        {
+        try {
             shmFileChannel = new RandomAccessFile(shmFilePath, "rw").getChannel();
             this.fileSize = fileSize;
             MappedByteBuffer mbb = shmFileChannel.map(FileChannel.MapMode.READ_WRITE, 0, fileSize);
             sharedMemory = mbb.asIntBuffer();
             putLock = shmFileChannel.lock(VMCommsMain.USER_AREA_OFFSET_BYTES,
                     fileSize - VMCommsMain.USER_AREA_OFFSET_BYTES, false);
-            
+
             new Thread() {
-                @OnThread(value = Tag.Worker,ignoreParent = true)
-                public void run()
-                {
-                    while (true)
-                    {
+                @OnThread(value = Tag.Worker, ignoreParent = true)
+                public void run() {
+                    while (true) {
                         doInterVMComms();
                     }
                 }
             }.start();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Sets the world that should be visualised by this canvas.
      * Can be called from any thread.
      */
     @OnThread(Tag.Any)
-    public synchronized void setWorld(World world)
-    {
-        if (this.world != world)
-        {
+    public synchronized void setWorld(World world) {
+        if (this.world != world) {
             this.worldCounter += 1;
             this.world = world;
         }
     }
 
-    public enum PaintWhen { FORCE, IF_DUE }
+    public enum PaintWhen {FORCE, IF_DUE}
 
     /**
      * Paints the current world into the shared memory buffer so that the server VM can
      * display it in the window there.
      *
-     * @param paintWhen  If IF_DUE, painting may be skipped if it's close to a recent paint.
-     *                   FORCE always paints, NO_PAINT indicates that an actual image update
-     *                   is not required but other information in the frame should be sent.
+     * @param paintWhen If IF_DUE, painting may be skipped if it's close to a recent paint.
+     *                  FORCE always paints, NO_PAINT indicates that an actual image update
+     *                  is not required but other information in the frame should be sent.
      */
     @OnThread(Tag.Simulation)
-    public void paintRemote(PaintWhen paintWhen)
-    {
+    public void paintRemote(PaintWhen paintWhen) {
         long now = System.nanoTime();
-        if (paintWhen == PaintWhen.IF_DUE && now - lastPaintNanos <= 8_333_333L)
-        {
+        if (paintWhen == PaintWhen.IF_DUE && now - lastPaintNanos <= 8_333_333L) {
             return; // No need to draw frame if less than 1/120th of sec between them,
-                         // but we must schedule a paint for the next sequence we send.
+            // but we must schedule a paint for the next sequence we send.
         }
 
-        if (world != null)
-        {
+        if (world != null) {
             lastPaintNanos = now;
             int imageWidth = WorldVisitor.getWidthInPixels(world);
             int imageHeight = WorldVisitor.getHeightInPixels(world);
             BufferedImage worldImage = worldImagesForPainting.poll();
-            
+
             // If there are no available old images or it's the wrong size, make our own:
             if (worldImage == null || worldImage.getHeight() != imageHeight
-                    || worldImage.getWidth() != imageWidth)
-            {
+                    || worldImage.getWidth() != imageWidth) {
                 worldImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
             }
-            
+
             worldRenderer.renderWorld(world, worldImage);
-            
+
             BufferedImage oldImage = worldImageForSending.getAndSet(worldImage);
             // If there was an old image waiting which we've overwritten, put it back in our queue of old images:
-            if (oldImage != null)
-            {
+            if (oldImage != null) {
                 worldImagesForPainting.offer(oldImage);
                 // If it doesn't fit because the queue is full, just let it get GCed.
             }
@@ -247,42 +245,35 @@ public class VMCommsSimulation
     }
 
     @OnThread(Tag.Simulation)
-    public synchronized String doAsk(int askId, String askPrompt)
-    {
+    public synchronized String doAsk(int askId, String askPrompt) {
         pAskPrompt = askPrompt;
         pAskId = askId;
         askAnswer = null;
-        
-        try
-        {
-            do
-            {
+
+        try {
+            do {
                 wait();
             }
             while (askAnswer == null);
-        }
-        catch (InterruptedException ie)
-        {
+        } catch (InterruptedException ie) {
             return "";
         }
-        
+
         return askAnswer;
     }
-    
+
     /**
      * Perform communications exchange with the other VM.
      */
     @OnThread(Tag.Worker)
-    private void doInterVMComms()
-    {
+    private void doInterVMComms() {
         // One element array to allow a reference to be set by readCommands:
-        String[] answer = new String[] {null};
-        
+        String[] answer = new String[]{null};
+
         FileLock fileLock = null;
         FileLock syncLock = null;
-        
-        try
-        {
+
+        try {
             // Get lock for our read area:
             fileLock = shmFileChannel.lock(VMCommsMain.SERVER_AREA_OFFSET_BYTES,
                     VMCommsMain.SERVER_AREA_SIZE_BYTES, false);
@@ -290,88 +281,73 @@ public class VMCommsSimulation
             boolean doUpdateImage;
             World curWorld;
             int curWorldCounter;
-            synchronized (this)
-            {
+            synchronized (this) {
                 // Don't send double-buffered image if world has since disappeared:
                 doUpdateImage = world != null;
                 curWorld = this.world;
                 curWorldCounter = this.worldCounter;
             }
-            
+
             sharedMemory.position(1);
             int recvSeq = sharedMemory.get();
-            if (recvSeq < 0 && Simulation.getInstance() != null)
-            {
+            if (recvSeq < 0 && Simulation.getInstance() != null) {
                 int lastConsumedImg = sharedMemory.get();
                 // Only update the image if the previous one was consumed:
                 doUpdateImage &= (lastConsumedImg >= lastPaintSeq);
                 int latest = readCommands(answer);
-                if (latest != -1)
-                {
+                if (latest != -1) {
                     lastAckCommand = latest;
                 }
             }
-            
+
             BufferedImage img = doUpdateImage ? worldImageForSending.getAndSet(null) : null;
-            int [] raw = (img == null) ? null : ((DataBufferInt) img.getData().getDataBuffer()).getData();
+            int[] raw = (img == null) ? null : ((DataBufferInt) img.getData().getDataBuffer()).getData();
 
             int imageWidth = 0;
             int imageHeight = 0;
-            if (img != null)
-            {
+            if (img != null) {
                 imageWidth = img.getWidth();
                 imageHeight = img.getHeight();
             }
-            
+
             sharedMemory.position(VMCommsMain.USER_AREA_OFFSET);
             sharedMemory.put(this.seq++);
-            if (img == null)
-            {
+            if (img == null) {
                 sharedMemory.put(lastPaintSeq);
                 sharedMemory.get(); // skip width
                 sharedMemory.get(); // skip height
                 sharedMemory.position(sharedMemory.position() + lastPaintSize);
-            }
-            else
-            {
+            } else {
                 lastPaintSeq = (seq - 1);
                 sharedMemory.put(lastPaintSeq);
                 sharedMemory.put(imageWidth);
                 sharedMemory.put(imageHeight);
-                for (int i = 0; i < raw.length; i++)
-                {
+                for (int i = 0; i < raw.length; i++) {
                     sharedMemory.put(raw[i]);
                 }
                 lastPaintSize = raw.length;
-                
+
                 // Now that we've rendered from it, put it back into the old images for re-use:
                 worldImagesForPainting.offer(img);
                 // If it doesn't fit, just let it get GCed.
             }
             sharedMemory.put(lastAckCommand);
             sharedMemory.put(stoppedWithErrorCount);
-            sharedMemory.put((int)(startOfCurExecution >> 32));
-            sharedMemory.put((int)(startOfCurExecution & 0xFFFFFFFFL));
-            if (Simulation.getInstance() != null)
-            {
+            sharedMemory.put((int) (startOfCurExecution >> 32));
+            sharedMemory.put((int) (startOfCurExecution & 0xFFFFFFFFL));
+            if (Simulation.getInstance() != null) {
                 sharedMemory.put(Simulation.getInstance().getSpeed());
-            }
-            else
-            {
+            } else {
                 sharedMemory.put(0);
             }
             sharedMemory.put(curWorld == null ? 0 : curWorldCounter);
             sharedMemory.put(curWorld == null ? 0 : WorldVisitor.getCellSize(curWorld));
-            
+
             // If not asking, put -1
-            synchronized (this)
-            {
-                if (pAskPrompt == null || answer[0] != null)
-                {
+            synchronized (this) {
+                if (pAskPrompt == null || answer[0] != null) {
                     sharedMemory.put(-1);
-                }
-                else
-                {
+                } else {
                     // Asking, so put the ask ID, and the prompt string:
                     int[] codepoints = pAskPrompt.codePoints().toArray();
                     sharedMemory.put(pAskId);
@@ -380,12 +356,9 @@ public class VMCommsSimulation
                 }
 
                 // Write the status of the delay loop
-                if (delayLoopEntered == true)
-                {
+                if (delayLoopEntered == true) {
                     sharedMemory.put(1);
-                }
-                else
-                {
+                } else {
                     sharedMemory.put(0);
                 }
             }
@@ -395,55 +368,45 @@ public class VMCommsSimulation
             // Lock the synchronisation area (C) to make sure that the server has acquired our put area:
             syncLock = shmFileChannel.lock(VMCommsMain.SYNC_AREA_OFFSET_BYTES,
                     VMCommsMain.SYNC_AREA_SIZE_BYTES, false);
-            
+
             fileLock.release();
             putLock = shmFileChannel.lock(VMCommsMain.USER_AREA_OFFSET_BYTES,
                     fileSize - VMCommsMain.USER_AREA_OFFSET_BYTES, false);
             syncLock.release();
-        }
-        catch (IOException ex)
-        {
-            try
-            {
+        } catch (IOException ex) {
+            try {
                 putLock.release();
+            } catch (Exception e) {
             }
-            catch (Exception e) {}
             Debug.reportError(ex);
-        }
-        catch (BufferOverflowException ex)
-        {
-            try
-            {
+        } catch (BufferOverflowException ex) {
+            try {
                 putLock.release();
-                if (fileLock != null)
-                {
+                if (fileLock != null) {
                     fileLock.release();
                 }
-                if (syncLock != null)
-                {
+                if (syncLock != null) {
                     syncLock.release();
                 }
+            } catch (Exception e) {
             }
-            catch (Exception e) {}
             // Note: the user will see this message in the terminal, so it should be helpful:
             Debug.message("World size is too large.  If your world contains more than around 2.5 million pixels you will need to do the following.\n"
-                + "Close your project, then edit project.greenfoot in a text editor to add the following line:\n"
-                + "shm.size=40000000\n"
-                + "(The default is 20000000, keep increasing if needed.)  Save the file and re-open the project in Greenfoot.");
+                    + "Close your project, then edit project.greenfoot in a text editor to add the following line:\n"
+                    + "shm.size=40000000\n"
+                    + "(The default is 20000000, keep increasing if needed.)  Save the file and re-open the project in Greenfoot.");
         }
-            
-        if (answer[0] != null)
-        {
+
+        if (answer[0] != null) {
             gotAskAnswer(answer[0]);
         }
     }
-    
+
     /**
      * An "ask" answer has been received from the other VM; record it and signal the simulation
      * thread.
      */
-    private synchronized void gotAskAnswer(String answer)
-    {
+    private synchronized void gotAskAnswer(String answer) {
         askAnswer = answer;
         notifyAll();
     }
@@ -455,23 +418,19 @@ public class VMCommsSimulation
      * @param answer A one-element array in which to store an ask-answer, if received
      * @return The command acknowledge to write back to the buffer
      */
-    private int readCommands(String[] answer)
-    {
+    private int readCommands(String[] answer) {
         int lastSeqID = -1;
         int commandCount = sharedMemory.get();
-        for (int i = 0; i < commandCount; i++)
-        {
+        for (int i = 0; i < commandCount; i++) {
             lastSeqID = sharedMemory.get();
             int commandLength = sharedMemory.get();
             int[] data = new int[commandLength];
             sharedMemory.get(data);
-            if (Command.isKeyEvent(data[0]))
-            {
+            if (Command.isKeyEvent(data[0])) {
                 KeyboardManager keyboardManager = WorldHandler.getInstance().getKeyboardManager();
                 KeyCode keyCode = KeyCode.values()[data[1]];
                 String keyText = new String(data, 2, data.length - 2);
-                switch(data[0])
-                {
+                switch (data[0]) {
                     case Command.KEY_DOWN:
                         keyboardManager.keyPressed(keyCode, keyText);
                         break;
@@ -482,16 +441,13 @@ public class VMCommsSimulation
                         keyboardManager.keyTyped(keyCode, keyText);
                         break;
                 }
-            }
-            else if (Command.isMouseEvent(data[0]))
-            {
+            } else if (Command.isMouseEvent(data[0])) {
                 int x = data[1];
                 int y = data[2];
                 int button = data[3];
                 int clickCount = data[4];
                 MousePollingManager mouseManager = WorldHandler.getInstance().getMouseManager();
-                switch (data[0])
-                {
+                switch (data[0]) {
                     case Command.MOUSE_CLICKED:
                         mouseManager.mouseClicked(x, y, MouseButton.values()[button], clickCount);
                         break;
@@ -511,12 +467,9 @@ public class VMCommsSimulation
                         mouseManager.mouseExited();
                         break;
                 }
-            }
-            else
-            {
+            } else {
                 // Commands which are not keyboard or mouse events:
-                switch (data[0])
-                {
+                switch (data[0]) {
                     case Command.COMMAND_RUN:
                         Simulation.getInstance().setPaused(false);
                         break;
@@ -548,7 +501,7 @@ public class VMCommsSimulation
                     case Command.COMMAND_PROPERTY_CHANGED:
                         int keyLength = data[1];
                         String key = new String(data, 2, keyLength);
-                        int valueLength = data[2+keyLength];
+                        int valueLength = data[2 + keyLength];
                         String value = valueLength < 0 ? null : new String(data, 3 + keyLength, valueLength);
                         projectProperties.propertyChangedOnServerVM(key, value);
                         break;
@@ -571,17 +524,15 @@ public class VMCommsSimulation
      * Gets a suitable ask ID.  This needs to be a sequence number which will be
      * newer than the last answer, so we just use the last command we received.
      */
-    public int getAskId()
-    {
+    public int getAskId() {
         return lastAckCommand;
     }
 
     /**
-     * The simulation thread has stopped with an error; need to let the server VM know. 
+     * The simulation thread has stopped with an error; need to let the server VM know.
      */
     @OnThread(Tag.Simulation)
-    public void notifyStoppedWithError()
-    {
+    public void notifyStoppedWithError() {
         stoppedWithErrorCount += 1;
         paintRemote(PaintWhen.FORCE);
     }
@@ -590,8 +541,7 @@ public class VMCommsSimulation
      * The delay loop is entered; need to let the server VM know.
      */
     @OnThread(Tag.Simulation)
-    public synchronized void notifyDelayLoopEntered()
-    {
+    public synchronized void notifyDelayLoopEntered() {
         delayLoopEntered = true;
     }
 
@@ -599,8 +549,7 @@ public class VMCommsSimulation
      * The delay loop is completed; need to let the server VM know.
      */
     @OnThread(Tag.Simulation)
-    public synchronized void notifyDelayLoopCompleted()
-    {
+    public synchronized void notifyDelayLoopCompleted() {
         delayLoopEntered = false;
     }
 
@@ -608,8 +557,7 @@ public class VMCommsSimulation
      * User code has begun executing.  Note this in the shared memory area so that the server VM can know.
      */
     @OnThread(Tag.Simulation)
-    public void userCodeStarting()
-    {
+    public void userCodeStarting() {
     }
 
     /**
@@ -617,10 +565,8 @@ public class VMCommsSimulation
      * Each userCodeStopped() event should follow one call to userCodeStarting().
      */
     @OnThread(Tag.Simulation)
-    public void userCodeStopped(boolean suggestRepaint)
-    {
-        if (suggestRepaint)
-        {
+    public void userCodeStopped(boolean suggestRepaint) {
+        if (suggestRepaint) {
             paintRemote(PaintWhen.FORCE);
         }
     }

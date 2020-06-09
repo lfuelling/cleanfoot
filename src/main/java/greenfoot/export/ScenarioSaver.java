@@ -25,12 +25,12 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
- ** Interface for saving the scenario when needed.
- **
+ * * Interface for saving the scenario when needed.
+ * *
+ *
  * @author Amjad Altadmri
  */
-public interface ScenarioSaver
-{
+public interface ScenarioSaver {
     /**
      * Called when the scenario should be saved. For example,
      * before publishing.

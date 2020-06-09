@@ -35,8 +35,7 @@ import threadchecker.Tag;
  * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public final class Info extends TextFlow
-{
+public final class Info extends TextFlow {
     private final Text text;
     private boolean isClear;
 
@@ -45,8 +44,7 @@ public final class Info extends TextFlow
     /**
      * Construct a new Info instance.
      */
-    public Info()
-    {
+    public Info() {
         JavaFXUtil.addStyleClass(this, "moe-info");
         text = new Text();
         JavaFXUtil.addStyleClass(text, "moe-info-text");
@@ -60,36 +58,32 @@ public final class Info extends TextFlow
     /**
      * display a one- or two-line message (using '\n' to separate multiple lines).
      */
-    public void message(String msg)
-    {
+    public void message(String msg) {
         text.setText(msg);
         isClear = false;
     }
-    
+
     /**
      * Like message(String), but the message may be displayed in a pop-up dialog if the user
      * has enabled this preference (e.g. for blind users with screen readers)
      */
-    public void messageImportant(String msg)
-    {
+    public void messageImportant(String msg) {
         message(msg);
     }
 
     /**
      * display a two line message
      */
-    public void message(String msg1, String msg2)
-    {
+    public void message(String msg1, String msg2) {
         message(msg1 + '\n' + msg2);
     }
 
     /**
      * clear the display
      */
-    public void clear()
-    {
+    public void clear() {
         if (!isClear) {
-            message ("");
+            message("");
             isClear = true;
         }
     }

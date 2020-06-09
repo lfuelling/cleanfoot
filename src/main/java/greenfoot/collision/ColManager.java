@@ -24,14 +24,9 @@ package greenfoot.collision;
 import greenfoot.Actor;
 import greenfoot.collision.ibsp.IBSPColChecker;
 
-import java.awt.Graphics;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 
 
@@ -39,27 +34,30 @@ import java.util.Map.Entry;
  * This class manages collision checkers. It doesn't do any collision checking
  * itself but optimises the collision checking by deciding how to delegate
  * collision checking to other collision checkers.
- * 
+ *
  * @author Poul Henriksen
  */
-public class ColManager implements CollisionChecker
-{
+public class ColManager implements CollisionChecker {
 
-    /** Map from classes to objects that are not part of the collision checking (yet). */
+    /**
+     * Map from classes to objects that are not part of the collision checking (yet).
+     */
     private final Map<Class<? extends Actor>, LinkedList<Actor>> freeObjects = new HashMap<Class<? extends Actor>, LinkedList<Actor>>();
-    
-    /** Classes that are part of the collision checking. */
+
+    /**
+     * Classes that are part of the collision checking.
+     */
     private final Set<Class<? extends Actor>> collisionClasses = new HashSet<Class<? extends Actor>>();
-    
-    /** The actual collision checker. */
+
+    /**
+     * The actual collision checker.
+     */
     private final CollisionChecker collisionChecker = new IBSPColChecker();
 
     /**
      * Ensures that objects of this class are in the collision checker
-     * 
      */
-    private void makeCollisionObjects(Class<? extends Actor> cls, boolean includeSubclasses)
-    {
+    private void makeCollisionObjects(Class<? extends Actor> cls, boolean includeSubclasses) {
         if (cls == null) {
             //long start = System.nanoTime();
             Set<Entry<Class<? extends Actor>, LinkedList<Actor>>> entries = freeObjects.entrySet();
@@ -74,15 +72,13 @@ public class ColManager implements CollisionChecker
 
             //System.out.println("move all took seconds: " + (end - start) / 1000000000d);
             freeObjects.clear();
-        }
-        else if (collisionClasses.contains(cls)) {
-        }
-        else {
+        } else if (collisionClasses.contains(cls)) {
+        } else {
             List<? extends Actor> classSet = freeObjects.remove(cls);
 
-            if( classSet != null) {
+            if (classSet != null) {
                 collisionClasses.add(cls);
-    
+
                 // Add all the objects to the collision checker
                 // TODO: bulk add could be faster if implemented in collision checker?
                 for (Actor actor : classSet) {
@@ -93,11 +89,11 @@ public class ColManager implements CollisionChecker
 
         if (includeSubclasses) {
             // Clone it to avoid concurrent modification:
-            Set<Entry<Class<? extends Actor>, LinkedList<Actor>>> entries = 
+            Set<Entry<Class<? extends Actor>, LinkedList<Actor>>> entries =
                     new HashSet<Entry<Class<? extends Actor>, LinkedList<Actor>>>(freeObjects.entrySet());
             // Run through all classes to see if any of them is a subclass.
             for (Entry<Class<? extends Actor>, LinkedList<Actor>> entry : entries) {
-                if(cls.isAssignableFrom(entry.getKey())) {
+                if (cls.isAssignableFrom(entry.getKey())) {
                     makeCollisionObjects(entry.getKey(), false);
                 }
             }
@@ -107,22 +103,18 @@ public class ColManager implements CollisionChecker
     /**
      * Ensure that objects of the actors class and all objects of 'cls' or a
      * subclass is part of the collision detection.
-     * 
      */
-    private <T extends Actor> void prepareForCollision(Actor actor, Class<T> cls)
-    {
+    private <T extends Actor> void prepareForCollision(Actor actor, Class<T> cls) {
         makeCollisionObjects(actor.getClass(), false);
         makeCollisionObjects(cls, true);
     }
 
-    public void addObject(Actor actor)
-    {
+    public void addObject(Actor actor) {
         Class<? extends Actor> cls = actor.getClass();
 
         if (collisionClasses.contains(cls)) {
             collisionChecker.addObject(actor);
-        }
-        else {
+        } else {
             LinkedList<Actor> classSet = freeObjects.get(cls);
             if (classSet == null) {
                 classSet = new LinkedList<Actor>();
@@ -132,21 +124,18 @@ public class ColManager implements CollisionChecker
         }
     }
 
-    public <T extends Actor> List<T> getIntersectingObjects(Actor actor, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getIntersectingObjects(Actor actor, Class<T> cls) {
         prepareForCollision(actor, cls);
         return collisionChecker.getIntersectingObjects(actor, cls);
     }
 
-    public <T extends Actor> List<T> getNeighbours(Actor actor, int distance, boolean diag, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getNeighbours(Actor actor, int distance, boolean diag, Class<T> cls) {
         prepareForCollision(actor, cls);
         return collisionChecker.getNeighbours(actor, distance, diag, cls);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getObjects(Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjects(Class<T> cls) {
         List<T> result = collisionChecker.getObjects(cls);
 
         Set<Entry<Class<? extends Actor>, LinkedList<Actor>>> entries = freeObjects.entrySet();
@@ -158,76 +147,63 @@ public class ColManager implements CollisionChecker
         return result;
     }
 
-    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls) {
         makeCollisionObjects(cls, true);
         return collisionChecker.getObjectsAt(x, y, cls);
     }
 
-    public <T extends Actor> List<T> getObjectsInDirection(int x, int y, int angle, int length, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjectsInDirection(int x, int y, int angle, int length, Class<T> cls) {
         makeCollisionObjects(cls, true);
         return collisionChecker.getObjectsInDirection(x, y, angle, length, cls);
     }
 
-    public <T extends Actor> List<T> getObjectsInRange(int x, int y, int r, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjectsInRange(int x, int y, int r, Class<T> cls) {
         makeCollisionObjects(cls, true);
         return collisionChecker.getObjectsInRange(x, y, r, cls);
     }
 
-    public List<Actor> getObjectsList()
-    {
+    public List<Actor> getObjectsList() {
         return getObjects(null);
     }
 
-    public <T extends Actor> T getOneIntersectingObject(Actor object, Class<T> cls)
-    {
+    public <T extends Actor> T getOneIntersectingObject(Actor object, Class<T> cls) {
         prepareForCollision(object, cls);
         return collisionChecker.getOneIntersectingObject(object, cls);
     }
 
-    public <T extends Actor> T getOneObjectAt(Actor object, int dx, int dy, Class<T> cls)
-    {
+    public <T extends Actor> T getOneObjectAt(Actor object, int dx, int dy, Class<T> cls) {
         prepareForCollision(object, cls);
         return collisionChecker.getOneObjectAt(object, dx, dy, cls);
     }
 
-    public void initialize(int width, int height, int cellSize, boolean wrap)
-    {
+    public void initialize(int width, int height, int cellSize, boolean wrap) {
         collisionChecker.initialize(width, height, cellSize, wrap);
     }
 
-    public void paintDebug(Graphics g)
-    {
+    public void paintDebug(Graphics g) {
         collisionChecker.paintDebug(g);
     }
 
-    public void removeObject(Actor object)
-    {
+    public void removeObject(Actor object) {
         LinkedList<Actor> classSet = freeObjects.get(object.getClass());
         if (classSet != null) {
             classSet.remove(object);
-        }
-        else {
+        } else {
             collisionChecker.removeObject(object);
         }
     }
 
-    public void startSequence()
-    {
+    public void startSequence() {
         collisionChecker.startSequence();
     }
 
-    public void updateObjectLocation(Actor object, int oldX, int oldY)
-    {
+    public void updateObjectLocation(Actor object, int oldX, int oldY) {
         if (!freeObjects.containsKey(object.getClass())) {
             collisionChecker.updateObjectLocation(object, oldX, oldY);
         }
     }
 
-    public void updateObjectSize(Actor object)
-    {
+    public void updateObjectSize(Actor object) {
         if (!freeObjects.containsKey(object.getClass())) {
             collisionChecker.updateObjectSize(object);
         }

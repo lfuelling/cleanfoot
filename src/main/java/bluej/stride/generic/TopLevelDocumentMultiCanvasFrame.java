@@ -33,19 +33,11 @@ import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.framedjava.frames.ImportFrame;
 import bluej.stride.framedjava.frames.StrideDictionary;
 import bluej.stride.framedjava.frames.TopLevelFrame;
-import bluej.stride.slots.ClassNameDefTextSlot;
-import bluej.stride.slots.EditableSlot;
-import bluej.stride.slots.Focus;
-import bluej.stride.slots.HeaderItem;
-import bluej.stride.slots.SlotLabel;
-import bluej.stride.slots.SlotTraversalChars;
-import bluej.stride.slots.TextSlot;
-import bluej.stride.slots.TriangleLabel;
+import bluej.stride.slots.*;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.MultiListener;
 import bluej.utility.javafx.SharedTransition;
 import bluej.utility.javafx.binding.DeepListBinding;
-
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleStringProperty;
@@ -60,24 +52,20 @@ import javafx.scene.shape.Rectangle;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
  * A top level class to represent common features in Class and Interface frames
+ *
  * @author Amjad Altadmri
  */
-public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeElement & TopLevelCodeElement> extends DocumentedMultiCanvasFrame implements TopLevelFrame<ELEMENT>
-{
+public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeElement & TopLevelCodeElement> extends DocumentedMultiCanvasFrame implements TopLevelFrame<ELEMENT> {
     protected final InteractionManager editor;
     protected final EntityResolver projectResolver;
     private final String stylePrefix;
 
-    @OnThread(value = Tag.Any,requireSynchronized = true)
+    @OnThread(value = Tag.Any, requireSynchronized = true)
     protected ELEMENT element;
 
     // can both be null in Greenfoot, where we don't show the package
@@ -102,9 +90,8 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
     protected final FrameContentItem endSpacer;
 
     public TopLevelDocumentMultiCanvasFrame(InteractionManager editor, EntityResolver projectResolver, String caption,
-                                        String stylePrefix, String packageName, List<ImportElement> imports,
-                                        JavadocUnit documentation, NameDefSlotFragment topLevelFrameName, boolean enabled)
-    {
+                                            String stylePrefix, String packageName, List<ImportElement> imports,
+                                            JavadocUnit documentation, NameDefSlotFragment topLevelFrameName, boolean enabled) {
         //Frame frameParent
         super(editor, caption, stylePrefix);
         this.editor = editor;
@@ -116,75 +103,62 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
             private final Rectangle r = new Rectangle(1, 200, Color.TRANSPARENT);
 
             @Override
-            public Stream<HeaderItem> getHeaderItemsDeep()
-            {
+            public Stream<HeaderItem> getHeaderItemsDeep() {
                 return Stream.empty();
             }
 
             @Override
-            public Stream<HeaderItem> getHeaderItemsDirect()
-            {
+            public Stream<HeaderItem> getHeaderItemsDirect() {
                 return Stream.empty();
             }
 
             @Override
-            public Bounds getSceneBounds()
-            {
+            public Bounds getSceneBounds() {
                 return r.localToScene(r.getBoundsInLocal());
             }
 
             @Override
-            public Optional<FrameCanvas> getCanvas()
-            {
+            public Optional<FrameCanvas> getCanvas() {
                 return Optional.empty();
             }
 
             @Override
-            public boolean focusLeftEndFromPrev()
-            {
+            public boolean focusLeftEndFromPrev() {
                 return false;
             }
 
             @Override
-            public boolean focusRightEndFromNext()
-            {
+            public boolean focusRightEndFromNext() {
                 return false;
             }
 
             @Override
-            public boolean focusTopEndFromPrev()
-            {
+            public boolean focusTopEndFromPrev() {
                 return false;
             }
 
             @Override
-            public boolean focusBottomEndFromNext()
-            {
+            public boolean focusBottomEndFromNext() {
                 return false;
             }
 
             @Override
-            public void setView(View oldView, View newView, SharedTransition animation)
-            {
+            public void setView(View oldView, View newView, SharedTransition animation) {
 
             }
 
             @Override
-            public Node getNode()
-            {
+            public Node getNode() {
                 return r;
             }
         };
 
 
         // Since we don't support packages in Greenfoot, we don't bother showing the package declaration:
-        if (Config.isGreenfoot())
-        {
+        if (Config.isGreenfoot()) {
             this.packageRow = null;
             this.packageNameLabel = null;
-        }
-        else
-        {
+        } else {
             if (packageName != null && !packageName.isEmpty()) {
                 this.packageRow = new FrameContentRow(this);
                 this.packageNameLabel = new SlotLabel(packageName, "package-slot-");
@@ -242,16 +216,15 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
 
     /**
      * Returns true if the focus inside a canvas, this is one of two cases:
-     *      1- One of the FrameCursors inside the canvas is focused
-     *      2- One of the focusable slots in one of the frames inside the canvas is focused
+     * 1- One of the FrameCursors inside the canvas is focused
+     * 2- One of the focusable slots in one of the frames inside the canvas is focused
      *
      * @param canvas the FrameCanvas we are looking into
      * @return True only if one of focuasble targets inside the canvas is focused.
      */
 
-    protected boolean isCanvasHasFocus(FrameCanvas canvas)
-    {
-        if (canvas.getFocusableCursors().stream().anyMatch(c -> c.isFocused()) ) {
+    protected boolean isCanvasHasFocus(FrameCanvas canvas) {
+        if (canvas.getFocusableCursors().stream().anyMatch(c -> c.isFocused())) {
             // a FrameCursor inside 'canvas' is focused
             return true;
         }
@@ -260,8 +233,7 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
         return canvas.getBlockContents().stream().anyMatch(b -> b.getFocusablesInclContained().anyMatch(s -> s.isFocused()));
     }
 
-    protected SlotLabel makeLabel(String content)
-    {
+    protected SlotLabel makeLabel(String content) {
         SlotLabel l = new SlotLabel(content);
         JavaFXUtil.addStyleClass(l, stylePrefix + "section-label");
         return l;
@@ -269,13 +241,11 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
 
     // Can't drag class/interface blocks:
     @Override
-    public boolean canDrag()
-    {
+    public boolean canDrag() {
         return false;
     }
 
-    protected List<CodeElement> getMembers(FrameCanvas frameCanvas)
-    {
+    protected List<CodeElement> getMembers(FrameCanvas frameCanvas) {
         List<CodeElement> members = new ArrayList<>();
         for (CodeFrame<?> c : frameCanvas.getBlocksSubtype(CodeFrame.class)) {
             c.regenerateCode();
@@ -284,43 +254,36 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
         return members;
     }
 
-    private FrameCanvas createImportsCanvas(final List<ImportElement> imports)
-    {
+    private FrameCanvas createImportsCanvas(final List<ImportElement> imports) {
         FrameCanvas importCanvas = new FrameCanvas(editor, new CanvasParent() {
 
             @Override
-            public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend)
-            {
+            public FrameCursor findCursor(double sceneX, double sceneY, FrameCursor prevCursor, FrameCursor nextCursor, List<Frame> exclude, boolean isDrag, boolean canDescend) {
                 return TopLevelDocumentMultiCanvasFrame.this.importCanvas.findClosestCursor(sceneX, sceneY, exclude, isDrag, canDescend);
             }
 
             @Override
-            public FrameTypeCheck check(FrameCanvas canvasBase)
-            {
+            public FrameTypeCheck check(FrameCanvas canvasBase) {
                 return StrideDictionary.checkImport();
             }
 
             @Override
-            public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursor)
-            {
+            public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursor) {
                 return Collections.emptyList();
             }
 
             @Override
-            public Frame getFrame()
-            {
+            public Frame getFrame() {
                 return TopLevelDocumentMultiCanvasFrame.this;
             }
 
             @Override
-            public InteractionManager getEditor()
-            {
+            public InteractionManager getEditor() {
                 return editor;
             }
 
             @Override
-            public CanvasKind getChildKind(FrameCanvas c)
-            {
+            public CanvasKind getChildKind(FrameCanvas c) {
                 return CanvasKind.IMPORTS;
             }
         }, stylePrefix + "import-");
@@ -337,24 +300,24 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
         new DeepListBinding<String>(boundImports) {
             private final ChangeListener<String> listener = (a, b, c) -> update();
             private final MultiListener<ObservableStringValue> stringListener
-                = new MultiListener<>(v -> { v.addListener(listener); return () -> v.removeListener(listener); });
+                    = new MultiListener<>(v -> {
+                v.addListener(listener);
+                return () -> v.removeListener(listener);
+            });
 
             @Override
-            protected Stream<ObservableList<?>> getListenTargets()
-            {
+            protected Stream<ObservableList<?>> getListenTargets() {
                 return Stream.of(importCanvas.getBlockContents());
             }
 
             @Override
-            protected Stream<String> calculateValues()
-            {
-                return importCanvas.getBlockContents().stream().map(f -> (ImportFrame)f).map(ImportFrame::getImport);
+            protected Stream<String> calculateValues() {
+                return importCanvas.getBlockContents().stream().map(f -> (ImportFrame) f).map(ImportFrame::getImport);
             }
 
             @Override
-            protected void update()
-            {
-                stringListener.listenOnlyTo(importCanvas.getBlockContents().stream().map(f -> (ImportFrame)f).map(ImportFrame::importProperty));
+            protected void update() {
+                stringListener.listenOnlyTo(importCanvas.getBlockContents().stream().map(f -> (ImportFrame) f).map(ImportFrame::importProperty));
                 super.update();
             }
 
@@ -363,120 +326,96 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
         return importCanvas;
     }
 
-    public ObservableList<String> getImports()
-    {
+    public ObservableList<String> getImports() {
         return boundImports;
     }
 
-    public void addImport(String importSrc)
-    {
+    public void addImport(String importSrc) {
         importCanvas.insertBlockAfter(new ImportFrame(editor, importSrc), importCanvas.getLastCursor());
     }
 
-    public FrameCanvas getfieldsCanvas()
-    {
+    public FrameCanvas getfieldsCanvas() {
         return fieldsCanvas;
     }
 
-    public FrameCanvas getMethodsCanvas()
-    {
+    public FrameCanvas getMethodsCanvas() {
         return methodsCanvas;
     }
 
     @Override
-    protected void modifyChildren(List<FrameContentItem> updatedChildren)
-    {
+    protected void modifyChildren(List<FrameContentItem> updatedChildren) {
         super.modifyChildren(updatedChildren);
         int n = 0;
-        if (packageNameLabel != null)
-        {
+        if (packageNameLabel != null) {
             updatedChildren.add(n, packageRow);
             n += 1;
         }
         updatedChildren.add(n, importRow);
-        updatedChildren.add(n+1, importCanvas);
+        updatedChildren.add(n + 1, importCanvas);
         updatedChildren.add(endSpacer);
     }
 
     @Override
-    public void bindMinHeight(DoubleBinding prop)
-    {
+    public void bindMinHeight(DoubleBinding prop) {
         getRegion().minHeightProperty().bind(prop);
     }
 
     @Override
-    public void insertAtEnd(Frame frame)
-    {
+    public void insertAtEnd(Frame frame) {
         getLastCanvas().getLastCursor().insertBlockAfter(frame);
     }
 
     @Override
-    public ObservableStringValue nameProperty()
-    {
+    public ObservableStringValue nameProperty() {
         return paramName.textProperty();
     }
 
     @Override
-    public FrameCanvas getImportCanvas()
-    {
+    public FrameCanvas getImportCanvas() {
         return importCanvas;
     }
 
     @Override
-    public void ensureImportCanvasShowing()
-    {
+    public void ensureImportCanvasShowing() {
         importCanvas.getShowingProperty().set(true);
     }
 
     @Override
-    public EditableSlot getErrorShowRedirect()
-    {
+    public EditableSlot getErrorShowRedirect() {
         return paramName;
     }
 
     @Override
-    public void focusName()
-    {
+    public void focusName() {
         paramName.requestFocus(Focus.LEFT);
     }
 
     @Override
-    public Stream<RecallableFocus> getFocusables()
-    {
+    public Stream<RecallableFocus> getFocusables() {
         // All slots, and all cursors:
         return getFocusablesInclContained();
     }
 
     @Override
-    public void focusOnBody(BodyFocus on)
-    {
+    public void focusOnBody(BodyFocus on) {
         FrameCursor c;
-        if (on == BodyFocus.TOP)
-        {
+        if (on == BodyFocus.TOP) {
             c = fieldsCanvas.getFirstCursor();
-        }
-        else if (on == BodyFocus.BOTTOM)
-        {
+        } else if (on == BodyFocus.BOTTOM) {
             c = methodsCanvas.getLastCursor();
-        }
-        else
-        {
+        } else {
             // If we have any errors, focus on them
             Optional<CodeError> error = getCurrentErrors().findFirst();
-            if (error.isPresent())
-            {
+            if (error.isPresent()) {
                 error.get().jumpTo(editor);
                 return;
             }
 
             // Look for a special method:
             Frame specialMethod = findASpecialMethod();
-            if (specialMethod != null)
-            {
+            if (specialMethod != null) {
                 c = specialMethod.getFirstInternalCursor();
-            }
-            else
-            {
+            } else {
                 // Go to top of methods:
                 c = methodsCanvas.getFirstCursor();
             }
@@ -489,8 +428,7 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(View oldView, View newView, SharedTransition animateProgress)
-    {
+    public void setView(View oldView, View newView, SharedTransition animateProgress) {
         super.setView(oldView, newView, animateProgress);
         boolean java = newView == View.JAVA_PREVIEW;
         if (java || oldView == View.JAVA_PREVIEW) {
@@ -516,19 +454,15 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
         // TODO if extendsInheritedCanvases is added to Interfaces, use the code of setView in ClassFrame.
     }
 
-    private void animateLabelRows(View newView, SharedTransition animateProgress)
-    {
+    private void animateLabelRows(View newView, SharedTransition animateProgress) {
         final List<FrameContentRow> labelRows = getLabelRows();
-        if (newView == View.NORMAL)
-        {
+        if (newView == View.NORMAL) {
             animateProgress.addOnStopped(() -> {
                 importTriangleLabel.setVisible(true);
                 importTriangleLabel.setManaged(true);
                 labelRows.forEach(r -> r.setSnapToPixel(true));
             });
-        }
-        else
-        {
+        } else {
             labelRows.forEach(r -> r.setSnapToPixel(false));
             importTriangleLabel.setVisible(false);
             importTriangleLabel.setManaged(false);
@@ -538,15 +472,11 @@ public abstract class TopLevelDocumentMultiCanvasFrame<ELEMENT extends CodeEleme
     protected abstract List<FrameContentRow> getLabelRows();
 
 
-    private void animateCanvasLabels(View oldView, View newView, SharedTransition animateProgress)
-    {
+    private void animateCanvasLabels(View oldView, View newView, SharedTransition animateProgress) {
         List<SlotLabel> animateLabels = getCanvasLabels();
-        if (newView == View.JAVA_PREVIEW)
-        {
+        if (newView == View.JAVA_PREVIEW) {
             animateLabels.forEach(l -> l.shrinkVertically(animateProgress));
-        }
-        else if (oldView == View.JAVA_PREVIEW)
-        {
+        } else if (oldView == View.JAVA_PREVIEW) {
             animateLabels.forEach(l -> l.growVertically(animateProgress));
         }
     }

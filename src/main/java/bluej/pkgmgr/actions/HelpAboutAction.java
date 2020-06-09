@@ -25,20 +25,17 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * help...about. Display a brief info dialog on BlueJ.
- * 
+ *
  * @author Davin McCall
  * @version $Id: HelpAboutAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class HelpAboutAction extends PkgMgrAction
-{
-    
-    public HelpAboutAction(PkgMgrFrame pmf)
-    {
+final public class HelpAboutAction extends PkgMgrAction {
+
+    public HelpAboutAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.about");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.aboutBlueJ();
     }

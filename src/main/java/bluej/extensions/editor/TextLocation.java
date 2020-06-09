@@ -29,28 +29,26 @@ package bluej.extensions.editor;
  * second characters in the file, and so on. There is a TextLocation position to
  * the right of the last character on a line. The column value of this
  * position can be determined using Editor.getLineLength(int line).
- *
- * When applied to a particular edited text, a TextLocation may be <em>invalid</em>. 
+ * <p>
+ * When applied to a particular edited text, a TextLocation may be <em>invalid</em>.
  * That is, at the time of use, it points to an area outside the text being edited.
- * 
+ *
  * @version $Id: TextLocation.java 6215 2009-03-30 13:28:25Z polle $
  */
 
 /*
  * @author Damiano Bolla, University of Kent at Canterbury, 2004
- */  
-public class TextLocation
-{
-    private int line,column;
-    
+ */
+public class TextLocation {
+    private int line, column;
+
     /**
      * Create a TextLocation representing the text position at the specified line and column
      *
-     * @param  line    a line number starting from 0
-     * @param  column  a column number starting from 0
+     * @param line   a line number starting from 0
+     * @param column a column number starting from 0
      */
-    public TextLocation(int line, int column)
-    {
+    public TextLocation(int line, int column) {
         this.line = line;
         this.column = column;
     }
@@ -59,10 +57,9 @@ public class TextLocation
     /**
      * Sets the line number of this text position, leaving the column unchanged.
      *
-     * @param  line  the line number starting from zero
+     * @param line the line number starting from zero
      */
-    public void setLine(int line)
-    {
+    public void setLine(int line) {
         this.line = line;
     }
 
@@ -70,10 +67,9 @@ public class TextLocation
     /**
      * Returns the line of this text position
      *
-     * @return    the line number of this text position
+     * @return the line number of this text position
      */
-    public int getLine()
-    {
+    public int getLine() {
         return line;
     }
 
@@ -81,10 +77,9 @@ public class TextLocation
     /**
      * Sets the column of this text position, leaving the line number unchanged.
      *
-     * @param  column  the column number starting from zero
+     * @param column the column number starting from zero
      */
-    public void setColumn(int column)
-    {
+    public void setColumn(int column) {
         this.column = column;
     }
 
@@ -92,10 +87,9 @@ public class TextLocation
     /**
      * Returns the column of this text location
      *
-     * @return    the column number of this text location
+     * @return the column number of this text location
      */
-    public int getColumn()
-    {
+    public int getColumn() {
         return column;
     }
 
@@ -103,23 +97,21 @@ public class TextLocation
     /**
      * Set both the line number and column of this text location
      *
-     * @param  line    a line number starting from zero
-     * @param  column  a column number starting from zero
+     * @param line   a line number starting from zero
+     * @param column a column number starting from zero
      */
-    public void setPosition(int line, int column)
-    {
+    public void setPosition(int line, int column) {
         this.line = line;
-        this.column = column;    
+        this.column = column;
     }
-    
+
     /**
      * Returns a string representation of this text location.
      *
      * @return a string that represents this object status
      */
-    public String toString ()
-    {
-        return "line="+line+" column="+column;
+    public String toString() {
+        return "line=" + line + " column=" + column;
     }
-    
+
 }

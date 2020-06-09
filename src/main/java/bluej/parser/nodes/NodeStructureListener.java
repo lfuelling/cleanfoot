@@ -25,12 +25,11 @@ import bluej.parser.nodes.NodeTree.NodeAndPosition;
 
 /**
  * An interface for listeners to the parse tree structure.
- * 
+ *
  * @author Davin McCall
  */
-public interface NodeStructureListener
-{
+public interface NodeStructureListener {
     void nodeRemoved(NodeAndPosition<ParsedNode> node);
-    
+
     void nodeChangedLength(NodeAndPosition<ParsedNode> node, int oldPos, int oldSize);
 }

@@ -23,7 +23,6 @@ package bluej.stride.slots;
 
 import bluej.stride.framedjava.slots.UnderlineContainer;
 import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.FXRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -40,17 +39,16 @@ import threadchecker.Tag;
 
 
 @OnThread(Tag.FX)
-public class LinkedIdentifier implements TextSlot.Underline
-{
+public class LinkedIdentifier implements TextSlot.Underline {
     private final String name;
     private final int startPosition; // Within slot
     private final int endPosition; // Within slot
     private final FXPlatformRunnable onClick;
     private final UnderlineContainer slot;
+
     @OnThread(Tag.Any)
     public LinkedIdentifier(String name, int startPosition, int endPosition,
-                            UnderlineContainer slot, FXPlatformRunnable onClick)
-    {
+                            UnderlineContainer slot, FXPlatformRunnable onClick) {
         this.name = name;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
@@ -59,28 +57,26 @@ public class LinkedIdentifier implements TextSlot.Underline
     }
 
     @OnThread(Tag.FXPlatform)
-    public void show() { slot.addUnderline(this); }
+    public void show() {
+        slot.addUnderline(this);
+    }
 
     @Override
-    public int getStartPosition()
-    {
+    public int getStartPosition() {
         return startPosition;
     }
 
     @Override
-    public int getEndPosition()
-    {
+    public int getEndPosition() {
         return endPosition;
     }
 
     @Override
-    public FXPlatformRunnable getOnClick()
-    {
+    public FXPlatformRunnable getOnClick() {
         return onClick;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 }

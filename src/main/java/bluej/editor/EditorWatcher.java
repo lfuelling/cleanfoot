@@ -21,23 +21,19 @@
  */
 package bluej.editor;
 
-import java.util.Collection;
-import java.util.List;
-
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
-import bluej.editor.stride.FrameCatalogue;
-import bluej.stride.generic.Frame;
 
 /**
  * Interface between the editor and the rest of BlueJ
  * The editor uses this class
+ *
  * @author Michael Kolling
  */
-public interface EditorWatcher
-{
+public interface EditorWatcher {
     //key for storing the value of the expand/collapse of the naviview
-    String NAVIVIEW_EXPANDED_PROPERTY="naviviewExpandedProperty";
+    String NAVIVIEW_EXPANDED_PROPERTY = "naviviewExpandedProperty";
+
     /**
      * Called by Editor when a file is changed
      */
@@ -55,22 +51,23 @@ public interface EditorWatcher
 
     /**
      * Called by Editor to set/clear a breakpoint
+     *
      * @param lineNo the line number of the breakpoint
      * @param set    whether the breakpoint is set (true) or cleared
-     * @return             An error message or null if okay.
+     * @return An error message or null if okay.
      */
     String breakpointToggleEvent(int lineNo, boolean set);
 
     /**
      * Called by Editor when documentation is to be compiled
      */
-    void generateDoc();  
-    
+    void generateDoc();
+
     /**
      * Sets a property
      */
     void setProperty(String key, String value);
-    
+
     /**
      * Gets a property
      */
@@ -78,8 +75,9 @@ public interface EditorWatcher
 
     /**
      * Schedule compilation due to reload or modification
-     * @param immediate  True if compilation should be performed immediately; false if compilation should be
-     *                   postponed until the user VM is idle
+     *
+     * @param immediate True if compilation should be performed immediately; false if compilation should be
+     *                  postponed until the user VM is idle
      * @param reason    Reason for compilation, used for data recording purposes
      * @param type      The type of compilation, used to decide whether to keep or discard the generated .class files.
      */

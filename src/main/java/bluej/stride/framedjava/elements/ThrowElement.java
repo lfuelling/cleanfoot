@@ -21,76 +21,63 @@
  */
 package bluej.stride.framedjava.elements;
 
-import java.util.stream.Stream;
-
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.ast.*;
 import bluej.stride.framedjava.frames.DebugInfo;
 import bluej.stride.framedjava.frames.ThrowFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
 
-public class ThrowElement extends CodeElement implements JavaSingleLineDebugHandler
-{
+import java.util.stream.Stream;
+
+public class ThrowElement extends CodeElement implements JavaSingleLineDebugHandler {
     public static final String ELEMENT = "throw";
     private final FilledExpressionSlotFragment val;
     private ThrowFrame frame;
-    
-    public ThrowElement(ThrowFrame frame, FilledExpressionSlotFragment val, boolean enabled)
-    {
+
+    public ThrowElement(ThrowFrame frame, FilledExpressionSlotFragment val, boolean enabled) {
         this.frame = frame;
         this.val = val;
         this.enable = enabled;
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         return new JavaSource(this, f(frame, "throw "), val, f(frame, ";"));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement throwEl = new LocatableElement(this, ELEMENT);
         throwEl.addAttributeStructured("value", val);
         addEnableAttribute(throwEl);
         return throwEl;
     }
-    
-    public ThrowElement(Element el)
-    {
+
+    public ThrowElement(Element el) {
         val = new FilledExpressionSlotFragment(el.getAttributeValue("value"), el.getAttributeValue("value-java"));
         enable = Boolean.valueOf(el.getAttributeValue("enable"));
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new ThrowFrame(editor, val, isEnable());
         return frame;
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
     }
-    
+
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.of(val);
     }
 }

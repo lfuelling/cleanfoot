@@ -21,41 +21,34 @@
  */
 package greenfoot.sound;
 
-import java.io.Closeable;
-import java.io.IOException;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Interface for AudioInputStreams as used in Greenfoot. It is basically just an
  * interface for InputStream but with the getFormat method from AudioInputStream
  * added and three other useful methods: open, restart and getSource.
- * 
+ *
  * @author Poul Henriksen
- * 
  */
-public interface GreenfootAudioInputStream extends Closeable
-{
+public interface GreenfootAudioInputStream extends Closeable {
     /**
      * Opens this stream.
-     * 
-     * @throws UnsupportedAudioFileException
-     *             if the stream does not point to valid audio file data
-     *             recognised by the system
-     * @throws IOException
-     *             if an I/O exception occurs
+     *
+     * @throws UnsupportedAudioFileException if the stream does not point to valid audio file data
+     *                                       recognised by the system
+     * @throws IOException                   if an I/O exception occurs
      */
     void open() throws IOException, UnsupportedAudioFileException;
 
     /**
      * Restarts this stream by repositioning to the beginning of the stream.
-     * 
-     * @throws UnsupportedAudioFileException
-     *             if the stream does not point to valid audio file data
-     *             recognised by the system
-     * @throws IOException
-     *             if an I/O exception occurs
+     *
+     * @throws UnsupportedAudioFileException if the stream does not point to valid audio file data
+     *                                       recognised by the system
+     * @throws IOException                   if an I/O exception occurs
      */
     void restart() throws IOException, UnsupportedAudioFileException;
 
@@ -71,7 +64,7 @@ public interface GreenfootAudioInputStream extends Closeable
 
     /**
      * Obtains the audio format of the sound data in this audio input stream.
-     * 
+     *
      * @return an audio format object describing this stream's format
      */
     AudioFormat getFormat();
@@ -125,9 +118,9 @@ public interface GreenfootAudioInputStream extends Closeable
      * of frames, a maximum of <code>len - (len % frameSize)
      * </code> bytes will be read.
      *
-     * @param b the buffer into which the data is read
+     * @param b   the buffer into which the data is read
      * @param off the offset, from the beginning of array <code>b</code>, at which
-     * the data will be written
+     *            the data will be written
      * @param len the maximum number of bytes to read
      * @return the total number of bytes read into the buffer, or -1 if there
      * is no more data because the end of the stream has been reached
@@ -144,6 +137,7 @@ public interface GreenfootAudioInputStream extends Closeable
     /**
      * Skips over and discards a specified number of bytes from this
      * audio input stream.
+     *
      * @param n the requested number of bytes to be skipped
      * @return the actual number of bytes skipped
      * @throws IOException if an input or output error occurs
@@ -160,6 +154,7 @@ public interface GreenfootAudioInputStream extends Closeable
      * can vary each time these methods are invoked.
      * Depending on the underlying stream,an IOException may be thrown if this
      * stream is closed.
+     *
      * @return the number of bytes that can be read from this audio input stream without blocking
      * @throws IOException if an input or output error occurs
      * @see #read(byte[], int, int)
@@ -174,6 +169,7 @@ public interface GreenfootAudioInputStream extends Closeable
     /**
      * Closes this audio input stream and releases any system resources associated
      * with the stream.
+     *
      * @throws IOException if an input or output error occurs
      * @see javax.sound.sampled.AudioInputStream#close
      */
@@ -181,8 +177,9 @@ public interface GreenfootAudioInputStream extends Closeable
 
     /**
      * Marks the current position in this audio input stream.
+     *
      * @param readlimit the maximum number of bytes that can be read before
-     * the mark position becomes invalid.
+     *                  the mark position becomes invalid.
      * @see #reset
      * @see #markSupported
      * @see javax.sound.sampled.AudioInputStream#mark(int)
@@ -192,6 +189,7 @@ public interface GreenfootAudioInputStream extends Closeable
     /**
      * Repositions this audio input stream to the position it had at the time its
      * <code>mark</code> method was last invoked.
+     *
      * @throws IOException if an input or output error occurs.
      * @see #mark
      * @see #markSupported
@@ -202,6 +200,7 @@ public interface GreenfootAudioInputStream extends Closeable
     /**
      * Tests whether this audio input stream supports the <code>mark</code> and
      * <code>reset</code> methods.
+     *
      * @return <code>true</code> if this stream supports the <code>mark</code>
      * and <code>reset</code> methods; <code>false</code> otherwise
      * @see #mark

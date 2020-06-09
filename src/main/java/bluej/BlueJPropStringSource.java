@@ -24,11 +24,10 @@ package bluej;
 
 /**
  * Interface for a class which supports retrieving BlueJ property strings.
- * 
+ *
  * @author Davin McCall
  */
-public interface BlueJPropStringSource
-{
+public interface BlueJPropStringSource {
     String getBlueJPropertyString(String property, String def);
 
     String getLabel(String key);

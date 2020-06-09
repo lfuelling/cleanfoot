@@ -1,17 +1,12 @@
 package bluej.debugmgr.inspector;
 
-import javafx.beans.value.ObservableDoubleValue;
-import javafx.beans.value.ObservableValue;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Paint;
-import javafx.scene.paint.Stop;
-import javafx.scene.shape.Rectangle;
-
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.ResizableCanvas;
+import javafx.beans.value.ObservableDoubleValue;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -19,13 +14,11 @@ import threadchecker.Tag;
  * Created by neil on 29/09/2016.
  */
 @OnThread(Tag.FXPlatform)
-public class ObjectBackground extends ResizableCanvas
-{
+public class ObjectBackground extends ResizableCanvas {
     private final double cornerSize;
     private final ObservableDoubleValue lineWidth;
 
-    public ObjectBackground(double cornerSize, ObservableDoubleValue lineWidth)
-    {
+    public ObjectBackground(double cornerSize, ObservableDoubleValue lineWidth) {
         this.cornerSize = cornerSize;
         this.lineWidth = lineWidth;
         JavaFXUtil.addChangeListenerPlatform(widthProperty(), w -> redrawContent());
@@ -40,8 +33,7 @@ public class ObjectBackground extends ResizableCanvas
         setClip(clip);
     }
 
-    private void redrawContent()
-    {
+    private void redrawContent() {
         GraphicsContext gc = getGraphicsContext2D();
         double w = getWidth();
         double h = getHeight();

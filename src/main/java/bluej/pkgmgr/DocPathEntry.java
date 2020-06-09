@@ -26,31 +26,27 @@ import java.io.File;
 /**
  * Represents an entry on the Javadoc search path. This can include both a jar/zip file/directory,
  * and a path prefix which specifies where the source root within the jar/zip/directory really is.
- * 
+ *
  * @author Davin McCall
  */
-public class DocPathEntry
-{
+public class DocPathEntry {
     private final File file;
     private final String pathPrefix;
-    
+
     /**
      * Create a new DocPathEntry, for the given file (either a jar, zip, or a directory), and
      * with sources in the given prefix.
      */
-    public DocPathEntry(File file, String pathPrefix)
-    {
+    public DocPathEntry(File file, String pathPrefix) {
         this.file = file;
         this.pathPrefix = pathPrefix;
     }
-    
-    public File getFile()
-    {
+
+    public File getFile() {
         return file;
     }
-    
-    public String getPathPrefix()
-    {
+
+    public String getPathPrefix() {
         return pathPrefix;
     }
 }

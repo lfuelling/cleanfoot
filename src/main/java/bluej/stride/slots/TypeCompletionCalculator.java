@@ -21,44 +21,33 @@
  */
 package bluej.stride.slots;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.framedjava.slots.StructuredCompletionCalculator;
-import bluej.utility.Utility;
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
 import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.slots.ExpressionCompletionCalculator;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.framedjava.slots.StructuredCompletionCalculator;
 import bluej.stride.generic.AssistContentThreadSafe;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.SuggestionList.SuggestionDetailsWithHTMLDoc;
 import bluej.stride.slots.SuggestionList.SuggestionListListener;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class TypeCompletionCalculator implements StructuredCompletionCalculator
-{
+import java.util.*;
+
+public class TypeCompletionCalculator implements StructuredCompletionCalculator {
     private final InteractionManager editor;
     private final Class<?> superType; // null means any
     private final Set<InteractionManager.Kind> kinds = new HashSet<>();
     private List<AssistContentThreadSafe> acs;
-    
-    public TypeCompletionCalculator(InteractionManager editor)
-    {
-        this(editor, (Class<?>)null);
+
+    public TypeCompletionCalculator(InteractionManager editor) {
+        this(editor, (Class<?>) null);
     }
-    
-    public TypeCompletionCalculator(InteractionManager editor, Class<?> superType)
-    {
+
+    public TypeCompletionCalculator(InteractionManager editor, Class<?> superType) {
         this.editor = editor;
         this.superType = superType;
         if (superType == null)
@@ -67,9 +56,8 @@ public class TypeCompletionCalculator implements StructuredCompletionCalculator
             // Leave out enums and primitives:
             kinds.addAll(Arrays.asList(InteractionManager.Kind.CLASS_FINAL, InteractionManager.Kind.INTERFACE, InteractionManager.Kind.CLASS_NON_FINAL));
     }
-    
-    public TypeCompletionCalculator(InteractionManager editor, InteractionManager.Kind kind)
-    {
+
+    public TypeCompletionCalculator(InteractionManager editor, InteractionManager.Kind kind) {
         this.editor = editor;
         this.superType = null;
         this.kinds.add(kind);
@@ -77,6 +65,7 @@ public class TypeCompletionCalculator implements StructuredCompletionCalculator
 
     private static final Map<String, List<String>> commonTypes = new HashMap<>();
     private static final Map<String, List<String>> boxedTypes = new HashMap<>();
+
     static {
         commonTypes.put(null, Arrays.asList("boolean", "char", "double", "int", "void"));
         commonTypes.put("greenfoot", Arrays.asList("Actor", "GreenfootImage", "GreenfootSound", "MouseInfo", "UserInfo", "World"));
@@ -85,28 +74,21 @@ public class TypeCompletionCalculator implements StructuredCompletionCalculator
         boxedTypes.put("java.lang", Arrays.asList("Boolean", "Character", "Double", "Float", "Integer"));
     }
 
-    public static SuggestionList.SuggestionShown getRarity(AssistContentThreadSafe ac, boolean boxedAsCommon)
-    {
-        switch (ac.getKind())
-        {
+    public static SuggestionList.SuggestionShown getRarity(AssistContentThreadSafe ac, boolean boxedAsCommon) {
+        switch (ac.getKind()) {
             case TYPE:
-                if (boxedAsCommon && boxedTypes.containsKey(ac.getPackage()) && boxedTypes.get(ac.getPackage()).contains(ac.getName()) )
-                {
+                if (boxedAsCommon && boxedTypes.containsKey(ac.getPackage()) && boxedTypes.get(ac.getPackage()).contains(ac.getName())) {
                     return SuggestionList.SuggestionShown.COMMON;
-                }
-                else if (commonTypes.containsKey(ac.getPackage()))
-                {
+                } else if (commonTypes.containsKey(ac.getPackage())) {
                     return commonTypes.get(ac.getPackage()).contains(ac.getName()) ? SuggestionList.SuggestionShown.COMMON : SuggestionList.SuggestionShown.RARE;
-                }
-                else
-                {
+                } else {
                     return SuggestionList.SuggestionShown.COMMON;
                 }
             default:
                 throw new IllegalStateException();
         }
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
     public void withCalculatedSuggestionList(PosInSourceDoc pos, ExpressionSlot<?> completing,
@@ -129,23 +111,20 @@ public class TypeCompletionCalculator implements StructuredCompletionCalculator
             });
         });
     }
-    
+
     @Override
-    public String getName(int selected)
-    {
+    public String getName(int selected) {
         return acs.get(selected).getName();
     }
 
     @Override
-    public List<String> getParams(int selected)
-    {
+    public List<String> getParams(int selected) {
         //TODO support generics
         return null;
     }
 
     @Override
-    public char getOpening(int selected)
-    {
+    public char getOpening(int selected) {
         return '<';
     }
 }

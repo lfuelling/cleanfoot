@@ -21,8 +21,6 @@
  */
 package greenfoot.core;
 
-import bluej.utility.Debug;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,29 +31,23 @@ import java.util.Map;
  * possible via the propertyChangedOnServerVM method in this class; no debug VM code
  * other than this can change a property.
  */
-public class ShadowProjectProperties implements ReadOnlyProjectProperties
-{
+public class ShadowProjectProperties implements ReadOnlyProjectProperties {
     private final Map<String, String> properties = new HashMap<>();
 
     /**
      * Called when a property has changed on the server VM, and the change needs
      * to be inserted into our shadow copy of the properties
      */
-    public void propertyChangedOnServerVM(String key, String value)
-    {
-        if (value == null)
-        {
+    public void propertyChangedOnServerVM(String key, String value) {
+        if (value == null) {
             properties.remove(key);
-        }
-        else
-        {
+        } else {
             properties.put(key, value);
         }
     }
-    
+
     @Override
-    public String getString(String key, String defaultValue)
-    {
+    public String getString(String key, String defaultValue) {
         return properties.getOrDefault(key, defaultValue);
     }
 }

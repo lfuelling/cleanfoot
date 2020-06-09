@@ -24,23 +24,23 @@ package bluej.groupwork.git;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
 import bluej.utility.Debug;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.UnmergedPathException;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
-import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.UnmergedPathException;
 
 /**
  * A git command to commit all files.
  *
  * @author Fabio Hedayioglu
  */
-public class GitCommitAllCommand extends GitCommand
-{
+public class GitCommitAllCommand extends GitCommand {
 
     protected Set<File> newFiles;
     protected Set<File> deletedFiles;
@@ -48,8 +48,7 @@ public class GitCommitAllCommand extends GitCommand
     protected String commitComment;
 
     public GitCommitAllCommand(GitRepository repository, Set<File> newFiles,
-            Set<File> deletedFiles, Set<File> files, String commitComment)
-    {
+                               Set<File> deletedFiles, Set<File> files, String commitComment) {
         super(repository);
         this.newFiles = newFiles;
         this.deletedFiles = deletedFiles;
@@ -58,8 +57,7 @@ public class GitCommitAllCommand extends GitCommand
     }
 
     @Override
-    public TeamworkCommandResult getResult()
-    {
+    public TeamworkCommandResult getResult() {
         try (Git repo = Git.open(this.getRepository().getProjectPath())) {
             CommitCommand commit = repo.commit();
             //stage new files
@@ -68,21 +66,17 @@ public class GitCommitAllCommand extends GitCommand
             Path basePath = Paths.get(this.getRepository().getProjectPath().toString());
 
             //files for addition
-            for (File f : newFiles)
-            {
+            for (File f : newFiles) {
                 String fileName = GitUtilities.getRelativeFileName(basePath, f);
-                if (!fileName.isEmpty() && !f.isDirectory())
-                {
+                if (!fileName.isEmpty() && !f.isDirectory()) {
                     repo.add().addFilepattern(fileName).call();
                 }
             }
 
             //files for removal
-            for (File f : deletedFiles)
-            {
+            for (File f : deletedFiles) {
                 String fileName = GitUtilities.getRelativeFileName(basePath, f);
-                if (!fileName.isEmpty())
-                {
+                if (!fileName.isEmpty()) {
                     repo.rm().addFilepattern(fileName).call();
                 }
             }
@@ -96,13 +90,10 @@ public class GitCommitAllCommand extends GitCommand
             commit.setAll(false);
 
             //modified files
-            for (File f : files)
-            {
+            for (File f : files) {
                 String fileName = GitUtilities.getRelativeFileName(basePath, f);
-                if (!fileName.isEmpty() && !f.isDirectory())
-                {
-                    if (!deletedFiles.contains(f))
-                    {
+                if (!fileName.isEmpty() && !f.isDirectory()) {
+                    if (!deletedFiles.contains(f)) {
                         repo.add().addFilepattern(fileName).call();
                     }
                 }

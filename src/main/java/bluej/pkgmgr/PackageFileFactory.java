@@ -21,35 +21,32 @@
  */
 package bluej.pkgmgr;
 
-import java.io.File;
-
 import bluej.Config;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+
 /**
  * Factory for creating package files.
- * 
+ *
  * @author Poul Henriksen
  */
-public class PackageFileFactory
-{
+public class PackageFileFactory {
 
     /**
      * Get a packagefile for the given directory. This will be either a
      * Greenfoot or BlueJ package file, depending on whether we are using this
      * from Greenfoot or BlueJ.
-     * 
+     *
      * @param dir
      * @return
      */
     @OnThread(Tag.Any)
-    public static PackageFile getPackageFile(File dir)
-    {
+    public static PackageFile getPackageFile(File dir) {
         if (Config.isGreenfoot()) {
             return new GreenfootProjectFile(dir);
-        }
-        else {
+        } else {
             return new BlueJPackageFile(dir);
         }
     }

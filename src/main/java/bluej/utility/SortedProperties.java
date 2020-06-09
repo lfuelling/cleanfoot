@@ -21,18 +21,23 @@
  */
 package bluej.utility;
 
-import java.util.*;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * A properties object which outputs its entries in sorted order
  * (allowing the resulting files to exist in CVS repositories without
- *  so much clashing)
+ * so much clashing)
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class SortedProperties extends Properties
-{
+public class SortedProperties extends Properties {
     private static final String specialSaveChars = "=: \t\r\n\f#!";
 
     /**
@@ -40,45 +45,48 @@ public class SortedProperties extends Properties
      * and writes out any of the characters in specialSaveChars
      * with a preceding slash
      */
-    private String saveConvert(String theString)
-    {
+    private String saveConvert(String theString) {
         char aChar;
         int len = theString.length();
-        StringBuffer outBuffer = new StringBuffer(len*2);
+        StringBuffer outBuffer = new StringBuffer(len * 2);
 
-        for(int x=0; x<len; ) {
+        for (int x = 0; x < len; ) {
             aChar = theString.charAt(x++);
-            switch(aChar) {
-            case '\\':
-                outBuffer.append('\\'); outBuffer.append('\\');
-                continue;
-            case '\t':
-                outBuffer.append('\\'); outBuffer.append('t');
-                continue;
-            case '\n':
-                outBuffer.append('\\'); outBuffer.append('n');
-                continue;
-            case '\r':
-                outBuffer.append('\\'); outBuffer.append('r');
-                continue;
-            case '\f':
-                outBuffer.append('\\'); outBuffer.append('f');
-                continue;
-            default:
-                if ((aChar < 20) || (aChar > 127)) {
+            switch (aChar) {
+                case '\\':
                     outBuffer.append('\\');
-                    outBuffer.append('u');
-                    outBuffer.append(toHex((aChar >> 12) & 0xF));
-                    outBuffer.append(toHex((aChar >> 8) & 0xF));
-                    outBuffer.append(toHex((aChar >> 4) & 0xF));
-                    outBuffer.append(toHex((aChar >> 0) & 0xF));
-                }
-                else {
-                    if (specialSaveChars.indexOf(aChar) != -1) {
+                    outBuffer.append('\\');
+                    continue;
+                case '\t':
+                    outBuffer.append('\\');
+                    outBuffer.append('t');
+                    continue;
+                case '\n':
+                    outBuffer.append('\\');
+                    outBuffer.append('n');
+                    continue;
+                case '\r':
+                    outBuffer.append('\\');
+                    outBuffer.append('r');
+                    continue;
+                case '\f':
+                    outBuffer.append('\\');
+                    outBuffer.append('f');
+                    continue;
+                default:
+                    if ((aChar < 20) || (aChar > 127)) {
                         outBuffer.append('\\');
+                        outBuffer.append('u');
+                        outBuffer.append(toHex((aChar >> 12) & 0xF));
+                        outBuffer.append(toHex((aChar >> 8) & 0xF));
+                        outBuffer.append(toHex((aChar >> 4) & 0xF));
+                        outBuffer.append(toHex((aChar >> 0) & 0xF));
+                    } else {
+                        if (specialSaveChars.indexOf(aChar) != -1) {
+                            outBuffer.append('\\');
+                        }
+                        outBuffer.append(aChar);
                     }
-                    outBuffer.append(aChar);
-                }
             }
 
         }
@@ -87,22 +95,23 @@ public class SortedProperties extends Properties
 
     /**
      * Convert a nibble to a hex character
-     * @param   nibble  the nibble to convert.
+     *
+     * @param nibble the nibble to convert.
      */
-    private static char toHex(int nibble)
-    {
+    private static char toHex(int nibble) {
         return hexDigit[(nibble & 0xF)];
     }
 
-    /** A table of hex digits */
+    /**
+     * A table of hex digits
+     */
     private static final char[] hexDigit = {
-        '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
     @Override
     @SuppressWarnings("unchecked")
-    public void store(OutputStream out, String header) throws IOException
-    {
+    public void store(OutputStream out, String header) throws IOException {
         BufferedWriter awriter;
         awriter = new BufferedWriter(new OutputStreamWriter(out, "8859_1"));
         if (header != null) {
@@ -113,13 +122,12 @@ public class SortedProperties extends Properties
         // Properties maps String to String, but unfortunately doesn't implement
         // Map<String,String> - so we need to use the raw TreeMap constructor.
         @SuppressWarnings("rawtypes")
-        TreeMap<String,String> tm = new TreeMap(this);
+        TreeMap<String, String> tm = new TreeMap(this);
 
-        Iterator<Map.Entry<String,String>> it = tm.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> it = tm.entrySet().iterator();
 
-        while(it.hasNext())
-        {
-            Map.Entry<String,String> mapEntry = it.next();
+        while (it.hasNext()) {
+            Map.Entry<String, String> mapEntry = it.next();
 
             String key = saveConvert(mapEntry.getKey());
             String val = saveConvert(mapEntry.getValue());

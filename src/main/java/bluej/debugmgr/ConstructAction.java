@@ -21,42 +21,38 @@
  */
 package bluej.debugmgr;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-
 import bluej.debugmgr.objectbench.InvokeListener;
 import bluej.views.ConstructorView;
 import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
  * Simple action to construct an object.
- * 
+ *
  * @author Davin McCall
  * @version $Id$
  */
 @OnThread(Tag.Swing)
-public class ConstructAction extends AbstractAction
-{
+public class ConstructAction extends AbstractAction {
     @OnThread(Tag.Any)
     private final ConstructorView constructor;
     @OnThread(Tag.Any)
     private final InvokeListener invokeListener;
-    
-    public ConstructAction(ConstructorView cv, InvokeListener il, String desc)
-    {
+
+    public ConstructAction(ConstructorView cv, InvokeListener il, String desc) {
         super(desc);
         constructor = cv;
         invokeListener = il;
     }
-    
+
     /* (non-Javadoc)
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
-    public void actionPerformed(ActionEvent e)
-    {
+    public void actionPerformed(ActionEvent e) {
         Platform.runLater(() -> invokeListener.callConstructor(constructor));
     }
 

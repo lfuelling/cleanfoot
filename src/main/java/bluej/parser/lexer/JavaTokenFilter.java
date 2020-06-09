@@ -21,44 +21,40 @@
  */
 package bluej.parser.lexer;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import bluej.parser.JavaParser;
 import bluej.parser.TokenStream;
+
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
  * This is a token stream processor. It removes whitespace and comment tokens from the
  * stream, attaching comments as hidden tokens to the next suitable token.
- * 
+ *
  * @author Davin McCall
  */
-public final class JavaTokenFilter implements TokenStream
-{
+public final class JavaTokenFilter implements TokenStream {
     private final TokenStream sourceStream;
     private LocatableToken lastComment;
     private LocatableToken cachedToken;
     private final List<LocatableToken> buffer = new LinkedList<LocatableToken>();
     private final LinkedList<LocatableToken> recent = new LinkedList<>();
     private JavaParser parser;
-    
-    public JavaTokenFilter(TokenStream source)
-    {
+
+    public JavaTokenFilter(TokenStream source) {
         sourceStream = source;
         lastComment = null;
     }
-    
-    public JavaTokenFilter(TokenStream source, JavaParser parser)
-    {
+
+    public JavaTokenFilter(TokenStream source, JavaParser parser) {
         this(source);
         this.parser = parser;
     }
-        
-    public LocatableToken nextToken()
-    {
+
+    public LocatableToken nextToken() {
         LocatableToken rval;
-        if (! buffer.isEmpty()) {
+        if (!buffer.isEmpty()) {
             // Make sure we have a cached token if buffer is only size 1;
             // necessary to ensure that token lengths are set correctly.
             // If buffer length is 2, we know token we are getting will have size
@@ -67,19 +63,14 @@ public final class JavaTokenFilter implements TokenStream
                 cachedToken = nextToken2();
             }
             rval = buffer.remove(buffer.size() - 1);
-        }
-        else
-        {
+        } else {
             // We cache one lookahead token so that we can be sure the returned token
             // has its end column set correctly. (The end column for a token can only be set
             // when the following token is received).
 
-            if (cachedToken == null)
-            {
+            if (cachedToken == null) {
                 rval = nextToken2();
-            }
-            else
-            {
+            } else {
                 rval = cachedToken;
             }
 
@@ -92,13 +83,12 @@ public final class JavaTokenFilter implements TokenStream
             recent.removeFirst();
         return rval;
     }
-    
+
     /**
      * Push a token on to the stream. The token will be returned by the next call
      * to nextToken().
      */
-    public void pushBack(LocatableToken token)
-    {
+    public void pushBack(LocatableToken token) {
         buffer.add(token);
         if (!recent.isEmpty() && token == recent.getLast())
             recent.removeLast();
@@ -108,39 +98,37 @@ public final class JavaTokenFilter implements TokenStream
      * Gets the most recent token returned by nextToken which has not been
      * pushed back using pushBack.
      */
-    public LocatableToken getMostRecent()
-    {
+    public LocatableToken getMostRecent() {
         return recent.isEmpty() ? null : recent.getLast();
     }
-    
+
     /**
      * Look ahead a certain number of tokens (without actually consuming them).
-     * @param distance  The distance to look ahead (1 or greater).
+     *
+     * @param distance The distance to look ahead (1 or greater).
      */
-    public LocatableToken LA(int distance)
-    {
+    public LocatableToken LA(int distance) {
         if (cachedToken != null) {
-           buffer.add(0, cachedToken);
-           cachedToken = null;
+            buffer.add(0, cachedToken);
+            cachedToken = null;
         }
-        
+
         int numToAdd = distance - buffer.size();
         while (numToAdd > 0) {
-           buffer.add(0, nextToken2());
-           numToAdd--;
+            buffer.add(0, nextToken2());
+            numToAdd--;
         }
-    
+
         return buffer.get(buffer.size() - distance);
     }
-    
-    private LocatableToken nextToken2()
-    {
+
+    private LocatableToken nextToken2() {
         LocatableToken t = null;
-        
+
         // Repeatedly read tokens until we find a non-comment, non-whitespace token.
         while (true) {
             t = sourceStream.nextToken();
-            
+
             int ttype = t.getType();
             if (ttype == JavaTokenTypes.ML_COMMENT) {
                 // If we come across a comment, save it.
@@ -148,13 +136,11 @@ public final class JavaTokenFilter implements TokenStream
                 if (parser != null) {
                     parser.gotComment(t);
                 }
-            }
-            else if (ttype == JavaTokenTypes.SL_COMMENT) {
+            } else if (ttype == JavaTokenTypes.SL_COMMENT) {
                 if (parser != null) {
                     parser.gotComment(t);
                 }
-            }
-            else {
+            } else {
                 // When we have an interesting token, attach the previous comment.
                 if (lastComment != null) {
                     t.setHiddenBefore(lastComment);
@@ -163,7 +149,7 @@ public final class JavaTokenFilter implements TokenStream
                 break;
             }
         }
-        
+
         return t;
     }
 }

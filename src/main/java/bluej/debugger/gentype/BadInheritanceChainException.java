@@ -26,11 +26,10 @@ package bluej.debugger.gentype;
  * and subclass. This exception is thrown when the given classes have no
  * inheritance relationship (the "superclass" is not really a superclass of the
  * subclass).
- * 
+ *
  * @author Davin McCall
  * @version $Id: BadInheritanceChainException.java 6215 2009-03-30 13:28:25Z polle $
  */
-public class BadInheritanceChainException extends RuntimeException
-{
+public class BadInheritanceChainException extends RuntimeException {
 
 }

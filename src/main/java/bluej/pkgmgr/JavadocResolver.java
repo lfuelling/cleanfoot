@@ -21,56 +21,54 @@
  */
 package bluej.pkgmgr;
 
-import java.util.Collection;
-import java.util.concurrent.Executor;
-
 import bluej.debugger.gentype.Reflective;
 import bluej.parser.ConstructorOrMethodReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Collection;
+import java.util.concurrent.Executor;
+
 /**
- * An interface for javadoc resolvers, which retrieve javadoc for a method. 
- * 
+ * An interface for javadoc resolvers, which retrieve javadoc for a method.
+ *
  * @author Davin McCall
  */
-public interface JavadocResolver
-{
+public interface JavadocResolver {
     /**
      * Retrieve the javadoc for the specified method, if possible. The javadoc and
      * method parameter names will be added to the supplied MethodReflective(s).
      * The collection of methods must all come from the same declaring type.
-     * 
-     * @param  declType   the declaring type from where the methods are found.
-     * @param  methods    the methods to resolve Javadoc for.
+     *
+     * @param declType the declaring type from where the methods are found.
+     * @param methods  the methods to resolve Javadoc for.
      */
     void getJavadoc(Reflective declType, Collection<? extends ConstructorOrMethodReflective> methods);
 
     /**
      * Get the Javadoc for the given type
+     *
      * @param moduleName The enclosing module of the type if known and applicable (may be null)
-     * @param typeName The fully qualified name of the type
+     * @param typeName   The fully qualified name of the type
      * @return The Javadoc if found, or null if not.
      */
     String getJavadoc(String moduleName, String typeName);
 
-    interface AsyncCallback
-    {
+    interface AsyncCallback {
         @OnThread(Tag.FXPlatform)
         void gotJavadoc(ConstructorOrMethodReflective method);
     }
-    
+
     /**
      * Retrieve the javadoc for the specified method, if possible, in the background
      * and notify a callback when the javadoc is available.
-     * 
-     * @param method    The method to find the javadoc for
-     * @param callback  The callback to notify
-     * @param executor  The executor to execute background tasks
-     * 
-     * @return   true if the javadoc is available immediately (callback will not be
-     *            notified) or false if a background task was submitted.
+     *
+     * @param method   The method to find the javadoc for
+     * @param callback The callback to notify
+     * @param executor The executor to execute background tasks
+     * @return true if the javadoc is available immediately (callback will not be
+     * notified) or false if a background task was submitted.
      */
     boolean getJavadocAsync(final ConstructorOrMethodReflective method, final AsyncCallback callback, Executor executor);
-    
+
 }

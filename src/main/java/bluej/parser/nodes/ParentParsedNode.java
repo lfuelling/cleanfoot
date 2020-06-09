@@ -21,36 +21,32 @@
  */
 package bluej.parser.nodes;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.parser.nodes.NodeTree.NodeAndPosition;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * An abstract ParsedNode which delegates to child nodes.
- * 
+ *
  * @author Davin McCall
  */
-public abstract class ParentParsedNode extends ParsedNode
-{    
-    protected ParentParsedNode()
-    {
+public abstract class ParentParsedNode extends ParsedNode {
+    protected ParentParsedNode() {
         super();
     }
-    
-    public ParentParsedNode(ParsedNode myParent)
-    {
+
+    public ParentParsedNode(ParsedNode myParent) {
         super(myParent);
     }
-            
+
     @Override
     public int textInserted(MoeSyntaxDocument document, int nodePos, int insPos,
-            int length, NodeStructureListener listener)
-    {
+                            int length, NodeStructureListener listener) {
         // grow ourself:
         int newSize = getSize() + length;
         resize(newSize);
-        
+
         NodeAndPosition<ParsedNode> child = getNodeTree().findNodeAtOrAfter(insPos, nodePos);
         if (child != null && (child.getPosition() < insPos
                 || child.getPosition() == insPos && child.getNode().growsForward())) {
@@ -64,16 +60,14 @@ public abstract class ParentParsedNode extends ParsedNode
                 //return reparseNode(document, nodePos, child.getPosition() + newSize, listener);
                 document.scheduleReparse(child.getPosition() + newSize, 0);
                 return ALL_OK;
-            }
-            else if (r == REMOVE_NODE) {
+            } else if (r == REMOVE_NODE) {
                 removeChild(child, listener);
                 //return reparseNode(document, nodePos, child.getPosition(), listener);
                 document.scheduleReparse(child.getPosition(), child.getSize());
                 return ALL_OK;
             }
             return ALL_OK;
-        }
-        else {
+        } else {
             // We must handle the insertion ourself
             // Slide any children:
             if (child != null) {
@@ -83,36 +77,34 @@ public abstract class ParentParsedNode extends ParsedNode
             return handleInsertion(document, nodePos, insPos, length, listener);
         }
     }
-    
+
     /**
      * Handle the case of text being inserted directly into this node (not a child).
      */
     @OnThread(Tag.FXPlatform)
     protected int handleInsertion(MoeSyntaxDocument document, int nodePos, int insPos, int length,
-            NodeStructureListener listener)
-    {
+                                  NodeStructureListener listener) {
         document.scheduleReparse(insPos, length);
         return ALL_OK;
     }
-    
+
     @Override
     public int textRemoved(MoeSyntaxDocument document, int nodePos, int delPos,
-            int length, NodeStructureListener listener)
-    {
+                           int length, NodeStructureListener listener) {
         // shrink ourself:
         int newSize = getSize() - length;
         resize(newSize);
-        
+
         int endPos = delPos + length;
-        
+
         NodeAndPosition<ParsedNode> child = getNodeTree().findNodeAtOrAfter(delPos, nodePos);
         while (child != null && child.getEnd() == delPos) {
-            if (! child.getNode().marksOwnEnd()) {
+            if (!child.getNode().marksOwnEnd()) {
                 child.getNode().setComplete(false);
             }
             child = child.nextSibling();
         }
-        
+
         if (child != null && child.getPosition() < delPos) {
             // Remove the end portion (or middle) of the child node
             int childEndPos = child.getEnd();
@@ -122,19 +114,17 @@ public abstract class ParentParsedNode extends ParsedNode
                 if (r == REMOVE_NODE) {
                     removeChild(child, listener);
                     document.scheduleReparse(child.getPosition(), child.getSize());
-                }
-                else if (r != ALL_OK) {
+                } else if (r != ALL_OK) {
                     newSize = child.getNode().getSize();
                     if (newSize < child.getSize()) {
                         document.scheduleReparse(child.getPosition() + newSize, child.getSize() - newSize);
-                    }
-                    else {
+                    } else {
                         document.scheduleReparse(child.getPosition() + newSize, 0);
                     }
                 }
                 return ALL_OK;
             }
-            
+
             // Remove the end portion of the child node
             int rlength = childEndPos - delPos; // how much is removed
 
@@ -156,14 +146,13 @@ public abstract class ParentParsedNode extends ParsedNode
             if (r == REMOVE_NODE) {
                 reparseOffset = child.getPosition();
                 removeChild(child, listener);
-            }
-            else {
+            } else {
                 reparseOffset = child.getPosition() + child.getNode().getSize();
             }
 
             return handleDeletion(document, nodePos, reparseOffset, listener);
         }
-        
+
         // Any child node that has its beginning removed is just removed.
         while (child != null && child.getPosition() < endPos) {
             NodeAndPosition<ParsedNode> nextChild = child.nextSibling();
@@ -181,44 +170,41 @@ public abstract class ParentParsedNode extends ParsedNode
                 removeChild(child, listener);
             }
         }
-        
+
         return handleDeletion(document, nodePos, delPos, listener);
     }
-    
+
     /**
      * Handle the case of text being removed directly from this node (rather than a
      * child node).
      */
     @OnThread(Tag.FXPlatform)
     protected int handleDeletion(MoeSyntaxDocument document, int nodePos, int dpos,
-            NodeStructureListener listener)
-    {
+                                 NodeStructureListener listener) {
         if (nodePos + getSize() == dpos && marksOwnEnd()) {
             complete = false;
         }
-        
+
         document.scheduleReparse(dpos, 0);
         return ALL_OK;
     }
-    
+
     /*
      * Default implementation, just causes the parent to re-parse
      */
     @Override
     @OnThread(Tag.FXPlatform)
-    protected int reparseNode(MoeSyntaxDocument document, int nodePos, int offset, int maxParse, NodeStructureListener listener)
-    {
+    protected int reparseNode(MoeSyntaxDocument document, int nodePos, int offset, int maxParse, NodeStructureListener listener) {
         return REMOVE_NODE;
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
     protected boolean growChild(MoeSyntaxDocument document, NodeAndPosition<ParsedNode> child,
-            NodeStructureListener listener)
-    {
+                                NodeStructureListener listener) {
         // Without any further knowledge, we're just going to have to do a full reparse.
         // Subclasses should override this to improve performance.
         return false;
     }
-    
+
 }

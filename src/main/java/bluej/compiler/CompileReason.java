@@ -25,21 +25,18 @@ package bluej.compiler;
  * An enum which tracks why a compile was triggered, ready to be
  * passed to data recording.
  */
-public enum CompileReason
-{
+public enum CompileReason {
     EARLY("early"), LATE("late"), INVOKE("invoke"), REBUILD("rebuild"), EXTENSION("extension"),
     LOADED("loaded"), MODIFIED("modified"), MODIFIED_EXTENDS("modified_extends"),
     NEW_CLASS("new_class"), USER("user");
 
     private final String serverString;
 
-    CompileReason(String serverString)
-    {
+    CompileReason(String serverString) {
         this.serverString = serverString;
     }
 
-    public String getServerString()
-    {
+    public String getServerString() {
         return serverString;
     }
 }

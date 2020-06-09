@@ -21,57 +21,48 @@
  */
 package bluej.parser;
 
-import java.util.List;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.List;
+
 @OnThread(Tag.FXPlatform)
-public class PrefixCompletionWrapper extends AssistContent
-{
-    private final String prefix; 
+public class PrefixCompletionWrapper extends AssistContent {
+    private final String prefix;
     private final AssistContent wrapped;
 
-    public PrefixCompletionWrapper(AssistContent wrapped, String prefix)
-    {
+    public PrefixCompletionWrapper(AssistContent wrapped, String prefix) {
         this.prefix = prefix;
         this.wrapped = wrapped;
     }
 
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return prefix + wrapped.getName();
     }
 
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         return wrapped.getParams();
     }
 
-    public String getType()
-    {
+    public String getType() {
         return wrapped.getType();
     }
 
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return wrapped.getDeclaringClass();
     }
 
-    public CompletionKind getKind()
-    {
+    public CompletionKind getKind() {
         return wrapped.getKind();
     }
 
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         return wrapped.getJavadoc();
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         return wrapped.getAccessPermission();
     }
 }

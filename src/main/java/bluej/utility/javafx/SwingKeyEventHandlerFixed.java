@@ -29,10 +29,7 @@ import javafx.scene.input.KeyEvent;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,7 +41,7 @@ import java.security.PrivilegedAction;
  * FX keypresses into Swing keypresses.  Unfortunately it has a bug,
  * wherein AltGr shortcuts on Windows (which are used frequently by
  * some non-English users) do not work correctly.  This is bug:<p>
- *
+ * <p>
  * https://bugs.openjdk.java.net/browse/JDK-8088471
  *
  * <p>And currently has no fix date.  Thankfully, a commenter on the bug
@@ -57,41 +54,31 @@ import java.security.PrivilegedAction;
  * to access them.  Not nice, but I can't see any other way to do it.
  */
 @OnThread(Tag.FXPlatform)
-public class SwingKeyEventHandlerFixed implements EventHandler<KeyEvent>
-{
+public class SwingKeyEventHandlerFixed implements EventHandler<KeyEvent> {
     private final SwingNode swingNode;
     private Field lwFrameField;
 
     @OnThread(Tag.Any)
-    public SwingKeyEventHandlerFixed(SwingNode swingNode)
-    {
+    public SwingKeyEventHandlerFixed(SwingNode swingNode) {
         this.swingNode = swingNode;
-        try
-        {
+        try {
             lwFrameField = SwingNode.class.getDeclaredField("lwFrame");
             lwFrameField.setAccessible(true);
-        }
-        catch (NoSuchFieldException e)
-        {
+        } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void handle(javafx.scene.input.KeyEvent event)
-    {
-        try
-        {
+    public void handle(javafx.scene.input.KeyEvent event) {
+        try {
             handleSub(event);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Debug.reportError(e);
         }
     }
 
-    public void handleSub(javafx.scene.input.KeyEvent event) throws IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException
-    {
+    public void handleSub(javafx.scene.input.KeyEvent event) throws IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
         Component frame = (Component) lwFrameField.get(swingNode);
         if (frame == null) {
             return;
@@ -101,19 +88,18 @@ public class SwingKeyEventHandlerFixed implements EventHandler<KeyEvent>
             return;
         }
         // Don't let Arrows, Tab, Shift+Tab traverse focus out.
-        if (event.getCode() == KeyCode.LEFT  ||
-            event.getCode() == KeyCode.RIGHT ||
-            event.getCode() == KeyCode.UP ||
-            event.getCode() == KeyCode.DOWN ||
-            event.getCode() == KeyCode.TAB)
-        {
+        if (event.getCode() == KeyCode.LEFT ||
+                event.getCode() == KeyCode.RIGHT ||
+                event.getCode() == KeyCode.UP ||
+                event.getCode() == KeyCode.DOWN ||
+                event.getCode() == KeyCode.TAB) {
             event.consume();
         }
 
         Method fxKeyEventTypeToKeyID = Class.forName("javafx.embed.swing.SwingEvents").getDeclaredMethod("fxKeyEventTypeToKeyID", javafx.scene.input.KeyEvent.class);
         fxKeyEventTypeToKeyID.setAccessible(true);
 
-        int swingID = (Integer)fxKeyEventTypeToKeyID.invoke(null, event);
+        int swingID = (Integer) fxKeyEventTypeToKeyID.invoke(null, event);
         if (swingID < 0) {
             return;
         }
@@ -122,7 +108,7 @@ public class SwingKeyEventHandlerFixed implements EventHandler<KeyEvent>
         fxKeyModsToKeyMods.setAccessible(true);
 
 
-        int swingModifiers = (Integer)fxKeyModsToKeyMods.invoke(null, event);
+        int swingModifiers = (Integer) fxKeyModsToKeyMods.invoke(null, event);
         int swingKeyCode = event.getCode().getCode();
         char swingChar = event.getCharacter().charAt(0);
 
@@ -136,24 +122,24 @@ public class SwingKeyEventHandlerFixed implements EventHandler<KeyEvent>
         }
         // NCCB: this is the fix added.  AltGr appears as Control+Alt, so
         // we just suppress those modifiers on a key-typed event
-        if (event.getEventType() == KeyEvent.KEY_TYPED && event.isAltDown() && event.isControlDown())
-        {
+        if (event.getEventType() == KeyEvent.KEY_TYPED && event.isAltDown() && event.isControlDown()) {
             swingModifiers = 0;
         }
 
         long swingWhen = System.currentTimeMillis();
         java.awt.event.KeyEvent keyEvent = new java.awt.event.KeyEvent(
-            frame, swingID, swingWhen, swingModifiers,
-            swingKeyCode, swingChar);
+                frame, swingID, swingWhen, swingModifiers,
+                swingKeyCode, swingChar);
         AccessController.doPrivileged(new PostEventAction(keyEvent));
     }
 
-    private static class PostEventAction implements PrivilegedAction<Void>
-    {
+    private static class PostEventAction implements PrivilegedAction<Void> {
         private final AWTEvent event;
+
         public PostEventAction(AWTEvent event) {
             this.event = event;
         }
+
         @Override
         @OnThread(value = Tag.FXPlatform, ignoreParent = true)
         public Void run() {

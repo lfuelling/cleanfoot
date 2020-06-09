@@ -21,88 +21,79 @@
  */
 package bluej.parser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugger.gentype.GenTypeDeclTpar;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.MethodReflective;
 import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.JavaUtils;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Possible code completion for a method.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class MethodCompletion extends AssistContent
-{
-    @OnThread(Tag.Any) private final MethodReflective method;
+public class MethodCompletion extends AssistContent {
+    @OnThread(Tag.Any)
+    private final MethodReflective method;
     private final JavadocResolver javadocResolver;
-    private Map<String,GenTypeParameter> typeArgs;
-    
+    private Map<String, GenTypeParameter> typeArgs;
+
     /**
      * Construct a new method completion
-     * @param method    The method to represent
-     * @param typeArgs   The type arguments applied to the declaring class. For a method
-     *                   call on a raw expression, will be null.
-     * @param javadocResolver  The javadoc resolver to use
+     *
+     * @param method          The method to represent
+     * @param typeArgs        The type arguments applied to the declaring class. For a method
+     *                        call on a raw expression, will be null.
+     * @param javadocResolver The javadoc resolver to use
      */
     public MethodCompletion(MethodReflective method,
-            Map<String,GenTypeParameter> typeArgs,
-            JavadocResolver javadocResolver)
-    {
+                            Map<String, GenTypeParameter> typeArgs,
+                            JavadocResolver javadocResolver) {
         this.method = method;
         if (typeArgs != null) {
             List<GenTypeDeclTpar> mtpars = method.getTparTypes();
-            if (! mtpars.isEmpty()) {
+            if (!mtpars.isEmpty()) {
                 // The method has its own type parameters - these override the class parameters.
-                Map<String,GenTypeParameter> fullArgMap = new HashMap<String,GenTypeParameter>();
+                Map<String, GenTypeParameter> fullArgMap = new HashMap<String, GenTypeParameter>();
                 fullArgMap.putAll(typeArgs);
                 for (GenTypeDeclTpar mtpar : mtpars) {
                     fullArgMap.put(mtpar.getTparName(), mtpar);
                 }
                 this.typeArgs = fullArgMap;
-            }
-            else {
+            } else {
                 this.typeArgs = typeArgs;
             }
         }
         this.javadocResolver = javadocResolver;
     }
-    
+
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return method.getDeclaringType().getSimpleName();
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return method.getName();
     }
-        
+
     @Override
-    public String getType()
-    {
+    public String getType() {
         return convertToSolid(method.getReturnType()).toString(true);
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         String jd = method.getJavaDoc();
         if (jd == null && javadocResolver != null) {
             javadocResolver.getJavadoc(method.getDeclaringType(), Collections.singletonList(method));
@@ -114,13 +105,11 @@ public class MethodCompletion extends AssistContent
         return jd;
     }
 
-    private JavaType convertToSolid(JavaType type)
-    {
-        if (! type.isPrimitive()) {
+    private JavaType convertToSolid(JavaType type) {
+        if (!type.isPrimitive()) {
             if (typeArgs != null) {
                 type = type.mapTparsToTypes(typeArgs).getTparCapture();
-            }
-            else {
+            } else {
                 // null indicates a raw type.
                 type = type.getErasedType();
             }
@@ -129,45 +118,39 @@ public class MethodCompletion extends AssistContent
     }
 
     //package-visible
-    static String buildDummyName(JavaType paramType, String paramName)
-    {
+    static String buildDummyName(JavaType paramType, String paramName) {
         if (paramName != null) {
             return "_" + paramName + "_";
-        }
-        else {
+        } else {
             return "_" + paramType.toString(true) + "_";
         }
     }
-    
-    public CompletionKind getKind()
-    {
+
+    public CompletionKind getKind() {
         return CompletionKind.METHOD;
     }
-    
+
     /**
      * Gets a String that is the method's unique signature
      */
     @OnThread(Tag.FXPlatform)
-    public String getSignature()
-    {
+    public String getSignature() {
         StringBuilder sig = new StringBuilder();
         sig.append(getType()).append(" ").append(getName()).append("(")
-           .append(getParams().stream().map(ParamInfo::getQualifiedType).collect(Collectors.joining(",")))
-           .append(")");
+                .append(getParams().stream().map(ParamInfo::getQualifiedType).collect(Collectors.joining(",")))
+                .append(")");
         return sig.toString();
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         // We must get Javadoc before asking for parameter names, as it is this method call that sets the parameter names:
         getJavadoc();
         ArrayList<ParamInfo> r = new ArrayList<>();
         List<JavaType> paramTypes = method.getParamTypes();
         List<String> paramNames = method.getParamNames();
-        for (int i = 0; i < paramTypes.size(); i++)
-        {
+        for (int i = 0; i < paramTypes.size(); i++) {
             JavaType t = convertToSolid(paramTypes.get(i));
             String paramName = paramNames == null ? null : paramNames.get(i);
             r.add(new ParamInfo(t.toString(), paramName, buildDummyName(t, paramName), javadocForParam(paramName)));
@@ -176,8 +159,7 @@ public class MethodCompletion extends AssistContent
     }
 
     @OnThread(Tag.FXPlatform)
-    private Supplier<String> javadocForParam(String paramName)
-    {
+    private Supplier<String> javadocForParam(String paramName) {
         final String javadocSrc = getJavadoc();
         return () -> {
             JavaUtils.Javadoc javadoc = JavaUtils.parseJavadoc(javadocSrc);
@@ -186,10 +168,8 @@ public class MethodCompletion extends AssistContent
                 return null;
 
             String target = "param " + paramName;
-            for (String block : javadoc.getBlocks())
-            {
-                if (block.startsWith(target) && Character.isWhitespace(block.charAt(target.length())))
-                {
+            for (String block : javadoc.getBlocks()) {
+                if (block.startsWith(target) && Character.isWhitespace(block.charAt(target.length()))) {
                     return block.substring(target.length() + 1).trim();
                 }
             }
@@ -198,8 +178,7 @@ public class MethodCompletion extends AssistContent
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         return fromModifiers(method.getModifiers());
     }
 }

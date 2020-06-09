@@ -21,73 +21,68 @@
  */
 package bluej.stride.operations;
 
-import java.util.Collections;
-import java.util.List;
-
-import bluej.stride.slots.EditableSlot.SortedMenuItem;
-import javafx.application.Platform;
-import javafx.scene.control.CustomMenuItem;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.RecallableFocus;
+import bluej.stride.slots.EditableSlot.SortedMenuItem;
+import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCombination;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.KeyCombination;
+import java.util.Collections;
+import java.util.List;
 
-public abstract class FrameOperation extends AbstractOperation
-{
+public abstract class FrameOperation extends AbstractOperation {
 
     private final KeyCombination shortcut;
 
-    public FrameOperation(InteractionManager editor, String identifier, Combine combine)
-    {
+    public FrameOperation(InteractionManager editor, String identifier, Combine combine) {
         this(editor, identifier, combine, null);
     }
 
-    public FrameOperation(InteractionManager editor, String identifier, Combine combine, KeyCombination shortcut)
-    {
+    public FrameOperation(InteractionManager editor, String identifier, Combine combine, KeyCombination shortcut) {
         super(editor, identifier, combine);
         this.shortcut = shortcut;
     }
 
     @OnThread(Tag.FXPlatform)
-    protected void enablePreview() { }
+    protected void enablePreview() {
+    }
 
     @OnThread(Tag.FXPlatform)
-    protected void disablePreview() { }
+    protected void disablePreview() {
+    }
 
     @OnThread(Tag.FXPlatform)
-    public void onMenuShowing(CustomMenuItem item) { }
+    public void onMenuShowing(CustomMenuItem item) {
+    }
 
     @OnThread(Tag.FXPlatform)
-    public void onMenuHidden(CustomMenuItem item) { }
+    public void onMenuHidden(CustomMenuItem item) {
+    }
 
     @OnThread(Tag.FXPlatform)
-    public final void activate(Frame frame)
-    {
+    public final void activate(Frame frame) {
         // TODO "editor.getSelection().getSelected()" fired a NPE, make next line activate(frame, null);
         activate(Collections.singletonList(frame));
     }
 
     @OnThread(Tag.FXPlatform)
-    public final void activate(Frame frame, RecallableFocus focus)
-    {
+    public final void activate(Frame frame, RecallableFocus focus) {
         activate(Collections.singletonList(frame), focus);
     }
 
     @OnThread(Tag.FXPlatform)
-    public final void activate(List<Frame> frames)
-    {
+    public final void activate(List<Frame> frames) {
         Frame first = editor.getSelection().getSelected().isEmpty() ? null : editor.getSelection().getSelected().get(0);
         RecallableFocus focus = first == null ? null : first.getCursorBefore();
         activate(frames, focus);
     }
 
     @OnThread(Tag.FXPlatform)
-    public final void activate(List<Frame> frames, RecallableFocus focus)
-    {
+    public final void activate(List<Frame> frames, RecallableFocus focus) {
         editor.beginRecordingState(focus);
         // Delete (with hover preview)
         disablePreview();
@@ -103,25 +98,20 @@ public abstract class FrameOperation extends AbstractOperation
     @OnThread(Tag.FXPlatform)
     protected abstract void execute(List<Frame> frames);
 
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         return false;
     }
 
-    public SortedMenuItem getMenuItem(boolean contextMenu)
-    {
+    public SortedMenuItem getMenuItem(boolean contextMenu) {
         MenuItem item;
-        if (contextMenu)
-        {
+        if (contextMenu) {
             CustomMenuItem customItem = initializeCustomItem();
 
             customItem.getContent().setOnMouseEntered(e -> enablePreview());
             customItem.getContent().setOnMouseExited(e -> disablePreview());
 
             item = customItem;
-        }
-        else
-        {
+        } else {
             item = initializeNormalItem();
         }
 
@@ -137,8 +127,7 @@ public abstract class FrameOperation extends AbstractOperation
         return getLabels().get(0).getOrder().item(item);
     }
 
-    public KeyCombination getShortcut()
-    {
+    public KeyCombination getShortcut() {
         return shortcut;
     }
 }

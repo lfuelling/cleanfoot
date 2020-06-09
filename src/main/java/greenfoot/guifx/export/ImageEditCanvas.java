@@ -28,33 +28,41 @@ import javafx.scene.transform.Affine;
 
 /**
  * Component that shows an image and supplies methods for scaling and cropping the view.
- * 
+ *
  * @author Poul Henriksen
  * @author Amjad Altadmri
  */
-public class ImageEditCanvas extends Canvas
-{
-    /** Original image */
+public class ImageEditCanvas extends Canvas {
+    /**
+     * Original image
+     */
     private Image image;
 
-    /** Location in the original image that should be in the center of the view */
+    /**
+     * Location in the original image that should be in the center of the view
+     */
     private double x;
-    /** Location in the original image that should be in the center of the view */
+    /**
+     * Location in the original image that should be in the center of the view
+     */
     private double y;
-    /** Current factor to scale image with */
+    /**
+     * Current factor to scale image with
+     */
     private double scaleFactor = 1;
-    /** Minimum scale factor */
+    /**
+     * Minimum scale factor
+     */
     private double minScaleFactor;
 
     /**
      * Create a new image canvas.
-     * 
-     * @param width   Width of this component.
-     * @param height  Height of this component.
-     * @param image   The image to manipulate.
+     *
+     * @param width  Width of this component.
+     * @param height Height of this component.
+     * @param image  The image to manipulate.
      */
-    public ImageEditCanvas(int width, int height, Image image)
-    {
+    public ImageEditCanvas(int width, int height, Image image) {
         super(width, height);
         setImage(image);
     }
@@ -65,16 +73,13 @@ public class ImageEditCanvas extends Canvas
      * @param image The JavaFX Image object to be assigned to the Canvas.
      *              It could be null.
      */
-    public void setImage(Image image)
-    {
+    public void setImage(Image image) {
         this.image = image;
-        if (image != null)
-        {
+        if (image != null) {
             double minScaleFactorX = getWidth() / image.getWidth();
             double minScaleFactorY = getHeight() / image.getHeight();
             minScaleFactor = minScaleFactorX < minScaleFactorY ? minScaleFactorX : minScaleFactorY;
-            if (minScaleFactor > 1)
-            {
+            if (minScaleFactor > 1) {
                 minScaleFactor = 1;
             }
         }
@@ -85,10 +90,8 @@ public class ImageEditCanvas extends Canvas
      *
      * @param graphics The graphics context used to paint the image.
      */
-    public void paintImage(GraphicsContext graphics)
-    {
-        if (image != null)
-        {
+    public void paintImage(GraphicsContext graphics) {
+        if (image != null) {
             Affine oldTx = graphics.getTransform();
 
             final double canvasWidth = getWidth();
@@ -101,17 +104,15 @@ public class ImageEditCanvas extends Canvas
 
             // Snap if size fits
             double xSnapped = x;
-            double ySnapped = y; 
-            if (Math.abs(scaleFactor - minScaleFactor) < .0000001)
-            {
+            double ySnapped = y;
+            if (Math.abs(scaleFactor - minScaleFactor) < .0000001) {
                 double xs = (imageWidth / 2 + xSnapped) * scaleFactor;
                 double ys = (imageHeight / 2 + ySnapped) * scaleFactor;
 
                 // Threshold for which to snap to initial position (only if scale
                 // factor is the initial size).
                 final int snapThreshold = 7;
-                if (Math.abs(xs) < snapThreshold && Math.abs(ys) < snapThreshold)
-                {
+                if (Math.abs(xs) < snapThreshold && Math.abs(ys) < snapThreshold) {
                     xSnapped = -imageWidth / 2;
                     ySnapped = -imageHeight / 2;
                 }
@@ -137,40 +138,36 @@ public class ImageEditCanvas extends Canvas
      * The method returns the same coordinate value if it is acceptable,
      * otherwise the nearest calculated value will be returned.
      * The following conditions are to be met:
-     *  - The image centers the canvas on a dimension where its edge on that
-     *    dimension is smaller than the canvas's.
-     *  - The image shouldn't be moved beyond the canvas's edge leaving an
-     *    apparent background on a dimension where it is bigger than the canvas's.
+     * - The image centers the canvas on a dimension where its edge on that
+     * dimension is smaller than the canvas's.
+     * - The image shouldn't be moved beyond the canvas's edge leaving an
+     * apparent background on a dimension where it is bigger than the canvas's.
      *
-     * @param coordinate  The value of a coordinate (x or y) that need to be tested.
-     * @param canvasEdge  The length of the canvas's edge.
-     * @param imageEdge   The length of the image's edge.
+     * @param coordinate The value of a coordinate (x or y) that need to be tested.
+     * @param canvasEdge The length of the canvas's edge.
+     * @param imageEdge  The length of the image's edge.
      * @return The coordinate value suitable to show the image reasonably in the canvas.
      */
-    private double ensureSuitableCoordinate(double coordinate, double canvasEdge, double imageEdge)
-    {
+    private double ensureSuitableCoordinate(double coordinate, double canvasEdge, double imageEdge) {
         double maxCoordinate = -(canvasEdge / scaleFactor) / 2;
         double minCoordinate = -(imageEdge + maxCoordinate);
 
         // If the image's edge is smaller than the canvas's, make
         // sure the image centers the canvas on that dimension.
-        if (imageEdge * scaleFactor <= canvasEdge)
-        {
+        if (imageEdge * scaleFactor <= canvasEdge) {
             return -imageEdge / 2;
         }
 
         // If the coordinate value is to the right/below of the
         // canvas's left/top edge, return the that edge.
-        if (coordinate > maxCoordinate)
-        {
+        if (coordinate > maxCoordinate) {
             return maxCoordinate;
         }
 
         // If the coordinate value will cause the image's to be more to
         // the left/up than the canvas's right/bottom edge, return the
         // minimum coordinate value to guarantee it will stay at that edge.
-        if (coordinate < minCoordinate)
-        {
+        if (coordinate < minCoordinate) {
             return minCoordinate;
         }
 
@@ -181,8 +178,7 @@ public class ImageEditCanvas extends Canvas
     /**
      * Scale and move the image so that it fits within the size of the canvas.
      */
-    public void fit()
-    {
+    public void fit() {
         x = -image.getWidth() / 2;
         y = -image.getHeight() / 2;
 
@@ -195,8 +191,7 @@ public class ImageEditCanvas extends Canvas
      * @param dx The shift value on the x-axis
      * @param dy The shift value on the y-axis
      */
-    public void move(double dx, double dy)
-    {
+    public void move(double dx, double dy) {
         // Divide by scaleFactor since we want the location in the original image.
         x += dx / scaleFactor;
         y += dy / scaleFactor;
@@ -206,22 +201,19 @@ public class ImageEditCanvas extends Canvas
     /**
      * Return the current scale factor.
      */
-    public double getScale()
-    {
+    public double getScale() {
         return scaleFactor;
     }
 
     /**
      * Set the current scale factor. Will not allow the image to become
      * smaller than the component.
-     * 
+     *
      * @param scaleFactor The scale factor. 1 is real size of the image.
      */
-    public void setScale(double scaleFactor)
-    {
+    public void setScale(double scaleFactor) {
         this.scaleFactor = scaleFactor;
-        if (scaleFactor < minScaleFactor)
-        {
+        if (scaleFactor < minScaleFactor) {
             this.scaleFactor = minScaleFactor;
         }
         paintImage(getGraphicsContext2D());
@@ -231,10 +223,8 @@ public class ImageEditCanvas extends Canvas
      * Returns the minimum scaling that will be allowed. The minimum scaling is
      * usually set so that the scaled size of the image is not smaller than the
      * canvas size.
-     *
      */
-    public double getMinimumScale()
-    {
+    public double getMinimumScale() {
         return minScaleFactor;
     }
 }

@@ -26,22 +26,20 @@ import threadchecker.Tag;
 
 /**
  * An entity representing either a package or a class (but not a value).
- * 
+ *
  * @author Davin McCall
  */
-public abstract class PackageOrClass extends JavaEntity
-{
+public abstract class PackageOrClass extends JavaEntity {
     /**
      * Returns a subentity which is either a package or class entity.
      * This is the same as getSubentity, but cannot yield a value.
      */
     @OnThread(Tag.FXPlatform)
     public abstract PackageOrClass getPackageOrClassMember(String name);
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public PackageOrClass resolveAsPackageOrClass()
-    {
+    public PackageOrClass resolveAsPackageOrClass() {
         return this;
     }
 }

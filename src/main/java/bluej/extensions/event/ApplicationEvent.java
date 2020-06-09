@@ -23,54 +23,50 @@ package bluej.extensions.event;
 
 /**
  * This class encapsulates BlueJ application events.
- * 
+ *
  * @version $Id: ApplicationEvent.java 15356 2016-01-25 18:23:50Z nccb $
  */
 
- /*
-  * Author Damiano Bolla, University of Kent at Canterbury, January 2003
-  */
+/*
+ * Author Damiano Bolla, University of Kent at Canterbury, January 2003
+ */
 
-public class ApplicationEvent implements ExtensionEvent 
-  {
-  /**
-   * Event generated when the BlueJ application is initialised and ready.
-   */
-  public static final int APP_READY_EVENT=1;
-  /**
-   * Event generated when connection to the data collection servers (e.g. Blackbox)
-   * is broken, or the event generates an error code when sent.  This means that
-   * recording will be suspended for the rest of the session.
-   */
-  public static final int DATA_SUBMISSION_FAILED_EVENT=2;
+public class ApplicationEvent implements ExtensionEvent {
+    /**
+     * Event generated when the BlueJ application is initialised and ready.
+     */
+    public static final int APP_READY_EVENT = 1;
+    /**
+     * Event generated when connection to the data collection servers (e.g. Blackbox)
+     * is broken, or the event generates an error code when sent.  This means that
+     * recording will be suspended for the rest of the session.
+     */
+    public static final int DATA_SUBMISSION_FAILED_EVENT = 2;
 
-  private final int eventId;
+    private final int eventId;
 
-  /**
-   * Constructs an ApplicationEvent
-   */
-  public ApplicationEvent(int anEventId)
-    {
-    eventId = anEventId;
+    /**
+     * Constructs an ApplicationEvent
+     */
+    public ApplicationEvent(int anEventId) {
+        eventId = anEventId;
     }
 
-  /**
-   * Returns the event type, one of the values defined.
-   */
-  public int getEvent ()
-    {
-    return eventId;
+    /**
+     * Returns the event type, one of the values defined.
+     */
+    public int getEvent() {
+        return eventId;
     }
 
 
-  /**
-   * Returns a meaningful description of this event.
-   */
-  public String toString()
-    {
-    if ( eventId == APP_READY_EVENT ) return "AppEvent: APP_READY_EVENT";
-    if ( eventId == DATA_SUBMISSION_FAILED_EVENT ) return "AppEvent: DATA_SUBMISSION_FAILED_EVENT";
+    /**
+     * Returns a meaningful description of this event.
+     */
+    public String toString() {
+        if (eventId == APP_READY_EVENT) return "AppEvent: APP_READY_EVENT";
+        if (eventId == DATA_SUBMISSION_FAILED_EVENT) return "AppEvent: DATA_SUBMISSION_FAILED_EVENT";
 
-    return "AppEvent: UNKNOWN eventId="+eventId;
+        return "AppEvent: UNKNOWN eventId=" + eventId;
     }
-  }
+}

@@ -32,22 +32,12 @@ import bluej.utility.javafx.FXPlatformSupplier;
 import bluej.utility.javafx.JavaFXUtil;
 import javafx.animation.RotateTransition;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination.ModifierValue;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Window;
@@ -63,12 +53,11 @@ import java.util.stream.Collectors;
 
 /**
  * KeyBindingsPanel panel for the key bindings in preferences
- * @author Marion Zalk
  *
+ * @author Marion Zalk
  */
 @OnThread(Tag.FXPlatform)
-public class KeyBindingsPanel extends GridPane implements PrefPanelListener
-{
+public class KeyBindingsPanel extends GridPane implements PrefPanelListener {
 
     // -------- CONSTANTS --------
     static final String title = Config.getString("editor.functions.title");
@@ -78,7 +67,7 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     static final String keyLabel = Config.getString("editor.functions.keys");
     static final String addKeyLabel = Config.getString("editor.functions.addkey");
     static final String delKeyLabel = Config.getString("editor.functions.delkey");
-    
+
     // -------- INSTANCE VARIABLES --------
 
     private final FXPlatformSupplier<Window> parent;
@@ -98,20 +87,17 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     private final List<ActionInfo> functions;     // all user functions
     private static Label errorLabel;
 
-    private static class ActionInfo
-    {
+    private static class ActionInfo {
         private final String name;
         private final Category category;
 
-        public ActionInfo(MoeAbstractAction action)
-        {
+        public ActionInfo(MoeAbstractAction action) {
             name = action.getName();
             category = action.getCategory();
         }
     }
 
-    public void categoryMenuChanged()
-    {
+    public void categoryMenuChanged() {
         Category selected = categoryMenu.getSelectionModel().getSelectedItem();
 
         functionList.getItems().setAll(functions.stream().filter(a -> a.category == selected).map(a -> a.name).collect(Collectors.toList()));
@@ -121,8 +107,7 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
         delKeyButton.setDisable(true);
     }
 
-    public KeyBindingsPanel(FXPlatformSupplier<Window> parent)
-    {
+    public KeyBindingsPanel(FXPlatformSupplier<Window> parent) {
         this.parent = parent;
         actions = MoeActions.getActions(null);
         functions = Utility.mapList(actions.getAllActions(), ActionInfo::new);
@@ -154,17 +139,14 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
         JavaFXUtil.addStyleClass(kLabel, "key-header-label");
         keyPanel.setTop(kLabel);
         keyList = new ListView<>();
-        keyList.setCellFactory(lv -> new TextFieldListCell<>(new StringConverter<KeyCodeCombination>()
-        {
+        keyList.setCellFactory(lv -> new TextFieldListCell<>(new StringConverter<KeyCodeCombination>() {
             @Override
-            public String toString(KeyCodeCombination object)
-            {
+            public String toString(KeyCodeCombination object) {
                 return object.getDisplayText();
             }
 
             @Override
-            public KeyCodeCombination fromString(String string)
-            {
+            public KeyCodeCombination fromString(String string) {
                 // Won't be used as no editing:
                 return null;
             }
@@ -189,7 +171,7 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
         controlPanel.setCenter(keyPanel);
 
         // create help text area at bottom
-        helpLabel=new Text();
+        helpLabel = new Text();
         TextFlow textFlow = new TextFlow(helpLabel);
         textFlow.setMinHeight(80);
         controlPanel.setBottom(textFlow);
@@ -204,24 +186,23 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
 
     @OnThread(Tag.FXPlatform)
     public void beginEditing(Project project) {
-       
+
     }
 
     @OnThread(Tag.FXPlatform)
     public void commitEditing(Project project) {
-       handleClose();
+        handleClose();
     }
 
     @OnThread(Tag.FXPlatform)
     public void revertEditing(Project project) {
-        
+
     }
 
     /**
-     * 
+     *
      */
-    public void updateDisplay()
-    {
+    public void updateDisplay() {
         JavaFXUtil.addChangeListenerPlatform(categoryMenu.getSelectionModel().selectedIndexProperty(), i -> categoryMenuChanged());
         JavaFXUtil.addChangeListenerPlatform(functionList.getSelectionModel().selectedIndexProperty(), i -> handleFuncListSelect());
         JavaFXUtil.addChangeListenerPlatform(keyList.getSelectionModel().selectedIndexProperty(), i -> handleKeyListSelect());
@@ -238,11 +219,9 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     /**
      * Handle click on Defaults button.
      */
-    private void handleDefaults()
-    {
+    private void handleDefaults() {
         int answer = DialogManager.askQuestionFX(parent.get(), "default-keys");
-        if (answer == 0)
-        {
+        if (answer == 0) {
             actions.setDefaultKeyBindings();
             handleFuncListSelect();
         }
@@ -251,10 +230,9 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     /**
      * Handle click in functions list.
      */
-    private void handleFuncListSelect()
-    {
+    private void handleFuncListSelect() {
         int index = functionList.getSelectionModel().getSelectedIndex();
-        if(index == -1)
+        if (index == -1)
             return; // deselection event - ignore
 
         // find selected action
@@ -271,34 +249,29 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     /**
      * Handle click in key bindings list.
      */
-    private void handleKeyListSelect()
-    {
+    private void handleKeyListSelect() {
         delKeyButton.setDisable(false);
     }
 
     /**
      * Handle click on Close button.
      */
-    private void handleClose()
-    {
-        if(!actions.save())
+    private void handleClose() {
+        if (!actions.save())
             DialogManager.showErrorFX(parent.get(), "cannot-save-keys");
     }
+
     /**
      * Handle click on Add Key button.
      */
-    private void handleAddKey()
-    {
+    private void handleAddKey() {
         Optional<KeyCodeCombination> newKey = new KeyCaptureDialog().showAndWait();
-        if (newKey.equals(Optional.of(ButtonType.CANCEL)))
-        {
-            return; 
+        if (newKey.equals(Optional.of(ButtonType.CANCEL))) {
+            return;
         }
-        if (newKey.isPresent())
-        {
+        if (newKey.isPresent()) {
             String action = functionList.getSelectionModel().getSelectedItem();
-            if (action != null)
-            {
+            if (action != null) {
                 MoeActions.addKeyCombinationForActionToAllEditors(newKey.get(), action);
                 updateKeyList(action);
             }
@@ -308,10 +281,9 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     /**
      * Handle click on Delete Key button.
      */
-    private void handleDelKey()
-    {
+    private void handleDelKey() {
         int index = keyList.getSelectionModel().getSelectedIndex();
-        if(index == -1)
+        if (index == -1)
             return;             // deselection event - ignore
 
         actions.removeKeyStrokeBinding(keyList.getSelectionModel().getSelectedItem());
@@ -321,10 +293,9 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
     /**
      * Display key bindings in the key list
      */
-    private void updateKeyList(String action)
-    {
+    private void updateKeyList(String action) {
         List<KeyCodeCombination> currentKeys = actions.getKeyStrokesForAction(action);
-        if(currentKeys == null)
+        if (currentKeys == null)
             clearKeyList();
         else {
             keyList.getItems().setAll(currentKeys);
@@ -333,40 +304,34 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
         addKeyButton.setDisable(false);
     }
 
-    private void clearKeyList()
-    {
+    private void clearKeyList() {
         keyList.getItems().clear();
     }
 
-    private void clearHelpText()
-    {
+    private void clearHelpText() {
         helpLabel.setText(null);
     }
 
-    private void openHelpFile()
-    {
+    private void openHelpFile() {
         help = Config.getMoeHelp();
     }
 
-    private String getHelpText(String function)
-    {
-        if(help == null)
+    private String getHelpText(String function) {
+        if (help == null)
             return null;
-        String helpText=help.getProperty(function);
+        String helpText = help.getProperty(function);
         //need to check if null first as some items do not have helpText/helpText is empty
-        if (helpText!=null && helpText.length()>0) {
+        if (helpText != null && helpText.length() > 0) {
             //remove the /n from the text 
-            helpText=helpText.replaceAll("\n", "");
-            helpText=helpText.trim();
+            helpText = helpText.replaceAll("\n", "");
+            helpText = helpText.trim();
         }
         return helpText;
     }
 
     @OnThread(Tag.FXPlatform)
-    private static class KeyCaptureDialog extends Dialog<KeyCodeCombination>
-    {
-        public KeyCaptureDialog()
-        {
+    private static class KeyCaptureDialog extends Dialog<KeyCodeCombination> {
+        public KeyCaptureDialog() {
             TextField textField = new TextField();
             errorLabel = JavaFXUtil.withStyleClass(new Label(), "dialog-error-label");
             errorLabel.setText("");
@@ -376,12 +341,9 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
                 // Also, ignore presses of modifier kyes
                 if (e.getCode() != KeyCode.ESCAPE && e.getCode() != KeyCode.SHIFT && e.getCode() != KeyCode.CONTROL &&
                         e.getCode() != KeyCode.ALT && e.getCode() != KeyCode.ALT_GRAPH && e.getCode() != KeyCode.META &&
-                        e.getCode() != KeyCode.COMMAND)
-                {
-                    if ( e.getCode().isLetterKey())
-                    {
-                        if (!(e.isShiftDown() || e.isControlDown() || e.isAltDown() || e.isMetaDown()))
-                        {
+                        e.getCode() != KeyCode.COMMAND) {
+                    if (e.getCode().isLetterKey()) {
+                        if (!(e.isShiftDown() || e.isControlDown() || e.isAltDown() || e.isMetaDown())) {
                             errorLabel.setText("Single Character is not allowed");
                             RotateTransition animation = null;
                             animation = new RotateTransition(Duration.millis(70), errorLabel);
@@ -408,7 +370,7 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
                     e.consume();
                 }
             });
-            VBox mainPanel=new VBox(new Label("Press a key, or Escape to cancel"), textField);
+            VBox mainPanel = new VBox(new Label("Press a key, or Escape to cancel"), textField);
             getDialogPane().setContent(mainPanel);
             setOnShown(e -> textField.requestFocus());
             // Cancel button on the dialog, or otherwise can't close:
@@ -417,8 +379,7 @@ public class KeyBindingsPanel extends GridPane implements PrefPanelListener
             mainPanel.getChildren().add(errorLabel);
         }
 
-        private static ModifierValue mod(boolean down)
-        {
+        private static ModifierValue mod(boolean down) {
             // We use up here, not any, because e.g. pressing Ctrl-Shift-S shouldn't trigger the Ctrl-S accelerator:
             return down ? ModifierValue.DOWN : ModifierValue.UP;
         }

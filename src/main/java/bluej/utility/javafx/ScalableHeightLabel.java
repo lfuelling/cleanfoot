@@ -21,7 +21,6 @@
  */
 package bluej.utility.javafx;
 
-import bluej.utility.Debug;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -29,76 +28,62 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
-import javafx.scene.effect.PerspectiveTransform;
-import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 /**
  * A class that is a Label with the added capability of scaling its vertical height
  * from a factor of 0.0 (i.e. hidden) up to 1.0 (i.e. full size for the label).
- *
  */
-public class ScalableHeightLabel extends Label
-{
+public class ScalableHeightLabel extends Label {
     private final SimpleDoubleProperty scale = new SimpleDoubleProperty(1.0);
-    
+
     /**
-     * 
      * @param text
-     * @param assumeNoWrap If true, we use the control's width at 
+     * @param assumeNoWrap If true, we use the control's width at
      * @param startHidden
      */
-    public ScalableHeightLabel(String text, boolean startHidden)
-    {
+    public ScalableHeightLabel(String text, boolean startHidden) {
         super(text);
         setMinHeight(0);
-        if (startHidden)
-        {
+        if (startHidden) {
             setPrefHeight(0);
             scale.set(0.0);
         }
-        scale.addListener(new ChangeListener<Number>()
-        {
+        scale.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> arg0,
-                                Number arg1, Number newVal)
-            {
+                                Number arg1, Number newVal) {
                 setPrefHeight(newVal.doubleValue() * computePrefHeight(9999));
             }
         });
     }
-    
-    public void setToFullHeight()
-    {
+
+    public void setToFullHeight() {
         scale.set(1.0);
     }
-    
-    public void setToNothing()
-    {
+
+    public void setToNothing() {
         scale.set(0.0);
     }
 
     /**
      * Animates up to scale height of 1.0
+     *
      * @param dur Duration of transition.  Null means immediate
-     * @return 
+     * @return
      */
-    public Timeline getGrowToFullHeightTimeline(Duration dur)
-    {
+    public Timeline getGrowToFullHeightTimeline(Duration dur) {
         return new Timeline(new KeyFrame(dur, new KeyValue(scale, 1.0)));
     }
-    
-    public Timeline getShrinkToNothingTimeline(Duration dur)
-    {
+
+    public Timeline getShrinkToNothingTimeline(Duration dur) {
         return new Timeline(new KeyFrame(dur, new KeyValue(scale, 0.0)));
     }
 
-    public void growToFullHeightWith(SharedTransition t, boolean fade)
-    {
+    public void growToFullHeightWith(SharedTransition t, boolean fade) {
         scale.bind(t.getProgress());
         t.addOnStopped(scale::unbind);
-        if (fade)
-        {
+        if (fade) {
             opacityProperty().bind(t.getProgress());
             t.addOnStopped(opacityProperty()::unbind);
         }
@@ -106,20 +91,17 @@ public class ScalableHeightLabel extends Label
         // but had no luck in getting it to work.
     }
 
-    public void shrinkToNothingWith(SharedTransition t, boolean fade)
-    {
+    public void shrinkToNothingWith(SharedTransition t, boolean fade) {
         scale.bind(t.getOppositeProgress());
         t.addOnStopped(scale::unbind);
-        if (fade)
-        {
+        if (fade) {
             opacityProperty().bind(t.getOppositeProgress());
             t.addOnStopped(opacityProperty()::unbind);
         }
     }
 
     @Override
-    public double getBaselineOffset()
-    {
+    public double getBaselineOffset() {
         // We must scale the baseline offset.  Otherwise, even though our height scales down to 0,
         // the baseline offset remains on e.g. 20 pixels, and thus our height inside a HangingFlowPane
         // always stays at e.g. 20 pixels, meaning our containing flow pane won't shrink when we do:

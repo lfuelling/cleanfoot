@@ -21,9 +21,9 @@
  */
 package bluej.extensions.painter;
 
-import java.awt.Graphics2D;
-
 import bluej.extensions.BClassTarget;
+
+import java.awt.*;
 
 /**
  * <p>
@@ -47,38 +47,29 @@ import bluej.extensions.BClassTarget;
  * Therefore, extensions are unable to paint over the warnings or prevent them
  * from appearing.
  * </p>
- * 
+ *
  * @author Simon Gerlach
  */
-public interface ExtensionClassTargetPainter
-{
+public interface ExtensionClassTargetPainter {
     /**
      * Ask the extension to draw the background of its class target
      * representation.
-     * 
-     * @param bClassTarget
-     *            The class target that will be painted.
-     * @param graphics
-     *            The {@link Graphics2D} instance to draw on.
-     * @param width
-     *            The width of the area to paint.
-     * @param height
-     *            The height of the area to paint.
+     *
+     * @param bClassTarget The class target that will be painted.
+     * @param graphics     The {@link Graphics2D} instance to draw on.
+     * @param width        The width of the area to paint.
+     * @param height       The height of the area to paint.
      */
     void drawClassTargetBackground(BClassTarget bClassTarget, Graphics2D graphics, int width, int height);
 
     /**
      * Ask the extension to draw the foreground of its class target
      * representation.
-     * 
-     * @param bClassTarget
-     *            The class target that will be painted.
-     * @param graphics
-     *            The {@link Graphics2D} instance to draw on.
-     * @param width
-     *            The width of the area to paint.
-     * @param height
-     *            The height of the area to paint.
+     *
+     * @param bClassTarget The class target that will be painted.
+     * @param graphics     The {@link Graphics2D} instance to draw on.
+     * @param width        The width of the area to paint.
+     * @param height       The height of the area to paint.
      */
     void drawClassTargetForeground(BClassTarget bClassTarget, Graphics2D graphics, int width, int height);
 }

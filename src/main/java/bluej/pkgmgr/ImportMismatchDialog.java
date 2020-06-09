@@ -21,40 +21,34 @@
  */
 package bluej.pkgmgr;
 
-import java.io.File;
-import java.util.List;
-import java.util.stream.Collectors;
-import javafx.scene.Node;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
-
 import bluej.BlueJTheme;
 import bluej.Config;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Dialog for showing the user a list of files which
  * had mismatched package lines on an open non-BlueJ.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
 @OnThread(Tag.FXPlatform)
-public class ImportMismatchDialog extends Dialog<Boolean>
-{
+public class ImportMismatchDialog extends Dialog<Boolean> {
     private static final String dialogTitle = Config.getString("pkgmgr.importmismatch.title");
     private final ButtonType CONTINUE;
 
-    public ImportMismatchDialog(Window parent, List<File> files)
-    {
+    public ImportMismatchDialog(Window parent, List<File> files) {
         initOwner(parent);
         setTitle(dialogTitle);
         initModality(Modality.WINDOW_MODAL);
@@ -65,13 +59,13 @@ public class ImportMismatchDialog extends Dialog<Boolean>
         JavaFXUtil.addStyleClass(mainPanel, "import-mismatch-content");
         mainPanel.getChildren().add(new Label(Config.getStringList("pkgmgr.importmismatch.helpLine").stream().collect(Collectors.joining(" "))));
         mainPanel.getChildren().add(new ScrollPane(new VBox(Utility.mapList(files, f -> new Label(f.toString())).toArray(new Node[0]))));
-        
+
         CONTINUE = new ButtonType(BlueJTheme.getContinueLabel(), ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().setAll(ButtonType.CANCEL, CONTINUE);
         setResultConverter(bt -> bt == CONTINUE);
-        
+
         getDialogPane().setContent(mainPanel);
-        
+
         //setOnShown(e -> org.scenicview.ScenicView.show(mainPanel.getScene()));
     }
 }

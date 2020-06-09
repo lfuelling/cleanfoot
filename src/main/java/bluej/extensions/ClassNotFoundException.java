@@ -22,19 +22,18 @@
 package bluej.extensions;
 
 /**
- * This exception will be thrown when a reference to a class is no longer valid. 
+ * This exception will be thrown when a reference to a class is no longer valid.
  * The most likely reason is that the user has deleted the class
  * using the GUI.
- * 
+ *
  * @version $Id: ClassNotFoundException.java 6215 2009-03-30 13:28:25Z polle $
  */
 
 /*
  * Author: Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class ClassNotFoundException extends ExtensionException 
-{
-  ClassNotFoundException (String reason) {
-      super (reason);
-  }
+public class ClassNotFoundException extends ExtensionException {
+    ClassNotFoundException(String reason) {
+        super(reason);
+    }
 }

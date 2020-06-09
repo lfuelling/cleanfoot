@@ -21,9 +21,6 @@
  */
 package bluej.stride.slots;
 
-import java.util.List;
-import java.util.function.Supplier;
-
 import bluej.stride.framedjava.ast.ThrowsTypeFragment;
 import bluej.stride.framedjava.slots.TypeSlot;
 import bluej.stride.generic.Frame;
@@ -31,15 +28,15 @@ import bluej.stride.generic.InteractionManager;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXRunnable;
 
-public class Throws extends TypeList
-{
-    public Throws(Frame parentFrame, Supplier<TypeSlot> slotGenerator, FXRunnable focusOnNext, InteractionManager editor)
-    {
+import java.util.List;
+import java.util.function.Supplier;
+
+public class Throws extends TypeList {
+    public Throws(Frame parentFrame, Supplier<TypeSlot> slotGenerator, FXRunnable focusOnNext, InteractionManager editor) {
         super(" throws ", parentFrame, slotGenerator, focusOnNext, editor);
     }
 
-    public List<ThrowsTypeFragment> getTypes()
-    {
+    public List<ThrowsTypeFragment> getTypes() {
         return Utility.mapList(typeSlots, s -> new ThrowsTypeFragment(s.getSlotElement()));
     }
 

@@ -21,22 +21,20 @@
  */
 package bluej.stride.slots;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.UnderlineContainer;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.RecallableFocus;
+import bluej.utility.Utility;
+import bluej.utility.javafx.ErrorUnderlineCanvas.UnderlineInfo;
 import bluej.utility.javafx.FXRunnable;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.binding.ConcatListBinding;
 import bluej.utility.javafx.binding.DeepListBinding;
-
 import javafx.beans.value.ObservableBooleanValue;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -44,31 +42,28 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.ErrorShower;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.RecallableFocus;
-import bluej.utility.Utility;
-import bluej.utility.javafx.ErrorUnderlineCanvas.UnderlineInfo;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.binding.ConcatListBinding;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * EditableSlot is used to access functionality common to all slots.  EditableSlot extends HeaderItem,
  * but also several other interfaces (see their documentation).
  */
-public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo, ErrorShower, UnderlineContainer
-{
+public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo, ErrorShower, UnderlineContainer {
     /**
      * Requests focus on the slot, at whatever position makes sense (should not perform a select-all)
      */
-    default void requestFocus() { requestFocus(Focus.LEFT); }
+    default void requestFocus() {
+        requestFocus(Focus.LEFT);
+    }
 
     /**
      * Requests focus at the given position.
+     *
      * @param on Where to focus: LEFT, RIGHT or ALL
      * @see bluej.stride.slots.Focus
      */
@@ -80,7 +75,7 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * expression slots, cursor may move between text fields in the expression), so a component losing focus doesn't
      * always mean the whole slot has lost focus.  The editor keeps track of who has focus, and calls this method
      * on all slots which do not have focus.
-     *
+     * <p>
      * Note that this method may currently be called on a slot which did not have focus -- it is more like
      * "notifyHasNoFocus" than "youHadFocusButJustLostIt"
      */
@@ -88,7 +83,7 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
 
     /**
      * A property reflecting whether the field is "effectively focused"
-     *
+     * <p>
      * "Effectively focused" means that either the field has actual JavaFX GUI
      * focus, or code completion is showing for this slot, meaning it doesn't
      * have GUI focus, but for our purposes it is logically the focus owner
@@ -110,38 +105,44 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
 
     // No need for any implementing classes to further override this:
     default @Override
-    EditableSlot asEditable() { return this; }
+    EditableSlot asEditable() {
+        return this;
+    }
 
     /**
      * Gets the parent Frame of the slot
+     *
      * @return The parent frame
      */
     Frame getParentFrame();
 
     /**
      * A method used to check/access this slot as an ExpressionSlot (nicer than using cast/instanceof)
+     *
      * @return Get this slot as an expression slot (type cast)
      */
-    default ExpressionSlot asExpressionSlot() { return null; }
+    default ExpressionSlot asExpressionSlot() {
+        return null;
+    }
 
     /**
      * Checks whether the slot is blank or close enough.  Definition is context-dependent on the slot
+     *
      * @return True, if the slot is (essentially) blank
      */
     boolean isAlmostBlank();
 
     /**
      * The amount of effort (roughly, keypresses) required to create this slot's content
-     *
+     * <p>
      * See the documentation of Frame.calculateEffort for more information.
      */
     int calculateEffort();
 
-    enum TopLevelMenu { EDIT, VIEW }
+    enum TopLevelMenu {EDIT, VIEW}
 
     // This is an ordering across all menus
-    enum MenuItemOrder
-    {
+    enum MenuItemOrder {
         // The integer is a block number, which is used to group and add dividers.
         // The ordering of the block numbers doesn't matter, it just needs to be a different number for each block,
         // and blocks should only be of adjacent enum values.
@@ -156,74 +157,61 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
 
         private final int block;
 
-        MenuItemOrder(int block)
-        {
+        MenuItemOrder(int block) {
             this.block = block;
         }
 
-        public SortedMenuItem item(MenuItem fxItem)
-        {
+        public SortedMenuItem item(MenuItem fxItem) {
             return new SortedMenuItem(fxItem, this);
         }
     }
 
-    class SortedMenuItem
-    {
+    class SortedMenuItem {
         private final MenuItem item;
         private final MenuItemOrder sortOrder;
 
-        private SortedMenuItem(MenuItem item, MenuItemOrder sortOrder)
-        {
+        private SortedMenuItem(MenuItem item, MenuItemOrder sortOrder) {
             this.item = item;
             this.sortOrder = sortOrder;
         }
 
-        public MenuItem getItem()
-        {
+        public MenuItem getItem() {
             return item;
         }
 
         private static final Comparator<SortedMenuItem> COMPARATOR = (a, b) -> a.sortOrder.compareTo(b.sortOrder);
 
-        public MenuItemOrder getMenuItemOrder()
-        {
+        public MenuItemOrder getMenuItemOrder() {
             return sortOrder;
         }
 
-        public static ObservableList<MenuItem> sortAndAddDividers(ObservableList<SortedMenuItem> primaryItems, List<SortedMenuItem> defaultItems)
-        {
+        public static ObservableList<MenuItem> sortAndAddDividers(ObservableList<SortedMenuItem> primaryItems, List<SortedMenuItem> defaultItems) {
             ObservableList<MenuItem> r = FXCollections.observableArrayList();
             new DeepListBinding<MenuItem>(r) {
                 @Override
-                protected Stream<MenuItem> calculateValues()
-                {
+                protected Stream<MenuItem> calculateValues() {
                     return calculateList(primaryItems, defaultItems);
                 }
 
                 @Override
-                protected Stream<ObservableList<?>> getListenTargets()
-                {
+                protected Stream<ObservableList<?>> getListenTargets() {
                     return Stream.of(primaryItems);
                 }
             }.startListening();
             return r;
         }
 
-        private static Stream<MenuItem> calculateList(ObservableList<SortedMenuItem> primaryItems, List<SortedMenuItem> defaultItems)
-        {
+        private static Stream<MenuItem> calculateList(ObservableList<SortedMenuItem> primaryItems, List<SortedMenuItem> defaultItems) {
             List<SortedMenuItem> all = new ArrayList<>(primaryItems);
-            for (SortedMenuItem def : defaultItems)
-            {
+            for (SortedMenuItem def : defaultItems) {
                 // Add any defaults where their item is not already present:
                 if (!all.stream().anyMatch(item -> item.getMenuItemOrder() == def.getMenuItemOrder()))
                     all.add(def);
             }
             all.sort(COMPARATOR);
 
-            for (int i = 0; i < all.size() - 1; i++)
-            {
-                if (all.get(i).getMenuItemOrder().block != all.get(i+1).getMenuItemOrder().block)
-                {
+            for (int i = 0; i < all.size() - 1; i++) {
+                if (all.get(i).getMenuItemOrder().block != all.get(i + 1).getMenuItemOrder().block) {
                     all.add(i + 1, new SortedMenuItem(new SeparatorMenuItem(), null));
                     // then skip it:
                     i += 1;
@@ -238,66 +226,68 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
      * for the menu containing the items being shown or hidden, override the class and implement
      * onShowing/onHidden.
      */
-    class MenuItems
-    {
+    class MenuItems {
         protected final ObservableList<SortedMenuItem> items;
-        
-        public MenuItems(ObservableList<SortedMenuItem> items) { this.items = items; }
+
+        public MenuItems(ObservableList<SortedMenuItem> items) {
+            this.items = items;
+        }
 
         @OnThread(Tag.FXPlatform)
-        public void onShowing() {}
+        public void onShowing() {
+        }
 
         @OnThread(Tag.FXPlatform)
-        public void onHidden() {}
-        
-        public static MenuItems concat(MenuItems... src)
-        {
+        public void onHidden() {
+        }
+
+        public static MenuItems concat(MenuItems... src) {
             List<MenuItems> nonNull = Arrays.stream(src).filter(m -> m != null).collect(Collectors.toList());
             ObservableList<SortedMenuItem> joinedItems = FXCollections.observableArrayList();
             ConcatListBinding.bind(joinedItems, FXCollections.observableArrayList(nonNull.stream().map(m -> m.items).collect(Collectors.toList())));
             return new MenuItems(joinedItems) {
                 @Override
-                public void onShowing() {nonNull.forEach(MenuItems::onShowing);}
+                public void onShowing() {
+                    nonNull.forEach(MenuItems::onShowing);
+                }
+
                 @Override
-                public void onHidden() {nonNull.forEach(MenuItems::onHidden);}
+                public void onHidden() {
+                    nonNull.forEach(MenuItems::onHidden);
+                }
             };
         }
-        
-        public Menu makeSubMenu()
-        {
+
+        public Menu makeSubMenu() {
             Menu menu = new Menu();
             JavaFXUtil.bindMap(menu.getItems(), items, SortedMenuItem::getItem, FXRunnable::run);
             menu.onShowingProperty().set(e -> onShowing());
             menu.onHiddenProperty().set(e -> onHidden());
             return menu;
         }
-        
-        public static ContextMenu makeContextMenu(Map<TopLevelMenu, MenuItems> allItems)
-        {
+
+        public static ContextMenu makeContextMenu(Map<TopLevelMenu, MenuItems> allItems) {
             return makeContextMenu(allItems.entrySet().stream().sorted((a, b) -> a.getKey().compareTo(b.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
         }
-        
-        private static ContextMenu makeContextMenu(List<MenuItems> allItems)
-        {
+
+        private static ContextMenu makeContextMenu(List<MenuItems> allItems) {
             ContextMenu menu = new ContextMenu();
 
             ObservableList<SortedMenuItem> sorted = FXCollections.observableArrayList();
             ConcatListBinding.bind(sorted, FXCollections.observableArrayList(Utility.mapList(allItems, MenuItems::getItems)));
             JavaFXUtil.bindList(menu.getItems(), SortedMenuItem.sortAndAddDividers(sorted, Collections.emptyList()));
-            
+
             menu.onShowingProperty().set(e -> allItems.forEach(MenuItems::onShowing));
             menu.onHiddenProperty().set(e -> allItems.forEach(MenuItems::onHidden));
 
             return menu;
         }
 
-        public boolean isEmpty()
-        {
+        public boolean isEmpty() {
             return items.isEmpty();
         }
 
-        public ObservableList<SortedMenuItem> getItems()
-        {
+        public ObservableList<SortedMenuItem> getItems() {
             return items;
         }
     }
@@ -305,25 +295,29 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
     /**
      * Gets the menu items that might appear in top-level menus or context menu.  If shown in a top-level
      * menu, the key on the Map is used to organise them; if
+     *
      * @param contextMenu Whether this is a context menu or top level
      * @return The menu items
      */
-    default Map<TopLevelMenu, MenuItems> getMenuItems(boolean contextMenu) { return Collections.emptyMap(); }
+    default Map<TopLevelMenu, MenuItems> getMenuItems(boolean contextMenu) {
+        return Collections.emptyMap();
+    }
 
     /**
      * Gets the relevant graphical node related to the given error, used for scrolling to the error.
      * By default, just gets the first graphical component in the slot.
+     *
      * @param err The error to look for
      * @return The Node where the error is
      */
     @Override
-    default Node getRelevantNodeForError(CodeError err)
-    {
+    default Node getRelevantNodeForError(CodeError err) {
         return getComponents().stream().findFirst().orElse(null);
     }
 
     /**
      * Adds the given error to the slot
+     *
      * @param error The error to add
      */
     @OnThread(Tag.FXPlatform) void addError(CodeError error);
@@ -336,10 +330,10 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
 
     /**
      * Flags all errors as old.  Generally, the pattern is:
-     *  - flagErrorsAsOld
-     *  - addError [for all compile errors]
-     *  - removeOldErrors [leaves those just added by addError]
-     *
+     * - flagErrorsAsOld
+     * - addError [for all compile errors]
+     * - removeOldErrors [leaves those just added by addError]
+     * <p>
      * This avoids an annoying blinking out/in of errors that happens if we just did removeAll/add;
      * this way, an error that is still present, never gets removed
      */
@@ -347,24 +341,28 @@ public interface EditableSlot extends HeaderItem, RecallableFocus, UnderlineInfo
 
     /**
      * Gets any errors currently on the slot
+     *
      * @return A stream of errors
      */
     @OnThread(Tag.FXPlatform) Stream<CodeError> getCurrentErrors();
 
     /**
      * Gets the JavaFragment of code that corresponds to this slot
+     *
      * @return The Java fragment
      */
     JavaFragment getSlotElement();
 
     /**
      * Makes the slots editable/non-editable, e.g. in the case that the surrounding frame is disabled.
+     *
      * @param editable True to make this editable
      */
     void setEditable(boolean editable);
 
     /**
      * Checks whether the slot is editable (see setEditable, setView), e.g. for determining where to place focus next.
+     *
      * @return True if this is editable
      */
     boolean isEditable();

@@ -21,60 +21,52 @@
  */
 package bluej.pkgmgr.dependency;
 
-import java.util.Properties;
-
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.target.*;
+import bluej.pkgmgr.target.DependentTarget;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.Properties;
 
 /**
  * An "implements" dependency between two (class) targets in a package
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public class ImplementsDependency extends Dependency
-{
+public class ImplementsDependency extends Dependency {
     @OnThread(Tag.Any)
-    public ImplementsDependency(Package pkg, DependentTarget from, DependentTarget to)
-    {
+    public ImplementsDependency(Package pkg, DependentTarget from, DependentTarget to) {
         super(pkg, from, to);
     }
 
-    public ImplementsDependency(Package pkg)
-    {
+    public ImplementsDependency(Package pkg) {
         this(pkg, null, null);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void save(Properties props, String prefix)
-    {
+    public void save(Properties props, String prefix) {
         super.save(props, prefix);
         props.put(prefix + ".type", "ImplementsDependency");
     }
-    
-    public void remove()
-    {
+
+    public void remove() {
         pkg.removeArrow(this);
     }
-    
-    public boolean isResizable()
-    {
+
+    public boolean isResizable() {
         return false;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public Type getType()
-    {
+    public Type getType() {
         return Type.IMPLEMENTS;
     }
 
     @Override
-    public boolean isRemovable()
-    {
+    public boolean isRemovable() {
         return true;
     }
 }

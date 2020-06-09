@@ -22,25 +22,21 @@
 package bluej.debugger;
 
 import bluej.Config;
-import bluej.pkgmgr.Project;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * An enum indicating which thread methods should be invoked on.
  */
-public enum RunOnThread
-{
+public enum RunOnThread {
     DEFAULT, FX, SWING;
 
     // Easiest to do this in toString, even if it looks weird, because JavaFX ComboBox uses
     // toString to display, and it's awkward to make it use an outside method:
     @Override
     @OnThread(Tag.Any)
-    public String toString()
-    {
-        switch (this)
-        {
+    public String toString() {
+        switch (this) {
             case FX:
                 return Config.getString("prefmgr.misc.run.fx");
             case SWING:
@@ -51,14 +47,10 @@ public enum RunOnThread
     }
 
     // Like valueOf but returns DEFAULT if item not found
-    public static RunOnThread load(String name)
-    {
-        try
-        {
+    public static RunOnThread load(String name) {
+        try {
             return valueOf(name);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return DEFAULT;
         }
     }

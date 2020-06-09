@@ -21,44 +21,39 @@
  */
 package bluej.stride.framedjava.frames;
 
+import bluej.parser.ParseFailure;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.ast.Parser;
+import bluej.stride.framedjava.convert.ConversionWarning;
+import bluej.stride.framedjava.convert.ConvertResultDialog;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.generic.Frame;
+import bluej.utility.Debug;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.ParsingException;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-
-import bluej.parser.ParseFailure;
-import bluej.stride.framedjava.ast.Parser;
-import bluej.stride.framedjava.convert.ConversionWarning;
-import bluej.stride.framedjava.convert.ConvertResultDialog;
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.ParsingException;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.generic.Frame;
-import bluej.utility.Debug;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-public class GreenfootFrameUtil
-{
-    private static class XMLParseResult
-    {
+public class GreenfootFrameUtil {
+    private static class XMLParseResult {
         public final List<CodeElement> elements; // null if error
         public final String error; // null if success
 
-        public XMLParseResult(List<CodeElement> elements)
-        {
+        public XMLParseResult(List<CodeElement> elements) {
             this.elements = elements;
             this.error = null;
         }
 
-        public XMLParseResult(String error)
-        {
+        public XMLParseResult(String error) {
             this.elements = null;
             this.error = error;
         }
@@ -66,25 +61,20 @@ public class GreenfootFrameUtil
 
     // On FXPlatform thread because it may show dialog:
     @OnThread(Tag.FXPlatform)
-    public static List<CodeElement> getClipboardElements(Parser.JavaContext context)
-    {
+    public static List<CodeElement> getClipboardElements(Parser.JavaContext context) {
         final Clipboard clipboard = Clipboard.getSystemClipboard();
         if (clipboard.hasString()) {
             XMLParseResult strideParseResult = getElements(clipboard.getString());
             if (strideParseResult.elements != null)
                 return strideParseResult.elements;
-            
-            try
-            {
+
+            try {
                 Parser.ConversionResult javaConvertResult = Parser.javaToStride(clipboard.getString(), context, false);
-                if (!javaConvertResult.getWarnings().isEmpty())
-                {
+                if (!javaConvertResult.getWarnings().isEmpty()) {
                     new ConvertResultDialog(javaConvertResult.getWarnings().stream().map(ConversionWarning::getMessage).collect(Collectors.toList())).showAndWait();
                 }
                 return javaConvertResult.getElements();
-            }
-            catch (ParseFailure pf)
-            {
+            } catch (ParseFailure pf) {
                 new ConvertResultDialog(strideParseResult.error, pf.getMessage()).showAndWait();
                 return null;
             }
@@ -93,18 +83,16 @@ public class GreenfootFrameUtil
         return null;
     }
 
-    private static XMLParseResult getElements(String xmlString)
-    {
+    private static XMLParseResult getElements(String xmlString) {
         Builder parser = new Builder();
         Document doc = null;
         try {
             doc = parser.build(xmlString, null);
-        }
-        catch (ParsingException | IOException e) {
+        } catch (ParsingException | IOException e) {
             Debug.reportError(e);
             return new XMLParseResult(e.getMessage());
         }
-        
+
         if (doc == null) {
             return new XMLParseResult("Unknown error");
         }
@@ -113,22 +101,20 @@ public class GreenfootFrameUtil
         if (!root.getLocalName().equals("frames")) {
             return new XMLParseResult("Outer element was not frames");
         }
-        
+
         List<CodeElement> elements = new ArrayList<CodeElement>();
         for (int i = 0; i < root.getChildElements().size(); i++) {
             elements.add(Loader.loadElement(root.getChildElements().get(i)));
         }
         return new XMLParseResult(elements);
     }
-    
-    public static String getXmlForMultipleFrames(List<Frame> frames)
-    {
+
+    public static String getXmlForMultipleFrames(List<Frame> frames) {
         Element framesEl = getXmlElementForMultipleFrames(frames);
         return framesEl.toXML();
     }
 
-    public static Element getXmlElementForMultipleFrames(List<Frame> frames)
-    {
+    public static Element getXmlElementForMultipleFrames(List<Frame> frames) {
         Element framesEl = new Element("frames");
         for (Frame f : frames) {
             if (f instanceof CodeFrame) {
@@ -141,8 +127,7 @@ public class GreenfootFrameUtil
     }
 
     @OnThread(Tag.FXPlatform)
-    private static String getJavaForMultipleFrames(List<Frame> frames)
-    {
+    private static String getJavaForMultipleFrames(List<Frame> frames) {
         StringBuilder java = new StringBuilder();
         for (Frame f : frames) {
             if (f instanceof CodeFrame) {
@@ -153,13 +138,11 @@ public class GreenfootFrameUtil
         return java.toString();
     }
 
-    public static List<CodeElement> getElementsForMultipleFrames(List<Frame> frames)
-    {
+    public static List<CodeElement> getElementsForMultipleFrames(List<Frame> frames) {
         return getElements(getXmlForMultipleFrames(frames)).elements;
     }
 
-    public static void doCopyAsStride(List<Frame> frames)
-    {
+    public static void doCopyAsStride(List<Frame> frames) {
         // Nothing to copy if nothing selected:
         if (frames.size() == 0)
             return;
@@ -169,8 +152,7 @@ public class GreenfootFrameUtil
         Clipboard.getSystemClipboard().setContent(content);
     }
 
-    public static void doCopyAsImage(List<Frame> frames)
-    {
+    public static void doCopyAsImage(List<Frame> frames) {
         // Nothing to copy if nothing selected:
         if (frames.size() == 0)
             return;
@@ -181,8 +163,7 @@ public class GreenfootFrameUtil
     }
 
     @OnThread(Tag.FXPlatform)
-    public static void doCopyAsJava(List<Frame> frames)
-    {
+    public static void doCopyAsJava(List<Frame> frames) {
         // Nothing to copy if nothing selected:
         if (frames.size() == 0)
             return;

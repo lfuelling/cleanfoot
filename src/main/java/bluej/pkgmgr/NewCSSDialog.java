@@ -21,11 +21,9 @@
  */
 package bluej.pkgmgr;
 
-import javafx.stage.Window;
-
 import bluej.Config;
-import bluej.utility.JavaNames;
 import bluej.utility.javafx.dialog.InputDialog;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -34,32 +32,25 @@ import threadchecker.Tag;
  * Dialog for creating a new CSS file
  */
 @OnThread(Tag.FXPlatform)
-class NewCSSDialog extends InputDialog<String>
-{
-    public NewCSSDialog(Window parent)
-    {
+class NewCSSDialog extends InputDialog<String> {
+    public NewCSSDialog(Window parent) {
         super(Config.getString("pkgmgr.newCSS.title"), Config.getString("pkgmgr.newCSS.label"), Config.getString("pkgmgr.newCSS.prompt"), "new-css-dialog", ".css");
         initOwner(parent);
         setOKEnabled(false);
     }
-    
-    public String convert(String fieldText)
-    {
+
+    public String convert(String fieldText) {
         return fieldText.trim() + ".css"; // Validation is done in convert
     }
-    
-    public boolean validate(String oldInput, String newInput)
-    {
+
+    public boolean validate(String oldInput, String newInput) {
         newInput = newInput.trim();
-        
-        if (!newInput.isEmpty() && !newInput.contains("/") && !newInput.contains("\\"))
-        {
+
+        if (!newInput.isEmpty() && !newInput.contains("/") && !newInput.contains("\\")) {
             setOKEnabled(true);
             setErrorText("");
             return true;
-        }
-        else
-        {
+        } else {
             setErrorText(Config.getString("pkgmgr.newCSS.error"));
             setOKEnabled(false);
             return true; // Let it be invalid, but show error

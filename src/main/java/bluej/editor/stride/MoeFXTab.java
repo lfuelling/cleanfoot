@@ -23,7 +23,6 @@ package bluej.editor.stride;
 
 import bluej.editor.moe.MoeEditor;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.binding.ObjectExpression;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -45,8 +44,7 @@ import java.util.List;
 /**
  * Created by neil on 13/04/2016.
  */
-public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
-{
+public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab {
     // -------- INSTANCE VARIABLES --------
     private boolean initialised = false;
     private final MoeEditor moeEditor;
@@ -57,26 +55,23 @@ public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
 
     /**
      * Make a Tab to contain a MoeEditor
-     * @param moeEditor The MoeEditor to put in the tab
+     *
+     * @param moeEditor   The MoeEditor to put in the tab
      * @param windowTitle The title of the tab
      */
     @OnThread(Tag.FXPlatform)
-    public MoeFXTab(MoeEditor moeEditor, String windowTitle)
-    {
+    public MoeFXTab(MoeEditor moeEditor, String windowTitle) {
         super(false);
         this.moeEditor = moeEditor;
         this.windowTitleProperty.set(windowTitle);
         this.classIcon = new SimpleObjectProperty<>();
-        menuManager = new TabMenuManager(this)
-        {
+        menuManager = new TabMenuManager(this) {
             @Override
             @OnThread(Tag.FXPlatform)
-            List<Menu> getMenus()
-            {
+            List<Menu> getMenus() {
                 updateMoveMenus();
                 List<Menu> moeFXMenu = moeEditor.getFXMenu();
-                if (moeFXMenu.get(0).getItems().get(0) != this.mainMoveMenu)
-                {
+                if (moeFXMenu.get(0).getItems().get(0) != this.mainMoveMenu) {
                     moeFXMenu.get(0).getItems().add(0, this.mainMoveMenu);
                     moeFXMenu.get(0).getItems().add(1, new SeparatorMenuItem());
                 }
@@ -86,13 +81,11 @@ public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
         JavaFXUtil.addStyleClass(this, "moe-tab");
     }
 
-    public void setWindowTitle(String title)
-    {
+    public void setWindowTitle(String title) {
         this.windowTitleProperty.set(title);
     }
 
-    public void setErrorStatus(boolean errorStatus)
-    {
+    public void setErrorStatus(boolean errorStatus) {
         // We can't use pseudoclasses because Tab doesn't allow them to be changed,
         // so we must use full classes:
         if (errorStatus)
@@ -102,32 +95,27 @@ public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
     }
 
     @Override
-    void focusWhenShown()
-    {
+    void focusWhenShown() {
         moeEditor.requestEditorFocus();
     }
 
     @Override
-    List<Menu> getMenus()
-    {
+    List<Menu> getMenus() {
         return menuManager.getMenus();
     }
 
     @Override
-    FXTabbedEditor getParent()
-    {
+    FXTabbedEditor getParent() {
         return parent;
     }
 
     @Override
-    String getWebAddress()
-    {
+    String getWebAddress() {
         return null;
     }
 
     @Override
-    void initialiseFX()
-    {
+    void initialiseFX() {
         if (!initialised)
             initialised = true;
         setContent(moeEditor);
@@ -140,8 +128,7 @@ public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
         tabHeader.setAlignment(Pos.CENTER);
         tabHeader.setSpacing(3.0);
         tabHeader.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            if (e.getButton() == MouseButton.MIDDLE)
-            {
+            if (e.getButton() == MouseButton.MIDDLE) {
                 moeEditor.setEditorVisible(false, false);
             }
         });
@@ -149,43 +136,38 @@ public @OnThread(Tag.FXPlatform) class MoeFXTab extends FXTab
     }
 
     @Override
-    public void notifySelected()
-    {
+    public void notifySelected() {
         moeEditor.notifyVisibleTab(true);
     }
 
     @Override
-    public void notifyUnselected()
-    {
+    public void notifyUnselected() {
         moeEditor.notifyVisibleTab(false);
         moeEditor.cancelFreshState();
     }
 
     @Override
-    void setParent(FXTabbedEditor parent, boolean partOfMove)
-    {
+    void setParent(FXTabbedEditor parent, boolean partOfMove) {
         this.parent = parent;
         moeEditor.setParent(parent, partOfMove);
         moeEditor.notifyVisibleTab(false);
     }
 
     @Override
-    ObservableStringValue windowTitleProperty()
-    {
+    ObservableStringValue windowTitleProperty() {
         return windowTitleProperty;
     }
 
-    public MoeEditor getMoeEditor()
-    {
+    public MoeEditor getMoeEditor() {
         return moeEditor;
     }
 
     /**
      * Set the header image (in the tab header) for this editor
+     *
      * @param image The image to use (any size).
      */
-    public void setHeaderImage(Image image)
-    {
+    public void setHeaderImage(Image image) {
         classIcon.set(image);
     }
 }

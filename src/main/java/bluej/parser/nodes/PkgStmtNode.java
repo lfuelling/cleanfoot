@@ -24,19 +24,16 @@ package bluej.parser.nodes;
 /**
  * A node for representing package statements at the beginning of a
  * compilation unit.
- * 
+ *
  * @author Davin McCall
  */
-public class PkgStmtNode extends JavaParentNode
-{
-    public PkgStmtNode(JavaParentNode parent)
-    {
+public class PkgStmtNode extends JavaParentNode {
+    public PkgStmtNode(JavaParentNode parent) {
         super(parent);
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return true;
     }
 }

@@ -21,13 +21,12 @@
  */
 package bluej.stride.framedjava.ast;
 
+import bluej.stride.framedjava.frames.DebugInfo;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.stride.framedjava.frames.DebugInfo;
 
 @OnThread(Tag.FXPlatform)
-public interface JavaSingleLineDebugHandler
-{
+public interface JavaSingleLineDebugHandler {
     HighlightedBreakpoint showDebugBefore(DebugInfo debug);
 
     void showException();

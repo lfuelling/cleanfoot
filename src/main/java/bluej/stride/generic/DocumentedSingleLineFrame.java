@@ -21,49 +21,41 @@
  */
 package bluej.stride.generic;
 
-import javafx.scene.Node;
-
 import bluej.utility.javafx.SharedTransition;
+import javafx.scene.Node;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public abstract class DocumentedSingleLineFrame extends SingleLineFrame
-{
+public abstract class DocumentedSingleLineFrame extends SingleLineFrame {
     protected DocumentationTextArea documentationPane;
-    
-    protected DocumentedSingleLineFrame(InteractionManager editor, String caption, String stylePrefix)
-    {
+
+    protected DocumentedSingleLineFrame(InteractionManager editor, String caption, String stylePrefix) {
         super(editor, caption, stylePrefix);
         documentationPane = new DocumentationTextArea(editor, this, this, stylePrefix);
         contents.setAll(documentationPane, header);
     }
 
-    public String getDocumentation()
-    {
+    public String getDocumentation() {
         return documentationPane.getText();
     }
-    
-    public void setDocumentation(String s)
-    {
+
+    public void setDocumentation(String s) {
         documentationPane.setText(s);
     }
 
-    public void setDocumentationPromptText(String s)
-    {
+    public void setDocumentationPromptText(String s) {
         documentationPane.setPromptText(s);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         super.setView(oldView, newView, animate);
         documentationPane.setView(oldView, newView, animate);
     }
 
     @Override
-    protected double getRightMarginFor(Node n)
-    {
+    protected double getRightMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 6.0;
         else
@@ -71,8 +63,7 @@ public abstract class DocumentedSingleLineFrame extends SingleLineFrame
     }
 
     @Override
-    protected double getLeftMarginFor(Node n)
-    {
+    protected double getLeftMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 6.0;
         else
@@ -80,8 +71,7 @@ public abstract class DocumentedSingleLineFrame extends SingleLineFrame
     }
 
     @Override
-    protected double getBottomMarginFor(Node n)
-    {
+    protected double getBottomMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 4.0;
         else

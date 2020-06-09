@@ -28,11 +28,10 @@ import threadchecker.Tag;
 /**
  * Interface to classes that contain specialized behaviour for the Actors
  * depending on where and how the greenfoot project is running.
- * 
+ *
  * @author Poul Henriksen
  */
-public interface ActorDelegate
-{
+public interface ActorDelegate {
     /**
      * Get the default image for objects of this class. May return null.
      */

@@ -21,95 +21,85 @@
  */
 package bluej.parser.entity;
 
+import bluej.debugger.gentype.*;
+import bluej.utility.JavaUtils;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import bluej.debugger.gentype.FieldReflective;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeParameter;
-import bluej.debugger.gentype.GenTypeSolid;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.Reflective;
-import bluej.utility.JavaUtils;
-
 /**
  * Represents a value entity - an unspecified value with a known type.
- * 
+ *
  * <p>A value entity might also represent a compile-time constant value as defined by the
  * Java Language Specification section 15.28. To satisfy the requirements of the JLS when
  * determining an expression type is necessary then to know the actual value, so there are
  * methods provided for checking whether a value is known and what it is.
- * 
+ *
  * <p>Note that integer values are all representable as a "long" so there is only a single
  * method to retrieve the known integer value; likewise "double" can also represent all
  * "float" values.
- * 
+ *
  * @author Davin McCall
  */
-public class ValueEntity extends JavaEntity
-{
+public class ValueEntity extends JavaEntity {
     private String name;
     private final JavaType type;
-    
+
     /**
      * Construct a value entity representing a value of the given type.
      */
-    public ValueEntity(JavaType type)
-    {
+    public ValueEntity(JavaType type) {
         this.type = type;
     }
-    
+
     /**
      * Construct a value entity representing a value of the given type coming from
      * the given name (meaning not well defined...)
      */
-    public ValueEntity(String name, JavaType type)
-    {
+    public ValueEntity(String name, JavaType type) {
         this.name = name;
         this.type = type;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessor)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessor) {
         GenTypeSolid ubound = type.getUpperBound().asSolid();
         if (ubound == null) {
             return null;
         }
-        GenTypeSolid [] ubounds = ubound.getIntersectionTypes();
-        
+        GenTypeSolid[] ubounds = ubound.getIntersectionTypes();
+
         GenTypeClass ctype = ubounds[0].asClass();
-        
+
         if (ctype != null) {
             Reflective ctypeRef = ctype.getReflective();
             LinkedList<Reflective> stypes = new LinkedList<Reflective>();
             stypes.add(ctypeRef);
-            
+
             FieldReflective field = null;
-            
-            while (! stypes.isEmpty()) {
+
+            while (!stypes.isEmpty()) {
                 ctypeRef = stypes.poll();
-                Map<String,FieldReflective> fields = ctypeRef.getDeclaredFields();
+                Map<String, FieldReflective> fields = ctypeRef.getDeclaredFields();
                 field = fields.get(name);
                 if (field != null) {
                     break;
                 }
                 stypes.addAll(ctypeRef.getSuperTypesR());
             }
-            
+
             if (field != null) {
                 ctype = ctype.mapToSuper(ctypeRef.getName());
                 if (JavaUtils.checkMemberAccess(ctype.getReflective(), type.asSolid(), accessor,
                         field.getModifiers(), false)) {
                     JavaType fieldType = field.getType();
-                    Map<String,GenTypeParameter> tparMap = ctype.getMap();
+                    Map<String, GenTypeParameter> tparMap = ctype.getMap();
                     fieldType = fieldType.mapTparsToTypes(tparMap).asType();
                     return new ValueEntity(this.name + "." + name, fieldType);
                 }
@@ -119,92 +109,80 @@ public class ValueEntity extends JavaEntity
     }
 
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return type;
     }
 
     @Override
-    public ValueEntity resolveAsValue()
-    {
+    public ValueEntity resolveAsValue() {
         return this;
     }
-    
+
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
-    
+
     /**
      * Check whether this value entity represents a constant integer (byte,int,long,etc) value
      */
-    public boolean hasConstantIntValue()
-    {
+    public boolean hasConstantIntValue() {
         return false;
     }
-    
+
     /**
      * Get the constant integer value represented by this value entity
      */
-    public long getConstantIntValue()
-    {
+    public long getConstantIntValue() {
         throw new RuntimeException("Attempt to get constant value for entity without constant value");
     }
-    
+
     /**
      * Check whether this value entity represents a constant "float" value
      */
-    public boolean hasConstantFloatValue()
-    {
+    public boolean hasConstantFloatValue() {
         return false;
     }
-    
+
     /**
      * Get the constant floating-point value represented by this value entity
      */
-    public double getConstantFloatValue()
-    {
+    public double getConstantFloatValue() {
         throw new RuntimeException("Attempt to get constant value for entity without constant value");
     }
-    
+
     /**
      * Check whether this value entity represents a constant boolean value
      */
-    public boolean hasConstantBooleanValue()
-    {
+    public boolean hasConstantBooleanValue() {
         return false;
     }
-    
+
     /**
      * Get the constant boolean value this value entity represents
      */
-    public boolean getConstantBooleanValue()
-    {
+    public boolean getConstantBooleanValue() {
         throw new RuntimeException("Attempt to get constant value for entity without constant value");
     }
-    
+
     /**
      * Check whether this value entity represents a String constant
      */
-    public boolean isConstantString()
-    {
+    public boolean isConstantString() {
         return false;
     }
-    
+
     /**
      * Get the constant string value that this entity represents
      */
-    public String getConstantString()
-    {
+    public String getConstantString() {
         throw new RuntimeException("Attempt to get constant string value for an entity without such a value");
     }
-    
+
     /**
      * Check whether a value entity represents any kind of constant (knonw at compile-time as per the JLS) value.
      */
-    public static boolean isConstant(ValueEntity ent)
-    {
+    public static boolean isConstant(ValueEntity ent) {
         return ent.hasConstantBooleanValue() || ent.hasConstantIntValue()
                 || ent.hasConstantFloatValue() || ent.isConstantString();
     }

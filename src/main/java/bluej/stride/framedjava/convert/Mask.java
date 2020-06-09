@@ -22,37 +22,30 @@
 package bluej.stride.framedjava.convert;
 
 import bluej.parser.lexer.LocatableToken;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * A class which records a masked section of the file.
  * See ExpressionBuilder.
  */
-class Mask
-{
+class Mask {
     // Start token (included in masking)
     private final LocatableToken start;
     // End token (included in masking)
     private LocatableToken end;
 
-    public Mask(LocatableToken start)
-    {
+    public Mask(LocatableToken start) {
         this.start = start;
     }
 
-    public void setEnd(LocatableToken end)
-    {
+    public void setEnd(LocatableToken end) {
         this.end = end;
     }
 
-    public LocatableToken getEnd()
-    {
+    public LocatableToken getEnd() {
         return end;
     }
 
-    public LocatableToken getStart()
-    {
+    public LocatableToken getStart() {
         return start;
     }
 }

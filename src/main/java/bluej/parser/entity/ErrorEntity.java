@@ -21,40 +21,35 @@
  */
 package bluej.parser.entity;
 
-import java.util.List;
-
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
+
+import java.util.List;
 
 /**
  * An entity representing an erroneous expression in a Java program. This is sometimes
  * more convenient than returning null.
- * 
+ *
  * @author Davin McCall
  */
-public class ErrorEntity extends JavaEntity
-{
+public class ErrorEntity extends JavaEntity {
     @Override
-    public String getName()
-    {
+    public String getName() {
         return "** error **";
     }
-    
+
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return this;
     }
-    
+
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return null;
     }
-    
+
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return this;
     }
 }

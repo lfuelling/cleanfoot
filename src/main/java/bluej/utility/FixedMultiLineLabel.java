@@ -21,30 +21,28 @@
  */
 package bluej.utility;
 
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 
 /**
- ** A multi-line Label-like Swing component. This class is similar to a
- ** MultiLineLabel, but it has a fixed numer of rows.
- **
- ** @author Michael Kolling
+ * * A multi-line Label-like Swing component. This class is similar to a
+ * * MultiLineLabel, but it has a fixed numer of rows.
+ * *
+ * * @author Michael Kolling
  **/
 
-public class FixedMultiLineLabel extends MultiLineLabel
-{
+public class FixedMultiLineLabel extends MultiLineLabel {
     protected JLabel[] labels;
     protected int rows;
 
     /**
-     ** Constructor - make a multiline label
+     * * Constructor - make a multiline label
      **/
-    public FixedMultiLineLabel(String text, float alignment, int numRows)
-    {
+    public FixedMultiLineLabel(String text, float alignment, int numRows) {
         super(null, alignment);
         rows = numRows;
         labels = new JLabel[rows];
-        for(int i=0; i<rows; i++) {
+        for (int i = 0; i < rows; i++) {
             labels[i] = new JLabel(" ");
             labels[i].setAlignmentX(alignment);
             add(labels[i]);
@@ -53,41 +51,36 @@ public class FixedMultiLineLabel extends MultiLineLabel
     }
 
     /**
-     ** Constructor, defaults to left justified text
+     * * Constructor, defaults to left justified text
      **/
-    public FixedMultiLineLabel(String text, int numRows)
-    {
+    public FixedMultiLineLabel(String text, int numRows) {
         this(text, LEFT_ALIGNMENT, numRows);
     }
 
     /**
-     ** Constructor, empty with the given alignment
+     * * Constructor, empty with the given alignment
      **/
-    public FixedMultiLineLabel(float alignment, int numRows)
-    {
+    public FixedMultiLineLabel(float alignment, int numRows) {
         this(null, alignment, numRows);
     }
 
     /**
-     ** Constructor - make an empty multiline label
+     * * Constructor - make an empty multiline label
      **/
-    public FixedMultiLineLabel(int numRows)
-    {
+    public FixedMultiLineLabel(int numRows) {
         this(null, LEFT_ALIGNMENT, numRows);
     }
 
     @Override
-    public void setText(String text)
-    {
+    public void setText(String text) {
         addText(text);
     }
 
     @Override
-    public void addText(String text)
-    {
+    public void addText(String text) {
         int lines = 0;
 
-        if(text != null) {
+        if (text != null) {
             String[] strs = Utility.splitLines(text);
             lines = (strs.length < rows ? strs.length : rows);
             Font font = new Font("SansSerif", fontAttributes, 12);

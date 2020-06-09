@@ -29,12 +29,11 @@ import threadchecker.Tag;
 /**
  * A class to group team actions for a project, and manage enable/disable
  * of the actions.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class TeamActionGroup
-{
+public class TeamActionGroup {
     private final String commitLabel;
     private final boolean initialTeamMode;
     private final boolean initialIsDVCS;
@@ -44,39 +43,36 @@ public class TeamActionGroup
     private CommitCommentAction commitCommentAction;
     private ShareAction shareAction;
     private ShowLogAction showLogAction;
-    
+
     /**
      * Construct a new team action group, with various actions disabled
      * or enabled depending whether we are in team mode or non-team mode.
-     * 
+     *
      * @param teamMode should teamMode be enabled
      */
-    public TeamActionGroup(boolean teamMode)
-    {
+    public TeamActionGroup(boolean teamMode) {
         this(teamMode, false);
     }
+
     /**
      * Construct a new team action group, with various actions disabled
      * or enabled depending whether we are in team mode or non-team mode.
-     * 
+     *
      * @param teamMode should teamMode be enabled
-     * @param isDVCS is this a distributed version control? (e.g. git).
+     * @param isDVCS   is this a distributed version control? (e.g. git).
      */
-    public TeamActionGroup(boolean teamMode, boolean isDVCS)
-    {
+    public TeamActionGroup(boolean teamMode, boolean isDVCS) {
         String label = "team.commit";
-        if (isDVCS){
+        if (isDVCS) {
             label = "team.commitPush";
         }
         this.commitLabel = label;
         this.initialTeamMode = teamMode;
         this.initialIsDVCS = isDVCS;
     }
-    
-    private void createAll()
-    {
-        if (statusAction == null)
-        {
+
+    private void createAll() {
+        if (statusAction == null) {
             statusAction = new StatusAction();
             updateAction = new UpdateDialogAction();
             teamSettingsAction = new TeamSettingsAction();
@@ -86,53 +82,46 @@ public class TeamActionGroup
             setTeamMode(initialTeamMode, initialIsDVCS);
         }
     }
-    
-    public StatusAction getStatusAction()
-    {
+
+    public StatusAction getStatusAction() {
         createAll();
         return statusAction;
     }
-    
-    public UpdateDialogAction getUpdateAction()
-    {
+
+    public UpdateDialogAction getUpdateAction() {
         createAll();
         return updateAction;
     }
-    
-    public TeamSettingsAction getTeamSettingsAction()
-    {
+
+    public TeamSettingsAction getTeamSettingsAction() {
         createAll();
         return teamSettingsAction;
     }
-    
-    public CommitCommentAction getCommitCommentAction()
-    {
+
+    public CommitCommentAction getCommitCommentAction() {
         createAll();
         return commitCommentAction;
     }
-    
-    public ShareAction getShareAction()
-    {
+
+    public ShareAction getShareAction() {
         createAll();
         return shareAction;
     }
-    
-    public ShowLogAction getShowLogAction()
-    {
+
+    public ShowLogAction getShowLogAction() {
         createAll();
         return showLogAction;
     }
-    
-    public void setTeamMode(boolean enabled, boolean isDCVS)
-    {
+
+    public void setTeamMode(boolean enabled, boolean isDCVS) {
         createAll();
         statusAction.setEnabled(enabled);
         updateAction.setEnabled(enabled);
         teamSettingsAction.setEnabled(enabled);
         showLogAction.setEnabled(enabled);
-        
+
         String label = "team.commit";
-        if (isDCVS){
+        if (isDCVS) {
             label = "team.commitPush";
         }
         commitCommentAction.setName(Config.getString(label), true);
@@ -140,9 +129,8 @@ public class TeamActionGroup
         // import is allowed if we are not already shared
         shareAction.setEnabled(!enabled);
     }
-    
-    public void setAllDisabled()
-    {
+
+    public void setAllDisabled() {
         createAll();
         statusAction.setEnabled(false);
         updateAction.setEnabled(false);

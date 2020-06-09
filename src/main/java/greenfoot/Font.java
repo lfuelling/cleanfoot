@@ -27,8 +27,7 @@ package greenfoot;
  * @author Fabio Heday
  * @author Amjad Altadmri
  */
-public class Font
-{
+public class Font {
 
     private final java.awt.Font font;
 
@@ -37,21 +36,19 @@ public class Font
      *
      * @param font
      */
-    public Font(java.awt.Font font)
-    {
+    public Font(java.awt.Font font) {
         this.font = font;
     }
 
     /**
      * Creates a font from the specified font name, size and style.
      *
-     * @param name The font name
-     * @param bold True if the font is meant to be bold
+     * @param name   The font name
+     * @param bold   True if the font is meant to be bold
      * @param italic True if the font is meant to be italic
-     * @param size The size of the font
+     * @param size   The size of the font
      */
-    public Font(String name, boolean bold, boolean italic, int size)
-    {
+    public Font(String name, boolean bold, boolean italic, int size) {
         int style = java.awt.Font.PLAIN;
         if (bold) {
             style = java.awt.Font.BOLD;
@@ -65,12 +62,11 @@ public class Font
     /**
      * Creates a sans serif font with the specified size and style.
      *
-     * @param bold True if the font is meant to be bold
+     * @param bold   True if the font is meant to be bold
      * @param italic True if the font is meant to be italic
-     * @param size The size of the font
+     * @param size   The size of the font
      */
-    public Font(boolean bold, boolean italic, int size)
-    {
+    public Font(boolean bold, boolean italic, int size) {
         this("SansSerif", bold, italic, size);
     }
 
@@ -80,8 +76,7 @@ public class Font
      * @param name The font name
      * @param size The size of the font
      */
-    public Font(String name, int size)
-    {
+    public Font(String name, int size) {
         this(name, false, false, size);
     }
 
@@ -90,8 +85,7 @@ public class Font
      *
      * @param size The size of the font
      */
-    public Font(int size)
-    {
+    public Font(int size) {
         this(false, false, size);
     }
 
@@ -100,8 +94,7 @@ public class Font
      *
      * @return true if this font style is plain; false otherwise
      */
-    public boolean isPlain()
-    {
+    public boolean isPlain() {
         return this.font.isPlain();
     }
 
@@ -110,8 +103,7 @@ public class Font
      *
      * @return true if this font style is bold; false otherwise
      */
-    public boolean isBold()
-    {
+    public boolean isBold() {
         return this.font.isBold();
     }
 
@@ -120,8 +112,7 @@ public class Font
      *
      * @return true if this font style is italic; false otherwise
      */
-    public boolean isItalic()
-    {
+    public boolean isItalic() {
         return this.font.isItalic();
     }
 
@@ -130,8 +121,7 @@ public class Font
      *
      * @return a <code>String</code> representing the logical name of this font.
      */
-    public String getName()
-    {
+    public String getName() {
         return this.font.getName();
     }
 
@@ -140,8 +130,7 @@ public class Font
      *
      * @return the point size of this font in 1/72 of an inch units.
      */
-    public int getSize()
-    {
+    public int getSize() {
         return this.font.getSize();
     }
 
@@ -152,8 +141,7 @@ public class Font
      * @param size the size for the new <code>Font</code>.
      * @return a new <code>Font</code> object.
      */
-    public Font deriveFont(float size)
-    {
+    public Font deriveFont(float size) {
         return new Font(font.deriveFont(size));
     }
 
@@ -164,8 +152,7 @@ public class Font
      * @return true if the fonts are the same; false otherwise.
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         }
@@ -179,18 +166,17 @@ public class Font
      * @return a hashcode value for this font.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return font.hashCode();
     }
 
     /**
      * Return a text representation of the font.
+     *
      * @return Details of the font
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Font{" + "font=" + font + '}';
     }
 
@@ -199,8 +185,7 @@ public class Font
      *
      * @return the java.awt.Font object
      */
-    java.awt.Font getFontObject()
-    {
+    java.awt.Font getFontObject() {
         return this.font;
     }
 

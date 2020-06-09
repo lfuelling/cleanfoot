@@ -21,12 +21,6 @@
  */
 package bluej.parser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-
 import bluej.debugger.gentype.ConstructorReflective;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugger.gentype.JavaType;
@@ -35,19 +29,23 @@ import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
 /**
  * Created by neil on 07/09/15.
  */
-public class ConstructorCompletion extends AssistContent
-{
+public class ConstructorCompletion extends AssistContent {
     private final ConstructorReflective con;
     private final String className;
     private final JavadocResolver javadocResolver;
-    private final Map<String,GenTypeParameter> typeArgs;
+    private final Map<String, GenTypeParameter> typeArgs;
 
-    public ConstructorCompletion(ConstructorReflective c, Map<String,GenTypeParameter> typeArgs,
-                                 JavadocResolver javadocResolver)
-    {
+    public ConstructorCompletion(ConstructorReflective c, Map<String, GenTypeParameter> typeArgs,
+                                 JavadocResolver javadocResolver) {
         this.con = c;
         className = c.getDeclaringType().getSimpleName();
         this.javadocResolver = javadocResolver;
@@ -55,20 +53,17 @@ public class ConstructorCompletion extends AssistContent
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         return fromModifiers(con.getModifiers());
     }
 
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return con.getDeclaringType().getSimpleName();
     }
 
     @Override
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         String jd = con.getJavaDoc();
         if (jd == null && javadocResolver != null) {
             javadocResolver.getJavadoc(con.getDeclaringType(), Collections.singletonList(con));
@@ -78,28 +73,24 @@ public class ConstructorCompletion extends AssistContent
     }
 
     @Override
-    public CompletionKind getKind()
-    {
+    public CompletionKind getKind() {
         return CompletionKind.CONSTRUCTOR;
     }
 
     @Override
-    public @OnThread(Tag.Any) String getName()
-    {
+    public @OnThread(Tag.Any) String getName() {
         return className;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         // We must get Javadoc before asking for parameter names, as it is this method call that sets the parameter names:
         getJavadoc();
         ArrayList<ParamInfo> r = new ArrayList<>();
         List<JavaType> paramTypes = con.getParamTypes();
         List<String> paramNames = con.getParamNames();
-        for (int i = 0; i < paramTypes.size(); i++)
-        {
+        for (int i = 0; i < paramTypes.size(); i++) {
             JavaType t = convertToSolid(paramTypes.get(i));
             String paramName = paramNames == null ? null : paramNames.get(i);
             r.add(new ParamInfo(t.toString(), paramName, MethodCompletion.buildDummyName(t, paramName), javadocForParam(paramName)));
@@ -108,18 +99,15 @@ public class ConstructorCompletion extends AssistContent
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return getDeclaringClass();
     }
 
-    private JavaType convertToSolid(JavaType type)
-    {
-        if (! type.isPrimitive()) {
+    private JavaType convertToSolid(JavaType type) {
+        if (!type.isPrimitive()) {
             if (typeArgs != null) {
                 type = type.mapTparsToTypes(typeArgs).getTparCapture();
-            }
-            else {
+            } else {
                 // null indicates a raw type.
                 type = type.getErasedType();
             }
@@ -128,8 +116,7 @@ public class ConstructorCompletion extends AssistContent
     }
 
     @OnThread(Tag.FXPlatform)
-    private Supplier<String> javadocForParam(String paramName)
-    {
+    private Supplier<String> javadocForParam(String paramName) {
         String javadocSrc = getJavadoc();
         return () -> {
             JavaUtils.Javadoc javadoc = JavaUtils.parseJavadoc(javadocSrc);
@@ -138,10 +125,8 @@ public class ConstructorCompletion extends AssistContent
                 return null;
 
             String target = "param " + paramName;
-            for (String block : javadoc.getBlocks())
-            {
-                if (block.startsWith(target) && Character.isWhitespace(block.charAt(target.length())))
-                {
+            for (String block : javadoc.getBlocks()) {
+                if (block.startsWith(target) && Character.isWhitespace(block.charAt(target.length()))) {
                     return block.substring(target.length() + 1).trim();
                 }
             }

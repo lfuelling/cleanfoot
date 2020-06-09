@@ -21,57 +21,55 @@
  */
 package bluej.runtime;
 
+import bluej.terminal.InputBuffer;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import bluej.terminal.InputBuffer;
 
 /**
  * BlueJ input stream. An input stream filter to process "End of file"
  * signals (CTRL-Z or CTRL-D) from a terminal
- * 
+ *
  * @author Davin McCall
  * @version $Id: BJInputStream.java 7142 2010-02-17 23:47:00Z davmac $
  */
-public class BJInputStream extends InputStream
-{
+public class BJInputStream extends InputStream {
     private final InputStream source;
     int buffoffset = 0;
-    
+
     boolean endOfLine = false;
     boolean exOnEOL = false;
-    
+
     /**
      * Construct a BJ
-     * @param source  The source input stream, generally System.in
+     *
+     * @param source The source input stream, generally System.in
      */
-    BJInputStream(InputStream source)
-    {
+    BJInputStream(InputStream source) {
         this.source = source;
     }
-    
+
     public int read() throws IOException {
         // show terminal on input
         ExecServer.showTerminalOnInput();
 
         if (exOnEOL && endOfLine)
             throw new IOException();
-        
+
         int n = source.read();
-        
+
         // Check for EOF signal
         if (n == InputBuffer.EOF_CHAR)
             return -1;
-        
+
         // Are we line-buffering?
         if (exOnEOL && n == '\n')
             endOfLine = true;
-        
+
         return n;
     }
-    
-    public int read(byte [] b, int off, int len) throws IOException
-    {
+
+    public int read(byte[] b, int off, int len) throws IOException {
         // show terminal on input
         ExecServer.showTerminalOnInput();
 
@@ -84,9 +82,8 @@ public class BJInputStream extends InputStream
         endOfLine = false;
         return n;
     }
-    
-    public int available() throws IOException
-    {
+
+    public int available() throws IOException {
         return source.available();
     }
 }

@@ -21,29 +21,27 @@
  */
 package bluej.compiler;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.Config;
 import bluej.utility.Queue;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * The compiler thread. BlueJ uses exactly one thread for compilation. Jobs are
  * queued, and this thread processes tham one by one. If there is no job, this
  * thread just sleeps.
- * 
+ *
  * @author Michael Cahill
  * @author Michael Kolling
  */
-class CompilerThread extends Thread
-{
+class CompilerThread extends Thread {
     private final Queue jobs;
     private boolean busy = true;
 
     /**
      * Create a new compiler thread that holds its own job queue.
      */
-    public CompilerThread()
-    {
+    public CompilerThread() {
         super(Config.getString("compiler.thread.title"));
         jobs = new Queue();
     }
@@ -54,8 +52,7 @@ class CompilerThread extends Thread
      * then wait for new jobs to be scheduled. New jobs are scheduled using the
      * addJob method.
      */
-    public void run()
-    {
+    public void run() {
         Job job;
         while (true) {
             synchronized (this) {
@@ -64,8 +61,8 @@ class CompilerThread extends Thread
                     notifyAll();
                     try {
                         wait();
+                    } catch (InterruptedException e) {
                     }
-                    catch (InterruptedException e) {}
                 }
             }
 
@@ -79,16 +76,14 @@ class CompilerThread extends Thread
      * immediately.
      */
     @OnThread(Tag.Any)
-    public synchronized void addJob(Job job)
-    {
+    public synchronized void addJob(Job job) {
         jobs.enqueue(job);
         busy = true;
         notifyAll();
     }
 
     @OnThread(Tag.Any)
-    public boolean isBusy()
-    {
+    public boolean isBusy() {
         return busy;
     }
 }

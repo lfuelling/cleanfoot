@@ -21,16 +21,15 @@
  */
 package bluej.debugmgr;
 
-import java.io.File;
-
 import bluej.compiler.CompileObserver;
+
+import java.io.File;
 
 /**
  * An interface for compiling jobs from the Invoker.
- * 
+ *
  * @author Davin McCall
  */
-public interface InvokerCompiler
-{
-    void compile(File [] files, CompileObserver observer);
+public interface InvokerCompiler {
+    void compile(File[] files, CompileObserver observer);
 }

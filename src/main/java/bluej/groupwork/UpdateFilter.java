@@ -24,31 +24,29 @@ package bluej.groupwork;
 import bluej.groupwork.TeamStatusInfo.Status;
 
 /**
- * Class to filter TeamStatusInfo objects to calculate those classes that will 
- * be changed when we next update. 
+ * Class to filter TeamStatusInfo objects to calculate those classes that will
+ * be changed when we next update.
  *
  * @author Davin McCall
  */
-public class UpdateFilter
-{
+public class UpdateFilter {
     /**
-     * Filter to identify which files in a repository will be altered at 
+     * Filter to identify which files in a repository will be altered at
      * the next update.
      */
-    public boolean accept(TeamStatusInfo statusInfo)
-    {
+    public boolean accept(TeamStatusInfo statusInfo) {
         boolean isDir = statusInfo.getFile().isDirectory();
         Status stat = statusInfo.getStatus();
         Status remoteStat = statusInfo.getRemoteStatus();
-        
+
         if (stat == Status.NEEDS_CHECKOUT || remoteStat == Status.NEEDS_CHECKOUT) {
             return true;
         }
         if (stat == Status.NEEDS_MERGE || remoteStat == Status.NEEDS_MERGE) {
-            return ! isDir;
+            return !isDir;
         }
         if (stat == Status.NEEDS_UPDATE || remoteStat == Status.NEEDS_UPDATE) {
-            return ! isDir;
+            return !isDir;
         }
         if (stat == Status.REMOVED || remoteStat == Status.REMOVED) {
             return true;
@@ -65,14 +63,12 @@ public class UpdateFilter
         //REMOTE_STATUS_MODIFIED
         return remoteStat == Status.NEEDS_UPDATE;
     }
-    
+
     /**
      * For the given remote status, check whether an update will affect the file.
      */
-    public boolean acceptDist(Status remoteStatus)
-    {
-        switch (remoteStatus)
-        {
+    public boolean acceptDist(Status remoteStatus) {
+        switch (remoteStatus) {
             case CONFLICT_ADD:
             case CONFLICT_LDRM:
             case CONFLICT_LMRD:
@@ -85,12 +81,11 @@ public class UpdateFilter
                 return false;
         }
     }
-    
+
     /**
      * For layout files, checks whether the file should be updated unconditionally.
      */
-    public boolean updateAlways(TeamStatusInfo statusInfo)
-    {
+    public boolean updateAlways(TeamStatusInfo statusInfo) {
         Status remoteStatus = statusInfo.getRemoteStatus();
         if (statusInfo.getStatus() == Status.NEEDS_CHECKOUT || remoteStatus == Status.NEEDS_CHECKOUT) {
             return true;

@@ -25,11 +25,11 @@ import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXCustomizedDialog;
 import greenfoot.guifx.classes.LocalGClassNode;
-
-import java.io.File;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+
+import java.io.File;
 
 /**
  * A (modal) dialog for selecting a class image. The image can be selected from either the
@@ -38,18 +38,16 @@ import javafx.stage.Window;
  * @author Davin McCall
  * @author Amjad Altadmri
  */
-public class SelectImageFrame extends FXCustomizedDialog<File>
-{
+public class SelectImageFrame extends FXCustomizedDialog<File> {
     /**
      * Construct an SelectImageFrame for changing the image of an existing class.
      *
-     * @param owner      The parent frame
-     * @param classTarget  The ClassView of the existing class
+     * @param owner       The parent frame
+     * @param classTarget The ClassView of the existing class
      */
-    public SelectImageFrame(Window owner, Project project, LocalGClassNode classNode)
-    {
+    public SelectImageFrame(Window owner, Project project, LocalGClassNode classNode) {
         super(owner, Config.getString("imagelib.title") + " " + classNode.getDisplayName(), "image-lib");
-        
+
         ImageLibPane imageLibPane = new ImageLibPane(this.asWindow(), project, classNode);
         setContentPane(imageLibPane);
         final Window window = this.getDialogPane().getScene().getWindow();

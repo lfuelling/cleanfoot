@@ -21,55 +21,42 @@
  */
 package bluej.debugmgr.inspector;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.swing.SwingUtilities;
-
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
-
 import bluej.Config;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PackageEditor;
-import bluej.testmgr.record.ArrayElementGetRecord;
-import bluej.testmgr.record.ArrayElementInspectorRecord;
-import bluej.testmgr.record.GetInvokerRecord;
-import bluej.testmgr.record.InvokerRecord;
-import bluej.testmgr.record.ObjectInspectInvokerRecord;
+import bluej.testmgr.record.*;
 import bluej.utility.DialogManager;
 import bluej.utility.JavaNames;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * A window that displays the fields in an object or a method return value.
- * 
+ *
  * @author Michael Kolling
  * @author Poul Henriksen
  * @author Bruce Quig
  */
 @OnThread(Tag.FXPlatform)
-public class ObjectInspector extends Inspector
-{
+public class ObjectInspector extends Inspector {
     // === static variables ===
 
     protected final static String inspectTitle = Config.getString("debugger.inspector.object.title");
@@ -78,8 +65,10 @@ public class ObjectInspector extends Inspector
     public static final int CORNER_SIZE = 40;
 
     // === instance variables ===
-    
-    /** A reference to the object being inspected */
+
+    /**
+     * A reference to the object being inspected
+     */
     protected DebuggerObject obj;
 
     /**
@@ -105,22 +94,16 @@ public class ObjectInspector extends Inspector
     private StackPane stackPane;
 
     /**
-     *  Note: 'pkg' may be null if 'ir' is null.
-     * 
-     * @param obj
-     *            The object displayed by this viewer
-     * @param name
-     *            The name of this object or "null" if the name is unobtainable
-     * @param pkg
-     *            The package all this belongs to
-     * @param ir
-     *            the InvokerRecord explaining how we created this result/object
-     *            if null, the "get" button is permanently disabled
-     * @param parent
-     *            The parent frame of this frame
+     * Note: 'pkg' may be null if 'ir' is null.
+     *
+     * @param obj    The object displayed by this viewer
+     * @param name   The name of this object or "null" if the name is unobtainable
+     * @param pkg    The package all this belongs to
+     * @param ir     the InvokerRecord explaining how we created this result/object
+     *               if null, the "get" button is permanently disabled
+     * @param parent The parent frame of this frame
      */
-    public ObjectInspector(DebuggerObject obj, InspectorManager inspectorManager, String name, Package pkg, InvokerRecord ir, final Window parent)
-    {
+    public ObjectInspector(DebuggerObject obj, InspectorManager inspectorManager, String name, Package pkg, InvokerRecord ir, final Window parent) {
         super(inspectorManager, pkg, ir, StageStyle.TRANSPARENT);
 
         this.obj = obj;
@@ -135,8 +118,7 @@ public class ObjectInspector extends Inspector
         if (parent instanceof Inspector) {
             setX(parent.getX() + 40);
             setY(parent.getY() + 40);
-        }
-        else {
+        } else {
             //DialogManager.centreWindow(thisInspector, parent);
         }
 
@@ -146,8 +128,7 @@ public class ObjectInspector extends Inspector
     /**
      * Build the GUI
      */
-    protected void makeFrame()
-    {
+    protected void makeFrame() {
         // Create the header
 
         Pane header = new VBox();
@@ -155,11 +136,10 @@ public class ObjectInspector extends Inspector
         String className = objType != null ? objType.toString(true) : "";
 
         String fullTitle = null;
-        if(objName != null) {
+        if (objName != null) {
             fullTitle = objName + " : " + className;
             setTitle(inspectTitle + " - " + objName + ", " + className + " " + numFields + " " + getListData().size());
-        }
-        else {
+        } else {
             fullTitle = " : " + className;
             setTitle(inspectTitle);
         }
@@ -171,7 +151,7 @@ public class ObjectInspector extends Inspector
 
         BorderPane mainPanel = new BorderPane();
         mainPanel.setCenter(fieldList);
-        
+
         fieldList.setPlaceHolderText("  " + noFieldsMsg);
 
         mainPanel.setRight(createInspectAndGetButtons());
@@ -179,16 +159,16 @@ public class ObjectInspector extends Inspector
         // create bottom button pane with "Close" button
 
         Pane bottomPanel = new VBox();
-        
+
         BorderPane buttonPanel = new BorderPane();
         Button button = createCloseButton();
         buttonPanel.setRight(button);
         Button classButton = new Button(showClassLabel);
         classButton.setOnAction(e -> showClass());
         buttonPanel.setLeft(classButton);
-        
+
         bottomPanel.getChildren().add(buttonPanel);
-        
+
         // add the components
         Pane contentPane = new VBox();
         contentPane.setBackground(null);
@@ -217,14 +197,12 @@ public class ObjectInspector extends Inspector
     }
 
     @Override
-    public Region getContent()
-    {
+    public Region getContent() {
         return stackPane;
     }
 
     @Override
-    protected boolean shouldAutoUpdate()
-    {
+    protected boolean shouldAutoUpdate() {
         return Config.isGreenfoot();
     }
 
@@ -233,18 +211,16 @@ public class ObjectInspector extends Inspector
      */
     @Override
     @OnThread(Tag.FXPlatform)
-    protected List<FieldInfo> getListData()
-    {
+    protected List<FieldInfo> getListData() {
         // if is an array (we potentially will compress the array if it is
         // large)
         if (obj.isArray()) {
             return compressArrayList(obj);
-        }
-        else {
+        } else {
             List<DebuggerField> fields = obj.getFields();
             List<FieldInfo> fieldInfos = new ArrayList<FieldInfo>(fields.size());
             for (DebuggerField field : fields) {
-                if (! Modifier.isStatic(field.getModifiers())) {
+                if (!Modifier.isStatic(field.getModifiers())) {
                     String desc = Inspector.fieldToString(field);
                     String value = field.getValueString();
                     fieldInfos.add(new FieldInfo(desc, value));
@@ -257,15 +233,13 @@ public class ObjectInspector extends Inspector
     /**
      * An element in the field list was selected.
      */
-    protected void listElementSelected(int slot)
-    {
-        if (slot == -1)
-        {
+    protected void listElementSelected(int slot) {
+        if (slot == -1) {
             setCurrentObj(null, null, null);
             setButtonsEnabled(false, false);
             return;
         }
-        
+
         // add index to slot method for truncated arrays
         if (obj.isArray()) {
             slot = indexToSlot(slot);
@@ -285,36 +259,34 @@ public class ObjectInspector extends Inspector
             if (queryArrayElementSelected) { // "..." in Array inspector
                 setCurrentObj(null, null, null); //  selected
                 setButtonsEnabled(!obj.getElementType().isPrimitive(), false);
-            }
-            else {
+            } else {
                 if (!obj.getElementType().isPrimitive()) {
                     DebuggerObject elementObj = obj.getElementObject(slot);
-                    if (! elementObj.isNullObject()) {
+                    if (!elementObj.isNullObject()) {
                         setCurrentObj(elementObj, "[" + slot + "]", obj.getElementType().toString());
                         setButtonsEnabled(true, true);
                         return;
                     }
                 }
-                
+
                 // primitive or null
                 setCurrentObj(null, null, null);
                 setButtonsEnabled(false, false);
             }
-            
+
             return;
         }
 
         // Non-array
         DebuggerField field = obj.getInstanceField(slot);
-        if (field != null && field.isReferenceType() && ! field.isNull()) {
+        if (field != null && field.isReferenceType() && !field.isNull()) {
             setCurrentObj(field.getValueObject(null), field.getName(), field.getType().toString());
 
             if (Modifier.isPublic(field.getModifiers())) {
                 setButtonsEnabled(true, true);
-            }
-            else {
+            } else {
                 boolean canGet = false;
-                if (! Modifier.isPrivate(field.getModifiers())) {
+                if (!Modifier.isPrivate(field.getModifiers())) {
                     // If the field is package-private and we are in the right package,
                     // we'll allow the get operation:
                     String fieldPkg = JavaNames.getPrefix(field.getDeclaringClassName());
@@ -323,8 +295,7 @@ public class ObjectInspector extends Inspector
                 }
                 setButtonsEnabled(true, canGet);
             }
-        }
-        else {
+        } else {
             setCurrentObj(null, null, null);
             setButtonsEnabled(false, false);
         }
@@ -333,40 +304,34 @@ public class ObjectInspector extends Inspector
     /**
      * Show the inspector for the class of an object.
      */
-    protected void showClass()
-    {
+    protected void showClass() {
         inspectorManager.getClassInspectorInstance(obj.getClassRef(), pkg, this, null);
     }
 
     @Override
-    protected void doInspect()
-    {
+    protected void doInspect() {
         if (queryArrayElementSelected) {
             selectArrayElement();
-        }
-        else if (selectedField != null) {
+        } else if (selectedField != null) {
             boolean isPublic = !getButton.isDisable();
-            
-            if (! obj.isArray()) {
+
+            if (!obj.isArray()) {
                 InvokerRecord newIr = new ObjectInspectInvokerRecord(selectedFieldName, ir);
                 inspectorManager.getInspectorInstance(selectedField, selectedFieldName, pkg, isPublic ? newIr : null, this, null);
-            }
-            else {
+            } else {
                 InvokerRecord newIr = new ArrayElementInspectorRecord(ir, selectedIndex);
                 inspectorManager.getInspectorInstance(selectedField, selectedFieldName, pkg, isPublic ? newIr : null, this, null);
             }
         }
     }
-    
+
     @Override
-    protected void doGet()
-    {
+    protected void doGet() {
         if (selectedField != null) {
             InvokerRecord getIr;
-            if (! obj.isArray()) {
+            if (!obj.isArray()) {
                 getIr = new GetInvokerRecord(selectedFieldType, selectedFieldName, ir);
-            }
-            else {
+            } else {
                 getIr = new ArrayElementGetRecord(selectedFieldType, selectedIndex, ir);
             }
 
@@ -377,13 +342,12 @@ public class ObjectInspector extends Inspector
             pkgEd.raisePutOnBenchEvent(this, selField, selField.getGenType(), getIr, true, Optional.empty());
         }
     }
-    
+
     /**
      * Remove this inspector.
      */
-    protected void remove()
-    {
-        if(inspectorManager != null) {
+    protected void remove() {
+        if (inspectorManager != null) {
             inspectorManager.removeInspector(obj);
         }
     }
@@ -391,8 +355,7 @@ public class ObjectInspector extends Inspector
     /**
      * Shows a dialog to select array element for inspection
      */
-    private void selectArrayElement()
-    {
+    private void selectArrayElement() {
         String response = DialogManager.askStringFX(this, "ask-index");
 
         if (response != null) {
@@ -401,14 +364,13 @@ public class ObjectInspector extends Inspector
                 // check if within bounds of array
                 if (slot >= 0 && slot < obj.getElementCount()) {
                     // if its an object set as current object
-                    if (! obj.getElementType().isPrimitive() && ! obj.getElementObject(slot).isNullObject()) {
+                    if (!obj.getElementType().isPrimitive() && !obj.getElementObject(slot).isNullObject()) {
                         boolean isPublic = !getButton.isDisable();
                         InvokerRecord newIr = new ArrayElementInspectorRecord(ir, slot);
                         setCurrentObj(obj.getElementObject(slot), "[" + slot + "]", obj.getElementType().toString());
                         inspectorManager.getInspectorInstance(selectedField, selectedFieldName, pkg,
                                 isPublic ? newIr : null, this, null);
-                    }
-                    else {
+                    } else {
                         // it is not an object - a primitive, so lets
                         // just display it in the array list display
                         setButtonsEnabled(false, false);
@@ -417,18 +379,15 @@ public class ObjectInspector extends Inspector
                         //       not displayed right now. Would need to be added to display list.
                         update();
                     }
-                }
-                else { // not within array bounds
+                } else { // not within array bounds
                     DialogManager.showErrorFX(this, "out-of-bounds");
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 // input could not be parsed, eg. non integer value
                 setCurrentObj(null, null, null);
                 DialogManager.showErrorFX(this, "cannot-access-element");
             }
-        }
-        else {
+        } else {
             // set current object to null to avoid re-inspection of
             // previously selected wildcard
             setCurrentObj(null, null, null);
@@ -436,34 +395,32 @@ public class ObjectInspector extends Inspector
     }
 
     private final static int VISIBLE_ARRAY_START = 40; // show at least the
-                                                       // first 40 elements
+    // first 40 elements
     private final static int VISIBLE_ARRAY_TAIL = 5; // and the last five
-                                                     // elements
+    // elements
 
     private final static int ARRAY_QUERY_SLOT_VALUE = -2; // signal marker of
-                                                          // the [...] slot in
-                                                          // our
+    // the [...] slot in
+    // our
     private final static int ARRAY_LENGTH_SLOT_VALUE = -1; // marker for having
-                                                           // selected the slot
-                                                           // containing array
-                                                           // length
+    // selected the slot
+    // containing array
+    // length
 
     /**
      * Compress a potentially large array into a more displayable shortened
      * form.
-     * 
+     * <p>
      * Compresses an array field name list to a maximum of VISIBLE_ARRAY_START
      * which are guaranteed to be displayed at the start, then some [..]
      * expansion slots, followed by VISIBLE_ARRAY_TAIL elements from the end of
      * the array. When a selected element is chosen indexToSlot allows the
      * selection to be converted to the original array element position.
-     * 
-     * @param fullArrayFieldList
-     *            the full field list for an array
+     *
+     * @param fullArrayFieldList the full field list for an array
      * @return the compressed array
      */
-    private List<FieldInfo> compressArrayList(DebuggerObject arrayObject)
-    {
+    private List<FieldInfo> compressArrayList(DebuggerObject arrayObject) {
         // mimic the public length field that arrays possess
         // according to the java spec...
         indexToSlotList = new LinkedList<Integer>();
@@ -497,11 +454,10 @@ public class ObjectInspector extends Inspector
                 indexToSlotList.add(arrayObject.getElementCount() - i);
             }
             return newArray;
-        }
-        else {
+        } else {
             List<FieldInfo> fullArrayFieldList = new ArrayList<FieldInfo>(arrayObject.getElementCount() + 1);
             fullArrayFieldList.add(0, new FieldInfo("int length", "" + arrayObject.getElementCount()));
-            
+
             for (int i = 0; i < arrayObject.getElementCount(); i++) {
                 fullArrayFieldList.add(new FieldInfo("[" + i + "]", arrayObject.getElementValueString(i)));
                 indexToSlotList.add(i);
@@ -513,20 +469,17 @@ public class ObjectInspector extends Inspector
     /**
      * Converts list index position to that of array element position in arrays.
      * Uses the List built in compressArrayList to do the mapping.
-     * 
-     * @param listIndexPosition
-     *            the position selected in the list
+     *
+     * @param listIndexPosition the position selected in the list
      * @return the translated index of field array element
      */
-    private int indexToSlot(int listIndexPosition)
-    {
+    private int indexToSlot(int listIndexPosition) {
         Integer slot = indexToSlotList.get(listIndexPosition);
 
         return slot.intValue();
     }
 
-    protected int getPreferredRows()
-    {
+    protected int getPreferredRows() {
         return 8;
     }
 }

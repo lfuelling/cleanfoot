@@ -21,13 +21,6 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCanvas;
 import bluej.stride.generic.FrameCursor;
@@ -35,22 +28,21 @@ import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class FrameHelper
-{
+import java.util.*;
+import java.util.function.BiConsumer;
+
+public class FrameHelper {
     @OnThread(Tag.FXPlatform)
-    public static void flagErrorsAsOld(FrameCanvas canvas)
-    {
+    public static void flagErrorsAsOld(FrameCanvas canvas) {
         canvas.getBlockContents().forEach(f -> f.flagErrorsAsOld());
     }
 
     @OnThread(Tag.FXPlatform)
-    public static void removeOldErrors(FrameCanvas canvas)
-    {
+    public static void removeOldErrors(FrameCanvas canvas) {
         canvas.getBlockContents().forEach(f -> f.removeOldErrors());
     }
 
-    static void pullUpContents(Frame f, FrameCanvas innerCanvas)
-    {
+    static void pullUpContents(Frame f, FrameCanvas innerCanvas) {
         // Put our contents in place of us:
         FrameCursor cursorBefore = f.getCursorBefore();
         // Make copy because we're about to modify the contents:
@@ -61,33 +53,27 @@ public class FrameHelper
     }
 
     public static void processVarScopesAfter(FrameCanvas parentCanvas,
-            Frame afterFrame, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process)
-    {
+                                             Frame afterFrame, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process) {
         processVarScopesAfter(parentCanvas, afterFrame, new HashMap<>(), process);
     }
-        
+
     private static void processVarScopesAfter(FrameCanvas parentCanvas,
-                Frame afterFrame, Map<String, List<Frame>> parentVars, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process)
-    {
+                                              Frame afterFrame, Map<String, List<Frame>> parentVars, BiConsumer<Map<String, List<Frame>> /* scopes, excluding cur */, Frame /* cur */> process) {
         // Must make a copy:
         Map<String, List<Frame>> vars = new HashMap<>(parentVars);
-        for (Frame f : Utility.iterableStream(parentCanvas.getFramesAfter(afterFrame)))
-        {
+        for (Frame f : Utility.iterableStream(parentCanvas.getFramesAfter(afterFrame))) {
             process.accept(vars, f);
-            
-            for (FrameCanvas c : Utility.iterableStream(f.getCanvases()))
-            {
+
+            for (FrameCanvas c : Utility.iterableStream(f.getCanvases())) {
                 Map<String, List<Frame>> extraVarsWithin = new HashMap<>();
-                for (String v : f.getDeclaredVariablesWithin(c))
-                {
+                for (String v : f.getDeclaredVariablesWithin(c)) {
                     extraVarsWithin.put(v, Arrays.asList(f));
                 }
                 Map<String, List<Frame>> varsInside = Utility.mergeMaps(vars, extraVarsWithin, Utility::concat);
                 processVarScopesAfter(c, null, varsInside, process);
             }
-            
-            for (String var : f.getDeclaredVariablesAfter())
-            {
+
+            for (String var : f.getDeclaredVariablesAfter()) {
                 vars.merge(var, new ArrayList<Frame>(Arrays.asList(f)), Utility::concat);
             }
         }

@@ -22,53 +22,56 @@
 package greenfoot.export.mygame;
 
 import bluej.utility.FXWorker;
-import java.io.IOException;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.IOException;
 
 /**
  * Abstract class that can be used to check (asynchronously) whether a scenario already exists on the
  * publish site.
- * 
+ *
  * @author Poul Henriksen
  */
-public abstract class ExistingScenarioChecker
-{
-    /** Worker to handle asynchronously checking of existing scenario */
+public abstract class ExistingScenarioChecker {
+    /**
+     * Worker to handle asynchronously checking of existing scenario
+     */
     private FXWorker worker;
 
-    /** Are we in the process of checking? */
+    /**
+     * Are we in the process of checking?
+     */
     private boolean checking = false;
 
-    /** Indicates that the user wants to abort checking for this scenario. */
+    /**
+     * Indicates that the user wants to abort checking for this scenario.
+     */
     private boolean abort = false;
 
-    /** Indicates that the checking has finished. */
+    /**
+     * Indicates that the checking has finished.
+     */
     private boolean finished = false;
 
     private volatile String hostName;
     private volatile String userName;
     private volatile String scenarioName;
 
-    class ScenarioWorker extends FXWorker
-    {
+    class ScenarioWorker extends FXWorker {
         @Override
         @OnThread(Tag.Worker)
-        public Object construct()
-        {
+        public Object construct() {
             return checkExistence(hostName, userName, scenarioName);
         }
 
         @Override
-        public void finished()
-        {
+        public void finished() {
             workerFinished(getValue());
         }
 
         @Override
-        public void abort()
-        {
+        public void abort() {
             ExistingScenarioChecker.this.abort();
         }
     }
@@ -80,18 +83,14 @@ public abstract class ExistingScenarioChecker
      * combination may be cached.
      */
     public void startScenarioExistenceCheck(final String hostName, final String userName,
-            final String scenarioName)
-    {
-        synchronized (this)
-        {
+                                            final String scenarioName) {
+        synchronized (this) {
             boolean sameScenario = hostName.equals(this.hostName) && userName.equals(this.userName)
                     && scenarioName.equals(this.scenarioName);
-            if (sameScenario)
-            {
+            if (sameScenario) {
                 return;
             }
-            if (checking)
-            {
+            if (checking) {
                 // Abort the current check in preparation for the new one.
                 abort();
             }
@@ -110,22 +109,18 @@ public abstract class ExistingScenarioChecker
 
     /**
      * Will abort the checking.
-     * 
+     *
      * @return True if successful abort, false if we didn't manage to abort
-     *         (because it already finished the check)
-     *         
+     * (because it already finished the check)
      * @throws IllegalStateException If the check has not started yet.
      */
-    public synchronized boolean abort()
-    {
+    public synchronized boolean abort() {
         // pre: is checking
-        if (finished)
-        {
+        if (finished) {
             return false;
         }
 
-        if (!checking)
-        {
+        if (!checking) {
             throw new IllegalStateException("Check not started yet. Nothing to abort.");
         }
 
@@ -136,11 +131,11 @@ public abstract class ExistingScenarioChecker
 
     /**
      * Method that will be called when the check has finished.
-     * 
+     * <p>
      * This will execute on the FX event thread.
-     * 
+     *
      * @param info If the scenario exists info about it will be returned. If it
-     *            does not exist it will return null.
+     *             does not exist it will return null.
      */
     @OnThread(Tag.FXPlatform)
     public abstract void scenarioExistenceChecked(ScenarioInfo info);
@@ -149,7 +144,7 @@ public abstract class ExistingScenarioChecker
      * Method that will be called if a check fails. This can be because if a
      * network error or other things. This will execute on the FX event
      * thread.
-     * 
+     *
      * @param reason The exception fired when the check is failed.
      */
     @OnThread(Tag.FXPlatform)
@@ -159,20 +154,15 @@ public abstract class ExistingScenarioChecker
      * Checks the existence of the given scenario.
      */
     @OnThread(Tag.Worker)
-    private Object checkExistence(final String hostName, final String userName, final String scenarioName)
-    {
+    private Object checkExistence(final String hostName, final String userName, final String scenarioName) {
         MyGameClient client = new MyGameClient(null);
         ScenarioInfo info = new ScenarioInfo();
-        try
-        {
-            if (client.checkExistingScenario(hostName, userName, scenarioName, info))
-            {
+        try {
+            if (client.checkExistingScenario(hostName, userName, scenarioName, info)) {
                 return info;
             }
             return null;
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             return e;
         }
     }
@@ -182,19 +172,14 @@ public abstract class ExistingScenarioChecker
      * processed.
      */
     @OnThread(Tag.FXPlatform)
-    private synchronized void workerFinished(Object value)
-    {
+    private synchronized void workerFinished(Object value) {
         finished = true;
         checking = false;
 
-        if (!abort)
-        {
-            if (value instanceof Exception)
-            {
+        if (!abort) {
+            if (value instanceof Exception) {
                 scenarioExistenceCheckFailed((Exception) value);
-            }
-            else
-            {
+            } else {
                 scenarioExistenceChecked((ScenarioInfo) value);
             }
         }

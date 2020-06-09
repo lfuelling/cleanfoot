@@ -27,81 +27,72 @@ import threadchecker.Tag;
 
 
 /**
- * Records a single user interaction with the 
+ * Records a single user interaction with the
  * method call mechanisms of BlueJ.
- * 
+ * <p>
  * This record is for method calls with no result.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class VoidMethodInvokerRecord extends InvokerRecord
-{
+public class VoidMethodInvokerRecord extends InvokerRecord {
     protected String command;
-    private final String [] argumentValues;
-    
-    public VoidMethodInvokerRecord(String command, String [] argVals)
-    {
+    private final String[] argumentValues;
+
+    public VoidMethodInvokerRecord(String command, String[] argVals) {
         this.command = command;
         this.argumentValues = argVals;
     }
-    
+
     @Override
-    public String [] getArgumentValues()
-    {
+    public String[] getArgumentValues() {
         return argumentValues;
     }
-    
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return true;
     }
 
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return null because a void method results in no objects
      */
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
+    public String toFixtureDeclaration(String firstIndent) {
         return null;
     }
-    
+
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String reprenting the object initialisation
-     *         src or null if there is none. 
-     */    
+     * src or null if there is none.
+     */
     @Override
     @OnThread(Tag.FXPlatform)
-    public String toFixtureSetup(String secondIndent)
-    {
+    public String toFixtureSetup(String secondIndent) {
         // code for the fixture setup involves just inserting the method call
         return secondIndent + command + statementEnd;
     }
 
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         // code for the test method involves just inserting the method call
         return secondIndent + command + statementEnd;
     }
 
     @Override
-    public String toExpression()
-    {
+    public String toExpression() {
         return command;
     }
 
     @Override
-    public String getOriginalCommand()
-    {
+    public String getOriginalCommand() {
         return command;
     }
-    
-    
+
+
 }

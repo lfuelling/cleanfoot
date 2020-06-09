@@ -22,8 +22,6 @@
 package greenfoot.guifx.classes;
 
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -38,16 +36,15 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
- * The display of a single class in Greenfoot's class diagram. 
- * 
+ * The display of a single class in Greenfoot's class diagram.
+ * <p>
  * Note that due to anticipated re-use of this item in the right-hand class diagram,
  * and the import-class dialog and maybe other places too, this class itself only
  * handles display and selection.  All other functionality (e.g. context menus)
  * is done externally as it is not used in all instances of ClassDisplay.
  */
 @OnThread(Tag.FXPlatform)
-public class ClassDisplay extends StackPane
-{
+public class ClassDisplay extends StackPane {
     private final String fullyQualifiedName;
     // We make child panes mainly so that we can apply
     // the stripe fill to the background but not to the content:
@@ -55,13 +52,12 @@ public class ClassDisplay extends StackPane
     private final Label contentLabel;
 
     /**
-     * @param displayName The class name to display (without package)
-     * @param image The image, if any (can be null)
+     * @param displayName      The class name to display (without package)
+     * @param image            The image, if any (can be null)
      * @param selectionManager The selection manager.  The constructor will add this
      *                         class to the selection manager.
      */
-    public ClassDisplay(String displayName, String fullyQualifiedName, Image image, ClassDisplaySelectionManager selectionManager)
-    {
+    public ClassDisplay(String displayName, String fullyQualifiedName, Image image, ClassDisplaySelectionManager selectionManager) {
         this.fullyQualifiedName = fullyQualifiedName;
         getStyleClass().add("class-display");
         setSnapToPixel(true);
@@ -71,15 +67,14 @@ public class ClassDisplay extends StackPane
         JavaFXUtil.addStyleClass(content, "class-display-content");
         stripePane = new BorderPane();
         getChildren().addAll(stripePane, content);
-        
+
         selectionManager.addClassDisplay(this);
-        
+
         // We use a general handler not setOnMouseClicked,
         // because we don't want to interfere with other click handlers:
         addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             // Only single-click selects; double-click may do something else
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1)
-            {
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1) {
                 // We don't set our state directly, but instead get the
                 // selection manager to do so:
                 selectionManager.select(this);
@@ -91,30 +86,24 @@ public class ClassDisplay extends StackPane
     /**
      * Sets the graphical selected state of this class display
      */
-    public void setSelected(boolean selected)
-    {
+    public void setSelected(boolean selected) {
         JavaFXUtil.setPseudoclass("gf-selected", selected, this);
     }
 
     /**
      * Gets the qualified name of the class
      */
-    public String getQualifiedName()
-    {
+    public String getQualifiedName() {
         return fullyQualifiedName;
     }
 
     /**
      * Sets the image to the left of the class name
      */
-    public void setImage(Image image)
-    {
-        if (image == null)
-        {
+    public void setImage(Image image) {
+        if (image == null) {
             contentLabel.setGraphic(null);
-        }
-        else
-        {
+        } else {
             ImageView imageView = new ImageView(image);
             // Max size 16x16, but don't scale up image if it's smaller than that:
             imageView.setFitHeight(Math.min(image.getHeight(), 16));
@@ -127,8 +116,7 @@ public class ClassDisplay extends StackPane
     /**
      * Sets the stripe pattern of this class (use Color.TRANSPARENT to mean none)
      */
-    public void setStripePattern(Paint stripeFill)
-    {
+    public void setStripePattern(Paint stripeFill) {
         stripePane.setBackground(new Background(new BackgroundFill(stripeFill, null, null)));
     }
 }

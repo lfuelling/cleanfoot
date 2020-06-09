@@ -21,29 +21,27 @@
  */
 package bluej.graph;
 
-import javafx.scene.input.KeyCode;
-
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.target.Target;
+import javafx.scene.input.KeyCode;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A strategy to move graph selections with keyboard input.
- * 
+ *
  * @author fisker
  */
 @OnThread(Tag.FXPlatform)
-public interface TraverseStrategy
-{
+public interface TraverseStrategy {
     /**
-     * Given a currently selected vertex and a key press, decide which vertex 
+     * Given a currently selected vertex and a key press, decide which vertex
      * should be selected next.
-     * 
-     * @param graph  The graph we're looking at.
-     * @param currentVertex  The currently selected vertex.
-     * @param key  The key that was pressed.
-     * @return     A vertex that should be selected now.
+     *
+     * @param graph         The graph we're looking at.
+     * @param currentVertex The currently selected vertex.
+     * @param key           The key that was pressed.
+     * @return A vertex that should be selected now.
      */
     Target findNextVertex(Package graph, Target currentVertex, KeyCode key);
 }

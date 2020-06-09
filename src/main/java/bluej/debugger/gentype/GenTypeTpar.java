@@ -25,71 +25,59 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class GenTypeTpar extends GenTypeSolid
-{
+public class GenTypeTpar extends GenTypeSolid {
     private final String name;
-    
-    public GenTypeTpar(String parname)
-    {
+
+    public GenTypeTpar(String parname) {
         name = parname;
     }
 
-    public String getTparName()
-    {
+    public String getTparName() {
         return name;
     }
-    
-    public String toString(boolean stripPrefix)
-    {
+
+    public String toString(boolean stripPrefix) {
         return name;
     }
-    
-    public String toString(NameTransform nt)
-    {
+
+    public String toString(NameTransform nt) {
         return name;
     }
-        
-    public String toTypeArgString(NameTransform nt)
-    {
+
+    public String toTypeArgString(NameTransform nt) {
         return name;
     }
-    
-    public String arrayComponentName()
-    {
+
+    public String arrayComponentName() {
         // We don't know the erased type.
         throw new UnsupportedOperationException();
     }
-    
-    public boolean isInterface()
-    {
+
+    public boolean isInterface() {
         return false;
     }
-    
-    public boolean equals(JavaType other)
-    {
+
+    public boolean equals(JavaType other) {
         // For tpars to be equal, they must be the *same* tpar.
         return other == this;
     }
-    
-    public GenTypeParameter mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams)
-    {
+
+    public GenTypeParameter mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams) {
         if (tparams == null)
             return this;
-        
+
         GenTypeParameter newType = tparams.get(name);
-        if( newType == null ) {
+        if (newType == null) {
             return this;
-        }
-        else {
+        } else {
             return newType;
         }
     }
-    
-    public void getParamsFromTemplate(Map<String,GenTypeParameter> map, GenTypeParameter template)
-    {
+
+    public void getParamsFromTemplate(Map<String, GenTypeParameter> map, GenTypeParameter template) {
         // If a mapping already exists, precisify it against the template.
         // Otherwise, create a new mapping to the template.
-        
+
         GenTypeParameter x = map.get(name);
         if (x != null)
             x = x.precisify(template);
@@ -97,68 +85,59 @@ public class GenTypeTpar extends GenTypeSolid
             x = template;
         map.put(name, x);
     }
-    
-    public GenTypeParameter precisify(GenTypeParameter other)
-    {
+
+    public GenTypeParameter precisify(GenTypeParameter other) {
         // shouldn't get called.
         return other;
     }
-    
-    public boolean isPrimitive()
-    {
+
+    public boolean isPrimitive() {
         return false;
     }
-    
-    public boolean isAssignableFrom(JavaType t)
-    {
+
+    public boolean isAssignableFrom(JavaType t) {
         if (t.isNull())
             return true;
-        
+
         // If the other type has an upper bound which is this tpar, it's assignable
         GenTypeSolid ubound = t.getUpperBound().asSolid();
         if (ubound != null) {
-            GenTypeSolid [] ubounds = ubound.getIntersectionTypes();
+            GenTypeSolid[] ubounds = ubound.getIntersectionTypes();
             for (int i = 0; i < ubounds.length; i++) {
                 if (ubounds[i] == this) {
                     return true;
                 }
             }
         }
-        
+
         return false;
     }
-    
-    public boolean isAssignableFromRaw(JavaType t)
-    {
+
+    public boolean isAssignableFromRaw(JavaType t) {
         // We don't know the erased type.
-        throw new UnsupportedOperationException();
-    }
-    
-    public JavaType getErasedType()
-    {
-        // We don't know the erased type.
-        throw new UnsupportedOperationException();
-    }
-    
-    public void erasedSuperTypes(Set<Reflective> s)
-    {
         throw new UnsupportedOperationException();
     }
 
-    public GenTypeClass [] getReferenceSupertypes()
-    {
+    public JavaType getErasedType() {
+        // We don't know the erased type.
         throw new UnsupportedOperationException();
     }
-    
+
+    public void erasedSuperTypes(Set<Reflective> s) {
+        throw new UnsupportedOperationException();
+    }
+
+    public GenTypeClass[] getReferenceSupertypes() {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
-    public GenTypeArray getArray()
-    {
+    public GenTypeArray getArray() {
         return new GenTypeArray(this);
     }
-    
+
     @Override
-    public JavaType getCapture()
-    {
+    public JavaType getCapture() {
         return this;
     }
 }

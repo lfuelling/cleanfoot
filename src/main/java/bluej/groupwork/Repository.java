@@ -29,22 +29,21 @@ import java.util.Set;
 /**
  * A version control repository, which comprises a remote repository together with a
  * local copy.
- * 
+ *
  * @author Davin McCall
  */
-public interface Repository
-{
+public interface Repository {
     /**
      * Set the password used to access the repository
      */
     void setPassword(TeamSettings newSettings);
-    
+
     /**
      * Returns true if this repository versions directories (subversion),
      * false otherwise (CVS).
      */
     boolean versionsDirectories();
-    
+
     /**
      * Checkout project from repostitory to local project.
      */
@@ -53,21 +52,21 @@ public interface Repository
     /**
      * Commits the files and directories in the project.
      *
-     * @param newFiles Files to be committed which are not presently in the repository
-     *                 (text files only). If the version control system versions directories,
-     *                 this must be an ordered set where directories precede the files they
-     *                 contain.
+     * @param newFiles       Files to be committed which are not presently in the repository
+     *                       (text files only). If the version control system versions directories,
+     *                       this must be an ordered set where directories precede the files they
+     *                       contain.
      * @param binaryNewFiles Files to be committed which are not presently in the
      *                       repository and which are to be treated as binary
-     * @param deletedFiles Files which have been deleted locally but which exist
-     *                     in the latest version in the repository 
-     * @param files  All files to be committed (including all in newFiles, binaryNewFiles,
-     *               and deletedFiles, as well as any other files to be committed)
+     * @param deletedFiles   Files which have been deleted locally but which exist
+     *                       in the latest version in the repository
+     * @param files          All files to be committed (including all in newFiles, binaryNewFiles,
+     *                       and deletedFiles, as well as any other files to be committed)
      * @param commitComment  The comment for this commit
      */
     TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
                               Set<File> deletedFiles, Set<File> files, String commitComment);
-    
+
     /**
      * Put the project in the repository. This should create an empty project in
      * the repository, and set the local project up as a working copy (with
@@ -80,70 +79,69 @@ public interface Repository
      * This is used *only* by distributed version control.
      */
     TeamworkCommand pushChanges();
-    
+
     /**
      * Get status of all the given files.
      *
-     * @param listener  A listener to be notified of the status of each requested file.
-     *                For version management systems which version directories, the status
-     *                of directories will be reported before files they contain.
-     * @param filter  A file filter to determine which files and directories to include
-     *                in the returned statuses
-     * @param includeRemote 
-     *                Whether to include remote files (files which do not exist locally, but which
-     *                do exist in the repository), regardless of whether they are listed in the
-     *                files argument.
+     * @param listener      A listener to be notified of the status of each requested file.
+     *                      For version management systems which version directories, the status
+     *                      of directories will be reported before files they contain.
+     * @param filter        A file filter to determine which files and directories to include
+     *                      in the returned statuses
+     * @param includeRemote Whether to include remote files (files which do not exist locally, but which
+     *                      do exist in the repository), regardless of whether they are listed in the
+     *                      files argument.
      */
     TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote);
-    
+
     /**
      * Get a list of modules in the repository. The module names (String) are added
      * to the supplied list before the command terminates.
      */
     TeamworkCommand getModules(List<String> modules);
-    
+
     /**
      * Get the history of the repository - all commits, including file, date,
      * revision, user, and comment.
      */
     TeamworkCommand getLogHistory(LogHistoryListener listener);
-    
+
     /**
      * Prepare for the deletion of a directory. For CVS, this involves moving
      * the metadata elsewhere. Returns true if the directory should be physically
      * removed, or false otherwise, in which case all files and sub-directories
      * within are assumed to have been handled.
-     * 
+     *
      * <p>Also, calling this may result in the directory
      * being removed.
      */
     boolean prepareDeleteDir(File dir);
-    
+
     /**
      * Prepare a newly created directory for version control.
      */
     void prepareCreateDir(File dir);
-    
+
     /**
      * Get a filter which can filter out directories/files that comprise metadata
      * or other housekeeping information in the working copy
      */
     FileFilter getMetadataFilter();
-    
+
     /**
      * Get all the locally deleted files in the repository. The files are put
      * into the supplied set.
-     * 
+     *
      * <p>Calling this method Does not result in communication with the repository
      * server.
      */
     void getAllLocallyDeletedFiles(Set<File> files);
-    
+
     /**
      * Gets the version control type, for data collection purposes
      */
     String getVCSType();
-    
+
     /**
      * Gets the version control protocol, for data collection purposes
      */

@@ -38,21 +38,19 @@ import java.io.File;
  * @author Axel Schmolitzky
  * @author Markus Ostman
  */
-public class PackageChooserStrict extends PackageChooser
-{
+public class PackageChooserStrict extends PackageChooser {
     /**
      * Create a new strict PackageChooser.
      *
      * @param startDirectory the directory to start the package selection in.
      */
-    public PackageChooserStrict(File startDirectory)
-    {
+    public PackageChooserStrict(File startDirectory) {
         super(startDirectory, false, true);
     }
 
     /**
-     *  Selection approved by button-click. Check whether the selected
-     *  directory is a BlueJ package. If so, let it be opened.
+     * Selection approved by button-click. Check whether the selected
+     * directory is a BlueJ package. If so, let it be opened.
      */
     @Override
     public void approveSelection()   // redefined
@@ -61,11 +59,9 @@ public class PackageChooserStrict extends PackageChooser
         if (selectedFile.isFile()) {
             // it must be an archive (jar or zip)
             approved();
-        }
-        else if (Package.isPackage(getSelectedFile())) {
+        } else if (Package.isPackage(getSelectedFile())) {
             approved();
-        }
-        else {
+        } else {
             super.setCurrentDirectory(getSelectedFile());
         }
     }

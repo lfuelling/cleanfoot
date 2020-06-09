@@ -25,11 +25,10 @@ import bluej.Config;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.CustomMenuItem;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,14 +38,12 @@ import java.util.List;
  *
  * @author Amjad Altadmri
  */
-public class ToggleBooleanProperty extends FrameOperation
-{
+public class ToggleBooleanProperty extends FrameOperation {
     private final String name;
     private final SimpleStringProperty label;
     private final char key;
 
-    public ToggleBooleanProperty(InteractionManager editor, String identifier, String name, char key)
-    {
+    public ToggleBooleanProperty(InteractionManager editor, String identifier, String name, char key) {
         super(editor, identifier, Combine.ALL, null);
         this.name = name;
         this.label = new SimpleStringProperty(Config.getString("frame.operation.toggle").replace("$", name));
@@ -60,8 +57,7 @@ public class ToggleBooleanProperty extends FrameOperation
      * @param frames targeted frames that will receive the operation
      */
     @Override
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         // The variable is created to solve a bug:
         // If the method is called inside lambda, the method return value may changes after toggling the first frame.
         boolean targetedAllTrue = targetedAllTrue(frames);
@@ -69,45 +65,38 @@ public class ToggleBooleanProperty extends FrameOperation
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(new ItemLabel(label, EditableSlot.MenuItemOrder.TOGGLE_BOOLEAN));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void onMenuShowing(CustomMenuItem item)
-    {
+    public void onMenuShowing(CustomMenuItem item) {
         super.onMenuShowing(item);
         updateName();
     }
 
     @OnThread(Tag.FXPlatform)
-    private void updateName()
-    {
+    private void updateName() {
         label.set(targetedAllTrue(editor.getSelection().getSelected()) ?
                 Config.getString("frame.operation.remove").replace("$", name) :
                 Config.getString("frame.operation.make").replace("$", name));
     }
 
-    private boolean targetedAllTrue(List<Frame> frames)
-    {
+    private boolean targetedAllTrue(List<Frame> frames) {
         return frames.stream().allMatch(f -> f.getModifier(name).get());
     }
 
     @Override
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         return true;
     }
 
-    public String getLabel()
-    {
+    public String getLabel() {
         return label.get();
     }
 
-    public char getKey()
-    {
+    public char getKey() {
         return key;
     }
 }

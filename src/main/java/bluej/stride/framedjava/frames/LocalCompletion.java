@@ -21,78 +21,68 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.List;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.parser.AssistContent;
 import bluej.stride.framedjava.ast.Parser;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.List;
 
 @OnThread(Tag.FXPlatform)
-public class LocalCompletion extends AssistContent
-{
+public class LocalCompletion extends AssistContent {
     private final String type;
     private final String name;
     private final boolean formalParam;
-    
-    private LocalCompletion(String type, String name, boolean formalParam)
-    {
+
+    private LocalCompletion(String type, String name, boolean formalParam) {
         this.type = type;
         this.name = name;
-        this.formalParam = formalParam; 
+        this.formalParam = formalParam;
     }
 
     // If it's an invalid name, null is returned
-    public static AssistContent getCompletion(String type, String name, boolean formalParam)
-    {
-        if (Parser.parseableAsNameDef(name))  {
+    public static AssistContent getCompletion(String type, String name, boolean formalParam) {
+        if (Parser.parseableAsNameDef(name)) {
             // Valid name, fine to complete (type doesn't need to be valid):
             return new LocalCompletion(type, name, formalParam);
         }
         return null;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return null;
     }
 
     @Override
-    public CompletionKind getKind()
-    {
+    public CompletionKind getKind() {
         return formalParam ? CompletionKind.FORMAL_PARAM : CompletionKind.LOCAL_VAR;
     }
 
     @Override
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         return "";
     }
-    
+
     @Override
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         // Can't have parameters, so we return null:
         return null;
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         // TODO Auto-generated method stub
         return null;
     }

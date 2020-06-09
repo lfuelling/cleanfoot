@@ -24,37 +24,35 @@ package bluej.stride.framedjava.slots;
 import java.util.function.Function;
 
 // Package-visible
-class PosAndDist
-{
+class PosAndDist {
     private final CaretPos pos;
     private final double dist;
-    
-    public PosAndDist() { pos = null; dist = -1; }
-    
-    public PosAndDist(CaretPos pos, double dist)
-    {
+
+    public PosAndDist() {
+        pos = null;
+        dist = -1;
+    }
+
+    public PosAndDist(CaretPos pos, double dist) {
         this.pos = pos;
         this.dist = dist;
     }
 
-    public static PosAndDist nearest(PosAndDist a, PosAndDist b)
-    {
+    public static PosAndDist nearest(PosAndDist a, PosAndDist b) {
         if (a.pos == null || a.dist == -1) return b; // Even if they are both blank, this makes sense
         if (b.pos == null || b.dist == -1) return a;
-        
+
         if (a.dist <= b.dist)
             return a;
         else
             return b;
     }
-    
-    public PosAndDist copyAdjustPos(Function<CaretPos, CaretPos> f)
-    {
+
+    public PosAndDist copyAdjustPos(Function<CaretPos, CaretPos> f) {
         return new PosAndDist(f.apply(pos), dist);
     }
-    
-    public CaretPos getPos()
-    {
+
+    public CaretPos getPos() {
         return pos;
     }
 }

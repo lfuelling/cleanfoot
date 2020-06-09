@@ -21,6 +21,23 @@
  */
 package bluej.pkgmgr;
 
+import bluej.BlueJTheme;
+import bluej.Config;
+import bluej.classmgr.ClassMgrPrefPanel;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.UnfocusableScrollPane;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,34 +47,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import bluej.utility.javafx.UnfocusableScrollPane;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
-
-import bluej.BlueJTheme;
-import bluej.Config;
-import bluej.classmgr.ClassMgrPrefPanel;
-import bluej.prefmgr.PrefMgrDialog;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 /**
  * Dialog for exporting the project to a jar file. Here, the jar
  * creation options can be specified.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-class ExportDialog extends Dialog<ExportDialog.ExportInfo>
-{
+class ExportDialog extends Dialog<ExportDialog.ExportInfo> {
     // Internationalisation
     private static final String dialogTitle = Config.getString("pkgmgr.export.title");
     private static final String helpLine1 = Config.getString("pkgmgr.export.helpLine1");
@@ -67,24 +64,22 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
     private static final String sourceLabel = Config.getString("pkgmgr.export.sourceLabel");
     private static final String pkgFilesLabel = Config.getString("pkgmgr.export.pkgFilesLabel");
     private static final String noClassText = Config.getString("pkgmgr.export.noClassText");
-    
+
     private final ComboBox<String> classSelect;
     private final CheckBox sourceBox;
     private final CheckBox pkgFilesBox;
     private final List<UserLibInfo> userLibs = new ArrayList<>();
 
     private final GridPane userLibPanel;
-    
+
     @OnThread(Tag.Any)
-    public static class ExportInfo
-    {
+    public static class ExportInfo {
         public final String mainClassName;
         public final List<File> selectedFiles;
         public final boolean includeSource;
         public final boolean includePkgFiles;
 
-        private ExportInfo(String mainClassName, List<File> selectedFiles, boolean includeSource, boolean includePkgFiles)
-        {
+        private ExportInfo(String mainClassName, List<File> selectedFiles, boolean includeSource, boolean includePkgFiles) {
             this.includePkgFiles = includePkgFiles;
             this.mainClassName = mainClassName;
             this.selectedFiles = selectedFiles;
@@ -96,18 +91,16 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
      * We must fetch this information on the swing thread,
      * ahead of using it on the FX thread to update the dialog.
      */
-    public static class ProjectInfo
-    {
+    public static class ProjectInfo {
         public final List<String> classNames;
         public final List<File> jarFiles;
-        
+
         @OnThread(Tag.FXPlatform)
-        public ProjectInfo(Project project)
-        {
+        public ProjectInfo(Project project) {
             classNames = project.getPackageNames().stream().sorted().flatMap(pkgName ->
-                project.getPackage(pkgName).getAllClassnames().stream().sorted()
-                    .map(className -> pkgName.isEmpty() ? className : pkgName + "." + className))
-                .collect(Collectors.toList());
+                    project.getPackage(pkgName).getAllClassnames().stream().sorted()
+                            .map(className -> pkgName.isEmpty() ? className : pkgName + "." + className))
+                    .collect(Collectors.toList());
 
             // get user specified libs
             List<URL> libList = ClassMgrPrefPanel.getUserConfigContent();
@@ -118,8 +111,7 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
             jarFiles = Utility.mapList(libList, url -> {
                 try {
                     return new File(new URI(url.toString()));
-                }
-                catch (URISyntaxException use) {
+                } catch (URISyntaxException use) {
                     // Should never happen. If there is a problem with the conversion we want to know about it.
                     Debug.reportError("ExportDialog.createUserLibPanel(Project) invalid url=" + url.getPath());
                 }
@@ -128,8 +120,7 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
         }
     }
 
-    public ExportDialog(Window parent, ProjectInfo projectInfo)
-    {
+    public ExportDialog(Window parent, ProjectInfo projectInfo) {
         setTitle(dialogTitle);
         initOwner(parent);
         initModality(Modality.WINDOW_MODAL);
@@ -158,7 +149,7 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
                 mainClassPanel.getChildren().add(classSelect);
                 mainPanel.getChildren().add(mainClassPanel);
             }
-            
+
             {
                 userLibPanel = new GridPane();
                 JavaFXUtil.addStyleClass(userLibPanel, "export-dialog-userlibs");
@@ -179,33 +170,28 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
             mainPanel.getChildren().add(pkgFilesBox);
 
             getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
-            ((Button)getDialogPane().lookupButton(ButtonType.OK)).setText(BlueJTheme.getContinueLabel());
+            ((Button) getDialogPane().lookupButton(ButtonType.OK)).setText(BlueJTheme.getContinueLabel());
         }
 
         getDialogPane().setContent(mainPanel);
     }
 
-    private ExportInfo calculateResult(ButtonType buttonType)
-    {
-        if (buttonType == ButtonType.OK)
-        {
+    private ExportInfo calculateResult(ButtonType buttonType) {
+        if (buttonType == ButtonType.OK) {
             String mainClassName = classSelect.getSelectionModel().getSelectedItem();
             if (mainClassName.equals(noClassText))
                 mainClassName = "";
             List<File> selected = getSelectedLibs();
             return new ExportInfo(mainClassName, selected, sourceBox.isSelected(), pkgFilesBox.isSelected());
-        }
-        else
+        } else
             return null;
     }
 
-    private List<File> getSelectedLibs()
-    {
+    private List<File> getSelectedLibs() {
         return userLibs.stream().filter(UserLibInfo::isSelected).map(UserLibInfo::getFile).collect(Collectors.toList());
     }
 
-    public void updateDialog(ProjectInfo projectInfo)
-    {
+    public void updateDialog(ProjectInfo projectInfo) {
         String prevSelected = classSelect.getSelectionModel().getSelectedItem();
         fillClassPopup(projectInfo.classNames);
         if (classSelect.getItems().contains(prevSelected))
@@ -218,8 +204,7 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
     /**
      * Fill the class name popup selector with all classes of the project
      */
-    private void fillClassPopup(List<String> classNames)
-    {
+    private void fillClassPopup(List<String> classNames) {
         classSelect.getItems().clear();
         classSelect.getItems().add(noClassText);
         classSelect.getItems().addAll(classNames);
@@ -227,37 +212,34 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
 
     /**
      * Return a prepared panel listing the user libraries with check boxes.
+     *
      * @param project the project the libraries belong to.
      */
-    private void fillUserLibPanel(ProjectInfo projectInfo, List<File> startChecked)
-    {
+    private void fillUserLibPanel(ProjectInfo projectInfo, List<File> startChecked) {
         userLibPanel.getChildren().clear();
 
         // collect info about jar files from the project classloader.
         List<UserLibInfo> userlibList = Utility.mapList(projectInfo.jarFiles, file -> new UserLibInfo(file, startChecked.contains(file)));
-        
-        if ( userlibList.size() < 1 ) { 
+
+        if (userlibList.size() < 1) {
             userLibPanel.setVisible(false);
-        }
-        else {
+        } else {
             userLibPanel.setVisible(true);
             userLibs.clear();
             userLibs.addAll(userlibList);
 
-            for(int i = 0; i < userLibs.size(); i++) {
+            for (int i = 0; i < userLibs.size(); i++) {
                 userLibPanel.add(userLibs.get(i).getCheckBox(), i % 2, i / 2);
             }
         }
     }
 
     @OnThread(Tag.FXPlatform)
-    private static class UserLibInfo
-    {
+    private static class UserLibInfo {
         private final File sourceFile;
         private final CheckBox checkBox;
 
-        public UserLibInfo(File source, boolean selected)
-        {
+        public UserLibInfo(File source, boolean selected) {
             sourceFile = source;
             this.checkBox = new CheckBox(sourceFile.getName());
             this.checkBox.setSelected(selected);
@@ -266,24 +248,21 @@ class ExportDialog extends Dialog<ExportDialog.ExportInfo>
         /**
          * Return a checkBox with this lib's name as a label.
          */
-        public CheckBox getCheckBox()
-        {
+        public CheckBox getCheckBox() {
             return checkBox;
         }
 
         /**
          * Return the file of this lib.
          */
-        public File getFile()
-        {
+        public File getFile() {
             return sourceFile;
         }
 
         /**
          * Tell whether this lib has been selected.
          */
-        public boolean isSelected()
-        {
+        public boolean isSelected() {
             return checkBox.isSelected();
         }
     }

@@ -26,12 +26,7 @@ import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXPlatformConsumer;
 import bluej.utility.javafx.JavaFXUtil;
 import greenfoot.vmcomm.GreenfootDebugHandler;
-import javafx.animation.Animation;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.ParallelTransition;
-import javafx.animation.RotateTransition;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.geometry.Side;
 import javafx.scene.control.MenuButton;
 import javafx.scene.image.Image;
@@ -46,25 +41,24 @@ import threadchecker.Tag;
  * to easily open the debugger or restart the VM.
  */
 @OnThread(Tag.FXPlatform)
-public class ExecutionTwirler extends MenuButton
-{
+public class ExecutionTwirler extends MenuButton {
     // The animation to spin the twirl icon:
     private final Animation animation;
     private Project project;
     private GreenfootDebugHandler greenfootDebugHandler;
     private FXPlatformConsumer<Boolean> twirlListener;
-    
+
 
     /**
      * Create the component
-     * @param project The associated project (needed to access the debugger)
+     *
+     * @param project               The associated project (needed to access the debugger)
      * @param greenfootDebugHandler The debug handler for the project
      */
-    public ExecutionTwirler(Project project, GreenfootDebugHandler greenfootDebugHandler)
-    {
+    public ExecutionTwirler(Project project, GreenfootDebugHandler greenfootDebugHandler) {
         this.project = project;
         this.greenfootDebugHandler = greenfootDebugHandler;
-        
+
         ImageView imageView = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("swirl.png")));
         imageView.setFitHeight(15.0);
         imageView.setPreserveRatio(true);
@@ -75,34 +69,32 @@ public class ExecutionTwirler extends MenuButton
         rotateTransition.setByAngle(360);
         rotateTransition.setCycleCount(RotateTransition.INDEFINITE);
         Timeline callTwirlListener = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            if (twirlListener != null)
-            {
+            if (twirlListener != null) {
                 twirlListener.accept(isVisible());
             }
         }));
         callTwirlListener.setCycleCount(Animation.INDEFINITE);
         animation = new ParallelTransition(rotateTransition, callTwirlListener);
-        
+
         // Start invisible:
         setVisible(false);
-        
+
         setPopupSide(Side.BOTTOM);
         // Important to use fields here, not constructor parameters, as the fields may change later
         // if the project shown in this window changes:
         getItems().setAll(
-            JavaFXUtil.makeMenuItem(Config.getString("executionDisplay.restart"), () -> this.project.restartVM(), null),
-            JavaFXUtil.makeMenuItem(Config.getString("executionDisplay.openDebugger"), () -> {
-                this.project.getExecControls().show();
-                this.greenfootDebugHandler.haltSimulationThread();
-            }, null)
+                JavaFXUtil.makeMenuItem(Config.getString("executionDisplay.restart"), () -> this.project.restartVM(), null),
+                JavaFXUtil.makeMenuItem(Config.getString("executionDisplay.openDebugger"), () -> {
+                    this.project.getExecControls().show();
+                    this.greenfootDebugHandler.haltSimulationThread();
+                }, null)
         );
     }
 
     /**
      * Sets a new project (and project debug handler) for this component
      */
-    public void setProject(Project project, GreenfootDebugHandler greenfootDebugHandler)
-    {
+    public void setProject(Project project, GreenfootDebugHandler greenfootDebugHandler) {
         this.project = project;
         this.greenfootDebugHandler = greenfootDebugHandler;
     }
@@ -110,8 +102,7 @@ public class ExecutionTwirler extends MenuButton
     /**
      * Make the twirler visible and start spinning the icon.  Does nothing if already started.
      */
-    public void startTwirling()
-    {
+    public void startTwirling() {
         setVisible(true);
         // Important not to play from start, as this method is called repeatedly
         // while the animation is already running:
@@ -121,22 +112,20 @@ public class ExecutionTwirler extends MenuButton
     /**
      * Make the twirler invisible and stop spinning the icon.  Does nothing if already stopped.
      */
-    public void stopTwirling()
-    {
+    public void stopTwirling() {
         setVisible(false);
         animation.stop();
-        if (twirlListener != null)
-        {
+        if (twirlListener != null) {
             twirlListener.accept(isVisible());
         }
     }
 
     /**
      * Set an action to execute while the twirler is twirling.
-     * @param twirlListener Takes boolean (are we twirling or not?) 
+     *
+     * @param twirlListener Takes boolean (are we twirling or not?)
      */
-    public void setWhileTwirling(FXPlatformConsumer<Boolean> twirlListener)
-    {
+    public void setWhileTwirling(FXPlatformConsumer<Boolean> twirlListener) {
         this.twirlListener = twirlListener;
     }
 }

@@ -21,31 +21,27 @@
  */
 package bluej.debugmgr;
 
-import java.util.ArrayList;
-import java.util.List;
+import bluej.utility.javafx.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-
-import bluej.utility.javafx.FXConsumer;
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.GrowableList;
-import bluej.utility.javafx.HangingFlowPane;
-import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Class that holds the components for  a list of parameters. 
+ * Class that holds the components for  a list of parameters.
  * That is: the actual parameter component and the formal type of the parameter.
+ *
  * @author Poul Henriksen <polle@mip.sdu.dk>
  */
 @OnThread(Tag.FXPlatform)
-public class ParameterList
-{
+public class ParameterList {
     /**
      * The combo boxes for all non-vararg actual parameters.
      */
@@ -55,7 +51,9 @@ public class ParameterList
      * are no varargs.
      */
     private GrowableList<ComboBox<String>> varArgsList;
-    /** The varargs history.  Only relevant if varArgsList != null */
+    /**
+     * The varargs history.  Only relevant if varArgsList != null
+     */
     private final ObservableList<String> varArgsHistory = FXCollections.observableArrayList();
     /**
      * The default parameter value
@@ -64,74 +62,61 @@ public class ParameterList
     private final FXConsumer<TextField> setLastFocused;
     private final FXPlatformRunnable fireOK;
 
-    public ParameterList(int initialSize, String defaultParamValue, FXConsumer<TextField> setLastFocused, FXPlatformRunnable fireOK) 
-    {            
+    public ParameterList(int initialSize, String defaultParamValue, FXConsumer<TextField> setLastFocused, FXPlatformRunnable fireOK) {
         parameters = new ArrayList<>(initialSize);
         this.defaultParamValue = defaultParamValue;
         this.setLastFocused = setLastFocused;
         this.fireOK = fireOK;
     }
 
-    public ComboBox<String> getActualParameter(int index)
-    {
-        if (varArgsList != null && index >= parameters.size())
-        {
+    public ComboBox<String> getActualParameter(int index) {
+        if (varArgsList != null && index >= parameters.size()) {
             int varArgIndex = index - parameters.size();
             return varArgsList.getItem(varArgIndex);
-        }
-        else
-        {
+        } else {
             return parameters.get(index);
         }
     }
-    
-    public ObservableList<? extends Node> getNodesForFormal(int index)
-    {
+
+    public ObservableList<? extends Node> getNodesForFormal(int index) {
         if (varArgsList != null && index == parameters.size())
             return varArgsList.getNodes();
         else
             return FXCollections.observableArrayList(parameters.get(index));
     }
 
-    public void addNormalParameter(String paramType, String paramName, List<String> history)
-    {
+    public void addNormalParameter(String paramType, String paramName, List<String> history) {
         String paramString = paramType + (paramName == null ? "" : " " + paramName);
         parameters.add(createComboBox(paramString, history == null ? null : FXCollections.observableArrayList(history)));
     }
 
-    public int formalCount()
-    {
+    public int formalCount() {
         return parameters.size() + (varArgsList != null ? 1 : 0);
     }
-    
-    public int actualCount()
-    {
+
+    public int actualCount() {
         return parameters.size() + (varArgsList != null ? varArgsList.size() : 0);
     }
 
     /**
      * Set the history for the given element.
-     * 
+     *
      * @param i
      * @param historyList
      */
-    public void setHistory(int i, List<String> historyList)
-    {
-        if(historyList == null) {
+    public void setHistory(int i, List<String> historyList) {
+        if (historyList == null) {
             return;
-        }
-        else if (varArgsList != null && i >= parameters.size()) {
+        } else if (varArgsList != null && i >= parameters.size()) {
             varArgsHistory.setAll(historyList);
-        }
-        else {
+        } else {
             getActualParameter(i).getItems().setAll(historyList);
             getActualParameter(i).getItems().add(0, defaultParamValue);
         }
     }
 
-    protected ComboBox<String> createComboBox(String prompt, ObservableList<String> history)
-    {
-        if(history == null) {
+    protected ComboBox<String> createComboBox(String prompt, ObservableList<String> history) {
+        if (history == null) {
             history = FXCollections.observableArrayList();
         }
         history.add(0, defaultParamValue);
@@ -155,8 +140,7 @@ public class ParameterList
         return component;
     }
 
-    public void addVarArgsTypes(String paramType, String paramName)
-    {
+    public void addVarArgsTypes(String paramType, String paramName) {
         String paramString = paramType + (paramName == null ? "" : " " + paramName);
         varArgsList = new GrowableList(() -> createComboBox(paramString, varArgsHistory));
     }

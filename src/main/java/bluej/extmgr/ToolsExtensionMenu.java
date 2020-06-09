@@ -21,38 +21,34 @@
  */
 package bluej.extmgr;
 
-import javax.swing.JMenuItem;
-
 import bluej.extensions.BPackage;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
 import bluej.pkgmgr.Package;
 
+import javax.swing.*;
+
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Tools
  * menu, allowing extensions to add menu items to the Tools menu.
- * 
+ *
  * @author Simon Gerlach
  */
-public class ToolsExtensionMenu implements ExtensionMenu
-{
+public class ToolsExtensionMenu implements ExtensionMenu {
     private final Package bluejPackage;
-    
+
     /**
      * Constructor. Creates a new {@link ToolsExtensionMenu}.
-     * 
-     * @param bluejPackage
-     *            The package to generate the menu for; null for no open package.
+     *
+     * @param bluejPackage The package to generate the menu for; null for no open package.
      */
-    public ToolsExtensionMenu(Package bluejPackage)
-    {
+    public ToolsExtensionMenu(Package bluejPackage) {
         this.bluejPackage = bluejPackage;
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public JMenuItem getMenuItem(MenuGenerator menuGenerator)
-    {
+    public JMenuItem getMenuItem(MenuGenerator menuGenerator) {
         if (bluejPackage == null) {
             JMenuItem menuItem = menuGenerator.getToolsMenuItem(null);
 
@@ -69,8 +65,7 @@ public class ToolsExtensionMenu implements ExtensionMenu
     }
 
     @Override
-    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem)
-    {
+    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem) {
         if (bluejPackage == null) {
             // Only BPackages can be null when a menu is invoked
             menuGenerator.notifyPostToolsMenu(null, onThisItem);

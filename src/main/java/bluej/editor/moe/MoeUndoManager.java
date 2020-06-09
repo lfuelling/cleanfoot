@@ -30,27 +30,24 @@ import org.fxmisc.undo.UndoManager;
 
 /**
  * An undo/redo manager for the editor. A stack of compound edits is maintained;
- * the "beginCompoundEdit()" and "endCompoundEdit()" methods can be used to 
+ * the "beginCompoundEdit()" and "endCompoundEdit()" methods can be used to
  * create a compound edit (which is treated as a single edit for undo/redo purposes).
- * 
+ *
  * @author Davin McCall
  */
-public class MoeUndoManager
-{
+public class MoeUndoManager {
     private final UndoManager undoManager;
     private BooleanProperty canUndo;
     private BooleanProperty canRedo;
 
-    public MoeUndoManager(MoeEditorPane editorPane)
-    {
+    public MoeUndoManager(MoeEditorPane editorPane) {
         // We uses a plain text undo manager instead of a rich text one.
         // This is to avoid making the undo manager to record the automatic
         // styling that MoeEditor performs.
         undoManager = UndoUtils.plainTextUndoManager(editorPane);
     }
 
-    public UndoManager getUndoManager()
-    {
+    public UndoManager getUndoManager() {
         return undoManager;
     }
 
@@ -58,8 +55,7 @@ public class MoeUndoManager
     /**
      * Runs the given edit action.  See comment within.
      */
-    public void compoundEdit(FXPlatformRunnable edit)
-    {
+    public void compoundEdit(FXPlatformRunnable edit) {
         breakEdit();
         // What we would like to do is carry out the given edit and treat it as a single compound edit; listeners
         // for edits would only be informed of the final state not any intermediate states,
@@ -80,39 +76,32 @@ public class MoeUndoManager
         }
         breakEdit();
     }
-    
-    public BooleanExpression canUndo()
-    {
-        if (canUndo == null)
-        {
+
+    public BooleanExpression canUndo() {
+        if (canUndo == null) {
             canUndo = new SimpleBooleanProperty();
             canUndo.bind(undoManager.undoAvailableProperty());
         }
         return canUndo;
     }
-    
-    public BooleanExpression canRedo()
-    {
-        if (canRedo == null)
-        {
+
+    public BooleanExpression canRedo() {
+        if (canRedo == null) {
             canRedo = new SimpleBooleanProperty();
             canRedo.bind(undoManager.redoAvailableProperty());
         }
         return canRedo;
     }
-    
-    public void undo()
-    {
+
+    public void undo() {
         undoManager.undo();
     }
-    
-    public void redo()
-    {
+
+    public void redo() {
         undoManager.redo();
     }
 
-    public void forgetHistory()
-    {
+    public void forgetHistory() {
         undoManager.forgetHistory();
     }
 
@@ -120,8 +109,7 @@ public class MoeUndoManager
      * Stops edits before this point merging with later edits into one single undoable item
      * (which is what happens by default).
      */
-    public void breakEdit()
-    {
+    public void breakEdit() {
         undoManager.preventMerge();
     }
 }

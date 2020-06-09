@@ -21,12 +21,9 @@
  */
 package bluej.stride.generic;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-
 import bluej.utility.javafx.BetterVBox;
-
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -40,27 +37,20 @@ import javafx.css.Styleable;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.Pane;
 import javafx.scene.Node;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
 
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 // Package-visible
 // A VBox that supports a -bj-left-margin CSS property
-class CanvasVBox extends BetterVBox
-{
+class CanvasVBox extends BetterVBox {
     private final SimpleStyleableDoubleProperty leftMarginProperty = new SimpleStyleableDoubleProperty(LEFT_MARGIN_META_DATA);
     private final SimpleStyleableDoubleProperty bottomMarginProperty = new SimpleStyleableDoubleProperty(BOTTOM_MARGIN_META_DATA);
     private final SimpleStyleableDoubleProperty topMarginProperty = new SimpleStyleableDoubleProperty(TOP_MARGIN_META_DATA);
@@ -103,7 +93,7 @@ class CanvasVBox extends BetterVBox
             JavaFXUtil.cssSize("-bj-top-margin", v -> v.topMarginProperty);
     private static final CssMetaData<CanvasVBox, Number> RIGHT_MARGIN_META_DATA =
             JavaFXUtil.cssSize("-bj-right-margin", v -> v.rightMarginProperty);
-    
+
     private static final CssMetaData<CanvasVBox, Number> MIN_HEIGHT_META_DATA =
             JavaFXUtil.cssSize("-bj-min-height", v -> v.cssMinHeightProperty);
 
@@ -111,9 +101,9 @@ class CanvasVBox extends BetterVBox
             JavaFXUtil.cssSize("-bj-curly-bracket-height", v -> v.curlyBracketHeight);
 
     private static final CssMetaData<CanvasVBox, Number> TOP_FRAME_MARGIN_META_DATA =
-        JavaFXUtil.cssSize("-bj-frame-margin-top", v -> v.frameMarginTopProperty);
+            JavaFXUtil.cssSize("-bj-frame-margin-top", v -> v.frameMarginTopProperty);
     private static final CssMetaData<CanvasVBox, Number> BOTTOM_FRAME_MARGIN_META_DATA =
-        JavaFXUtil.cssSize("-bj-frame-margin-bottom", v -> v.frameMarginBottomProperty);
+            JavaFXUtil.cssSize("-bj-frame-margin-bottom", v -> v.frameMarginBottomProperty);
 
     private static final CssMetaData<CanvasVBox, Color> BORDER_COLOR_META_DATA =
             JavaFXUtil.cssColor("-bj-border-color", v -> v.borderColorProperty);
@@ -133,7 +123,7 @@ class CanvasVBox extends BetterVBox
     private static final CssMetaData<CanvasVBox, Insets> BACKGROUND_RADIUS_META_DATA =
             JavaFXUtil.cssInsets("-bj-background-radius", v -> v.backgroundRadiusProperty);
 
-    private static final List <CssMetaData <? extends Styleable, ? > > cssMetaDataList =
+    private static final List<CssMetaData<? extends Styleable, ?>> cssMetaDataList =
             JavaFXUtil.extendCss(Pane.getClassCssMetaData())
                     .add(LEFT_MARGIN_META_DATA)
                     .add(BOTTOM_MARGIN_META_DATA)
@@ -149,28 +139,33 @@ class CanvasVBox extends BetterVBox
                     .add(BORDER_RADIUS_META_DATA)
                     .add(BORDER_WIDTH_META_DATA)
                     .add(BACKGROUND_RADIUS_META_DATA)
-              .build();
-         
-    public static List <CssMetaData <? extends Styleable, ? > > getClassCssMetaData() { return cssMetaDataList; }
-    @Override public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() { return getClassCssMetaData(); }
+                    .build();
+
+    public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
+        return cssMetaDataList;
+    }
+
+    @Override
+    public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
+        return getClassCssMetaData();
+    }
 
     private final DoubleProperty animateExtraSpace = new SimpleDoubleProperty(0.0);
     // This one is only used by imports canvas at the moment, to animate left border:
     private final DoubleProperty leftMarginScale = new SimpleDoubleProperty(1.0);
-    
+
     private final HashSet<Node> frameNodes = new HashSet<>(); // read-only, for doing margins
 
-    public CanvasVBox(double minWidth, ObservableList<Frame> frames)
-    {
+    public CanvasVBox(double minWidth, ObservableList<Frame> frames) {
         super(minWidth);
         frames.addListener((ListChangeListener<? super Frame>) change -> {
             frameNodes.clear();
             for (Frame f : frames)
                 frameNodes.add(f.getNode());
         });
-        
+
         minHeightProperty().bind(cssMinHeightProperty);
-        
+
         // This is a bit hacky; we borrow our CSS properties and use them to set
         // other CSS properties as the implementation.  But the implementation
         // may change again in future, so it's not a bad idea to decouple our CSS
@@ -199,13 +194,11 @@ class CanvasVBox extends BetterVBox
         backgroundRadiusProperty.addListener(bk);
     }
 
-    private void updateBackground()
-    {
+    private void updateBackground() {
         setBackground(new Background(new BackgroundFill(backgroundColorProperty.get(), makeCornerRadii(backgroundRadiusProperty.get()), calculateMargins(backgroundInsetsProperty.get()))));
     }
 
-    private static CornerRadii makeCornerRadii(Insets xs)
-    {
+    private static CornerRadii makeCornerRadii(Insets xs) {
         if (xs == null)
             return CornerRadii.EMPTY;
         else
@@ -214,8 +207,7 @@ class CanvasVBox extends BetterVBox
             return new CornerRadii(xs.getTop(), xs.getRight(), xs.getBottom(), xs.getLeft(), false);
     }
 
-    private static BorderWidths makeBorderWidths(Insets xs)
-    {
+    private static BorderWidths makeBorderWidths(Insets xs) {
         if (xs == null)
             return BorderWidths.EMPTY;
         else
@@ -224,15 +216,13 @@ class CanvasVBox extends BetterVBox
             return new BorderWidths(xs.getTop(), xs.getRight(), xs.getBottom(), xs.getLeft());
     }
 
-    private void updateBorder()
-    {
+    private void updateBorder() {
         final BorderStrokeStyle style = new BorderStrokeStyle(StrokeType.OUTSIDE, StrokeLineJoin.ROUND, StrokeLineCap.SQUARE, 10.0f, 0.0f, Collections.emptyList());
 
         setBorder(new Border(new BorderStroke(borderColorProperty.get(), style, makeCornerRadii(borderRadiusProperty.get()), makeBorderWidths(borderWidthProperty.get()), calculateMargins(borderInsetsProperty.get()))));
     }
 
-    private Insets calculateMargins(Insets including)
-    {
+    private Insets calculateMargins(Insets including) {
         if (including == null)
             including = Insets.EMPTY;
 
@@ -240,69 +230,63 @@ class CanvasVBox extends BetterVBox
         // drawn inside the child's margins, not outside, even though our style is outside?
         // Anyway, not adding anything for it with 8u60, not sure if it is bug or a fix!
         final int top = (int) topMarginProperty.add(animateExtraSpace.multiply(curlyBracketHeight)).get() + (int) including.getTop();
-        final int right = (int) rightMarginProperty.get() + (int)including.getRight();
+        final int right = (int) rightMarginProperty.get() + (int) including.getRight();
         final int bottom = (int) bottomMarginProperty.add(animateExtraSpace.multiply(curlyBracketHeight)).get() + (int) including.getBottom();
-        final int left = (int) leftMarginProperty.multiply(leftMarginScale).get() + (int)including.getLeft();
+        final int left = (int) leftMarginProperty.multiply(leftMarginScale).get() + (int) including.getLeft();
         return new Insets(top, right, bottom, left);
     }
 
-    public void addSpace(SharedTransition animate)
-    {
+    public void addSpace(SharedTransition animate) {
         animateExtraSpace.bind(animate.getProgress());
         animate.addOnStopped(animateExtraSpace::unbind);
     }
 
-    public void removeSpace(SharedTransition animate)
-    {
+    public void removeSpace(SharedTransition animate) {
         animateExtraSpace.bind(animate.getProgress().negate().add(1.0));
         animate.addOnStopped(animateExtraSpace::unbind);
     }
 
-    public double getBottomMargin()
-    {
-        return (int)bottomMarginProperty.get();
+    public double getBottomMargin() {
+        return (int) bottomMarginProperty.get();
     }
 
     // Public, read-only margins:
-    public DoubleBinding leftMarginProperty()
-    {
-        return new DoubleBinding()
-        {
-            { super.bind(leftMarginProperty); super.bind(leftMarginScale);}
-            
-            @Override
-            protected double computeValue()
+    public DoubleBinding leftMarginProperty() {
+        return new DoubleBinding() {
             {
-                return (int)(leftMarginProperty.get() * leftMarginScale.get());
+                super.bind(leftMarginProperty);
+                super.bind(leftMarginScale);
+            }
+
+            @Override
+            protected double computeValue() {
+                return (int) (leftMarginProperty.get() * leftMarginScale.get());
             }
         };
     }
 
-    public DoubleBinding rightMarginProperty()
-    {
-        return new DoubleBinding()
-        {
-            { super.bind(rightMarginProperty); }
+    public DoubleBinding rightMarginProperty() {
+        return new DoubleBinding() {
+            {
+                super.bind(rightMarginProperty);
+            }
 
             @Override
-            protected double computeValue()
-            {
-                return (int)rightMarginProperty.get();
+            protected double computeValue() {
+                return (int) rightMarginProperty.get();
             }
         };
     }
 
     @Override
-    public double getTopMarginFor(Node n)
-    {
+    public double getTopMarginFor(Node n) {
         if (frameNodes.contains(n))
             return frameMarginTopProperty.get();
         return super.getTopMarginFor(n);
     }
 
     @Override
-    public double getBottomMarginFor(Node n)
-    {
+    public double getBottomMarginFor(Node n) {
         if (frameNodes.contains(n))
             return frameMarginBottomProperty.get();
         return super.getBottomMarginFor(n);
@@ -310,32 +294,29 @@ class CanvasVBox extends BetterVBox
 
     /**
      * Gets the bounds, in scene coordinates, of the contents of the canvas.
-     *
+     * <p>
      * The bounds of getNode() includes the margins of the canvas.  This utility method
      * excludes those margins and just gets the bounds of the actual visible canvas area
      * (which generally has the rounded rectangle around it)
      */
-    public Bounds getContentSceneBounds()
-    {
+    public Bounds getContentSceneBounds() {
         Bounds b = localToScene(getBoundsInLocal());
         return new BoundingBox(
                 b.getMinX() + leftMarginProperty.get(),
                 b.getMinY() + topMarginProperty.get(),
                 b.getWidth() - leftMarginProperty.get() - rightMarginProperty.get(),
                 b.getHeight() - topMarginProperty.get() - bottomMarginProperty.get()
-                );
+        );
     }
 
-    public void animateColorsToPseudoClass(String pseudo, boolean on, SharedTransition animation)
-    {
+    public void animateColorsToPseudoClass(String pseudo, boolean on, SharedTransition animation) {
         final Color startBackground = backgroundColorProperty.get();
         final Color startBorder = borderColorProperty.get();
         JavaFXUtil.setPseudoclass(pseudo, on, this);
         applyCss();
         final Color endBackground = backgroundColorProperty.get();
         final Color endBorder = borderColorProperty.get();
-        if (!startBackground.equals(endBackground) || !startBorder.equals(endBorder))
-        {
+        if (!startBackground.equals(endBackground) || !startBorder.equals(endBorder)) {
             JavaFXUtil.addChangeListener(animation.getProgress(), t -> {
                 Color background = startBackground.interpolate(endBackground, t.doubleValue());
                 Color border = startBorder.interpolate(endBorder, t.doubleValue());
@@ -347,13 +328,11 @@ class CanvasVBox extends BetterVBox
         }
     }
 
-    public DoubleProperty leftMarginScaleProperty()
-    {
+    public DoubleProperty leftMarginScaleProperty() {
         return leftMarginScale;
     }
 
-    public double getCurlyBracketHeight()
-    {
+    public double getCurlyBracketHeight() {
         return curlyBracketHeight.get();
     }
 }

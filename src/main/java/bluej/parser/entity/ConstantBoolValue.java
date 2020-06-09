@@ -25,28 +25,24 @@ import bluej.debugger.gentype.JavaPrimitiveType;
 
 /**
  * A value entity with a compile-time constant boolean value
- * 
+ *
  * @author Davin McCall
  */
-public class ConstantBoolValue extends ValueEntity
-{
+public class ConstantBoolValue extends ValueEntity {
     private final boolean value;
-    
-    public ConstantBoolValue(boolean value)
-    {
+
+    public ConstantBoolValue(boolean value) {
         super(JavaPrimitiveType.getBoolean());
         this.value = value;
     }
-    
+
     @Override
-    public boolean hasConstantBooleanValue()
-    {
+    public boolean hasConstantBooleanValue() {
         return true;
     }
-    
+
     @Override
-    public boolean getConstantBooleanValue()
-    {
+    public boolean getConstantBooleanValue() {
         return value;
     }
 }

@@ -21,17 +21,16 @@
  */
 package bluej.stride.framedjava.convert;
 
+import bluej.stride.framedjava.elements.CodeElement;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import bluej.stride.framedjava.elements.CodeElement;
-
 /**
  * A class for keeping track of the try/catch finally being built up.
  */
-class TryBuilder
-{
+class TryBuilder {
     // Code within the initial try {...} part
     final List<CodeElement> tryContent = new ArrayList<>();
     // The types in the catch (type name) {code} parts (one entry per catch)

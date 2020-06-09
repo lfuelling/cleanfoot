@@ -29,19 +29,16 @@ import bluej.stride.generic.InteractionManager;
 
 import java.util.Collections;
 
-public class OptionalExpressionSlot extends ExpressionSlot<OptionalExpressionSlotFragment>
-{
+public class OptionalExpressionSlot extends ExpressionSlot<OptionalExpressionSlotFragment> {
 
     public OptionalExpressionSlot(InteractionManager editor,
-            Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
-                                  String stylePrefix)
-    {
+                                  Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row,
+                                  String stylePrefix) {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, Collections.emptyList());
     }
 
     @Override
-    protected OptionalExpressionSlotFragment makeSlotFragment(String content, String javaCode)
-    {
+    protected OptionalExpressionSlotFragment makeSlotFragment(String content, String javaCode) {
         return new OptionalExpressionSlotFragment(content, javaCode, this);
     }
 }

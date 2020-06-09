@@ -23,26 +23,22 @@ package bluej.testmgr.record;
 
 /**
  * An invocation record for a free-form statement.
- * 
+ *
  * @author Davin McCall
  */
-public class StatementInvokerRecord extends VoidMethodInvokerRecord
-{
-    public StatementInvokerRecord(String command)
-    {
+public class StatementInvokerRecord extends VoidMethodInvokerRecord {
+    public StatementInvokerRecord(String command) {
         super(command, null);
     }
-    
+
     @Override
-    public String toExpression()
-    {
+    public String toExpression() {
         // A statement cannot be used as an expression
         return null;
     }
-    
+
     @Override
-    public String toStatement()
-    {
+    public String toStatement() {
         return getOriginalCommand();
     }
 }

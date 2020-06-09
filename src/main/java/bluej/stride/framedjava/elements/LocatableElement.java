@@ -21,14 +21,7 @@
  */
 package bluej.stride.framedjava.elements;
 
-import bluej.stride.framedjava.ast.AccessPermissionFragment;
-import bluej.stride.framedjava.ast.ExpressionSlotFragment;
-import bluej.stride.framedjava.ast.FrameFragment;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.StructuredSlotFragment;
-import bluej.stride.framedjava.ast.SuperThisFragment;
-import bluej.stride.framedjava.ast.TextSlotFragment;
-import bluej.stride.framedjava.slots.StructuredSlot;
+import bluej.stride.framedjava.ast.*;
 import nu.xom.Attribute;
 import nu.xom.Element;
 import nu.xom.Elements;
@@ -42,8 +35,7 @@ import java.util.function.BiConsumer;
  * An extension of the XML Element class which also keeps track of enough information
  * to later form XPaths to particular Attributes and Elements.
  */
-public class LocatableElement extends Element
-{
+public class LocatableElement extends Element {
     /**
      * The CodeElement which generated this Element.  Will be used for mapping FrameFragments.
      */
@@ -54,40 +46,35 @@ public class LocatableElement extends Element
      */
     private final HashMap<String, JavaFragment> attrNames = new HashMap<>();
 
-    public LocatableElement(CodeElement origin, String name)
-    {
+    public LocatableElement(CodeElement origin, String name) {
         super(name);
         this.origin = origin;
     }
 
-    public void addAttributeStructured(String name, StructuredSlotFragment code)
-    {
+    public void addAttributeStructured(String name, StructuredSlotFragment code) {
         attrNames.put(name, code);
         addAttribute(new Attribute(name, code.getContent()));
         addAttribute(new Attribute(name + "-java", code.getJavaCode()));
     }
 
-    public void addAttributeAccess(String name, AccessPermissionFragment access)
-    {
+    public void addAttributeAccess(String name, AccessPermissionFragment access) {
         attrNames.put(name, access);
         addAttribute(new Attribute(name, access.getContent()));
     }
 
-    public void addAttributeSuperThis(String name, SuperThisFragment superThis)
-    {
+    public void addAttributeSuperThis(String name, SuperThisFragment superThis) {
         attrNames.put(name, superThis);
         addAttribute(new Attribute(name, superThis.getValue().toString()));
     }
 
-    public void addAttributeCode(String name, TextSlotFragment content)
-    {
+    public void addAttributeCode(String name, TextSlotFragment content) {
         attrNames.put(name, content);
         addAttribute(new Attribute(name, content.getContent()));
     }
 
-    public interface LocationMap
-    {
+    public interface LocationMap {
         String locationFor(JavaFragment fragment);
+
         String locationFor(CodeElement element);
     }
 
@@ -96,19 +83,19 @@ public class LocatableElement extends Element
      * node as the root, and handling all children.  So if you have something like:
      *
      * <class name="Foo" ...>
-       ...
-       <methods>
-          <method access="public" type="void" name="act" enable="true">
-            ...
-            <body>
-               <call expression="..." enable="true"/>
-              <blank/>
-              <call expression="bar()" expression-java="bar()" enable="true"/>
-            </body>
-         </method>
-       </methods>
-       </class>
-     *
+     * ...
+     * <methods>
+     * <method access="public" type="void" name="act" enable="true">
+     * ...
+     * <body>
+     * <call expression="..." enable="true"/>
+     * <blank/>
+     * <call expression="bar()" expression-java="bar()" enable="true"/>
+     * </body>
+     * </method>
+     * </methods>
+     * </class>
+     * <p>
      * Then the map will map the JavaFragment corresponding to the "bar()" expression, to the
      * XPath: "/class[1]/methods[1]/method[1]/body[1]/call[2]/@expression" when called on the class,
      * or "/method[1]/body[1]/call[2]/@expression" when called on the Element from the method.
@@ -118,41 +105,32 @@ public class LocatableElement extends Element
      *                      a unique index to each element.
      * @return A map from JavaFragment to XPath String identifying the location of that fragment.
      */
-    public LocationMap buildLocationMap()
-    {
+    public LocationMap buildLocationMap() {
         IdentityHashMap<JavaFragment, String> map = new IdentityHashMap<>();
         IdentityHashMap<CodeElement, String> elementMap = new IdentityHashMap<>();
 
         addToLocationMap(new HashMap<>(), map::put, elementMap::put);
 
-        return new LocationMap()
-        {
+        return new LocationMap() {
             @Override
-            public String locationFor(JavaFragment fragment)
-            {
-                if (map.containsKey(fragment))
-                {
+            public String locationFor(JavaFragment fragment) {
+                if (map.containsKey(fragment)) {
                     return map.get(fragment);
-                }
-                else if (fragment instanceof FrameFragment)
-                {
-                    FrameFragment ff = (FrameFragment)fragment;
+                } else if (fragment instanceof FrameFragment) {
+                    FrameFragment ff = (FrameFragment) fragment;
                     return elementMap.get(ff.getElement());
-                }
-                else
+                } else
                     return null;
             }
 
             @Override
-            public String locationFor(CodeElement element)
-            {
+            public String locationFor(CodeElement element) {
                 return elementMap.get(element);
             }
         };
     }
 
-    private void addToLocationMap(Map<String, Integer> siblingCounts, BiConsumer<JavaFragment, String> map, BiConsumer<CodeElement, String> elementMap)
-    {
+    private void addToLocationMap(Map<String, Integer> siblingCounts, BiConsumer<JavaFragment, String> map, BiConsumer<CodeElement, String> elementMap) {
         // Form an XPath like "/method[2]" for us, and update counts:
         String me = "/" + getLocalName() + "[" + siblingCounts.getOrDefault(getLocalName(), 1) + "]";
         siblingCounts.put(getLocalName(), siblingCounts.getOrDefault(getLocalName(), 1) + 1);
@@ -164,21 +142,15 @@ public class LocatableElement extends Element
     }
 
 
-
-    private static void processChildren(BiConsumer<JavaFragment, String> map, BiConsumer<CodeElement, String> elementMap, Elements childElements, String me)
-    {
+    private static void processChildren(BiConsumer<JavaFragment, String> map, BiConsumer<CodeElement, String> elementMap, Elements childElements, String me) {
         Map<String, Integer> childCounts = new HashMap<>();
-        for (int i = 0; i < childElements.size(); i++)
-        {
+        for (int i = 0; i < childElements.size(); i++) {
             Element child = childElements.get(i);
-            if (child instanceof LocatableElement)
-            {
-                ((LocatableElement)child).addToLocationMap(childCounts,
+            if (child instanceof LocatableElement) {
+                ((LocatableElement) child).addToLocationMap(childCounts,
                         (frag, path) -> map.accept(frag, me + path),
                         (el, path) -> elementMap.accept(el, me + path));
-            }
-            else
-            {
+            } else {
                 // Plain Element, we'll have to do the legwork ourselves:
                 String them = "/" + child.getLocalName() + "[" + childCounts.getOrDefault(child.getLocalName(), 1) + "]";
                 childCounts.put(child.getLocalName(), childCounts.getOrDefault(child.getLocalName(), 1) + 1);

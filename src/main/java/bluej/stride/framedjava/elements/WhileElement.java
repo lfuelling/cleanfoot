@@ -21,34 +21,26 @@
  */
 package bluej.stride.framedjava.elements;
 
+import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.frames.DebugInfo;
+import bluej.stride.framedjava.frames.WhileFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.ast.JavaContainerDebugHandler;
-import bluej.stride.framedjava.ast.JavaSingleLineDebugHandler;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.WhileFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-
-public class WhileElement extends ContainerCodeElement implements JavaSingleLineDebugHandler, JavaContainerDebugHandler
-{
+public class WhileElement extends ContainerCodeElement implements JavaSingleLineDebugHandler, JavaContainerDebugHandler {
     public static final String ELEMENT = "while";
     private final FilledExpressionSlotFragment condition;
     private final List<CodeElement> contents;
     private WhileFrame frame;
-    
-    public WhileElement(WhileFrame frame, FilledExpressionSlotFragment condition, List<CodeElement> contents, boolean enabled)
-    {
+
+    public WhileElement(WhileFrame frame, FilledExpressionSlotFragment condition, List<CodeElement> contents, boolean enabled) {
         this.frame = frame;
         this.condition = condition;
         this.contents = contents;
@@ -57,36 +49,30 @@ public class WhileElement extends ContainerCodeElement implements JavaSingleLine
     }
 
     @Override
-    public List<CodeElement> childrenUpTo(CodeElement c)
-    {
+    public List<CodeElement> childrenUpTo(CodeElement c) {
         return contents.subList(0, contents.indexOf(c));
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         return JavaSource.createCompoundStatement(frame, this, this, this, Arrays.asList(f(frame, "while ("), condition, f(frame, ")")), CodeElement.toJavaCodes(contents));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement whileEl = new LocatableElement(this, ELEMENT);
         whileEl.addAttributeStructured("condition", condition);
         addEnableAttribute(whileEl);
-        for (CodeElement c : contents)
-        {
+        for (CodeElement c : contents) {
             whileEl.appendChild(c.toXML());
         }
         return whileEl;
     }
-    
-    public WhileElement(Element el)
-    {
+
+    public WhileElement(Element el) {
         condition = new FilledExpressionSlotFragment(el.getAttributeValue("condition"), el.getAttributeValue("condition-java"));
         contents = new ArrayList<CodeElement>();
-        for (int i = 0; i < el.getChildElements().size(); i++)
-        {
+        for (int i = 0; i < el.getChildElements().size(); i++) {
             final Element child = el.getChildElements().get(i);
             CodeElement member = Loader.loadElement(child);
             contents.add(member);
@@ -96,43 +82,36 @@ public class WhileElement extends ContainerCodeElement implements JavaSingleLine
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new WhileFrame(editor, condition, isEnable());
-        for (CodeElement c : contents)
-        {
+        for (CodeElement c : contents) {
             frame.getCanvas().insertBlockAfter(c.createFrame(editor), null);
         }
         return frame;
     }
 
     @Override
-    public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
         return frame.showDebugBefore(debug);
     }
 
     @Override
-    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
         return frame.showDebugAtEnd(debug);
     }
 
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    public Stream<CodeElement> streamContained()
-    {
+    public Stream<CodeElement> streamContained() {
         return streamContained(contents);
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.of(condition);
     }
 }

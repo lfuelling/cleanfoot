@@ -21,48 +21,43 @@
  */
 package bluej.debugger.jdi;
 
-import bluej.debugger.gentype.*;
-
+import bluej.debugger.gentype.JavaType;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 
 /**
  * A proxy-type reflective for arrays.
- * 
+ *
  * @author Davin McCall
  */
-public class JdiArrayReflective extends JdiReflective
-{
+public class JdiArrayReflective extends JdiReflective {
     private final JavaType componentType;
-    
-    public JdiArrayReflective(JavaType t, ReferenceType srctype)
-    {
+
+    public JdiArrayReflective(JavaType t, ReferenceType srctype) {
         super(null, srctype);
         componentType = t;
     }
-    
+
     /**
      * Create a new JdiArrayReflective representing an array with a certain component type.
-     * @param t            The component type
-     * @param classLoader  The classloader used to load the component type (or the array)
-     * @param vm           The virtual machine holding the type
+     *
+     * @param t           The component type
+     * @param classLoader The classloader used to load the component type (or the array)
+     * @param vm          The virtual machine holding the type
      */
-    public JdiArrayReflective(JavaType t, ClassLoaderReference classLoader, VirtualMachine vm)
-    {
+    public JdiArrayReflective(JavaType t, ClassLoaderReference classLoader, VirtualMachine vm) {
         super("[" + t.arrayComponentName(), classLoader, vm);
         componentType = t;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return super.getName();
     }
-    
+
     @Override
-    protected void checkLoaded()
-    {
+    protected void checkLoaded() {
         name = "[" + componentType.arrayComponentName();
         super.checkLoaded();
     }

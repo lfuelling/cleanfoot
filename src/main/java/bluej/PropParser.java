@@ -27,54 +27,54 @@ import java.util.Properties;
 
 /**
  * Handling of property value parsing - substitution of variable values etc.
- * 
+ *
  * <p>Variable substitution is performed for ${variableName} and $variableName -
  * the variable name is terminated by any non-name character, but in either case a
  * '$' escapes the next character. In the first form anything after the variable
  * name is ignored (up to the closing '}').
- * 
+ *
  * <p>The double dollar sign '$$' is an escaped '$'. If a variable name begins with
  * a dollar sign, the variable must be written as '${$$name}' where name is the part
  * of the name after the initial dollar sign.
- * 
+ *
  * <p>The following functions are also supported:
- * 
+ *
  * <ul>
  * <li>${filepath x y} - concatenates file paths x and y to form a complete path
  * <li>${fileUrl x} - returns the given file path x as a file:// URL.
  * </ul>
- * 
+ *
  * <p>Function arguments can contain variable/function substitutions.
- * 
+ *
  * @author Davin McCall
  */
-public class PropParser
-{
-    /** The maximum depth of recursion when substituting variables */
+public class PropParser {
+    /**
+     * The maximum depth of recursion when substituting variables
+     */
     private final static int MAX_DEPTH = 10;
-    
+
     /**
      * Process variable/function substitution on a property value.
-     * @param value  The property value to process
-     * @param subvars  The collection of variable-to-value mappings
-     * @return   The value after substitution
+     *
+     * @param value   The property value to process
+     * @param subvars The collection of variable-to-value mappings
+     * @return The value after substitution
      */
-    public static String parsePropString(String value, Properties subvars)
-    {
+    public static String parsePropString(String value, Properties subvars) {
         StringBuffer outBuffer = new StringBuffer();
         parsePropString(value, outBuffer, subvars, 0);
         return outBuffer.toString();
     }
-    
-    private static void parsePropString(String value, StringBuffer outBuffer, Properties subvars, int depth)
-    {
+
+    private static void parsePropString(String value, StringBuffer outBuffer, Properties subvars, int depth) {
         if (depth > MAX_DEPTH) {
             outBuffer.append(value);
             return;
         }
-        
+
         StringIter iter = new StringIter(value);
-        
+
         while (iter.hasNext()) {
             char cc = iter.next();
             if (cc == '$') {
@@ -83,8 +83,7 @@ public class PropParser
                     if (cc == '$') {
                         // double-dollar collapses to single dollar
                         outBuffer.append('$');
-                    }
-                    else if (cc == '{') {
+                    } else if (cc == '{') {
                         // variable name surrounded by curly brackets
                         processVar(iter, outBuffer, subvars, depth);
                         while (iter.hasNext()) {
@@ -93,64 +92,56 @@ public class PropParser
                                 break;
                             }
                         }
-                    }
-                    else if (isNameChar(cc)) {
+                    } else if (isNameChar(cc)) {
                         // a variable name on its own
                         iter.backup();
                         processVar(iter, outBuffer, subvars, depth);
-                    }
-                    else {
+                    } else {
                         outBuffer.append('$');
                         outBuffer.append(cc);
                     }
-                }
-                else {
+                } else {
                     outBuffer.append('$');
                 }
-            }
-            else {
+            } else {
                 outBuffer.append(cc);
             }
         }
     }
-    
+
     /**
      * Check whether the given character is likely to be part of a property
      * name. (Most punctuation marks are excluded).
      */
-    private static boolean isNameChar(char cc)
-    {
+    private static boolean isNameChar(char cc) {
         if (Character.isWhitespace(cc)) {
             return false;
         }
         if (cc == '/' || cc == '\\' || cc == '{' || cc == '}' || cc == '\"'
-            || cc == '$' || cc == '(' || cc == ')' || cc == ' ' || cc == ':') {
+                || cc == '$' || cc == '(' || cc == ')' || cc == ' ' || cc == ':') {
             return false;
         }
         return cc != ',';
     }
-    
-    private static void processVar(StringIter iter, StringBuffer outBuffer, Properties subvars, int depth)
-    {
+
+    private static void processVar(StringIter iter, StringBuffer outBuffer, Properties subvars, int depth) {
         // Get the variable or function name
         StringBuffer varNameBuf = new StringBuffer();
         while (iter.hasNext()) {
             char cc = iter.next();
             if (isNameChar(cc)) {
                 varNameBuf.append(cc);
-            }
-            else if (cc == '$' && iter.hasNext()) {
+            } else if (cc == '$' && iter.hasNext()) {
                 // '$' can be used to escape non-name characters, so that they can
                 // be used in a property name.
                 cc = iter.next();
                 varNameBuf.append(cc);
-            }
-            else {
+            } else {
                 iter.backup();
                 break;
             }
         }
-        
+
         String varName = varNameBuf.toString();
         if (varName.equals("filePath")) {
             // File path function - concatenates directory names/paths to yield a path
@@ -165,8 +156,7 @@ public class PropParser
                 } while (arg != null);
                 outBuffer.append(f.getAbsolutePath());
             }
-        }
-        else if (varName.equals("fileUrl")) {
+        } else if (varName.equals("fileUrl")) {
             // File url function - takes a file path as an argument, and converts it
             // into a URL.
             String arg = processStringArg(iter, subvars, depth);
@@ -175,11 +165,10 @@ public class PropParser
                 try {
                     String fileUrl = f.toURI().toURL().toString();
                     outBuffer.append(fileUrl);
+                } catch (MalformedURLException mfue) {
                 }
-                catch (MalformedURLException mfue) {}
             }
-        }
-        else {
+        } else {
             // regular variable
             String nval = subvars.getProperty(varName);
             if (nval != null) {
@@ -187,26 +176,25 @@ public class PropParser
             }
         }
     }
-    
+
     /**
      * Process a string argument to a substitution function. Any initial leading whitespace
-     * is skipped. 
-     * 
+     * is skipped.
+     * <p>
      * String arguments can include double-quote-enclosed literal strings, as well as
      * unquoted characters, $-marked variable substitutions, and $-quoted special characters.
      * They are terminated by (unquoted) whitespace or the (unquoted) '}' character.
-     * 
+     * <p>
      * Return is null if no argument is present ('}' is first non-whitespace character).
-     * 
+     *
      * @param iter
      * @return
      */
-    private static String processStringArg(StringIter iter, Properties subvars, int depth)
-    {
+    private static String processStringArg(StringIter iter, Properties subvars, int depth) {
         // Skip any whitespace
         char cc;
         do {
-            if (! iter.hasNext()) {
+            if (!iter.hasNext()) {
                 return null;
             }
             cc = iter.next();
@@ -214,7 +202,7 @@ public class PropParser
         if (cc == '}') {
             return null;
         }
-        
+
         if (cc == '\"') {
             // string literal, quote-enclosed
             StringBuffer result = new StringBuffer();
@@ -226,21 +214,19 @@ public class PropParser
                 result.append(cc);
             }
             return result.toString();
-        }
-        else {
+        } else {
             // String literal, not quote-enclosed, may incorporate variable names.
             // Terminated by any unquoted whitespace character or '}'.
             StringBuffer outBuffer = new StringBuffer();
             iter.backup();
-            
+
             do {
                 cc = iter.next();
                 if (cc == '$' && iter.hasNext()) {
                     cc = iter.next();
                     if (Character.isWhitespace(cc) || cc == '}' || cc == '\"') {
                         outBuffer.append(cc);
-                    }
-                    else if (cc == '{') {
+                    } else if (cc == '{') {
                         // variable name surrounded by curly brackets
                         processVar(iter, outBuffer, subvars, depth);
                         while (iter.hasNext()) {
@@ -249,19 +235,16 @@ public class PropParser
                                 break;
                             }
                         }
-                    }
-                    else {
+                    } else {
                         // a variable name on its own
                         iter.backup();
                         processVar(iter, outBuffer, subvars, depth);
                     }
-                }
-                else {
+                } else {
                     if (Character.isWhitespace(cc) || cc == '}') {
                         iter.backup();
                         break;
-                    }
-                    else if (cc == '\"') {
+                    } else if (cc == '\"') {
                         // string literal, quote-enclosed
                         while (iter.hasNext()) {
                             cc = iter.next();
@@ -270,48 +253,42 @@ public class PropParser
                             }
                             outBuffer.append(cc);
                         }
-                    }
-                    else {
+                    } else {
                         outBuffer.append(cc);
                     }
                 }
             }
             while (iter.hasNext());
-            
+
             return outBuffer.toString();
         }
     }
-    
+
     /**
      * A class for iterating through a string
-     * 
+     *
      * @author Davin McCall
      */
-    private static class StringIter
-    {
+    private static class StringIter {
         private final String string;
         private int curpos;
         private final int limit;
-        
-        StringIter(String string)
-        {
+
+        StringIter(String string) {
             this.string = string;
             limit = string.length();
         }
-        
-        public boolean hasNext()
-        {
+
+        public boolean hasNext() {
             return curpos < limit;
         }
-        
-        public char next()
-        {
+
+        public char next() {
             return string.charAt(curpos++);
         }
-        
-        public void backup()
-        {
+
+        public void backup() {
             curpos--;
-        }        
+        }
     }
 }

@@ -26,14 +26,14 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
- * 
  * @author Andrew Patterson
  * @version $Id: PrefPanelListener.java 16031 2016-06-14 13:32:45Z nccb $
  */
 @OnThread(Tag.FXPlatform)
-public interface PrefPanelListener
-{
+public interface PrefPanelListener {
     void beginEditing(Project project);
+
     void revertEditing(Project project);
+
     void commitEditing(Project project);
 }

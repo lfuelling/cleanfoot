@@ -25,8 +25,6 @@ import bluej.Config;
 import bluej.utility.DialogManager;
 import bluej.utility.javafx.JavaFXUtil;
 import greenfoot.sound.SoundRecorder;
-
-import java.io.File;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -37,6 +35,8 @@ import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+
 
 /**
  * This class manages the saving aspect of SoundRecorderControls:
@@ -46,8 +46,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-class SaveState
-{
+class SaveState {
     private final Window parent;
     private final SoundRecorder recorder;
     private final TextField filenameField = new TextField();
@@ -58,8 +57,7 @@ class SaveState
     // The directory to save into.  Can be null when there is no project open.
     private File projectSoundDir;
 
-    SaveState(Window parent, SoundRecorder recorder)
-    {
+    SaveState(Window parent, SoundRecorder recorder) {
         this.parent = parent;
         this.recorder = recorder;
 
@@ -72,23 +70,17 @@ class SaveState
      *
      * @return a HBox which contains the gui nodes needed for saving a file
      */
-    HBox buildSaveBox()
-    {
+    HBox buildSaveBox() {
         saveButton.setDisable(true);
         saveButton.setOnAction(event -> {
-            if (projectSoundDir != null)
-            {
+            if (projectSoundDir != null) {
                 File destination = new File(projectSoundDir, filenameField.getText() + ".wav");
-                if (destination.exists())
-                {
-                    boolean overwrite = DialogManager.askQuestionFX(parent, "file-exists-overwrite", new String[] {destination.getName()}) == 0;
-                    if (overwrite)
-                    {
+                if (destination.exists()) {
+                    boolean overwrite = DialogManager.askQuestionFX(parent, "file-exists-overwrite", new String[]{destination.getName()}) == 0;
+                    if (overwrite) {
                         saveWAV(destination);
                     }
-                }
-                else
-                {
+                } else {
                     saveWAV(destination);
 
                 }
@@ -106,37 +98,32 @@ class SaveState
         return saveBox;
     }
 
-    void changed(boolean value)
-    {
+    void changed(boolean value) {
         changedSinceSave.set(value);
         updateSavedStatus();
     }
 
-    SimpleBooleanProperty savedProperty()
-    {
+    SimpleBooleanProperty savedProperty() {
         return saved;
     }
 
     /**
      * Updates the save status and save button based on whether the filename field and the recording changes.
      */
-    private void updateSavedStatus()
-    {
-        boolean emptyRecorded =  recorder.getRawSound() == null;
+    private void updateSavedStatus() {
+        boolean emptyRecorded = recorder.getRawSound() == null;
         boolean differentFromSaved = !filenameField.textProperty().get().equals(lastSaveName) || changedSinceSave.get();
         saved.set(emptyRecorded || !differentFromSaved);
         boolean emptyTextField = filenameField.textProperty().isEmpty().get();
         saveButton.disableProperty().set(emptyTextField || saved.get());
     }
 
-    private void saveWAV(File destination)
-    {
+    private void saveWAV(File destination) {
         recorder.writeWAV(destination);
         savedAs(filenameField.getText());
     }
 
-    private void savedAs(String name)
-    {
+    private void savedAs(String name) {
         lastSaveName = name;
         changed(false);
     }
@@ -144,8 +131,7 @@ class SaveState
     /**
      * Set the directory to save sounds into for this project.  May be null.
      */
-    public void setProjectSoundDir(File projectSoundDir)
-    {
+    public void setProjectSoundDir(File projectSoundDir) {
         this.projectSoundDir = projectSoundDir;
     }
 }

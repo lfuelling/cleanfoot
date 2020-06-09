@@ -21,39 +21,32 @@
  */
 package bluej.pkgmgr;
 
+import bluej.Boot;
+import bluej.Config;
+import bluej.utility.Debug;
+import bluej.utility.javafx.JavaFXUtil;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import javafx.application.Platform;
-import javafx.scene.Node;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
-
-import bluej.utility.javafx.JavaFXUtil;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.Boot;
-import bluej.Config;
-import bluej.utility.Debug;
-
 /**
  * Dialog implementing version check functionality.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-final public class VersionCheckDialog extends Dialog<Void>
-{
+final public class VersionCheckDialog extends Dialog<Void> {
     // Internationalisation
     private static final String dialogTitle = Config.getString("pkgmgr.versionDlg.title");
     private static final String helpLine1 = Config.getString("pkgmgr.versionDlg.helpLine1");
@@ -70,17 +63,15 @@ final public class VersionCheckDialog extends Dialog<Void>
     /**
      * Create a new version check dialogue and make it visible.
      */
-    public VersionCheckDialog(Window parent)
-    {
+    public VersionCheckDialog(Window parent) {
         setTitle(dialogTitle);
         initOwner(parent);
         initModality(Modality.WINDOW_MODAL);
         setDialogPane(new DialogPane() {
             @Override
-            protected @OnThread(Tag.FX) Node createButtonBar()
-            {
+            protected @OnThread(Tag.FX) Node createButtonBar() {
                 // Center-align the close button:
-                ButtonBar buttonBar = (ButtonBar)super.createButtonBar();
+                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
                 buttonBar.setButtonOrder("_C_");
                 return buttonBar;
             }
@@ -89,23 +80,21 @@ final public class VersionCheckDialog extends Dialog<Void>
         getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         makeDialog();
     }
-    
+
     /**
-     * Perform a version check. 
+     * Perform a version check.
      */
-    private void doVersionCheck()
-    {
+    private void doVersionCheck() {
         textArea.setText(Config.getString("pkgmgr.checkingVersion"));
         versionThread = new VersionChecker();
         //versionThread.setPriority(Thread.MIN_PRIORITY);
         versionThread.start();
     }
-    
+
     /**
      * Create the dialog interface.
      */
-    private void makeDialog()
-    {
+    private void makeDialog() {
         VBox mainPanel = new VBox();
         {
             JavaFXUtil.addStyleClass(mainPanel, "version-check-dialog-content");
@@ -113,7 +102,7 @@ final public class VersionCheckDialog extends Dialog<Void>
             helpLabel.setWrapText(true);
             helpLabel.setMaxWidth(400.0);
             mainPanel.getChildren().add(helpLabel);
-            
+
             textArea = new TextArea();
             textArea.setEditable(false);
             textArea.setWrapText(true);
@@ -128,43 +117,37 @@ final public class VersionCheckDialog extends Dialog<Void>
     }
 
     @OnThread(Tag.Any)
-    private void setTextLater(String txt)
-    {
+    private void setTextLater(String txt) {
         Platform.runLater(() -> textArea.setText(txt));
     }
 
     /**
      * Private class to run the actual version checking in separate thread.
      */
-    private class VersionChecker extends Thread
-    {
+    private class VersionChecker extends Thread {
         @OnThread(Tag.Any)
-        public VersionChecker()
-        {
+        public VersionChecker() {
         }
-        
+
         /**
-         * Do a version check. That is: open a URL connection to the remote 
+         * Do a version check. That is: open a URL connection to the remote
          * version file and read it. Display version info as appropriate.
          */
         @OnThread(value = Tag.Worker, ignoreParent = true)
-        public void run()
-        {
+        public void run() {
             try {
                 InputStream is = new URL(versionURL).openStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                
-                if(isOutOfDate(reader)) {
-                    if(!isClosed)
+
+                if (isOutOfDate(reader)) {
+                    if (!isClosed)
                         displayNewVersionInfo(reader);
-                }
-                else {
-                    if(!isClosed)
+                } else {
+                    if (!isClosed)
                         setTextLater(Config.getString("pkgmgr.versionDlg.upToDate"));
                 }
-            }
-            catch(IOException exc) {
-                if(!isClosed)
+            } catch (IOException exc) {
+                if (!isClosed)
                     setTextLater("Error: could not access remote version information");
                 Debug.reportError("IO error when trying to access URL\n" + exc);
             }
@@ -176,18 +159,16 @@ final public class VersionCheckDialog extends Dialog<Void>
          * file contains the up-to-date version number.
          */
         @OnThread(Tag.Worker)
-        private boolean isOutOfDate(BufferedReader versionReader)
-        {
+        private boolean isOutOfDate(BufferedReader versionReader) {
             try {
                 newVersion = versionReader.readLine();
-                if(newVersion != null)
+                if (newVersion != null)
                     newVersion = newVersion.trim();
-            }
-            catch(IOException exc) {
+            } catch (IOException exc) {
                 setTextLater("Error: could not read remote version information");
                 Debug.reportError("IO error when reading remote version info\n" + exc);
             }
-            return ! Boot.BLUEJ_VERSION.equals(newVersion);
+            return !Boot.BLUEJ_VERSION.equals(newVersion);
         }
 
         /**
@@ -195,9 +176,8 @@ final public class VersionCheckDialog extends Dialog<Void>
          * info text out of it and display it in the text area.
          */
         @OnThread(Tag.Worker)
-        private void displayNewVersionInfo(BufferedReader versionReader)
-        {
-            if(newVersion == null)
+        private void displayNewVersionInfo(BufferedReader versionReader) {
+            if (newVersion == null)
                 setTextLater("Error: could not read remote version info");
             else {
                 StringBuffer text = new StringBuffer(Config.getString("pkgmgr.versionDlg.currentVersion"));
@@ -211,13 +191,12 @@ final public class VersionCheckDialog extends Dialog<Void>
 
                 try {
                     String line = versionReader.readLine();
-                    while(line != null) {
+                    while (line != null) {
                         text.append(line);
                         text.append("\n");
                         line = versionReader.readLine();
                     }
-                }
-                catch(IOException exc) {
+                } catch (IOException exc) {
                     Debug.reportError("IO error when reading from version file");
                 }
                 Platform.runLater(() -> {

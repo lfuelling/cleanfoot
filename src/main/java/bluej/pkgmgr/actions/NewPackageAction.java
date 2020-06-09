@@ -26,18 +26,15 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "New Package" command. Allows the user to create a new sub-package with a
  * specified name.
- * 
+ *
  * @author Davin McCall
  */
-final public class NewPackageAction extends PkgMgrAction
-{
-    public NewPackageAction(PkgMgrFrame pmf)
-    {
+final public class NewPackageAction extends PkgMgrAction {
+    public NewPackageAction(PkgMgrFrame pmf) {
         super(pmf, "menu.edit.newPackage");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doCreateNewPackage(-1, -1);
     }

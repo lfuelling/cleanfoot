@@ -25,8 +25,6 @@ import bluej.Config;
 import bluej.utility.DialogManager;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
-
-import java.io.File;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -35,18 +33,18 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+
 /**
  * Export dialog's tab for exporting to a local file (project or standalone application).
- * 
+ *
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public abstract class ExportLocalTab extends ExportTab
-{
+public abstract class ExportLocalTab extends ExportTab {
     private final String type;
     private final String extension;
 
@@ -56,16 +54,15 @@ public abstract class ExportLocalTab extends ExportTab
     /**
      * Creates a new instance of an Export Local Tab.
      *
-     * @param parent            The window which will host this tab.
-     * @param scenarioInfo      The scenario info needed for different export functions.
-     * @param scenarioName      The name of the scenario to be shared.
-     * @param defaultExportDir  The default directory to select from.
-     * @param type              The type of the export. e.g. "app" or "project".
-     * @param extension         The extension of the exported file. e.g. ".jar" or ".gfar".
+     * @param parent           The window which will host this tab.
+     * @param scenarioInfo     The scenario info needed for different export functions.
+     * @param scenarioName     The name of the scenario to be shared.
+     * @param defaultExportDir The default directory to select from.
+     * @param type             The type of the export. e.g. "app" or "project".
+     * @param extension        The extension of the exported file. e.g. ".jar" or ".gfar".
      */
     public ExportLocalTab(Window parent, ScenarioInfo scenarioInfo, String scenarioName,
-                          File defaultExportDir, String type, String extension)
-    {
+                          File defaultExportDir, String type, String extension) {
         super(scenarioInfo, "export-" + type + ".png");
         this.parent = parent;
         this.type = type;
@@ -79,18 +76,16 @@ public abstract class ExportLocalTab extends ExportTab
     /**
      * Return the directory where the scenario should be exported.
      */
-    public String getExportFileName()
-    {
+    public String getExportFileName() {
         return targetDirField.getText();
     }
 
     /**
      * Build the component.
      *
-     * @param targetFile  The initial target file that will be export to.
+     * @param targetFile The initial target file that will be export to.
      */
-    protected void buildContentPane(final File targetFile)
-    {
+    protected void buildContentPane(final File targetFile) {
         Label exportLocationLabel = new Label(Config.getString("export." + type + ".location"));
 
         targetDirField = new TextField(targetFile.toString());
@@ -117,39 +112,33 @@ public abstract class ExportLocalTab extends ExportTab
      * Get a user-chosen file name via a file system browser.
      * Set the tab's text field to the selected file.
      *
-     * @param targetFile  The initial target file that will be export to.
+     * @param targetFile The initial target file that will be export to.
      * @return The file name chosen by the user. If the user canceled the dialog,
-     *         an empty string will be returned.
+     * an empty string will be returned.
      */
-    private String askForFileName(File targetFile)
-    {
+    private String askForFileName(File targetFile) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(Config.getString("export." + type + ".choose"));
         fileChooser.setInitialDirectory(targetFile.getParentFile());
         File file = fileChooser.showSaveDialog(parent);
-        if (file == null)
-        {
+        if (file == null) {
             // The user canceled the file chooser dialog.
             return "";
         }
 
         String newName = file.getPath();
-        if (!newName.endsWith(extension))
-        {
-            if (newName.toLowerCase().endsWith(extension))
-            {
+        if (!newName.endsWith(extension)) {
+            if (newName.toLowerCase().endsWith(extension)) {
                 // This means that the extension exists but it has at least a capital letter,
                 // so get rid of it to be replaced with the proper small letters extension.
                 newName = newName.substring(0, newName.length() - extension.length());
             }
             newName += extension;
         }
-        if (file.exists())
-        {
+        if (file.exists()) {
             boolean overwrite = DialogManager.askQuestionFX(parent, "file-exists-overwrite",
-                    new String[] {newName}) == 0;
-            if (!overwrite)
-            {
+                    new String[]{newName}) == 0;
+            if (!overwrite) {
                 // The user didn't accept to overwrite the file,
                 // so re-ask them to choose a file.
                 return askForFileName(targetFile);
@@ -159,14 +148,12 @@ public abstract class ExportLocalTab extends ExportTab
     }
 
     @Override
-    protected void updateInfoFromFields()
-    {
+    protected void updateInfoFromFields() {
         // Nothing to do.
     }
-    
+
     @Override
-    protected ExportInfo getExportInfo()
-    {
+    protected ExportInfo getExportInfo() {
         ExportInfo info = new ExportInfo(scenarioInfo);
         info.setExportFileName(getExportFileName());
         return info;

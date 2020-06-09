@@ -21,6 +21,17 @@
  */
 package bluej.groupwork.actions;
 
+import bluej.Config;
+import bluej.groupwork.*;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.pkgmgr.Project;
+import bluej.utility.Debug;
+import bluej.utility.DialogManager;
+import bluej.utility.Utility;
+import javafx.application.Platform;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -29,41 +40,22 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import javafx.application.Platform;
-
-import bluej.Config;
-import bluej.groupwork.Repository;
-import bluej.groupwork.TeamSettingsController;
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.pkgmgr.Project;
-import bluej.utility.Debug;
-import bluej.utility.DialogManager;
-import bluej.utility.Utility;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * An action to share a project into a repository.
- * 
+ *
  * @author Kasper
  */
 @OnThread(Tag.FXPlatform)
-public class ShareAction extends TeamAction
-{
-    public ShareAction()
-    {
+public class ShareAction extends TeamAction {
+    public ShareAction() {
         super("team.share", true);
     }
-    
+
     @Override
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+    public void actionPerformed(PkgMgrFrame pmf) {
         Project project = pmf.getProject();
-        
+
         if (project == null) {
             return;
         }
@@ -71,8 +63,7 @@ public class ShareAction extends TeamAction
         doShare(pmf, project);
     }
 
-    private void doShare(final PkgMgrFrame pmf, final Project project)
-    {
+    private void doShare(final PkgMgrFrame pmf, final Project project) {
         // The team settings controller is not initially associated with the
         // project, so you can still modify the repository location
         final TeamSettingsController tsc = new TeamSettingsController(project.getProjectDir());
@@ -84,8 +75,7 @@ public class ShareAction extends TeamAction
         try {
             project.saveAll();
             project.saveAllEditors();
-        }
-        catch(IOException ioe) {
+        } catch (IOException ioe) {
             String msg = DialogManager.getMessage("team-error-saving-project");
             if (msg != null) {
                 String finalMsg = Utility.mergeStrings(msg, ioe.getLocalizedMessage());
@@ -95,25 +85,23 @@ public class ShareAction extends TeamAction
         }
         pmf.setStatus(Config.getString("team.sharing"));
         pmf.startProgress();
-        
+
         Thread thread = new Thread() {
-            
+
             TeamworkCommandResult result = null;
 
             @OnThread(value = Tag.Worker, ignoreParent = true)
-            public void run()
-            {
+            public void run() {
                 // boolean resetStatus = true;
                 TeamworkCommand command = repository.shareProject();
                 result = command.getResult();
 
-                if (! result.isError())
-                {
+                if (!result.isError()) {
                     // Run and Wait
                     CompletableFuture<Set<File>> filesFuture = new CompletableFuture<>();
                     CompletableFuture<Boolean> isDVCSFuture = new CompletableFuture<>();
 
-                    Platform.runLater( () -> {
+                    Platform.runLater(() -> {
                         project.setTeamSettingsController(tsc);
                         Set<File> projFiles = tsc.getProjectFiles(true);
                         // Make copy, to ensure thread safety:
@@ -131,13 +119,11 @@ public class ShareAction extends TeamAction
                                 files, Config.getString("team.share.initialMessage"));
                         result = command.getResult();
                         //In DVCS, we need an aditional command: pushChanges.
-                        if (isDVCS){
+                        if (isDVCS) {
                             command = repository.pushChanges();
                             result = command.getResult();
                         }
-                    }
-                    catch (InterruptedException | ExecutionException e)
-                    {
+                    } catch (InterruptedException | ExecutionException e) {
                         Debug.reportError(e);
                     }
                 }
@@ -145,12 +131,9 @@ public class ShareAction extends TeamAction
                 Platform.runLater(() -> {
                     TeamUtils.handleServerResponseFX(result, pmf.getFXWindow());
                     pmf.stopProgress();
-                    if (!result.isError())
-                    {
+                    if (!result.isError()) {
                         pmf.setStatus(Config.getString("team.shared"));
-                    }
-                    else
-                    {
+                    } else {
                         pmf.clearStatus();
                     }
                 });

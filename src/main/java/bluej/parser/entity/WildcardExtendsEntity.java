@@ -29,22 +29,19 @@ import threadchecker.Tag;
 
 /**
  * Represents a "? extends ..." wildcard entity, where the bound has not yet been resolved.
- * 
+ *
  * @author Davin McCall
  */
-public class WildcardExtendsEntity extends TypeArgumentEntity
-{
+public class WildcardExtendsEntity extends TypeArgumentEntity {
     private final JavaEntity extendsBound;
-    
-    public WildcardExtendsEntity(JavaEntity extendsBound)
-    {
+
+    public WildcardExtendsEntity(JavaEntity extendsBound) {
         this.extendsBound = extendsBound;
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public GenTypeParameter getType()
-    {
+    public GenTypeParameter getType() {
         TypeEntity ebType = extendsBound.resolveAsType();
         if (ebType != null) {
             GenTypeSolid cbType = ebType.getType().asSolid();

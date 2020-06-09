@@ -29,12 +29,11 @@ import java.util.EventListener;
 /**
  * Listener to receive notifcations when worlds are created and removed. All methods are called
  * on the simulation thread.
- * 
+ *
  * @author Poul Henriksen
  */
 public interface WorldListener
-    extends EventListener
-{
+        extends EventListener {
     /**
      * Called when a new world is created and shown.
      */

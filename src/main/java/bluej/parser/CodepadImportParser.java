@@ -21,11 +21,6 @@
  */
 package bluej.parser;
 
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import bluej.parser.entity.EntityResolver;
 import bluej.parser.entity.JavaEntity;
 import bluej.parser.entity.UnresolvedEntity;
@@ -33,85 +28,83 @@ import bluej.parser.lexer.LocatableToken;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * A parser to handle "import" statements for the Code Pad.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class CodepadImportParser extends JavaParser
-{
+public class CodepadImportParser extends JavaParser {
     private final EntityResolver resolver;
- 
+
     private boolean importIsStatic = false;
     private boolean importIsWildcard = false;
     private JavaEntity importEntity;
     private String memberName;  // for static imports
-    
-   /**
-    * Construct a codepad import parser. The next step is usually to
-    * call "parseImportStatement()".
-    */
-    public CodepadImportParser(EntityResolver resolver, Reader r)
-    {
+
+    /**
+     * Construct a codepad import parser. The next step is usually to
+     * call "parseImportStatement()".
+     */
+    public CodepadImportParser(EntityResolver resolver, Reader r) {
         super(r);
         this.resolver = resolver;
     }
-    
+
     /**
      * If import statement parse succeeded, this method reveals whether the
      * import was a static import ("import static xyz.abc")
      */
-    public boolean isStaticImport()
-    {
+    public boolean isStaticImport() {
         return importIsStatic;
     }
-    
+
     /**
      * If import statement parse succeeded, this method reveals whether the
      * import was a wildcard import ("import xyz.*", "import static xyz.*")
      */
-    public boolean isWildcardImport()
-    {
+    public boolean isWildcardImport() {
         return importIsWildcard;
     }
-    
+
     /**
      * If import statement parse succeeded, this method returns an entity
      * describing the imported entity. For wildcard imports this is the entity
      * before the wildcard; for (non-wildcard) static imports this is the containing
      * entity, and the imported member(s) name can be determined using getMemberName().
      */
-    public JavaEntity getImportEntity()
-    {
+    public JavaEntity getImportEntity() {
         return importEntity;
     }
-    
+
     /**
      * If import statement parse succeeded, and the import is a non-wildcard static
      * import, this method returns the imported member(s) name (otherwise returns
      * null).
      */
-    public String getMemberName()
-    {
+    public String getMemberName() {
         return memberName;
     }
 
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected void gotImport(List<LocatableToken> tokens, boolean isStatic, LocatableToken importToken, LocatableToken semiColonToken)
-    {
+    protected void gotImport(List<LocatableToken> tokens, boolean isStatic, LocatableToken importToken, LocatableToken semiColonToken) {
         importIsStatic = isStatic;
-        
+
         if (isStatic) {
             // Apparently static classes can be imported with or without the "static" keyword
             // So, a static import imports a field and/or method and/or class.
             // That's right - the same import statement pulls in all three.
-            
+
             // We want to pull the name out
             int newSize = tokens.size() - 2;
             memberName = tokens.get(newSize + 1).getText();
-            
+
             List<LocatableToken> newList = new ArrayList<LocatableToken>(newSize);
             Iterator<LocatableToken> i = tokens.iterator();
             while (newSize > 0) {
@@ -119,31 +112,28 @@ public class CodepadImportParser extends JavaParser
                 newSize--;
             }
             tokens = newList;
-        }
-        else {
+        } else {
             memberName = tokens.get(tokens.size() - 1).getText();
         }
-        
+
         importEntity = getEntityForTokens(tokens);
     }
-    
+
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
     protected void gotWildcardImport(List<LocatableToken> tokens,
-                                     boolean isStatic, LocatableToken importToken, LocatableToken semiColonToken)
-    {
+                                     boolean isStatic, LocatableToken importToken, LocatableToken semiColonToken) {
         importEntity = getEntityForTokens(tokens);
         importIsWildcard = true;
         importIsStatic = isStatic;
     }
-    
+
     /**
      * Get an entity for the given tokens. The tokens should be a dotted identifier,
      * eg "java.lang.String", "java.awt.Color.BLACK", etc.
      */
     @OnThread(Tag.FXPlatform)
-    protected JavaEntity getEntityForTokens(List<LocatableToken> tokens)
-    {
+    protected JavaEntity getEntityForTokens(List<LocatableToken> tokens) {
         Iterator<LocatableToken> i = tokens.iterator();
         String name = i.next().getText();
         JavaEntity entity = UnresolvedEntity.getEntity(resolver, name, null);

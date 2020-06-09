@@ -21,13 +21,6 @@
  */
 package bluej.stride.framedjava.convert;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-
 import bluej.parser.lexer.JavaTokenTypes;
 import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
@@ -36,18 +29,21 @@ import bluej.stride.framedjava.ast.SuperThisParamsExpressionFragment;
 import bluej.stride.framedjava.convert.ConversionWarning.UnsupportedFeature;
 import bluej.stride.framedjava.elements.AssignElement;
 import bluej.stride.framedjava.elements.CodeElement;
-import threadchecker.OnThread;
-import threadchecker.Tag;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
+import java.util.function.Consumer;
 
 /**
  * Class in charge of building expressions.
- * 
+ * <p>
  * Because expressions can nest, beginExpression/endExpression will likely be called
  * multiple times on the same handler.  We pair them off, and only finish when
  * the outermost expression is completed.
  */
-class ExpressionBuilder
-{
+class ExpressionBuilder {
     // The start of the outermost expression
     private LocatableToken start;
     // Amount of expressions begun but not ending:
@@ -66,21 +62,19 @@ class ExpressionBuilder
     private final Consumer<ConversionWarning> addWarning;
     // The stack of currently open masks.  We only need to record
     // the outermost because that will mask all inner masks.
-    private final Stack<Mask> curMasks =  new Stack<>();
+    private final Stack<Mask> curMasks = new Stack<>();
     // The list of completed, non-overlapping masks.  Masks are used
     // to remove e.g. the bodies of anonymous inner classes.
     private final List<Mask> completeMasks = new ArrayList<>();
 
     // Create expression builder, passing all the callbacks we need.
-    ExpressionBuilder(Consumer<Expression> handler, TriFunction<LocatableToken, LocatableToken, List<Mask>, String> getText, Consumer<ConversionWarning> addWarning)
-    {
+    ExpressionBuilder(Consumer<Expression> handler, TriFunction<LocatableToken, LocatableToken, List<Mask>, String> getText, Consumer<ConversionWarning> addWarning) {
         this.handler = handler;
         this.getText = getText;
         this.addWarning = addWarning;
     }
 
-    void expressionBegun(LocatableToken start)
-    {
+    void expressionBegun(LocatableToken start) {
         // Only record first begin:
         if (outstanding == 0)
             this.start = start;
@@ -88,71 +82,59 @@ class ExpressionBuilder
     }
 
     // Return true if we should be removed from the stack
-    boolean expressionEnd(LocatableToken end)
-    {
+    boolean expressionEnd(LocatableToken end) {
         outstanding -= 1;
         // If the outermost has finished, pass it to handler:
-        if (outstanding == 0)
-        {
-            if (assignOp == null)
-            {
+        if (outstanding == 0) {
+            if (assignOp == null) {
                 // No top-level assignment, nothing special to do:
                 String java = getText.apply(start, end, completeMasks);
                 handler.accept(new Expression(java, incDec, addWarning));
-            }
-            else
-            {
+            } else {
                 // We override toStatement to give an assignment statement,
                 // but if they call toFilled, etc, they'll get the expression as-is,
                 // even though Stride won't like it
                 String wholeJava = getText.apply(start, end, completeMasks);
                 String lhs = getText.apply(start, assignOp, completeMasks).trim();
                 String rhs = assignOp.getText().equals("=")
-                    ? getText.apply(assignOp, end, completeMasks).substring(assignOp.getText().length())
-                    : lhs + " " + assignOp.getText().substring(0, assignOp.getText().length() - 1) + " " + getText.apply(assignOp, end, completeMasks).substring(assignOp.getText().length());
+                        ? getText.apply(assignOp, end, completeMasks).substring(assignOp.getText().length())
+                        : lhs + " " + assignOp.getText().substring(0, assignOp.getText().length() - 1) + " " + getText.apply(assignOp, end, completeMasks).substring(assignOp.getText().length());
                 handler.accept(new Expression(wholeJava, incDec, addWarning) {
                     @Override
-                    FilledExpressionSlotFragment toFilled()
-                    {
+                    FilledExpressionSlotFragment toFilled() {
                         addWarning.accept(new UnsupportedFeature(assignOp.getText() + " in expression"));
                         return super.toFilled();
                     }
 
                     @Override
-                    OptionalExpressionSlotFragment toOptional()
-                    {
+                    OptionalExpressionSlotFragment toOptional() {
                         addWarning.accept(new UnsupportedFeature(assignOp.getText() + " in expression"));
                         return super.toOptional();
                     }
 
                     @Override
-                    SuperThisParamsExpressionFragment toSuperThis()
-                    {
+                    SuperThisParamsExpressionFragment toSuperThis() {
                         addWarning.accept(new UnsupportedFeature(assignOp.getText() + " in expression"));
                         return super.toSuperThis();
                     }
 
                     @Override
-                    public CodeElement toStatement()
-                    {
+                    public CodeElement toStatement() {
                         return new AssignElement(null, new Expression(lhs, incDec, addWarning).toFilled(), new Expression(rhs, Collections.emptyList(), addWarning).toFilled(), true);
                     }
                 });
             }
-            
+
             // Finished now:
             return true;
-        }
-        else
+        } else
             // Not finished yet:
             return false;
     }
 
     // Called when a binary operator is seen
-    public void binaryOperator(LocatableToken opToken)
-    {
-        switch (opToken.getType())
-        {
+    public void binaryOperator(LocatableToken opToken) {
+        switch (opToken.getType()) {
             case JavaTokenTypes.BAND_ASSIGN:
             case JavaTokenTypes.BOR_ASSIGN:
             case JavaTokenTypes.BSR_ASSIGN:
@@ -172,43 +154,37 @@ class ExpressionBuilder
                 break;
             default:
                 return;
-        } 
+        }
     }
 
     // Called when a unary (prefix) operator is seen
-    public void unaryOperator(LocatableToken token)
-    {
+    public void unaryOperator(LocatableToken token) {
         if (token.getType() == JavaTokenTypes.INC || token.getType() == JavaTokenTypes.DEC)
             incDec.add(token.getType());
     }
 
     // Called when a unary postfix operator is seen
-    public void postOperator(LocatableToken token)
-    {
+    public void postOperator(LocatableToken token) {
         unaryOperator(token);
     }
 
     // Called to begin masking a section from the given token (incl)
-    public void beginMask(LocatableToken from)
-    {
+    public void beginMask(LocatableToken from) {
         curMasks.push(new Mask(from));
     }
 
     // Called to finish masking a section up to the given token (incl)
-    public void endMask(LocatableToken to)
-    {
+    public void endMask(LocatableToken to) {
         Mask mask = curMasks.pop();
         // Only store outermost mask:
-        if (curMasks.isEmpty())
-        {
+        if (curMasks.isEmpty()) {
             mask.setEnd(to);
             completeMasks.add(mask);
         }
     }
 
     // When BiFunction isn't enough...
-    public interface TriFunction<T1, T2, T3, R>
-    {
+    public interface TriFunction<T1, T2, T3, R> {
         R apply(T1 t1, T2 t2, T3 t3);
     }
 }

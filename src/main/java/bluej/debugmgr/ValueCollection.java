@@ -23,31 +23,27 @@ package bluej.debugmgr;
 
 import java.util.Iterator;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 
 /**
  * A collection of named values (NameValue interface), which may be references
  * (objects) or primitive values.
- * 
+ *
  * @author Davin McCall
  * @version $Id: ValueCollection.java 16607 2016-09-29 14:00:49Z nccb $
  */
-public interface ValueCollection
-{   
+public interface ValueCollection {
     /**
      * Get an iterator through the values in this collection.
      */
     Iterator<? extends NamedValue> getValueIterator();
-    
+
     /**
      * Get a value by name, in this collection or in a parent scope. This may delegate to
      * another collection to provide scoping, and in particular, may provide access to
      * values not seen by the iterator returned by getValueIterator().
-     * 
-     * @param name   The name of the value to retrieve
-     * @return       The value, or null if it does not exist.
+     *
+     * @param name The name of the value to retrieve
+     * @return The value, or null if it does not exist.
      */
     NamedValue getNamedValue(String name);
 }

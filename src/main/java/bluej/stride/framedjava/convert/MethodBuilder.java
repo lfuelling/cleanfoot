@@ -21,19 +21,15 @@
  */
 package bluej.stride.framedjava.convert;
 
+import bluej.stride.framedjava.ast.ParamFragment;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import bluej.parser.lexer.LocatableToken;
-import bluej.stride.framedjava.ast.ParamFragment;
-import threadchecker.OnThread;
-import threadchecker.Tag;
 
 /**
  * A class to record the details of a method/constructor currently being parsed.
  */
-class MethodBuilder
-{
+class MethodBuilder {
     // Type of the method (null if constructor)
     final String type;
     // Name of the method (null if constructor)
@@ -54,8 +50,7 @@ class MethodBuilder
     // Whether the method has a body or not.
     boolean hasBody = false;
 
-    MethodBuilder(String type, String name, List<Modifier> modifiers, String comment)
-    {
+    MethodBuilder(String type, String name, List<Modifier> modifiers, String comment) {
         this.type = type;
         this.name = name;
         this.modifiers.addAll(modifiers);

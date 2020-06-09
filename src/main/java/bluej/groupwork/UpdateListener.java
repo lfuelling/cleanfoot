@@ -21,36 +21,35 @@
  */
 package bluej.groupwork;
 
-import java.io.File;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
 
 /**
  * An interface for listening to changes performed to local files
  * by an update from the repository.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public interface UpdateListener
-{
+public interface UpdateListener {
     /**
      * A file was added or modified locally.
      */
     void fileModified(File f);
-    
+
     /**
      * A file was removed locally.
      */
     void fileRemoved(File f);
-    
+
     /**
      * A directory (and all files within) was removed.
      * The files within might not be individually reported.
      */
     void dirRemoved(File f);
-    
+
     /**
      * Conflicts must be handled.
      */

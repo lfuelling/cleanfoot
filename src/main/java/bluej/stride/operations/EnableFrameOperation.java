@@ -21,64 +21,55 @@
  */
 package bluej.stride.operations;
 
-import java.util.Arrays;
-import java.util.List;
-import javafx.scene.control.CustomMenuItem;
-
 import bluej.Config;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
-
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import javafx.scene.control.CustomMenuItem;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class EnableFrameOperation extends FrameOperation
-{
-    public EnableFrameOperation(InteractionManager editor)
-    {
+import java.util.Arrays;
+import java.util.List;
+
+public class EnableFrameOperation extends FrameOperation {
+    public EnableFrameOperation(InteractionManager editor) {
         super(editor, "ENABLE", Combine.ANY);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void enablePreview()
-    {
+    public void enablePreview() {
         editor.getSelection().getSelected().forEach(frame -> frame.setFrameEnablePreview(Frame.FramePreviewEnabled.PREVIEW_ENABLED));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void disablePreview()
-    {
+    public void disablePreview() {
         editor.getSelection().getSelected().forEach(frame -> frame.setFrameEnablePreview(Frame.FramePreviewEnabled.PREVIEW_NONE));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         frames.forEach(frame -> frame.setFrameEnabled(true));
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.enable"), MenuItemOrder.ENABLE_FRAME));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void onMenuShowing(CustomMenuItem item)
-    {
+    public void onMenuShowing(CustomMenuItem item) {
         // We grey out enable if not all frames can be enabled:
         boolean canAllBeEnabled = editor.getSelection().getSelected().stream().allMatch(f -> f.canHaveEnabledState(true));
         item.setDisable(!canAllBeEnabled);
     }
 
     @Override
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         return true;
     }
 }

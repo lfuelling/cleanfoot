@@ -21,8 +21,6 @@
  */
 package bluej.utility.javafx;
 
-import java.util.ArrayList;
-import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -30,16 +28,17 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by neil on 11/06/2016.
  */
 @OnThread(Tag.FXPlatform)
-public class GrowableList<T extends Node>
-{
+public class GrowableList<T extends Node> {
     private final FXPlatformSupplier<T> newNodeFactory;
     private final List<T> items = new ArrayList<T>();
     // Will always be of size (1 + 3 * items.size())
@@ -48,15 +47,13 @@ public class GrowableList<T extends Node>
     // Positions 2 + 3n will be cross button
     private final ObservableList<Node> inclButtons = FXCollections.observableArrayList();
 
-    public GrowableList(FXPlatformSupplier<T> newNodeFactory)
-    {
+    public GrowableList(FXPlatformSupplier<T> newNodeFactory) {
         this.newNodeFactory = newNodeFactory;
         inclButtons.setAll(makePlusButton());
         addNewItem(0);
     }
 
-    private Node makeCrossButton()
-    {
+    private Node makeCrossButton() {
         Button button = JavaFXUtil.withStyleClass(new Button(), "growable-remove");
         button.setGraphic(JavaFXUtil.withStyleClass(new Region(), "growable-remove-graphic"));
         button.setOnAction(e -> {
@@ -64,7 +61,7 @@ public class GrowableList<T extends Node>
             removeItem((index - 2) / 3);
         });
         button.addEventFilter(MouseEvent.MOUSE_ENTERED, e -> {
-            setRemoveHighlight(button, true /*Always turn on*/); 
+            setRemoveHighlight(button, true /*Always turn on*/);
         });
         button.addEventFilter(MouseEvent.MOUSE_EXITED, e -> {
             setRemoveHighlight(button, button.isFocused() /* Keep only if focused */);
@@ -72,20 +69,18 @@ public class GrowableList<T extends Node>
         // There is a case where if you tab out while the mouse is inside, the highlight will go,
         // but we'll live with that:
         JavaFXUtil.addFocusListener(button, focus -> setRemoveHighlight(button, focus));
-        
+
         HangingFlowPane.setBreakBefore(button, false);
         return button;
     }
-    
-    private void setRemoveHighlight(Button button, boolean on)
-    {
+
+    private void setRemoveHighlight(Button button, boolean on) {
         int index = inclButtons.indexOf(button);
         if (index != -1)
             JavaFXUtil.setPseudoclass("bj-growable-remove-highlight", on, inclButtons.get(index - 1));
     }
 
-    private void removeItem(int index)
-    {
+    private void removeItem(int index) {
         items.remove(index);
         // Important to remove downwards as indexes will change:
         inclButtons.remove(index * 3 + 3);
@@ -93,8 +88,7 @@ public class GrowableList<T extends Node>
         inclButtons.remove(index * 3 + 1);
     }
 
-    private Node makePlusButton()
-    {
+    private Node makePlusButton() {
         Button button = JavaFXUtil.withStyleClass(new Button(), "growable-add");
         button.setGraphic(JavaFXUtil.withStyleClass(new Region(), "growable-add-graphic"));
         button.setOnAction(e -> {
@@ -106,8 +100,7 @@ public class GrowableList<T extends Node>
         return button;
     }
 
-    private void addNewItem(int itemIndex)
-    {
+    private void addNewItem(int itemIndex) {
         T newItem = newNodeFactory.get();
         HangingFlowPane.setBreakBefore(newItem, false);
         items.add(itemIndex, newItem);
@@ -116,18 +109,15 @@ public class GrowableList<T extends Node>
         inclButtons.add(itemIndex * 3 + 3, makePlusButton());
     }
 
-    public T getItem(int index)
-    {
+    public T getItem(int index) {
         return items.get(index);
     }
 
-    public ObservableList<? extends Node> getNodes()
-    {
+    public ObservableList<? extends Node> getNodes() {
         return inclButtons;
     }
 
-    public int size()
-    {
+    public int size() {
         return items.size();
     }
 }

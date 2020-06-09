@@ -24,8 +24,7 @@ package bluej.parser.lexer;
 /**
  * This interface just acts as a container for various Java token types.
  */
-public interface JavaTokenTypes
-{
+public interface JavaTokenTypes {
     int EOF = 1;
     int FINAL = 39;
     int ABSTRACT = 40;
@@ -139,7 +138,7 @@ public interface JavaTokenTypes
     int GOTO = 171;
     int LAMBDA = 172;
     int METHOD_REFERENCE = 173; // Java 8's '::' operator
-    
+
     int INVALID = 174;
-    
+
 }

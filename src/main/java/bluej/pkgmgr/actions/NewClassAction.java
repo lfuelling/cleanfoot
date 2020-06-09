@@ -28,19 +28,16 @@ import bluej.pkgmgr.PkgMgrFrame;
  * "New Class" command. Create a new class in the package, allow the user
  * to enter the name of the class and specify its type (abstract, interface,
  * applet, etc)
- * 
+ *
  * @author Davin McCall
  */
-final public class NewClassAction extends PkgMgrAction
-{
-    public NewClassAction(PkgMgrFrame pmf)
-    {
+final public class NewClassAction extends PkgMgrAction {
+    public NewClassAction(PkgMgrFrame pmf) {
         super(pmf, "menu.edit.newClass");
         shortDescription = Config.getString("tooltip.newClass");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doCreateNewClass(-1, -1);
     }

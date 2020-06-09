@@ -1,7 +1,6 @@
 package bluej.debugger;
 
 import bluej.debugger.gentype.JavaType;
-import bluej.utility.javafx.FXPlatformSupplier;
 import com.sun.jdi.LocalVariable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
@@ -12,8 +11,7 @@ import java.util.function.Supplier;
 /**
  * Created by neil on 18/05/2017.
  */
-public class VarDisplayInfo
-{
+public class VarDisplayInfo {
     private final String access; // May be null (for local vars)
     private final String type;
     private final String name;
@@ -23,17 +21,14 @@ public class VarDisplayInfo
     private final Supplier<DebuggerObject> getObjectToInspect;
 
     @OnThread(Tag.FXPlatform)
-    public VarDisplayInfo(DebuggerField field)
-    {
+    public VarDisplayInfo(DebuggerField field) {
         int mods = field.getModifiers();
         String access = "";
         if (Modifier.isPrivate(mods)) {
             access = "private";
-        }
-        else if (Modifier.isPublic(mods)) {
+        } else if (Modifier.isPublic(mods)) {
             access = "public";
-        }
-        else if (Modifier.isProtected(mods)) {
+        } else if (Modifier.isProtected(mods)) {
             access = "protected";
         }
 
@@ -46,19 +41,15 @@ public class VarDisplayInfo
         type = field.getType().toString(true);
         name = field.getName();
         value = field.getValueString();
-        if (field.isReferenceType() && ! field.isNull())
-        {
+        if (field.isReferenceType() && !field.isNull()) {
             getObjectToInspect = () -> field.getValueObject(null);
-        }
-        else
-        {
+        } else {
             getObjectToInspect = null;
         }
     }
 
     @OnThread(Tag.FXPlatform)
-    public VarDisplayInfo(JavaType vartype, LocalVariable var, String value, Supplier<DebuggerObject> getObjectToInspect)
-    {
+    public VarDisplayInfo(JavaType vartype, LocalVariable var, String value, Supplier<DebuggerObject> getObjectToInspect) {
         access = null;
         type = vartype.toString(true);
         name = var.name();
@@ -66,29 +57,24 @@ public class VarDisplayInfo
         this.getObjectToInspect = getObjectToInspect;
     }
 
-    public String getAccess()
-    {
+    public String getAccess() {
         return access;
     }
 
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public String getValue()
-    {
+    public String getValue() {
         return value;
     }
 
     @OnThread(Tag.Any)
-    public Supplier<DebuggerObject> getFetchObject()
-    {
+    public Supplier<DebuggerObject> getFetchObject() {
         return getObjectToInspect;
     }
 }

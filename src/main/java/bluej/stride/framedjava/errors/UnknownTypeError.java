@@ -21,25 +21,21 @@
  */
 package bluej.stride.framedjava.errors;
 
+import bluej.compiler.Diagnostic.DiagnosticOrigin;
+import bluej.stride.framedjava.ast.SlotFragment;
+import bluej.stride.framedjava.errors.Correction.CorrectionInfo;
+import bluej.stride.generic.AssistContentThreadSafe;
+import bluej.stride.generic.InteractionManager;
+import bluej.utility.javafx.FXPlatformConsumer;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import bluej.compiler.Diagnostic.DiagnosticOrigin;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.ast.TypeSlotFragment;
-import bluej.stride.framedjava.errors.Correction.CorrectionInfo;
-import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.InteractionManager;
-import bluej.utility.Debug;
-import bluej.utility.javafx.FXPlatformConsumer;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-public class UnknownTypeError extends DirectSlotError
-{
+public class UnknownTypeError extends DirectSlotError {
     private final String typeName;
     private final InteractionManager editor;
     private final List<FixSuggestion> corrections = new ArrayList<>();
@@ -50,20 +46,19 @@ public class UnknownTypeError extends DirectSlotError
      * declaration to import the currently-named type from a common package (e.g. unknown type
      * List would offer to import from java.util).
      *
-     * @param slotFragment The fragment with the error.
-     * @param typeName The name of the type which is used, but was not declared
-     * @param replace An action which takes a replacement type name, and substitutes it for the errorneous type name in the original frame.
-     * @param editor The editor of the class (used to add imports)
+     * @param slotFragment        The fragment with the error.
+     * @param typeName            The name of the type which is used, but was not declared
+     * @param replace             An action which takes a replacement type name, and substitutes it for the errorneous type name in the original frame.
+     * @param editor              The editor of the class (used to add imports)
      * @param possibleCorrections The possible other type names (unfiltered: all type names which are in scope)
-     * @param possibleImports The possible packages that we could import a class of this name from.
+     * @param possibleImports     The possible packages that we could import a class of this name from.
      */
     @OnThread(Tag.Any)
-    public UnknownTypeError(SlotFragment slotFragment, String typeName, FXPlatformConsumer<String> replace, InteractionManager editor, Stream<AssistContentThreadSafe> possibleCorrections, Stream<AssistContentThreadSafe> possibleImports)
-    {
+    public UnknownTypeError(SlotFragment slotFragment, String typeName, FXPlatformConsumer<String> replace, InteractionManager editor, Stream<AssistContentThreadSafe> possibleCorrections, Stream<AssistContentThreadSafe> possibleImports) {
         super(slotFragment, DiagnosticOrigin.STRIDE_LATE);
         this.typeName = typeName;
         this.editor = editor;
-        
+
         corrections.addAll(Correction.winnowAndCreateCorrections(typeName, possibleCorrections.map(TypeCorrectionInfo::new), replace));
         corrections.addAll(possibleImports
                 .filter(ac -> ac.getPackage() != null && ac.getName().equals(typeName))
@@ -72,13 +67,18 @@ public class UnknownTypeError extends DirectSlotError
     }
 
     @OnThread(Tag.Any)
-    private static class TypeCorrectionInfo implements CorrectionInfo
-    {
+    private static class TypeCorrectionInfo implements CorrectionInfo {
         private final AssistContentThreadSafe ac;
-        public TypeCorrectionInfo(AssistContentThreadSafe ac) { this.ac = ac; }
-        public String getCorrection() { return ac.getName(); }
-        public String getDisplay()
-        {
+
+        public TypeCorrectionInfo(AssistContentThreadSafe ac) {
+            this.ac = ac;
+        }
+
+        public String getCorrection() {
+            return ac.getName();
+        }
+
+        public String getDisplay() {
             String pkg = ac.getPackage();
             if (pkg == null)
                 return ac.getName();
@@ -86,63 +86,58 @@ public class UnknownTypeError extends DirectSlotError
                 return ac.getName() + " (" + ac.getPackage() + " package)";
         }
     }
-    
-    private class ImportSingleFix extends FixSuggestion
-    {
+
+    private class ImportSingleFix extends FixSuggestion {
         private final AssistContentThreadSafe classInfo;
 
         @OnThread(Tag.Any)
-        public ImportSingleFix(AssistContentThreadSafe ac) { this.classInfo = ac; }
+        public ImportSingleFix(AssistContentThreadSafe ac) {
+            this.classInfo = ac;
+        }
 
         @Override
-        public String getDescription()
-        {
+        public String getDescription() {
             return "Import class " + classInfo.getPackage() + "." + classInfo.getName();
         }
 
         @Override
-        public void execute()
-        {
+        public void execute() {
             editor.addImport(classInfo.getPackage() + "." + classInfo.getName());
         }
     }
 
-    private class ImportPackageFix extends FixSuggestion
-    {
+    private class ImportPackageFix extends FixSuggestion {
         private final AssistContentThreadSafe classInfo;
 
         @OnThread(Tag.Any)
-        public ImportPackageFix(AssistContentThreadSafe ac) { this.classInfo = ac; }
+        public ImportPackageFix(AssistContentThreadSafe ac) {
+            this.classInfo = ac;
+        }
 
         @Override
-        public String getDescription()
-        {
+        public String getDescription() {
             return "Import package " + classInfo.getPackage() + " (for " + classInfo.getName() + " class)";
         }
 
         @Override
-        public void execute()
-        {
+        public void execute() {
             editor.addImport(classInfo.getPackage() + ".*");
         }
-    }    
-    
+    }
+
     @Override
     @OnThread(Tag.Any)
-    public String getMessage()
-    {
+    public String getMessage() {
         return "Unknown type: " + typeName;
     }
 
     @Override
-    public List<? extends FixSuggestion> getFixSuggestions()
-    {
+    public List<? extends FixSuggestion> getFixSuggestions() {
         return corrections;
     }
 
     @Override
-    public boolean isJavaPos()
-    {
+    public boolean isJavaPos() {
         return true;
     }
 }

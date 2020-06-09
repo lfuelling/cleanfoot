@@ -21,82 +21,62 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.List;
-
 import bluej.stride.framedjava.elements.BlankElement;
-import bluej.stride.generic.CanvasParent;
-import bluej.stride.generic.DefaultFrameFactory;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SingleLineFrame;
-import bluej.stride.operations.FrameOperation;
+import bluej.stride.generic.*;
 
-public class BlankFrame extends SingleLineFrame implements CodeFrame<BlankElement>
-{
+public class BlankFrame extends SingleLineFrame implements CodeFrame<BlankElement> {
     // Never changes (can't even be disabled/enabled):
     private final BlankElement blankElement = new BlankElement();
-    
-    public BlankFrame(InteractionManager editor)
-    {
+
+    public BlankFrame(InteractionManager editor) {
         super(editor, "", "blank-");
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
     }
 
     @Override
-    public BlankElement getCode()
-    {
+    public BlankElement getCode() {
         return blankElement;
     }
 
     @Override
-    public void setElementEnabled(boolean enabled)
-    {
+    public void setElementEnabled(boolean enabled) {
         // Ignore
     }
 
     @Override
-    public boolean canHaveEnabledState(boolean enabled)
-    {
+    public boolean canHaveEnabledState(boolean enabled) {
         // Makes no sense to disable blank frame:
         return enabled;
     }
 
-    public static FrameFactory<BlankFrame> getFactory()
-    {
+    public static FrameFactory<BlankFrame> getFactory() {
         return new DefaultFrameFactory<>(BlankFrame.class, BlankFrame::new);
     }
-    
+
     @Override
-    public void updateAppearance(FrameCanvas parentCanvas)
-    {
+    public void updateAppearance(FrameCanvas parentCanvas) {
         super.updateAppearance(parentCanvas);
         if (parentCanvas == null) {
             // When deleting the frame or remove old copy due to drag.
             return;
         }
-        
+
         if (parentCanvas.getParent().getChildKind(parentCanvas) == CanvasParent.CanvasKind.FIELDS) {
             addStyleClass(isInInterface(parentCanvas) ? "interface-blank-frame" : "class-blank-frame");
-        }
-        else
-        {
+        } else {
             removeStyleClass(isInInterface(parentCanvas) ? "interface-blank-frame" : "class-blank-frame");
         }
     }
 
     @Override
-    protected void saveAsRecent()
-    {
+    protected void saveAsRecent() {
         // Do nothing; can never change value
     }
 
-    public boolean isEffectiveFrame()
-    {
+    public boolean isEffectiveFrame() {
         return false;
     }
 }

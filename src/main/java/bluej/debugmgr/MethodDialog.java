@@ -21,14 +21,6 @@
  */
 package bluej.debugmgr;
 
-import java.util.Map;
-
-import javax.swing.SwingUtilities;
-
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.stage.Window;
-
 import bluej.Config;
 import bluej.debugger.gentype.GenTypeParameter;
 import bluej.debugmgr.objectbench.ObjectBenchInterface;
@@ -36,8 +28,11 @@ import bluej.utility.JavaNames;
 import bluej.utility.javafx.FXFormattedPrintWriter;
 import bluej.views.CallableView;
 import bluej.views.MethodView;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.Map;
 
 
 /**
@@ -45,27 +40,26 @@ import threadchecker.Tag;
  * can be an object creation or an invocation of an object method.
  * A new instance of this dialog is created for each method.
  *
- * @author  Michael Kolling
- * @author  Bruce Quig
- * @author  Poul Henriksen <polle@mip.sdu.dk>
+ * @author Michael Kolling
+ * @author Bruce Quig
+ * @author Poul Henriksen <polle@mip.sdu.dk>
  */
 @OnThread(Tag.FXPlatform)
-public class MethodDialog extends CallDialog
-{
+public class MethodDialog extends CallDialog {
     private final boolean rawObject;
 
     // Window Titles
-    private static final String appName = Config.getApplicationName(); 
+    private static final String appName = Config.getApplicationName();
     static final String wCallRoutineTitle = appName + ":  " + Config.getString("pkgmgr.methodCall.titleCall");
 
     private final String methodName;
     private final MethodView method;
-    private final Map<String,GenTypeParameter> typeParameterMap;
+    private final Map<String, GenTypeParameter> typeParameterMap;
     private final Invoker invoker;
 
     /**
      * MethodDialog constructor.
-     * 
+     *
      * @param parentFrame  The parent window for the dialog
      * @param ob           The object bench to listen for object selection on
      * @param callHistory  The call history tracker
@@ -76,11 +70,10 @@ public class MethodDialog extends CallDialog
      *                     (a Map of String -> GenType).
      */
     public MethodDialog(Window parentFrame, ObjectBenchInterface ob, CallHistory callHistory,
-                        String instanceName, MethodView method, Map<String,GenTypeParameter> typeMap, Invoker invoker)
-    {
+                        String instanceName, MethodView method, Map<String, GenTypeParameter> typeMap, Invoker invoker) {
         super(parentFrame, ob, "");
         this.invoker = invoker;
-        
+
         history = callHistory;
 
         // Find out the type of dialog
@@ -91,8 +84,7 @@ public class MethodDialog extends CallDialog
         String callLabel1;
         if (this.method.isStatic()) {
             callLabel1 = JavaNames.stripPrefix(method.getClassName()) + "." + methodName;
-        }
-        else {
+        } else {
             callLabel1 = JavaNames.stripPrefix(instanceName) + "." + methodName;
         }
         if (this.method.isMain()) {
@@ -109,8 +101,7 @@ public class MethodDialog extends CallDialog
         setOnShown(e -> {
             if (typeParameterList != null) {
                 typeParameterList.getActualParameter(0).getEditor().requestFocus();
-            }
-            else if (parameterList != null) {
+            } else if (parameterList != null) {
                 parameterList.getActualParameter(0).getEditor().requestFocus();
             }
             //org.scenicview.ScenicView.show(getDialogPane().getScene());
@@ -122,15 +113,12 @@ public class MethodDialog extends CallDialog
      * Collects arguments and calls watcher objects (Invoker).
      */
     @Override
-    public void handleOK()
-    {
+    public void handleOK() {
         if (!parameterFieldsOk()) {
-            setErrorMessage(emptyFieldMsg);            
-        }
-        else if(!typeParameterFieldsOk()) {
+            setErrorMessage(emptyFieldMsg);
+        } else if (!typeParameterFieldsOk()) {
             setErrorMessage(emptyTypeFieldMsg);
-        } 
-        else {
+        } else {
             setWaitCursor(true);
             invoker.callDialogOK();
         }
@@ -140,17 +128,15 @@ public class MethodDialog extends CallDialog
      * @see bluej.debugmgr.CallDialog#getCallableView()
      */
     @Override
-    protected CallableView getCallableView()
-    {
+    protected CallableView getCallableView() {
         return method;
     }
-    
+
     /*
      * @see bluej.debugmgr.CallDialog#targetIsRaw()
      */
     @Override
-    protected boolean targetIsRaw()
-    {
+    protected boolean targetIsRaw() {
         return rawObject;
     }
 
@@ -158,8 +144,7 @@ public class MethodDialog extends CallDialog
      * @see bluej.debugmgr.CallDialog#getTargetTypeArgs()
      */
     @Override
-    protected Map<String, GenTypeParameter> getTargetTypeArgs()
-    {
+    protected Map<String, GenTypeParameter> getTargetTypeArgs() {
         return typeParameterMap;
     }
 }

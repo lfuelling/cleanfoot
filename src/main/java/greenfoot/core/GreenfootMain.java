@@ -21,56 +21,63 @@
  */
 package greenfoot.core;
 
+import bluej.runtime.ExecServer;
+import bluej.utility.Debug;
 import greenfoot.event.SimulationListener;
-import greenfoot.vmcomm.VMCommsSimulation;
 import greenfoot.platforms.ide.ActorDelegateIDE;
 import greenfoot.platforms.ide.WorldHandlerDelegateIDE;
 import greenfoot.sound.SoundFactory;
 import greenfoot.util.Version;
-
-import java.awt.EventQueue;
-import java.lang.reflect.Field;
+import greenfoot.vmcomm.VMCommsSimulation;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
-
-import bluej.runtime.ExecServer;
-import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.awt.*;
+import java.lang.reflect.Field;
 
 /**
  * The main class for greenfoot. This is a singleton (in the JVM). Since each
  * project is opened in its own JVM there can be several Greenfoot instances,
  * but each will be in its own JVM so it is effectively a singleton.
- * 
+ *
  * @author Poul Henriksen
  */
-public class GreenfootMain extends Thread
-{
+public class GreenfootMain extends Thread {
     public enum VersionInfo {
-        /** The project API version matches the greenfoot API version */
+        /**
+         * The project API version matches the greenfoot API version
+         */
         VERSION_OK,
-        /** The project API version was different, and has been updated */
+        /**
+         * The project API version was different, and has been updated
+         */
         VERSION_UPDATED,
-        /** The project was not a greenfoot project, or the user chose to cancel the open */
-        VERSION_BAD }
-    
-    public static class VersionCheckInfo
-    {
+        /**
+         * The project was not a greenfoot project, or the user chose to cancel the open
+         */
+        VERSION_BAD
+    }
+
+    public static class VersionCheckInfo {
         public final VersionInfo versionInfo;
         public final boolean removeAWTImports;
 
-        public VersionCheckInfo(VersionInfo versionInfo, boolean removeAWTImports)
-        {
+        public VersionCheckInfo(VersionInfo versionInfo, boolean removeAWTImports) {
             this.removeAWTImports = removeAWTImports;
             this.versionInfo = versionInfo;
         }
     }
 
-    /** Version of the API for this Greenfoot release. */
+    /**
+     * Version of the API for this Greenfoot release.
+     */
     private static Version version = null;
 
-    /** Greenfoot is a singleton - this is the instance. */
+    /**
+     * Greenfoot is a singleton - this is the instance.
+     */
     private static GreenfootMain instance;
 
     // The project properties on the debugVM
@@ -81,13 +88,12 @@ public class GreenfootMain extends Thread
     /**
      * Initializes the singleton. This can only be done once - subsequent calls
      * will have no effect.
-     * 
+     *
      * @param projDir     The project directory
      * @param shmFilePath The path to the shared-memory file to be mmap-ed for communication
      */
     @OnThread(Tag.Any)
-    public static void initialize(String projDir, String shmFilePath, int shmFileSize)
-    {
+    public static void initialize(String projDir, String shmFilePath, int shmFileSize) {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         if (instance == null) {
             instance = new GreenfootMain(projDir, shmFilePath, shmFileSize);
@@ -97,8 +103,7 @@ public class GreenfootMain extends Thread
     /**
      * Gets the singleton.
      */
-    public static GreenfootMain getInstance()
-    {
+    public static GreenfootMain getInstance() {
         return instance;
     }
 
@@ -108,8 +113,7 @@ public class GreenfootMain extends Thread
      * Constructor is private. This class is initialised via the 'initialize'
      * method (above).
      */
-    private GreenfootMain(String projDir, String shmFilePath, int shmFileSize)
-    {
+    private GreenfootMain(String projDir, String shmFilePath, int shmFileSize) {
         instance = this;
         try {
 
@@ -136,39 +140,30 @@ public class GreenfootMain extends Thread
                     sim.addSimulationListener(new SimulationListener() {
                         @OnThread(Tag.Simulation)
                         @Override
-                        public void simulationChangedSync(SyncEvent e)
-                        {
+                        public void simulationChangedSync(SyncEvent e) {
                             if (e == SyncEvent.NEW_ACT_ROUND
-                                    || e == SyncEvent.QUEUED_TASK_BEGIN)
-                            {
+                                    || e == SyncEvent.QUEUED_TASK_BEGIN) {
                                 // New act round - will be followed by another NEW_ACT_ROUND event if the simulation
                                 // is running, or a STOPPED event if the act round finishes and the simulation goes
                                 // back to the stopped state.
                                 vmComms.userCodeStarting();
-                            }
-                            else if (e == SyncEvent.END_ACT_ROUND
-                                    || e == SyncEvent.QUEUED_TASK_END)
-                            {
+                            } else if (e == SyncEvent.END_ACT_ROUND
+                                    || e == SyncEvent.QUEUED_TASK_END) {
                                 vmComms.userCodeStopped(e == SyncEvent.QUEUED_TASK_END);
-                            }
-                            else if (e == SyncEvent.DELAY_LOOP_ENTERED)
-                            {
+                            } else if (e == SyncEvent.DELAY_LOOP_ENTERED) {
                                 vmComms.notifyDelayLoopEntered();
-                            }
-                            else if (e == SyncEvent.DELAY_LOOP_COMPLETED)
-                            {
+                            } else if (e == SyncEvent.DELAY_LOOP_COMPLETED) {
                                 vmComms.notifyDelayLoopCompleted();
                             }
                         }
 
                         @Override
-                        public @OnThread(Tag.Any) void simulationChangedAsync(AsyncEvent e)
-                        {
+                        public @OnThread(Tag.Any) void simulationChangedAsync(AsyncEvent e) {
                         }
                     });
 
                     sim.addSimulationListener(SoundFactory.getInstance().getSoundCollection());
-                    
+
                     Simulation.getInstance().setPaused(true);
                     // Important to initialise the simulation before attaching world handler
                     // as the latter begins simulation thread, and we want to have
@@ -182,30 +177,24 @@ public class GreenfootMain extends Thread
 
                 }
             });
-        }
-        catch (Exception exc) {
+        } catch (Exception exc) {
             Debug.reportError("could not create greenfoot main", exc);
         }
     }
-    
+
     /**
      * Gets the version number of the Greenfoot API for this Greenfoot release.
      */
     @OnThread(Tag.Any)
-    public static Version getAPIVersion()
-    {
-        if (version == null)
-        {
-            try
-            {
+    public static Version getAPIVersion() {
+        if (version == null) {
+            try {
                 Class<?> bootCls = Class.forName("bluej.Boot");
                 Field field = bootCls.getField("GREENFOOT_API_VERSION");
                 String versionStr = (String) field.get(null);
                 version = new Version(versionStr);
-            }
-            catch (ClassNotFoundException | SecurityException | NoSuchFieldException |
-                    IllegalArgumentException | IllegalAccessException e)
-            {
+            } catch (ClassNotFoundException | SecurityException | NoSuchFieldException |
+                    IllegalArgumentException | IllegalAccessException e) {
                 Debug.reportError("Could not get Greenfoot API version", e);
                 throw new InternalGreenfootError(e);
             }
@@ -219,8 +208,7 @@ public class GreenfootMain extends Thread
      * the properties keys.
      */
     @OnThread(Tag.Any)
-    public static String getPropString(String key, String defaultValue)
-    {
+    public static String getPropString(String key, String defaultValue) {
         return projectProperties.getString(key, defaultValue);
     }
 }

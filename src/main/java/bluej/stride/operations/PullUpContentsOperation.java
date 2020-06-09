@@ -34,39 +34,34 @@ import java.util.List;
 
 /**
  * Put the contents of canvas frames in place of these frames.
+ *
  * @author Amjad Altadmri
  */
-public class PullUpContentsOperation extends FrameOperation
-{
+public class PullUpContentsOperation extends FrameOperation {
 
-    public PullUpContentsOperation(InteractionManager editor)
-    {
+    public PullUpContentsOperation(InteractionManager editor) {
         super(editor, "PULL_CONTENTS", Combine.ALL);
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.delete.outer"), MenuItemOrder.DELETE));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void enablePreview()
-    {
+    public void enablePreview() {
         editor.getSelection().setPullUpPreview(true);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void disablePreview()
-    {
+    public void disablePreview() {
         editor.getSelection().setPullUpPreview(false);
     }
 
     @Override
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         if (!frames.isEmpty()) {
             FrameCursor cursorBefore = frames.get(0).getCursorBefore();
             frames.forEach(frame -> {
@@ -80,8 +75,7 @@ public class PullUpContentsOperation extends FrameOperation
     }
 
     @Override
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         return true;
     }
 }

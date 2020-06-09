@@ -1,21 +1,14 @@
 package bluej.utility.javafx.dialog;
 
+import bluej.utility.javafx.FXPlatformRunnable;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.animation.RotateTransition;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.Text;
 import javafx.util.Duration;
-
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -25,31 +18,39 @@ import threadchecker.Tag;
  * or clicks an enabled OK button with a non-empty error label.
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class DialogPaneAnimateError extends DialogPane
-{
-    /** An extra action to run when the OK button is mouse overed */
+public class DialogPaneAnimateError extends DialogPane {
+    /**
+     * An extra action to run when the OK button is mouse overed
+     */
     private final FXPlatformRunnable extraMouseEnter;
-    /** The jiggle animation.  Null when not running */
+    /**
+     * The jiggle animation.  Null when not running
+     */
     private RotateTransition animation = null;
-    /** The error label to animate */
+    /**
+     * The error label to animate
+     */
     private final Node errorLabel;
-    /** Whether the error label is empty */
+    /**
+     * Whether the error label is empty
+     */
     private final SimpleBooleanProperty errorLabelEmpty = new SimpleBooleanProperty(true);
-    /** The actual OK button */
+    /**
+     * The actual OK button
+     */
     private Button okButton;
 
     /**
      * Constructs a new Dialog Pane.  Note that the constructor does not actually
      * set the buttons in the dialog (you should do this yourself, meaning you can
      * choose OK-Cancel or OK by itself) or add stylesheets or anything else.
-     * 
-     * @param errorLabel The error label to animate
+     *
+     * @param errorLabel      The error label to animate
      * @param extraMouseEnter An extra action to run when the OK button is mouse overed.
      *                        This may well affect the disabled state of the OK button;
      *                        we only decide whether to run the animation after this action has run.
      */
-    public DialogPaneAnimateError(Label errorLabel, FXPlatformRunnable extraMouseEnter)
-    {
+    public DialogPaneAnimateError(Label errorLabel, FXPlatformRunnable extraMouseEnter) {
         this.errorLabel = errorLabel;
         this.errorLabelEmpty.bind(errorLabel.textProperty().isEmpty());
         this.extraMouseEnter = extraMouseEnter;
@@ -60,14 +61,12 @@ public class DialogPaneAnimateError extends DialogPane
     // for a mouse-entered directly on the OK button.  Instead we wrap the OK button
     // in a pane on which we can listen for mouse events, even when the button inside is disabled.
     @Override
-    protected Node createButton(ButtonType buttonType)
-    {
+    protected Node createButton(ButtonType buttonType) {
         // Take the actual buttons from the superclass:
         Node normal = super.createButton(buttonType);
         // We only bother to wrap the OK button:
-        if (buttonType == ButtonType.OK)
-        {
-            okButton = (Button)normal;
+        if (buttonType == ButtonType.OK) {
+            okButton = (Button) normal;
             // AnchorPane makes the button resize when the pane gets resized (to match other button widths)
             AnchorPane okWrapper = new AnchorPane(normal);
             AnchorPane.setTopAnchor(okButton, 0.0);
@@ -79,8 +78,7 @@ public class DialogPaneAnimateError extends DialogPane
             ButtonBar.setButtonUniformSize(okWrapper, true);
             okWrapper.setOnMouseEntered(e -> {
                 extraMouseEnter.run();
-                if (okButton.isDisable())
-                {
+                if (okButton.isDisable()) {
                     animate();
                 }
             });
@@ -96,10 +94,8 @@ public class DialogPaneAnimateError extends DialogPane
         return normal;
     }
 
-    private void animate()
-    {
-        if (animation == null)
-        {
+    private void animate() {
+        if (animation == null) {
             animation = new RotateTransition(Duration.millis(70), errorLabel);
             animation.setByAngle(5);
             // Rotate, rotate back, rotate, rotate back:
@@ -118,8 +114,7 @@ public class DialogPaneAnimateError extends DialogPane
      * This is different than lookupButton(ButtonType.OK) which will only
      * return the wrapper for the button, not the button itself.
      */
-    public Button getOKButton()
-    {
+    public Button getOKButton() {
         return okButton;
     }
 }

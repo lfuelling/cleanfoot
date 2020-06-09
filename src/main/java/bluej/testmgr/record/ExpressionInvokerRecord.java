@@ -26,29 +26,26 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
- * Records a single user interaction with the 
+ * Records a single user interaction with the
  * method call mechanisms of BlueJ.
- * 
+ *
  * <p>This record is for method calls with no result.
  *
- * @author  Bruce Quig
+ * @author Bruce Quig
  */
-public class ExpressionInvokerRecord extends MethodInvokerRecord 
-{
+public class ExpressionInvokerRecord extends MethodInvokerRecord {
     /**
      * Construct an ExpressionInvokerRecord for the given command/expression.
      */
     @OnThread(Tag.FXPlatform)
-    public ExpressionInvokerRecord(String command) 
-    {
+    public ExpressionInvokerRecord(String command) {
         super(JavaUtils.genTypeFromClass(Object.class), command, null);
     }
 
     /*
      * @see bluej.testmgr.record.MethodInvokerRecord#benchAssignmentTypecast()
      */
-    protected String benchAssignmentTypecast()
-    {
+    protected String benchAssignmentTypecast() {
         StringBuffer sb = new StringBuffer();
 
         sb.append(benchName);
@@ -56,5 +53,5 @@ public class ExpressionInvokerRecord extends MethodInvokerRecord
         sb.append(command);
 
         return sb.toString();
-    }   
+    }
 }

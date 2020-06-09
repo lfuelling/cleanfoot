@@ -25,32 +25,27 @@ import java.util.ArrayList;
 
 /**
  * Represents a reference to a real ScratchObject
- * 
+ * <p>
  * This class is used when first loading from the store file, but after resolve
  * is called, a real (non-reference) ScratchObject will be returned, and thus
  * all instances of ScratchObjectReference will disappear from view.
- * 
- * @author neil
  *
+ * @author neil
  */
-class ScratchObjectReference extends ScratchObject
-{
+class ScratchObjectReference extends ScratchObject {
     // The one-based index into the object table
     private final int index;
-    
-    public ScratchObjectReference(int i)
-    {
+
+    public ScratchObjectReference(int i) {
         index = i;
     }
 
-    public ScratchObject resolve(ArrayList<ScratchObject> objects)
-    {
+    public ScratchObject resolve(ArrayList<ScratchObject> objects) {
         // Convert one-based index to zero-based index into the array list:
         return objects.get(index - 1);
     }
-    
-    public String toString()
-    {
+
+    public String toString() {
         return "{#" + index + "}";
     }
 }

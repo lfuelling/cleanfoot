@@ -21,8 +21,18 @@
  */
 package bluej.utility;
 
-import java.awt.Component;
-import java.awt.Dimension;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.pkgmgr.Package;
+import bluej.utility.filefilter.DirectoryFilter;
+import bluej.utility.filefilter.JavaSourceFilter;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import javax.swing.*;
+import javax.swing.plaf.FileChooserUI;
+import javax.swing.plaf.basic.BasicFileChooserUI;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -30,39 +40,22 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.plaf.FileChooserUI;
-import javax.swing.plaf.basic.BasicFileChooserUI;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.pkgmgr.Package;
-import bluej.utility.filefilter.DirectoryFilter;
-import bluej.utility.filefilter.JavaSourceFilter;
-
 /**
  * A file chooser for opening packages.
- *
+ * <p>
  * Extends the behaviour of JFileChooser in the following ways:
- * 
+ *
  * <ul>
  * <li>Only directories (either BlueJ packages or plain ones) are displayed.
  * <li>BlueJ packages are displayed with a different icon.
  * </ul>
  *
- * @author  Michael Kolling
- * @author  Axel Schmolitzky
- * @author  Markus Ostman
+ * @author Michael Kolling
+ * @author Axel Schmolitzky
+ * @author Markus Ostman
  */
 @OnThread(Tag.Swing)
-class PackageChooser extends JFileChooser
-{
+class PackageChooser extends JFileChooser {
     static private final Icon classIcon = Config.getFixedImageAsIcon("class-icon.png");
     static private final Icon packageIcon = Config.getFixedImageAsIcon("package-icon.png");
 
@@ -74,23 +67,21 @@ class PackageChooser extends JFileChooser
 
     /**
      * Create a new PackageChooser.
-     * 
-     * @param startDirectory    the directory to start the package selection in.
-     * @param preview           whether to show the package structure preview pane
-     * @param showArchives      whether to allow choosing jar and zip files
+     *
+     * @param startDirectory the directory to start the package selection in.
+     * @param preview        whether to show the package structure preview pane
+     * @param showArchives   whether to allow choosing jar and zip files
      */
-    public PackageChooser(File startDirectory, boolean preview, boolean showArchives)
-    {
+    public PackageChooser(File startDirectory, boolean preview, boolean showArchives) {
         super(startDirectory);
 
         if (showArchives) {
             setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        }
-        else {
+        } else {
             setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         }
         setFileView(new PackageFileView());
-        
+
         if (preview) {
             displayPanel = new PackageDisplay(startDirectory);
 
@@ -102,7 +93,7 @@ class PackageChooser extends JFileChooser
                     if (!(e.getNewValue() instanceof File)) {
                         return;
                     }
-                    File dir = (File)e.getNewValue();
+                    File dir = (File) e.getNewValue();
                     if (dir == null) {
                         return;
                     }
@@ -118,37 +109,35 @@ class PackageChooser extends JFileChooser
             });
         }
     }
-    
+
     /**
      * Set whether this chooser should allow new (non-existing) files to
      * be selected. This does not actually prevent the user from specifying
      * a non-existing file, it just tweaks UI behaviour a bit.
      */
-    public void setAllowNewFiles(boolean allowNewFiles)
-    {
+    public void setAllowNewFiles(boolean allowNewFiles) {
         this.allowNewFiles = allowNewFiles;
     }
-    
+
     /* (non-Javadoc)
      * @see javax.swing.JFileChooser#accept(java.io.File)
      */
     @Override
-    public boolean accept(File f)
-    {
+    public boolean accept(File f) {
         if (f.isDirectory())
             return true;
-        
+
         String fname = f.getName();
         return fname.endsWith(".jar") || fname.endsWith(".JAR") ||
                 fname.endsWith(".zip") || fname.endsWith(".ZIP")
-                || (Config.isGreenfoot() && (fname.endsWith(".gfar") || fname.endsWith(".GFAR") || 
-                        fname.endsWith(".sb")));
+                || (Config.isGreenfoot() && (fname.endsWith(".gfar") || fname.endsWith(".GFAR") ||
+                fname.endsWith(".sb")));
     }
 
     /**
-     *  A directory was double-clicked. If this is a BlueJ package, consider
-     *  this a package selection and accept it as the "Open" action, otherwise
-     *  just traverse into the directory.
+     * A directory was double-clicked. If this is a BlueJ package, consider
+     * this a package selection and accept it as the "Open" action, otherwise
+     * just traverse into the directory.
      */
     @Override
     public void setCurrentDirectory(File dir)   // redefined
@@ -156,8 +145,7 @@ class PackageChooser extends JFileChooser
         if (Package.isPackage(dir)) {
             setSelectedFile(dir);
             super.approveSelection();
-        }
-        else{
+        } else {
             super.setCurrentDirectory(dir);
             if (allowNewFiles) {
                 // Hack to make file chooser behave slightly nicer. The default behaviour is to put
@@ -171,18 +159,16 @@ class PackageChooser extends JFileChooser
             }
         }
     }
-    
+
     /**
      * Approve the selection. We have this mainly so that derived classes
      * can call it...
      */
-    protected void approved()
-    {
+    protected void approved() {
         super.approveSelection();
     }
-    
-    class PackageDisplay extends JList
-    {
+
+    class PackageDisplay extends JList {
         // number of lines at the top to display a header
         // explaining what the PackageDisplay is
         final int headerLines = 3;
@@ -191,21 +177,22 @@ class PackageChooser extends JFileChooser
         // and hence will have a different icon)
         int lastClass = 0;
 
-        PackageDisplay(File displayDir)
-        {
-            this.setPreferredSize(new Dimension(150,200));
+        PackageDisplay(File displayDir) {
+            this.setPreferredSize(new Dimension(150, 200));
             this.setCellRenderer(new MyListRenderer());
 
             setDisplayDirectory(displayDir);
         }
 
         @Override
-        protected void processMouseEvent(MouseEvent e) { }
-        @Override
-        protected void processMouseMotionEvent(MouseEvent e) { }
+        protected void processMouseEvent(MouseEvent e) {
+        }
 
-        void setDisplayDirectory(File displayDir)
-        {
+        @Override
+        protected void processMouseMotionEvent(MouseEvent e) {
+        }
+
+        void setDisplayDirectory(File displayDir) {
             if (displayDir == null)
                 return;
 
@@ -219,10 +206,10 @@ class PackageChooser extends JFileChooser
             listVec.add(previewLine2);
             listVec.add(" ");
 
-            if(subDirs != null) {
-                for(lastClass=0; lastClass<srcFiles.length && lastClass<maxDisplay; lastClass++) {
+            if (subDirs != null) {
+                for (lastClass = 0; lastClass < srcFiles.length && lastClass < maxDisplay; lastClass++) {
                     String javaFileName =
-                       JavaNames.stripSuffix(srcFiles[lastClass].getName(), "." + SourceType.Java.toString().toLowerCase());
+                            JavaNames.stripSuffix(srcFiles[lastClass].getName(), "." + SourceType.Java.toString().toLowerCase());
 
                     // check if the name would be a valid java name
                     if (!JavaNames.isIdentifier(javaFileName))
@@ -234,8 +221,8 @@ class PackageChooser extends JFileChooser
                 }
             }
 
-            if(srcFiles != null) {
-                for(int i=0; i<subDirs.length && i<maxDisplay; i++) {
+            if (srcFiles != null) {
+                for (int i = 0; i < subDirs.length && i < maxDisplay; i++) {
                     // first check if the directory name would be a valid package name
                     if (!JavaNames.isIdentifier(subDirs[i].getName()))
                         continue;
@@ -246,7 +233,7 @@ class PackageChooser extends JFileChooser
                     File[] subSubDirs = subDirs[i].listFiles(new DirectoryFilter());
 
                     if (subSubDirs != null) {
-                        for(int j=0; j<subSubDirs.length; j++) {
+                        for (int j = 0; j < subSubDirs.length; j++) {
                             // first check if the directory name would be a valid package name
                             if (!JavaNames.isIdentifier(subSubDirs[j].getName()))
                                 continue;
@@ -260,21 +247,18 @@ class PackageChooser extends JFileChooser
             setListData(listVec.toArray());
         }
 
-        class MyListRenderer extends DefaultListCellRenderer
-        {
+        class MyListRenderer extends DefaultListCellRenderer {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index,
-                                                    boolean isSelected, boolean cellHasFocus)
-            {
+                                                          boolean isSelected, boolean cellHasFocus) {
                 Component s = super.getListCellRendererComponent(list, value, index,
-                                                                    isSelected, cellHasFocus);
+                        isSelected, cellHasFocus);
 
                 if (index >= headerLines) {
-                    if ((index-headerLines) < lastClass) {
-                        ((JLabel)s).setIcon(classIcon);
-                    }
-                    else {
-                        ((JLabel)s).setIcon(packageIcon);
+                    if ((index - headerLines) < lastClass) {
+                        ((JLabel) s).setIcon(classIcon);
+                    } else {
+                        ((JLabel) s).setIcon(packageIcon);
                     }
                 }
                 return s;

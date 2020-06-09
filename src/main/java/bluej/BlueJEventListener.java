@@ -26,23 +26,22 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
- ** Interface for listeners to BlueJ events (see class BlueJEvent).
- **
- ** @author Michael Kolling
+ * * Interface for listeners to BlueJ events (see class BlueJEvent).
+ * *
+ * * @author Michael Kolling
  **/
 @OnThread(Tag.FXPlatform)
-public interface BlueJEventListener
-{
+public interface BlueJEventListener {
     /**
      * Called when a BlueJ event is raised. The event can be any BlueJEvent
      * type. The implementation of this method should check first whether
      * the event type is of interest an return immediately if it isn't.
      *
-     * @param eventId  A constant identifying the event. One of the event id
-     *                 constants defined in BlueJEvent.
-     * @param arg      An event specific parameter. See BlueJEvent for 
-     *                 definition.
-     * @param prj      A project where the event happens
+     * @param eventId A constant identifying the event. One of the event id
+     *                constants defined in BlueJEvent.
+     * @param arg     An event specific parameter. See BlueJEvent for
+     *                definition.
+     * @param prj     A project where the event happens
      */
     void blueJEvent(int eventId, Object arg, Project prj);
 }

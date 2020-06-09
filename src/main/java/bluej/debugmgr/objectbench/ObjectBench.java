@@ -21,17 +21,6 @@
  */
 package bluej.debugmgr.objectbench;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import javafx.geometry.Point2D;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.TilePane;
-
 import bluej.Config;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.GenTypeClass;
@@ -41,20 +30,24 @@ import bluej.pkgmgr.PkgMgrFrame;
 import bluej.testmgr.record.InvokerRecord;
 import bluej.utility.JavaNames;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.geometry.Point2D;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.TilePane;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.*;
 
 /**
  * The class responsible for the panel that displays objects
  * at the bottom of the package manager.
- * 
- * @author  Michael Cahill
- * @author  Andrew Patterson
+ *
+ * @author Michael Cahill
+ * @author Andrew Patterson
  */
 @OnThread(Tag.FXPlatform)
 public class ObjectBench extends javafx.scene.control.ScrollPane implements ValueCollection,
-    ObjectBenchInterface, PkgMgrFrame.PkgMgrPane
-{
+        ObjectBenchInterface, PkgMgrFrame.PkgMgrPane {
     @OnThread(Tag.Any)
     private final List<ObjectBenchListener> listenerList = new ArrayList<>();
     private ObjectBenchPanel obp;
@@ -71,31 +64,29 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private ObjectWrapper selectedObject;
     private final PkgMgrFrame pkgMgrFrame;
-    
+
     // All invocations done since our last reset.
     @OnThread(Tag.FXPlatform)
     private List<InvokerRecord> invokerRecords;
-   
+
     /**
      * Construct an object bench which is used to hold
      * a bunch of object reference Components.
      */
     @OnThread(Tag.FXPlatform)
-    public ObjectBench(PkgMgrFrame pkgMgrFrame)
-    {
+    public ObjectBench(PkgMgrFrame pkgMgrFrame) {
         super();
         createComponent();
         this.pkgMgrFrame = pkgMgrFrame;
         updateAccessibleName();
     }
-    
+
     /**
      * Updates the accessible name for screen readers, based on the number
      * of objects currently on the bench
      */
     @OnThread(Tag.FXPlatform)
-    private void updateAccessibleName()
-    {
+    private void updateAccessibleName() {
         String name = Config.getString("pkgmgr.objBench.title");
         final int n = getObjectCount();
         name += ": " + n + " " + Config.getString(n == 1 ? "pkgmgr.objBench.suffix.singular" : "pkgmgr.objBench.suffix.plural");
@@ -106,31 +97,28 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      * Add an object (in the form of an ObjectWrapper) to this bench.
      */
     @OnThread(Tag.Any)
-    public void addObject(ObjectWrapper wrapper)
-    {
+    public void addObject(ObjectWrapper wrapper) {
         addObject(wrapper, Optional.empty());
     }
 
     @OnThread(Tag.Any)
-    public void addObject(ObjectWrapper wrapper, Optional<Point2D> animateFromScene)
-    {
+    public void addObject(ObjectWrapper wrapper, Optional<Point2D> animateFromScene) {
         // check whether name is already taken
 
         String newname = wrapper.getName();
         int count = 1;
-        
+
         if (JavaNames.isJavaKeyword(newname)) {
             newname = "x" + newname;
         }
 
-        while(hasObject(newname)) {
+        while (hasObject(newname)) {
             count++;
             newname = wrapper.getName() + count;
         }
         wrapper.setName(newname);
 
-        synchronized (ObjectBench.this)
-        {
+        synchronized (ObjectBench.this) {
             objects.add(wrapper);
         }
 
@@ -144,27 +132,25 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
             wrapper.animateIn(animateFromScene);
             updateAccessibleName();
         });
-        
+
     }
 
     @Override
-    public String addObject(DebuggerObject object, GenTypeClass type, String name)
-    {
+    public String addObject(DebuggerObject object, GenTypeClass type, String name) {
         ObjectWrapper wrapper = ObjectWrapper.getWrapper(
                 pkgMgrFrame, this,
                 object,
                 type,
-                name);       
+                name);
         addObject(wrapper);
         return wrapper.getName();
     }
-    
+
     /**
      * Return all the wrappers stored in this object bench in an array
      */
     @OnThread(Tag.Any)
-    public synchronized List<ObjectWrapper> getObjects()
-    {
+    public synchronized List<ObjectWrapper> getObjects() {
         // We take a copy because we want to avoid unsafe thread accesses
         // on the returned list:
         return Collections.unmodifiableList(new ArrayList<>(objects));
@@ -175,67 +161,62 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      * the ValueCollection interface)
      */
     @OnThread(Tag.Any)
-    public Iterator<ObjectWrapper> getValueIterator()
-    {
+    public Iterator<ObjectWrapper> getValueIterator() {
         // Iterates on the copy that getObjects provides, so thread-safe:
         return getObjects().iterator();
     }
-    
+
     /**
      * Get the object with name 'name', or null, if it does not
      * exist.
      *
-     * @param name  The name to check for.
-     * @return  The named object wrapper, or null if not found.
+     * @param name The name to check for.
+     * @return The named object wrapper, or null if not found.
      */
     @OnThread(Tag.Any)
-    public synchronized ObjectWrapper getObject(String name)
-    {
-        for(Iterator<ObjectWrapper> i = objects.iterator(); i.hasNext(); ) {
+    public synchronized ObjectWrapper getObject(String name) {
+        for (Iterator<ObjectWrapper> i = objects.iterator(); i.hasNext(); ) {
             ObjectWrapper wrapper = i.next();
-            if(wrapper.getName().equals(name))
+            if (wrapper.getName().equals(name))
                 return wrapper;
         }
         return null;
     }
-    
+
     @OnThread(Tag.Any)
-    public NamedValue getNamedValue(String name)
-    {
+    public NamedValue getNamedValue(String name) {
         return getObject(name);
     }
 
     /**
      * Check whether the bench contains an object with name 'name'.
      *
-     * @param name  The name to check for.
+     * @param name The name to check for.
      */
     @OnThread(Tag.Any)
-    public boolean hasObject(String name)
-    {
+    public boolean hasObject(String name) {
         return getObject(name) != null;
     }
 
-    
+
     /**
      * Count of object bench copmponents that are object wrappers
+     *
      * @return number of ObjectWrappers on the bench
      */
     @OnThread(Tag.Any)
-    public synchronized int getObjectCount()
-    {
+    public synchronized int getObjectCount() {
         return objects.size();
     }
 
-    
+
     /**
      * Remove all objects from the object bench.
      */
-    public synchronized void removeAllObjects(String scopeId)
-    {
-        setSelectedObject (null);
+    public synchronized void removeAllObjects(String scopeId) {
+        setSelectedObject(null);
 
-        for(Iterator<ObjectWrapper> i = objects.iterator(); i.hasNext(); ) {
+        for (Iterator<ObjectWrapper> i = objects.iterator(); i.hasNext(); ) {
             ObjectWrapper wrapper = i.next();
             wrapper.prepareRemove();
             wrapper.getPackage().getDebugger().removeObject(scopeId, wrapper.getName());
@@ -246,18 +227,17 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         updateAccessibleName();
     }
 
-    
+
     /**
      * Remove an object from the object bench. When this is done, the object
      * is also removed from the scope of the package (so it is not accessible
      * as a parameter anymore) and the bench is redrawn.
      */
-    public synchronized void removeObject(ObjectWrapper wrapper, String scopeId)
-    {
-        if(wrapper == selectedObject) {
+    public synchronized void removeObject(ObjectWrapper wrapper, String scopeId) {
+        if (wrapper == selectedObject) {
             setSelectedObject(null);
         }
-        
+
         wrapper.prepareRemove();
         wrapper.getPackage().getDebugger().removeObject(scopeId, wrapper.getName());
         objects.remove(wrapper);
@@ -266,46 +246,43 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         updateAccessibleName();
     }
 
-    
+
     /**
      * Remove the selected object from the bench. If no object is selected,
      * do nothing.
      */
-    public void removeSelectedObject(String scopeId)
-    {
+    public void removeSelectedObject(String scopeId) {
         ObjectWrapper wrapper = getSelectedObject();
-        if(wrapper != null)
+        if (wrapper != null)
             removeObject(wrapper, scopeId);
     }
-    
-    
+
+
     /**
-     * Sets what is the currently selected ObjectWrapper, null can be given to 
+     * Sets what is the currently selected ObjectWrapper, null can be given to
      * signal that no wrapper is selected.
      */
     @OnThread(Tag.FXPlatform)
-    public synchronized void setSelectedObject(ObjectWrapper aWrapper)
-    {
+    public synchronized void setSelectedObject(ObjectWrapper aWrapper) {
         if (selectedObject != null) {
             selectedObject.setSelected(false);
         }
         selectedObject = aWrapper;
-        
+
         if (selectedObject != null && !selectedObject.isFocused()) {
             selectedObject.requestFocus();
         }
     }
-    
+
     /**
      * Notify that an object has gained focus. The object becomes the selected object.
      */
     @OnThread(Tag.FXPlatform)
-    public synchronized void objectGotFocus(ObjectWrapper aWrapper)
-    {
+    public synchronized void objectGotFocus(ObjectWrapper aWrapper) {
         if (selectedObject == aWrapper) {
             return;
         }
-        
+
         if (selectedObject != null) {
             selectedObject.setSelected(false);
         }
@@ -313,88 +290,80 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         selectedObject = aWrapper;
         selectedObject.setSelected(true);
     }
-    
+
     /**
-     * Returns the currently selected object wrapper. 
+     * Returns the currently selected object wrapper.
      * If no wrapper is selected null is returned.
      */
     @OnThread(Tag.Any)
-    public synchronized ObjectWrapper getSelectedObject()
-    {
+    public synchronized ObjectWrapper getSelectedObject() {
         return selectedObject;
     }
 
-    
+
     /**
      * Add a listener for object events to this bench.
-     * @param l  The listener object.
+     *
+     * @param l The listener object.
      */
     @OnThread(Tag.Any)
-    public void addObjectBenchListener(ObjectBenchListener l)
-    {
-        synchronized (listenerList)
-        {
+    public void addObjectBenchListener(ObjectBenchListener l) {
+        synchronized (listenerList) {
             listenerList.add(l);
         }
     }
-    
+
 
     /**
      * Remove a listener for object events to this bench.
-     * @param l  The listener object.
+     *
+     * @param l The listener object.
      */
     @OnThread(Tag.Any)
-    public void removeObjectBenchListener(ObjectBenchListener l)
-    {
-        synchronized (listenerList)
-        {
+    public void removeObjectBenchListener(ObjectBenchListener l) {
+        synchronized (listenerList) {
             listenerList.remove(l);
         }
     }
-    
-    
+
+
     /**
      * Fire an object event for the named object. This will
      * notify all listeners that have registered interest for
      * notification on this event type.
      */
     @OnThread(Tag.FXPlatform)
-    public void fireObjectSelectedEvent(ObjectWrapper wrapper)
-    {
-        synchronized (listenerList)
-        {
+    public void fireObjectSelectedEvent(ObjectWrapper wrapper) {
+        synchronized (listenerList) {
             // process the listeners last to first, notifying
             // those that are interested in this event
-            for (int i = listenerList.size() - 1; i >= 0; i--)
-            {
+            for (int i = listenerList.size() - 1; i >= 0; i--) {
                 listenerList.get(i).objectEvent(
-                    new ObjectBenchEvent(this,
-                        ObjectBenchEvent.OBJECT_SELECTED, wrapper));
+                        new ObjectBenchEvent(this,
+                                ObjectBenchEvent.OBJECT_SELECTED, wrapper));
             }
         }
     }
-    
+
     // --- KeyListener interface ---
 
     /**
      * A key was pressed in the object bench.
+     *
      * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
      */
-    public synchronized void keyPressed(KeyEvent e) 
-    {
+    public synchronized void keyPressed(KeyEvent e) {
         int selectedObjectIndex;
-        if(selectedObject == null) {
+        if (selectedObject == null) {
             selectedObjectIndex = -1;
-        }
-        else {
+        } else {
             selectedObjectIndex = objects.indexOf(selectedObject);
         }
-        switch (e.getCode()){
+        switch (e.getCode()) {
             case LEFT:
                 if (selectedObjectIndex > 0) {
                     selectedObjectIndex--;
-                }
-                else {
+                } else {
                     selectedObjectIndex = 0;
                 }
                 setSelectedObjectByIndex(selectedObjectIndex);
@@ -432,8 +401,7 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      * Sets the selected object from an index in the objects list.
      * The index MUST be valid.
      */
-    private synchronized void setSelectedObjectByIndex(int i)
-    {
+    private synchronized void setSelectedObjectByIndex(int i) {
         objects.get(i).requestFocus();
     }
 
@@ -441,97 +409,90 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
     /**
      * Post the object menu for the selected object.
      */
-    private synchronized void showPopupMenu() 
-    {
-        if(selectedObject != null) {
+    private synchronized void showPopupMenu() {
+        if (selectedObject != null) {
             selectedObject.showMenu();
         }
     }
 
     // --- methods for interaction recording ---
-    
+
     /**
      * Reset the recording of invocations.
      */
     @OnThread(Tag.FXPlatform)
-    public void resetRecordingInteractions()
-    {
+    public void resetRecordingInteractions() {
         invokerRecords = new LinkedList<InvokerRecord>();
     }
 
     @OnThread(Tag.FXPlatform)
-    public void addInteraction(InvokerRecord ir)
-    {
+    public void addInteraction(InvokerRecord ir) {
         if (invokerRecords == null)
             resetRecordingInteractions();
-            
-        invokerRecords.add(ir);    
+
+        invokerRecords.add(ir);
     }
-    
+
     /**
      * Get the recorded interaction fixture declarations as Java code.
      */
     @OnThread(Tag.FXPlatform)
-    public String getFixtureDeclaration(String firstIndent)
-    {
+    public String getFixtureDeclaration(String firstIndent) {
         StringBuffer sb = new StringBuffer();
         Iterator<InvokerRecord> it = invokerRecords.iterator();
-        
-        while(it.hasNext()) {
+
+        while (it.hasNext()) {
             InvokerRecord ir = it.next();
-            
+
             if (ir.toFixtureDeclaration(firstIndent) != null) {
                 sb.append(ir.toFixtureDeclaration(firstIndent));
             }
-        }                    
+        }
 
         return sb.toString();
     }
-    
+
     /**
      * Get the recorded interaction fixture setup as Java code.
      */
     @OnThread(Tag.FXPlatform)
-    public String getFixtureSetup(String secondIndent)
-    {
+    public String getFixtureSetup(String secondIndent) {
         StringBuffer sb = new StringBuffer();
         Iterator<InvokerRecord> it = invokerRecords.iterator();
-        
-        while(it.hasNext()) {
+
+        while (it.hasNext()) {
             InvokerRecord ir = it.next();
-            
+
             if (ir.toFixtureSetup(secondIndent) != null) {
                 sb.append(ir.toFixtureSetup(secondIndent));
             }
-        }                    
+        }
 
         return sb.toString();
     }
-    
+
     /**
      * Get the recorded interactions as Java code.
      */
     @OnThread(Tag.FXPlatform)
-    public String getTestMethod(String secondIndent)
-    {
+    public String getTestMethod(String secondIndent) {
         StringBuffer sb = new StringBuffer();
         Iterator<InvokerRecord> it = invokerRecords.iterator();
-        
-        while(it.hasNext()) {
+
+        while (it.hasNext()) {
             InvokerRecord ir = it.next();
 
             String testMethod = ir.toTestMethod(pkgMgrFrame, secondIndent);
             if (testMethod != null) {
                 sb.append(testMethod);
             }
-        }                    
+        }
 
         return sb.toString();
     }
 
     @OnThread(Tag.FXPlatform)
-    private synchronized void createComponent()
-    {
+    private synchronized void createComponent() {
         // a panel holding the actual object components
         obp = new ObjectBenchPanel();
         JavaFXUtil.addStyleClass(this, "object-bench");
@@ -555,10 +516,8 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      * and actually holds the object wrapper components.
      */
     @OnThread(Tag.FXPlatform)
-    private final class ObjectBenchPanel extends TilePane
-    {
-        public ObjectBenchPanel()
-        {
+    private final class ObjectBenchPanel extends TilePane {
+        public ObjectBenchPanel() {
             //this.setPrefWidth(ObjectWrapper.WIDTH);
             //this.prefHeightProperty().bind()  TODO is this necessary?  HEIGHT * numrows
             JavaFXUtil.addStyleClass(this, "object-bench-panel");
@@ -567,14 +526,12 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         /**
          * Return the current number of rows or objects on this bench.
          */
-        public int getNumberOfRows()
-        {
+        public int getNumberOfRows() {
             int objects = getChildren().size();
-            if(objects == 0) {
+            if (objects == 0) {
                 return 1;
-            }
-            else {
-                int objectsPerRow = (int)getWidth() / ObjectWrapper.WIDTH;
+            } else {
+                int objectsPerRow = (int) getWidth() / ObjectWrapper.WIDTH;
                 return (objects + objectsPerRow - 1) / objectsPerRow;
             }
         }
@@ -583,17 +540,15 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
         /**
          * Return the current number of rows or objects on this bench.
          */
-        public int getNumberOfColumns()
-        {
-            return (int)getWidth() / ObjectWrapper.WIDTH;
+        public int getNumberOfColumns() {
+            return (int) getWidth() / ObjectWrapper.WIDTH;
         }
 
     }
 
     @Override
     @OnThread(Tag.FX)
-    public void requestFocus()
-    {
+    public void requestFocus() {
         // Override default behaviour (in which clicking on scroll pane
         // gives it focus).
         // Don't let the pane request focus.
@@ -603,8 +558,7 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      * Does one of the objects contained within have focus?
      */
     @OnThread(Tag.FXPlatform)
-    public synchronized boolean objectHasFocus()
-    {
+    public synchronized boolean objectHasFocus() {
         return objects.stream().anyMatch(w -> w.isFocused());
     }
 
@@ -615,11 +569,9 @@ public class ObjectBench extends javafx.scene.control.ScrollPane implements Valu
      * @param currentObject The object to highlight (may be null,
      *                      to just clear all existing highlights)
      */
-    public void highlightObject(DebuggerObject currentObject)
-    {
+    public void highlightObject(DebuggerObject currentObject) {
         // Clear highlights on other objects:
-        for (ObjectWrapper wrapper : objects)
-        {
+        for (ObjectWrapper wrapper : objects) {
             wrapper.setHighlight(currentObject != null && Objects.equals(wrapper.obj, currentObject));
         }
     }

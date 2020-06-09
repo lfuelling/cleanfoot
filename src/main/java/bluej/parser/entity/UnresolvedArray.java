@@ -21,52 +21,45 @@
  */
 package bluej.parser.entity;
 
-import java.util.List;
-
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 
+import java.util.List;
+
 /**
  * An array entity, where the element type hasn't yet been resolved.
- * 
+ *
  * @author Davin McCall
  */
-public class UnresolvedArray extends JavaEntity
-{
+public class UnresolvedArray extends JavaEntity {
     private final JavaEntity baseType;
-    
-    public UnresolvedArray(JavaEntity baseType)
-    {
+
+    public UnresolvedArray(JavaEntity baseType) {
         this.baseType = baseType;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return null;
     }
 
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return null;
     }
 
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return null;
     }
 
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
-    
+
     @Override
-    public TypeEntity resolveAsType()
-    {
+    public TypeEntity resolveAsType() {
         TypeEntity bt = baseType.resolveAsType();
         if (bt != null) {
             return new TypeEntity(bt.getType().getArray());

@@ -31,15 +31,13 @@ import java.io.File;
  *
  * @author Michael Kolling
  */
-class BlueJFileChooser extends JFileChooser
-{
+class BlueJFileChooser extends JFileChooser {
     /**
      * Create a new BlueJFileChooser.
      *
-     * @param   startDirectory  directory to start the package selection in.
+     * @param startDirectory directory to start the package selection in.
      */
-    public BlueJFileChooser(String startDirectory)
-    {
+    public BlueJFileChooser(String startDirectory) {
         super(startDirectory);
         setFileView(new PackageFileView());
     }
@@ -54,7 +52,7 @@ class BlueJFileChooser extends JFileChooser
         //Here we could treat bluej package differently
         //At the moment nothing is done.
         //if (Package.isBlueJPackage(dir)) { ...
-        
+
         //commented out post 1.1.6 to fix null pointer issue with J2SDK 1.4
         //setSelectedFile(null);              //clear the textfield
         super.setCurrentDirectory(dir);

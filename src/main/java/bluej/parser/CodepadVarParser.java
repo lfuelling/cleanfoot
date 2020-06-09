@@ -21,12 +21,6 @@
  */
 package bluej.parser;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
 import bluej.debugger.gentype.JavaType;
 import bluej.debugmgr.codepad.DeclaredVar;
 import bluej.parser.entity.EntityResolver;
@@ -36,48 +30,49 @@ import bluej.parser.lexer.LocatableToken;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Parse variable declarations/initializations (for the codepad).
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class CodepadVarParser extends JavaParser
-{
+public class CodepadVarParser extends JavaParser {
     private final EntityResolver resolver;
-    
+
     private int arrayCount = 0;
     private int modifiers = 0;
     private boolean gotFirstVar = false;
     private JavaType baseType;
     private final List<DeclaredVar> variables = new ArrayList<DeclaredVar>();
-    
-    
-    public CodepadVarParser(EntityResolver resolver, Reader reader)
-    {
+
+
+    public CodepadVarParser(EntityResolver resolver, Reader reader) {
         super(reader);
         this.resolver = resolver;
     }
 
-    public CodepadVarParser(EntityResolver resolver, String text)
-    {
+    public CodepadVarParser(EntityResolver resolver, String text) {
         this(resolver, new StringReader(text));
     }
-    
+
     /**
      * Get the variables found to be declared by the parsed text. This should be called after
      * first calling "parseVariableDeclarations()".
      */
-    public List<DeclaredVar> getVariables()
-    {
+    public List<DeclaredVar> getVariables() {
         return variables;
     }
-    
+
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected void gotTypeSpec(List<LocatableToken> tokens)
-    {
-        if (! gotFirstVar) {
+    protected void gotTypeSpec(List<LocatableToken> tokens) {
+        if (!gotFirstVar) {
             JavaEntity bent = ParseUtils.getTypeEntity(resolver, null, tokens);
             if (bent == null) {
                 return;
@@ -88,16 +83,14 @@ public class CodepadVarParser extends JavaParser
             }
         }
     }
-        
+
     @Override
-    protected void gotArrayDeclarator()
-    {
+    protected void gotArrayDeclarator() {
         arrayCount++;
     }
-    
+
     @Override
-    protected void gotVariableDecl(LocatableToken first, LocatableToken idToken, boolean inited)
-    {
+    protected void gotVariableDecl(LocatableToken first, LocatableToken idToken, boolean inited) {
         gotFirstVar = true;
         if (baseType != null) {
             JavaType vtype = baseType;
@@ -109,10 +102,9 @@ public class CodepadVarParser extends JavaParser
                     vtype, idToken.getText()));
         }
     }
-    
+
     @Override
-    protected void gotSubsequentVar(LocatableToken first, LocatableToken idToken, boolean inited)
-    {
+    protected void gotSubsequentVar(LocatableToken first, LocatableToken idToken, boolean inited) {
         if (baseType != null) {
             JavaType vtype = baseType;
             while (arrayCount > 0) {
@@ -123,15 +115,14 @@ public class CodepadVarParser extends JavaParser
                     vtype, idToken.getText()));
         }
     }
-    
+
     @Override
-    protected void gotModifier(LocatableToken token)
-    {
-        if (! gotFirstVar) {
+    protected void gotModifier(LocatableToken token) {
+        if (!gotFirstVar) {
             if (token.getType() == JavaTokenTypes.FINAL) {
                 modifiers |= Modifier.FINAL;
             }
         }
     }
-    
+
 }

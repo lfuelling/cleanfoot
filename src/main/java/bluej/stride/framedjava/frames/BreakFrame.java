@@ -26,47 +26,43 @@
 package bluej.stride.framedjava.frames;
 
 
+import bluej.stride.framedjava.elements.BreakElement;
+import bluej.stride.generic.*;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
-import bluej.stride.framedjava.elements.BreakElement;
-import bluej.stride.generic.DefaultFrameFactory;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SingleLineFrame;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A break statement (no parameters). Further, the break statement takes on the colour of whatever it is breaking from, to indicate that it has some scope-level significance.
+ *
  * @author Fraser McKay
  */
 public class BreakFrame extends SingleLineFrame
-  implements CodeFrame<BreakElement>, DebuggableFrame
-{
+        implements CodeFrame<BreakElement>, DebuggableFrame {
 
     private SimpleDoubleProperty xOffset;
     private SimpleDoubleProperty yOffset;
 
-    public enum BreakEncloser
-    {
+    public enum BreakEncloser {
         WHILE, FOREACH, SWITCH;
-        
-        public String getPseudoClass()
-        {
-            switch (this)
-            {
-            case WHILE: return "bj-break-while";
-            case FOREACH: return "bj-break-foreach";
-            case SWITCH: return "bj-break-switch";
+
+        public String getPseudoClass() {
+            switch (this) {
+                case WHILE:
+                    return "bj-break-while";
+                case FOREACH:
+                    return "bj-break-foreach";
+                case SWITCH:
+                    return "bj-break-switch";
             }
             return null; // Impossible
         }
     }
-    
+
     private BreakElement element;
     private Rectangle rectangle;
     private FrameCanvas outer;
@@ -76,37 +72,31 @@ public class BreakFrame extends SingleLineFrame
     /**
      * Default constructor.
      */
-    private BreakFrame(InteractionManager editor)
-    {
+    private BreakFrame(InteractionManager editor) {
         super(editor, "break", "break-");
         setHeaderRow(previewSemi);
     }
-    
-    public BreakFrame(InteractionManager editor, boolean enabled)
-    {
+
+    public BreakFrame(InteractionManager editor, boolean enabled) {
         this(editor);
         frameEnabledProperty.set(enabled);
     }
-        
+
     @Override
-    public void updateAppearance(FrameCanvas c)
-    {
+    public void updateAppearance(FrameCanvas c) {
         super.updateAppearance(c);
-        if (!normalView || !isFrameEnabled())
-        {
+        if (!normalView || !isFrameEnabled()) {
             JavaFXUtil.runNowOrLater(() -> setOverlay(false, null, null));
             return;
         }
-        
+
         // Remove all relevant pseudo-classes:
         for (BreakEncloser e : BreakEncloser.values())
             JavaFXUtil.setPseudoclass(e.getPseudoClass(), false, getNode());
-        
-        while (c != null && c.getParent() != null && c.getParent().getFrame() != null && c.getParent().getFrame() instanceof CodeFrame<?>)
-        {
-            CodeFrame<?> cf = (CodeFrame<?>)c.getParent().getFrame();
-            if (cf.asBreakEncloser() != null)
-            {
+
+        while (c != null && c.getParent() != null && c.getParent().getFrame() != null && c.getParent().getFrame() instanceof CodeFrame<?>) {
+            CodeFrame<?> cf = (CodeFrame<?>) c.getParent().getFrame();
+            if (cf.asBreakEncloser() != null) {
                 JavaFXUtil.setPseudoclass(cf.asBreakEncloser().getPseudoClass(), true, getNode());
                 final FrameCanvas cFinal = c;
                 JavaFXUtil.runNowOrLater(() -> setOverlay(true, cFinal, cf.asBreakEncloser().getPseudoClass()));
@@ -117,25 +107,21 @@ public class BreakFrame extends SingleLineFrame
         JavaFXUtil.runNowOrLater(() -> setOverlay(false, null, null));
     }
 
-    public static FrameFactory<BreakFrame> getFactory()
-    {
+    public static FrameFactory<BreakFrame> getFactory() {
         return new DefaultFrameFactory<>(BreakFrame.class, BreakFrame::new);
     }
 
     @Override
-    public BreakElement getCode()
-    {
+    public BreakElement getCode() {
         return element;
     }
-    
+
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         element = new BreakElement(this, frameEnabledProperty.get());
     }
 
-    private void adjustOverlayBounds()
-    {
+    private void adjustOverlayBounds() {
         if (outer == null || rectangle == null || overlay == null)
             return;
 
@@ -152,10 +138,8 @@ public class BreakFrame extends SingleLineFrame
     }
 
     @OnThread(Tag.FXPlatform)
-    private void setOverlay(boolean on, FrameCanvas outer, String pseudo)
-    {
-        if (on && overlay == null)
-        {
+    private void setOverlay(boolean on, FrameCanvas outer, String pseudo) {
+        if (on && overlay == null) {
             this.outer = outer;
             rectangle = new Rectangle();
             overlay = new VBox(rectangle);
@@ -168,12 +152,10 @@ public class BreakFrame extends SingleLineFrame
 
             JavaFXUtil.onceInScene(overlay, this::adjustOverlayBounds);
             getEditor().getCodeOverlayPane().addOverlay(overlay, getNode(), xOffset, yOffset);
-            
+
             JavaFXUtil.addChangeListener(getNode().localToSceneTransformProperty(), t -> adjustOverlayBounds());
             JavaFXUtil.addChangeListener(getNode().boundsInLocalProperty(), b -> adjustOverlayBounds());
-        }
-        else if (!on && overlay != null)
-        {
+        } else if (!on && overlay != null) {
             getEditor().getCodeOverlayPane().removeOverlay(overlay);
             overlay = null;
             rectangle = null;
@@ -183,22 +165,19 @@ public class BreakFrame extends SingleLineFrame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(View oldView, View newView, SharedTransition animation)
-    {
+    public void setView(View oldView, View newView, SharedTransition animation) {
         super.setView(oldView, newView, animation);
         normalView = newView == View.NORMAL;
         updateAppearance(getParentCanvas());
     }
 
     @Override
-    protected void saveAsRecent()
-    {
+    protected void saveAsRecent() {
         // Do nothing; can never change value
     }
 
     @Override
-    protected void cleanupFrame()
-    {
+    protected void cleanupFrame() {
         JavaFXUtil.runNowOrLater(() -> setOverlay(false, null, null));
     }
 }

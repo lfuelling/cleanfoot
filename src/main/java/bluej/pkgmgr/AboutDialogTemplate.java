@@ -25,18 +25,14 @@ import bluej.Config;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
 import bluej.utility.javafx.JavaFXUtil;
-
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -46,44 +42,44 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.Pair;
-
-import javax.swing.SwingUtilities;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * A BlueJ and Greenfoot Shared About-Dialog.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public class AboutDialogTemplate extends Dialog<Void>
-{
+public class AboutDialogTemplate extends Dialog<Void> {
 
     /**
      * Construct an About Dialog for BlueJ or Greenfoot.
      *
-     * @param parent       The parent window.
-     * @param version      The application (bluej/greenfoot) version
-     * @param websiteURL   A url for the application website.
-     * @param image        The splash screen image for the application.
-     * @param translators  An array containing the translators names.
+     * @param parent              The parent window.
+     * @param version             The application (bluej/greenfoot) version
+     * @param websiteURL          A url for the application website.
+     * @param image               The splash screen image for the application.
+     * @param translators         An array containing the translators names.
      * @param previousTeamMembers An array containing previous team members names.
      */
     public AboutDialogTemplate(Window parent, String version, String websiteURL, Image image,
-                               String[] translators, String[] previousTeamMembers)
-    {
+                               String[] translators, String[] previousTeamMembers) {
         initOwner(parent);
         initModality(Modality.WINDOW_MODAL);
         setTitle(Config.getString("menu.help.about"));
         setDialogPane(new DialogPane() {
             @Override
             @OnThread(Tag.FX)
-            protected Node createButtonBar()
-            {
+            protected Node createButtonBar() {
                 // Center-align the close button:
-                ButtonBar buttonBar = (ButtonBar)super.createButtonBar();
+                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
                 buttonBar.setButtonOrder("_C_");
                 return buttonBar;
             }
@@ -92,7 +88,7 @@ public class AboutDialogTemplate extends Dialog<Void>
         getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
         TabPane tabs = JavaFXUtil.withStyleClass(new TabPane(
-                createMainTab(version, websiteURL, image), createContributorsTab(translators, previousTeamMembers)),
+                        createMainTab(version, websiteURL, image), createContributorsTab(translators, previousTeamMembers)),
                 "about-tabs");
 
         getDialogPane().setContent(tabs);
@@ -102,12 +98,11 @@ public class AboutDialogTemplate extends Dialog<Void>
     /**
      * Construct the tab which contains the main information of the about dialog.
      *
-     * @param version     The application (bluej/greenfoot) version
-     * @param websiteURL  A url for the application website.
-     * @param image       The splash screen image for the application.
+     * @param version    The application (bluej/greenfoot) version
+     * @param websiteURL A url for the application website.
+     * @param image      The splash screen image for the application.
      */
-    private Tab createMainTab(String version, String websiteURL, Image image)
-    {
+    private Tab createMainTab(String version, String websiteURL, Image image) {
         // Create About box text
         BorderPane aboutPanel = new BorderPane();
         JavaFXUtil.addStyleClass(aboutPanel, "about-dialog-content");
@@ -142,21 +137,15 @@ public class AboutDialogTemplate extends Dialog<Void>
 
         Button debugLogShow = new Button(Config.getString("about.openFolder"));
         debugLogShow.setOnAction(e -> SwingUtilities.invokeLater(() -> {
-            try
-            {
+            try {
                 // Linux has a bug in Desktop class, see bug BLUEJ-1039
-                if (!Config.isLinux() && Desktop.isDesktopSupported())
-                {
+                if (!Config.isLinux() && Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().open(Config.getUserConfigDir());
-                }
-                else if (Config.isLinux())
-                {
+                } else if (Config.isLinux()) {
                     Runtime.getRuntime().exec(
-                            new String[] {"xdg-open", Config.getUserConfigDir().getAbsolutePath()});
+                            new String[]{"xdg-open", Config.getUserConfigDir().getAbsolutePath()});
                 }
-            }
-            catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 Debug.reportError(ex);
             }
         }));
@@ -167,20 +156,17 @@ public class AboutDialogTemplate extends Dialog<Void>
         debugLog.setAlignment(Pos.BASELINE_LEFT);
         bottom.getChildren().add(debugLog);
 
-        try
-        {
+        try {
             final URL softwareURL = new URL(websiteURL);
             Hyperlink link = new Hyperlink(softwareURL.toString());
             link.setOnMouseClicked(e -> SwingUtilities.invokeLater(() ->
                     Utility.openWebBrowser(softwareURL.toExternalForm())));
-            
+
             HBox hbox = new HBox(new Label(Config.getString("about.moreInformation")), link);
             hbox.setAlignment(Pos.CENTER);
             JavaFXUtil.addStyleClass(hbox, "about-info-link");
             bottom.getChildren().add(hbox);
-        }
-        catch (MalformedURLException exc)
-        {
+        } catch (MalformedURLException exc) {
             // should not happen - URL is constant
         }
 
@@ -192,17 +178,15 @@ public class AboutDialogTemplate extends Dialog<Void>
     /**
      * Construct the tab which contains the Translators information.
      *
-     * @param translators  An array containing the translators names. Could be null.
+     * @param translators         An array containing the translators names. Could be null.
      * @param previousTeamMembers An array containing previous team members names.
      */
-    private Tab createContributorsTab(String[] translators, String[] previousTeamMembers)
-    {
+    private Tab createContributorsTab(String[] translators, String[] previousTeamMembers) {
         Tab tab = new Tab(Config.getString("about.contributors.title"));
         tab.setClosable(false);
 
         VBox vbox = new VBox();
-        if (previousTeamMembers != null)
-        {
+        if (previousTeamMembers != null) {
             Label teamTitle = new Label("\n" + Config.getString("about.previousTeamMembers.title") + "\n");
             teamTitle.getStyleClass().add("about-contributors-title");
             String names = String.join(", ", previousTeamMembers);
@@ -211,14 +195,12 @@ public class AboutDialogTemplate extends Dialog<Void>
             teamLabel.setWrapText(true);
             vbox.getChildren().addAll(teamTitle, teamLabel);
         }
-        if (translators != null)
-        {
+        if (translators != null) {
             Label translatorTitle = new Label("\n" + Config.getString("about.translators.title") + "\n");
             translatorTitle.getStyleClass().add("about-contributors-title");
             vbox.getChildren().add(translatorTitle);
             ObservableList<Pair<String, String>> pairs = FXCollections.observableArrayList();
-            for (int i = 0; i <translators.length - 1; i += 2)
-            {
+            for (int i = 0; i < translators.length - 1; i += 2) {
                 pairs.add(new Pair<>(translators[i], translators[i + 1]));
             }
             TableView<Pair<String, String>> tableView = new TableView<>(pairs);

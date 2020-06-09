@@ -21,64 +21,41 @@
  */
 package bluej.parser.entity;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import bluej.debugger.gentype.ConstructorReflective;
-import bluej.debugger.gentype.FieldReflective;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeDeclTpar;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.MethodReflective;
-import bluej.debugger.gentype.Reflective;
+import bluej.debugger.gentype.*;
 import bluej.parser.JavaParser;
-import bluej.parser.nodes.FieldNode;
-import bluej.parser.nodes.MethodNode;
-import bluej.parser.nodes.ParsedNode;
-import bluej.parser.nodes.ParsedTypeNode;
-import bluej.parser.nodes.TypeInnerNode;
+import bluej.parser.nodes.*;
 import bluej.utility.JavaUtils;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Modifier;
+import java.util.*;
+
 /**
  * A Reflective implementation for classes which are parsed, but not necessarily compiled.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class ParsedReflective extends Reflective
-{
+public class ParsedReflective extends Reflective {
     private final ParsedTypeNode pnode;
-    
-    public ParsedReflective(ParsedTypeNode pnode)
-    {
+
+    public ParsedReflective(ParsedTypeNode pnode) {
         this.pnode = pnode;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return pnode.getPrefix() + pnode.getName();
     }
 
     @Override
-    public Reflective getArrayOf()
-    {
+    public Reflective getArrayOf() {
         return new ParsedArrayReflective(this, "L" + getName() + ";");
     }
 
     @Override
-    public Reflective getRelativeClass(String name)
-    {
+    public Reflective getRelativeClass(String name) {
         TypeEntity tent = pnode.resolveQualifiedClass(name);
         if (tent != null) {
             GenTypeClass ctype = tent.getType().asClass();
@@ -90,10 +67,9 @@ public class ParsedReflective extends Reflective
     }
 
     @Override
-    public List<GenTypeClass> getSuperTypes()
-    {
+    public List<GenTypeClass> getSuperTypes() {
         List<GenTypeClass> rval = new LinkedList<GenTypeClass>();
-        
+
         for (JavaEntity etype : pnode.getExtendedTypes()) {
             TypeEntity tent = etype.resolveAsType();
             if (tent != null) {
@@ -103,8 +79,8 @@ public class ParsedReflective extends Reflective
                 }
             }
         }
-        
-        if (! isInterface()) {
+
+        if (!isInterface()) {
             if (rval.isEmpty()) {
                 // All classes extend Object implicitly
                 TypeEntity tent = pnode.resolveQualifiedClass("java.lang.Object");
@@ -126,16 +102,15 @@ public class ParsedReflective extends Reflective
                 }
             }
         }
-        
+
         return rval;
     }
 
     @Override
-    public List<Reflective> getSuperTypesR()
-    {
+    public List<Reflective> getSuperTypesR() {
         List<Reflective> rlist = new ArrayList<Reflective>();
         List<JavaEntity> extendedTypes = pnode.getExtendedTypes();
-        if (extendedTypes != null && ! extendedTypes.isEmpty()) {
+        if (extendedTypes != null && !extendedTypes.isEmpty()) {
             for (JavaEntity etype : extendedTypes) {
                 TypeEntity etypeTEnt = etype.resolveAsType();
                 if (etypeTEnt != null) {
@@ -146,8 +121,8 @@ public class ParsedReflective extends Reflective
                 }
             }
         }
-        
-        if (rlist.isEmpty() && ! isInterface()) {
+
+        if (rlist.isEmpty() && !isInterface()) {
             // Object is always a supertype
             TypeEntity objEntity = pnode.resolveQualifiedClass("java.lang.Object");
             if (objEntity != null) {
@@ -157,9 +132,9 @@ public class ParsedReflective extends Reflective
                 }
             }
         }
-        
+
         extendedTypes = pnode.getImplementedTypes();
-        if (extendedTypes != null && ! extendedTypes.isEmpty()) {
+        if (extendedTypes != null && !extendedTypes.isEmpty()) {
             for (JavaEntity etype : extendedTypes) {
                 TypeEntity etypeTEnt = etype.resolveAsType();
                 if (etypeTEnt != null) {
@@ -170,18 +145,17 @@ public class ParsedReflective extends Reflective
                 }
             }
         }
-        
+
         return rlist;
     }
 
     @Override
-    public List<GenTypeDeclTpar> getTypeParams()
-    {
+    public List<GenTypeDeclTpar> getTypeParams() {
         List<TparEntity> tparEntList = pnode.getTypeParams();
         if (tparEntList == null) {
             return Collections.emptyList();
         }
-        
+
         List<GenTypeDeclTpar> tparList = new ArrayList<GenTypeDeclTpar>(tparEntList.size());
         for (TparEntity tpar : tparEntList) {
             GenTypeDeclTpar tparType = tpar.getType();
@@ -189,16 +163,15 @@ public class ParsedReflective extends Reflective
                 tparList.add(tparType);
             }
         }
-        
+
         return tparList;
     }
 
     @Override
-    public boolean isAssignableFrom(Reflective r)
-    {
+    public boolean isAssignableFrom(Reflective r) {
         Set<String> done = new HashSet<String>();
         LinkedList<Reflective> todo = new LinkedList<Reflective>();
-        
+
         while (r != null) {
             String rname = r.getName();
             if (rname.equals(getName())) {
@@ -209,46 +182,41 @@ public class ParsedReflective extends Reflective
             }
             r = todo.poll();
         }
-        
+
         return false;
     }
 
     @Override
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return pnode.getTypeKind() == JavaParser.TYPEDEF_INTERFACE;
     }
 
     @Override
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         return Modifier.isStatic(pnode.getModifiers());
     }
-    
+
     @Override
-    public boolean isPublic()
-    {
+    public boolean isPublic() {
         return Modifier.isPublic(pnode.getModifiers());
     }
-    
+
     @Override
-    public boolean isFinal()
-    {
+    public boolean isFinal() {
         return Modifier.isFinal(pnode.getModifiers());
     }
-    
+
     @Override
-    public Map<String,FieldReflective> getDeclaredFields()
-    {
-        Map<String,Set<FieldNode>> allfields = pnode.getInner().getFields();
-        
+    public Map<String, FieldReflective> getDeclaredFields() {
+        Map<String, Set<FieldNode>> allfields = pnode.getInner().getFields();
+
         // Filter out duplicates:
         Map<String, FieldNode> fields = new HashMap<>();
         for (String name : allfields.keySet()) {
             fields.put(name, allfields.get(name).iterator().next());
         }
-        
-        Map<String,FieldReflective> rmap = new HashMap<String,FieldReflective>();
+
+        Map<String, FieldReflective> rmap = new HashMap<String, FieldReflective>();
         for (Iterator<String> i = fields.keySet().iterator(); i.hasNext(); ) {
             String fieldName = i.next();
             FieldNode fieldNode = fields.get(fieldName);
@@ -261,23 +229,22 @@ public class ParsedReflective extends Reflective
         }
         return rmap;
     }
-    
+
     @Override
-    public Map<String,Set<MethodReflective>> getDeclaredMethods()
-    {
+    public Map<String, Set<MethodReflective>> getDeclaredMethods() {
         TypeInnerNode pnodeInner = pnode.getInner();
         if (pnodeInner == null) {
             return Collections.emptyMap();
         }
-        
-        Map<String,Set<MethodNode>> methods = pnodeInner.getMethods();
-        Map<String,Set<MethodReflective>> rmap = new HashMap<String,Set<MethodReflective>>();
-        
+
+        Map<String, Set<MethodNode>> methods = pnodeInner.getMethods();
+        Map<String, Set<MethodReflective>> rmap = new HashMap<String, Set<MethodReflective>>();
+
         for (Iterator<String> i = methods.keySet().iterator(); i.hasNext(); ) {
             String name = i.next();
             Set<MethodNode> mset = methods.get(name);
             Set<MethodReflective> rset = new HashSet<MethodReflective>();
-            
+
             methodLoop:
             for (Iterator<MethodNode> j = mset.iterator(); j.hasNext(); ) {
                 MethodNode method = j.next();
@@ -300,7 +267,7 @@ public class ParsedReflective extends Reflective
                 mref.setParamNames(method.getParamNames());
                 rset.add(mref);
             }
-            if (! rset.isEmpty()) {
+            if (!rset.isEmpty()) {
                 rmap.put(name, rset);
             }
         }
@@ -308,26 +275,23 @@ public class ParsedReflective extends Reflective
     }
 
     @Override
-    public List<ConstructorReflective> getDeclaredConstructors()
-    {
+    public List<ConstructorReflective> getDeclaredConstructors() {
         // TODO actually pick out the constructors:
         return Collections.emptyList();
     }
-    
+
     @Override
-    public Reflective getOuterClass()
-    {
+    public Reflective getOuterClass() {
         ParsedTypeNode containing = pnode.getContainingClass();
         if (containing != null) {
             return new ParsedReflective(containing);
         }
         return null;
     }
-    
+
     @Override
-    public ParsedReflective getInnerClass(String name)
-    {
-        Map<String,ParsedNode> contained = pnode.getInner().getContainedClasses();
+    public ParsedReflective getInnerClass(String name) {
+        Map<String, ParsedNode> contained = pnode.getInner().getContainedClasses();
         ParsedNode innerParsedNode = contained.get(name);
         if (innerParsedNode instanceof ParsedTypeNode) {
             return new ParsedReflective((ParsedTypeNode) innerParsedNode);
@@ -336,29 +300,26 @@ public class ParsedReflective extends Reflective
     }
 
     @Override
-    public String getModuleName()
-    {
+    public String getModuleName() {
         return null;
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         }
-        
+
         if (obj instanceof ParsedReflective) {
             ParsedReflective other = (ParsedReflective) obj;
             return pnode == other.pnode;
         }
-        
+
         return false;
     }
-    
+
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return pnode.hashCode();
     }
 }

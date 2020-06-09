@@ -22,9 +22,7 @@
 package bluej;
 
 import bluej.extensions.event.ApplicationEvent;
-import bluej.extmgr.ExtensionWrapper;
 import bluej.extmgr.ExtensionsManager;
-import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.prefmgr.PrefMgr;
 import bluej.utility.Debug;
@@ -44,7 +42,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -62,14 +59,12 @@ import java.awt.*;
 import java.awt.desktop.QuitResponse;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.EventListener;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -81,20 +76,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * BlueJ starts here. The Boot class, which is responsible for dealing with
  * specialised class loaders, constructs an object of this class to initiate the
  * "real" BlueJ.
- * 
+ *
  * @author Michael Kolling
  */
-public class Main
-{
+public class Main {
     private static final String MESSAGE_ROOT = "https://www.bluej.org/message/";
     private static final String TESTING_MESSAGE_ROOT = "https://www.bluej.org/message_test/";
-    /** 
+    /**
      * Whether we've officially launched yet. While false "open file" requests only
      * set initialProject.
      */
     private static boolean launched = false;
-    
-    /** On MacOS X, this will be set to the project we should open (if any) */ 
+
+    /**
+     * On MacOS X, this will be set to the project we should open (if any)
+     */
     private static List<File> initialProjects;
 
     private static QuitResponse macEventResponse = null;  // used to respond to external quit events on MacOS
@@ -111,8 +107,10 @@ public class Main
      * later on the FX thread).
      */
     private static ClassLoader storedContextClassLoader;
-    
-    /** The mechanism to show the initial GUI */
+
+    /**
+     * The mechanism to show the initial GUI
+     */
     private static GuiHandler guiHandler = null;
 
     /**
@@ -120,8 +118,7 @@ public class Main
      * the first package manager frame.
      */
     @OnThread(Tag.Any)
-    public Main()
-    {
+    public Main() {
         Boot boot = Boot.getInstance();
         final String[] args = Boot.cmdLineArgs;
         Properties commandLineProps = boot.getCommandLineProperties();
@@ -132,12 +129,12 @@ public class Main
         CompletableFuture<Stage> futureMainWindow = new CompletableFuture<>();
         // Must do this after Config initialisation:
         if (!Config.isGreenfoot())
-            new Thread(() -> fetchAndShowCentralMsg(PrefMgr.getFlag(PrefMgr.NEWS_TESTING) ?  TESTING_MESSAGE_ROOT : MESSAGE_ROOT, futureMainWindow)).start();
+            new Thread(() -> fetchAndShowCentralMsg(PrefMgr.getFlag(PrefMgr.NEWS_TESTING) ? TESTING_MESSAGE_ROOT : MESSAGE_ROOT, futureMainWindow)).start();
 
         if (guiHandler == null) {
             guiHandler = new BlueJGuiHandler();
         }
-        
+
         // Note we must do this OFF the AWT dispatch thread. On MacOS X, if the
         // application was started by double-clicking a project file, an "open file"
         // event will be generated once we add a listener and will be delivered on
@@ -146,7 +143,7 @@ public class Main
         if (Config.isMacOS()) {
             prepareMacOSApp();
         }
-        
+
         // process command line arguments, start BlueJ!
         SwingUtilities.invokeLater(() -> {
             Platform.runLater(() -> {
@@ -154,12 +151,11 @@ public class Main
                 futureMainWindow.complete(stage);
             });
         });
-        
+
         // Send usage data back to bluej.org
         new Thread() {
             @Override
-            public void run()
-            {
+            public void run() {
                 updateStats();
             }
         }.start();
@@ -169,14 +165,13 @@ public class Main
      * Start everything off. This is used to open the projects specified on the
      * command line when starting BlueJ. Any parameters starting with '-' are
      * ignored for now.
-     * 
+     *
      * @return A handle to the main window which was opened, or null if there was no window opened.
      */
     @OnThread(Tag.FXPlatform)
-    private static Stage processArgs(String[] args)
-    {
+    private static Stage processArgs(String[] args) {
         launched = true;
-        
+
         boolean oneOpened = false;
 
         // Open any projects specified on the command line
@@ -212,10 +207,10 @@ public class Main
         }
 
         Stage window = guiHandler.initialOpenComplete(oneOpened);
-        
+
         Boot.getInstance().disposeSplashWindow();
         ExtensionsManager.getInstance().delegateEvent(new ApplicationEvent(ApplicationEvent.APP_READY_EVENT));
-        
+
         return window;
     }
 
@@ -223,8 +218,7 @@ public class Main
      * Prepare MacOS specific behaviour (About menu, Preferences menu, Quit
      * menu)
      */
-    private static void prepareMacOSApp()
-    {
+    private static void prepareMacOSApp() {
         storedContextClassLoader = Thread.currentThread().getContextClassLoader();
         initialProjects = Boot.getMacInitialProjects();
 
@@ -242,15 +236,11 @@ public class Main
         // This is not included in the above condition to avoid future bugs,
         // as this is not related to the application menu and will not be affected
         // when the above condition will.
-        if (Config.isGreenfoot())
-        {
+        if (Config.isGreenfoot()) {
             Debug.message("Disabling App Nap");
-            try
-            {
+            try {
                 Runtime.getRuntime().exec("defaults write org.greenfoot NSAppSleepDisabled -bool YES");
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Debug.reportError("Error disabling App Nap", e);
             }
         }
@@ -261,8 +251,7 @@ public class Main
      * This is needed for due to a bug in the JDK APIs, not responding to
      * handleAbout() etc, when the menu is on FX.
      */
-    private static void prepareMacOSMenuFX()
-    {
+    private static void prepareMacOSMenuFX() {
         Platform.runLater(() -> {
             // Sets the JavaFX fxml Default Class Loader to avoid a fxml LoadException.
             // This used to be fired only in the release not while running from the repository.
@@ -287,7 +276,7 @@ public class Main
             defaultApplicationMenu.getItems().add(1, preferences);
 
             // Quit
-            defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size()-1).
+            defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size() - 1).
                     setOnAction(event -> guiHandler.handleQuit());
         });
     }
@@ -296,8 +285,7 @@ public class Main
      * Prepare Mac Application Swing menu using the java.awt.Desktop APIs.
      */
     @SuppressWarnings("threadchecker")
-    private static void prepareMacOSMenuSwing()
-    {
+    private static void prepareMacOSMenuSwing() {
         Desktop.getDesktop().setAboutHandler(e -> {
             Platform.runLater(() -> guiHandler.handleAbout());
         });
@@ -313,20 +301,16 @@ public class Main
             // response.cancelQuit() is called to cancel (in wantToQuit())
         });
 
-        Desktop.getDesktop().setOpenFileHandler(e ->  {
-            if (launched)
-            {
+        Desktop.getDesktop().setOpenFileHandler(e -> {
+            if (launched) {
                 List<File> files = e.getFiles();
                 Platform.runLater(() ->
                 {
-                    for (File file : files)
-                    {
+                    for (File file : files) {
                         guiHandler.tryOpen(file, true);
                     }
                 });
-            }
-            else
-                {
+            } else {
                 initialProjects = e.getFiles();
             }
         });
@@ -339,22 +323,17 @@ public class Main
      * confirmed.
      */
     @OnThread(Tag.FXPlatform)
-    public static void wantToQuit()
-    {
+    public static void wantToQuit() {
         int projectCount = Project.getOpenProjectCount();
         // We set a null owner here to make the dialog come to the front of all windows;
         // the user may have triggered the quit shortcut from any window, not just a PkgMgrFrame:
         int answer = projectCount <= 1 ? 0 : DialogManager.askQuestionFX(null, "quit-all");
-        if (answer == 0)
-        {
+        if (answer == 0) {
             doQuit();
-        }
-        else
-        {
+        } else {
             SwingUtilities.invokeLater(() ->
             {
-                if (macEventResponse != null)
-                {
+                if (macEventResponse != null) {
                     macEventResponse.cancelQuit();
                     macEventResponse = null;
                 }
@@ -367,8 +346,7 @@ public class Main
      * extensions.
      */
     @OnThread(Tag.FXPlatform)
-    public static void doQuit()
-    {
+    public static void doQuit() {
         guiHandler.doExitCleanup();
 
         SwingUtilities.invokeLater(() -> {
@@ -385,14 +363,13 @@ public class Main
      *
      * @return whether a valid orphaned package exist.
      */
-    public static boolean hadOrphanPackages()
-    {
+    public static boolean hadOrphanPackages() {
         String dir = "";
         // iterate through unknown number of orphans
         for (int i = 1; dir != null; i++) {
             dir = Config.getPropString(Config.BLUEJ_OPENPACKAGE + i, null);
             if (dir != null) {
-                if(Project.isProject(dir)) {
+                if (Project.isProject(dir)) {
                     return true;
                 }
             }
@@ -403,8 +380,7 @@ public class Main
     /**
      * Send statistics of use back to bluej.org
      */
-    private static void updateStats() 
-    {
+    private static void updateStats() {
         // Platform details, first the ones which vary between BlueJ/Greenfoot
         String uidPropName;
         String baseURL;
@@ -428,14 +404,13 @@ public class Main
         String editorStats = "";
         int javaEditors = Config.getEditorCount(Config.SourceType.Java);
         int strideEditors = Config.getEditorCount(Config.SourceType.Stride);
-        if (javaEditors != -1 && strideEditors != -1)
-        {
+        if (javaEditors != -1 && strideEditors != -1) {
             editorStats = "&javaeditors=" + URLEncoder.encode(Integer.toString(javaEditors), StandardCharsets.UTF_8)
-                + "&strideeditors=" + URLEncoder.encode(Integer.toString(strideEditors), StandardCharsets.UTF_8);
+                    + "&strideeditors=" + URLEncoder.encode(Integer.toString(strideEditors), StandardCharsets.UTF_8);
         }
 
         Config.resetEditorsCount();
-        
+
         // User uid. Use the one already stored in the Property if it exists,
         // otherwise generate one and store it for next time.
         String uid = Config.getPropString(uidPropName, null);
@@ -446,40 +421,37 @@ public class Main
             // Allow opt-out
             return;
         }
-        
+
         try {
             URL url = new URL(baseURL +
-                "?uid=" + URLEncoder.encode(uid, StandardCharsets.UTF_8) +
-                "&osname=" + URLEncoder.encode(systemID, StandardCharsets.UTF_8) +
-                "&appversion=" + URLEncoder.encode(appVersion, StandardCharsets.UTF_8) +
-                "&javaversion=" + URLEncoder.encode(javaVersion, StandardCharsets.UTF_8) +
-                "&language=" + URLEncoder.encode(language, StandardCharsets.UTF_8) +
-                editorStats // May be blank string, e.g. in BlueJ
+                    "?uid=" + URLEncoder.encode(uid, StandardCharsets.UTF_8) +
+                    "&osname=" + URLEncoder.encode(systemID, StandardCharsets.UTF_8) +
+                    "&appversion=" + URLEncoder.encode(appVersion, StandardCharsets.UTF_8) +
+                    "&javaversion=" + URLEncoder.encode(javaVersion, StandardCharsets.UTF_8) +
+                    "&language=" + URLEncoder.encode(language, StandardCharsets.UTF_8) +
+                    editorStats // May be blank string, e.g. in BlueJ
             );
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.connect();
             int rc = conn.getResponseCode();
             conn.disconnect();
 
-            if(rc != 200) Debug.reportError("Update stats failed, HTTP response code: " + rc);
+            if (rc != 200) Debug.reportError("Update stats failed, HTTP response code: " + rc);
 
         } catch (Exception ex) {
             Debug.reportError("Update stats failed: " + ex.getClass().getName() + ": " + ex.getMessage());
         }
     }
 
-    private static String getBlueJVersion()
-    {
+    private static String getBlueJVersion() {
         return Boot.BLUEJ_VERSION;
     }
 
-    private static String getOperatingSystem()
-    {
+    private static String getOperatingSystem() {
         String osArch = System.getProperty("os.arch");
         // On Windows, the 32-bit JDK will see x86 for the processor, even if the processor is
         // 64-bit and the OS itself is 64-bit!  So we collect some extra info on Windows:
-        if (Config.isWinOS())
-        {
+        if (Config.isWinOS()) {
             // Taken from https://stackoverflow.com/a/5940770/412908
             String arch = System.getenv("PROCESSOR_ARCHITECTURE");
             String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
@@ -493,13 +465,11 @@ public class Main
                 "/" + System.getProperty("os.version");
     }
 
-    private static String getJavaVersion()
-    {
+    private static String getJavaVersion() {
         return System.getProperty("java.version");
     }
 
-    private static String getInterfaceLanguage()
-    {
+    private static String getInterfaceLanguage() {
         return Config.language;
     }
 
@@ -510,8 +480,7 @@ public class Main
      * responsible for cleaning itself up before getting here.
      */
     @OnThread(Tag.FXPlatform)
-    private static void exit()
-    {
+    private static void exit() {
         // save configuration properties
         Config.handleExit();
         // exit with success status
@@ -522,17 +491,16 @@ public class Main
     }
 
     // See comment on the field.
-    public static ClassLoader getStoredContextClassLoader()
-    {
+    public static ClassLoader getStoredContextClassLoader() {
         return storedContextClassLoader;
     }
-    
+
     /**
      * Set the inital GUI, created after the initial project is opened.
-     * @param initialGUI  A consume which displays the GUI for the initial project.
+     *
+     * @param initialGUI A consume which displays the GUI for the initial project.
      */
-    public static void setGuiHandler(GuiHandler initialGUI)
-    {
+    public static void setGuiHandler(GuiHandler initialGUI) {
         Main.guiHandler = initialGUI;
     }
 
@@ -540,14 +508,12 @@ public class Main
     /**
      * Fetch and show a message from bluej.org, by looking at the central index then fetching
      * the current message (if any, and if unseen).
-     * 
+     *
      * @param withStage A future which will complete with a parent window (or null if none).
      *                  The message should be shown as the modal child of this window.
      */
-    private static void fetchAndShowCentralMsg(String messageRoot, CompletableFuture<Stage> withStage)
-    {
-        try
-        {
+    private static void fetchAndShowCentralMsg(String messageRoot, CompletableFuture<Stage> withStage) {
+        try {
             // latest.txt should have two dates, one on each line.  Top one is
             // start date of the message (and serves as its identifier), bottom one
             // is the expiry date of the message.
@@ -557,24 +523,20 @@ public class Main
             LocalDate endDate = LocalDate.parse(scanner.nextLine());
 
             LocalDate lastSeen = null;
-            try
-            {
+            try {
                 lastSeen = LocalDate.parse(Config.getPropString(Config.MESSAGE_LATEST_SEEN));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 // Can't read saved value; just leave lastSeen as null
             }
 
             boolean seenMessage = lastSeen != null && (startDate.isBefore(lastSeen) || startDate.isEqual(lastSeen));
             boolean expired = LocalDate.now().isAfter(endDate);
 
-            if (!seenMessage && !expired)
-            {
+            if (!seenMessage && !expired) {
                 Platform.runLater(() -> {
                     // Display the message in a web view component:
                     WebView webView = new WebView();
-                    
+
                     // In 5 seconds time, cancel the loading attempt - probably a connection or server issue:
                     FXPlatformRunnable preventTimeout = JavaFXUtil.runAfter(Duration.seconds(5), () -> {
                         webView.getEngine().getLoadWorker().cancel();
@@ -584,40 +546,34 @@ public class Main
 
                     // Only bother showing the window once (if!) the page load has succeeded:
                     JavaFXUtil.addChangeListener(webView.getEngine().getLoadWorker().stateProperty(), state -> {
-                        if (state == State.SUCCEEDED && !shownWindow.get())
-                        {
+                        if (state == State.SUCCEEDED && !shownWindow.get()) {
                             // Loaded!  Show it to the user.
                             shownWindow.set(true);
-                            
+
                             // Make sure we don't cancel now we've been successful: 
                             JavaFXUtil.runNowOrLater(() -> {
                                 preventTimeout.run();
 
                                 makeLinksOpenExternally(webView.getEngine().getDocument());
                             });
-                                
+
                             withStage.handle((parent, error) -> {
-                                if (parent != null)
-                                {
+                                if (parent != null) {
                                     JavaFXUtil.runNowOrLater(() -> showMessageWindow(startDate, webView, parent));
                                 }
                                 return null;
                             });
                         }
                     });
-                    
+
                     // Now set off the loading attempt:
                     webView.getEngine().load(messageRoot + startDate.toString() + ".html");
                 });
             }
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             // Shouldn't happen:
             Debug.reportError(e);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             // Might not have any Internet connection.
             // Silently abandon attempt to show message
         }
@@ -626,22 +582,18 @@ public class Main
     /**
      * Overrides the click behaviour of all &lt;a&gt; tags in the document
      * so that they open in an external browser window.
-     * 
+     *
      * @param document The document in which to override the links
      */
-    private static void makeLinksOpenExternally(Document document)
-    {
+    private static void makeLinksOpenExternally(Document document) {
         // Adapted from https://stackoverflow.com/questions/15555510/javafx-stop-opening-url-in-webview-open-in-browser-instead/18536564#18536564
         NodeList nodeList = document.getElementsByTagName("a");
-        for (int i = 0; i < nodeList.getLength(); i++)
-        {
-            Node node= nodeList.item(i);
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
             EventTarget eventTarget = (EventTarget) node;
-            eventTarget.addEventListener("click", new org.w3c.dom.events.EventListener()
-            {
+            eventTarget.addEventListener("click", new org.w3c.dom.events.EventListener() {
                 @Override
-                public void handleEvent(org.w3c.dom.events.Event evt)
-                {
+                public void handleEvent(org.w3c.dom.events.Event evt) {
                     EventTarget target = evt.getCurrentTarget();
                     HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
                     String href = anchorElement.getHref();
@@ -655,14 +607,13 @@ public class Main
     /**
      * Shows the message fetched from the server in a new modal window.  When the window
      * is closed, record that the user has seen the message.
-     * 
+     *
      * @param startDate The start date (identifier) of the message being shown.
-     * @param webView The WebView component in which the message has been loaded
-     * @param parent The parent window.  Must be non-null
+     * @param webView   The WebView component in which the message has been loaded
+     * @param parent    The parent window.  Must be non-null
      */
     @OnThread(Tag.FXPlatform)
-    private static void showMessageWindow(LocalDate startDate, WebView webView, Stage parent)
-    {
+    private static void showMessageWindow(LocalDate startDate, WebView webView, Stage parent) {
         Stage window = new Stage();
         window.initModality(Modality.WINDOW_MODAL);
         window.initOwner(parent);

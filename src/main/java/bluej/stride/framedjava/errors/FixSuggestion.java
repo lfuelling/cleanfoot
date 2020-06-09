@@ -24,8 +24,7 @@ package bluej.stride.framedjava.errors;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public abstract class FixSuggestion
-{
+public abstract class FixSuggestion {
     public abstract String getDescription();
 
     @OnThread(Tag.FXPlatform)

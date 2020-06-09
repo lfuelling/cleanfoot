@@ -21,25 +21,24 @@
  */
 package bluej.pkgmgr;
 
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 /**
  * Reference to the Greenfoot project file(s). A Greenfoot project file is
  * basically just a BlueJ package with some extra information added.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.Any)
 public class GreenfootProjectFile
-    implements PackageFile
-{
+        implements PackageFile {
     private static final String pkgfileName = "project.greenfoot";
     private final File dir;
     private final File pkgFile;
@@ -47,33 +46,27 @@ public class GreenfootProjectFile
     /**
      * @see PackageFileFactory
      */
-    @OnThread(Tag.Any)
-    GreenfootProjectFile(File dir)
-    {
+    @OnThread(Tag.Any) GreenfootProjectFile(File dir) {
         this.dir = dir;
         this.pkgFile = new File(dir, pkgfileName);
     }
 
-    public String toString()
-    {
+    public String toString() {
         return dir.toString() + File.separator + pkgfileName;
     }
 
     public void load(Properties p)
-        throws IOException
-    {
+            throws IOException {
         FileInputStream input = null;
         try {
             if (pkgFile.canRead()) {
                 input = new FileInputStream(pkgFile);
-            }
-            else {
+            } else {
                 throw new IOException("Can't read from project file: " + pkgFile);
             }
             p.load(input);
-        }
-        finally {
-            if(input != null) {
+        } finally {
+            if (input != null) {
                 input.close();
             }
         }
@@ -81,43 +74,34 @@ public class GreenfootProjectFile
 
     /**
      * Save the given properties to the file.
-     * 
+     *
      * @throws IOException if something goes wrong while trying to write the
-     *             file.
+     *                     file.
      */
     public void save(Properties props)
-        throws IOException
-    {
-        if (!pkgFile.canWrite())
-        {
+            throws IOException {
+        if (!pkgFile.canWrite()) {
             throw new IOException("Greenfoot project file not writable: " + this);
         }
 
         FileOutputStream output = null;
-        try
-        {
+        try {
             output = new FileOutputStream(pkgFile);
             String header = "Greenfoot project file";
             props.store(output, header);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new IOException("Error when storing properties to Greenfoot project file: " + this);
-        }
-        finally
-        {
-            if (output != null)
-            {
+        } finally {
+            if (output != null) {
                 output.close();
             }
         }
     }
-    
+
     /**
      * Whether a Greenfoot package file exists in this directory.
      */
-    public static boolean exists(File dir)
-    {
+    public static boolean exists(File dir) {
         if (dir == null)
             return false;
 
@@ -132,35 +116,31 @@ public class GreenfootProjectFile
         File packageFile = new File(dir, pkgfileName);
         return packageFile.exists();
     }
-    
+
     /**
      * Whether this file is the name has the name of a Greenfoot project file.
      */
-    public static boolean isProjectFileName(String fileName)
-    {
+    public static boolean isProjectFileName(String fileName) {
         return fileName.endsWith(pkgfileName);
     }
-    
+
     /**
-     * Creates the Greenfoot project file if it does not already exist. 
-     * 
-     * @return true if it created a package file, false if it didn't create any package files.
+     * Creates the Greenfoot project file if it does not already exist.
+     *
      * @param dir The directory to create package file in.
+     * @return true if it created a package file, false if it didn't create any package files.
      * @throws IOException If the package file could not be created.
-     * 
      */
     public boolean create()
-        throws IOException
-    {
+            throws IOException {
         File pkgFile = new File(dir, pkgfileName);
 
         if (pkgFile.exists()) {
             return false;
-        }
-        else {
+        } else {
             pkgFile.createNewFile();
             return true;
-        }     
+        }
     }
 
 }

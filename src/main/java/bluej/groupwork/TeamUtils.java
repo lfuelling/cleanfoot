@@ -21,40 +21,32 @@
  */
 package bluej.groupwork;
 
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
+import javafx.stage.Window;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import javafx.stage.Window;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.utility.DialogManager;
-import bluej.utility.FileUtility;
-
 /**
  * Utilities for teamwork functionality.
  */
-public class TeamUtils
-{
+public class TeamUtils {
     /**
      * Handle a server response in an appropriate fashion, i.e. if the response
      * indicates an error, then display an error dialog.
-     * 
+     * <p>
      * Call on the AWT event handling thread.
-     *
      */
     @OnThread(Tag.FXPlatform)
-    public static void handleServerResponseFX(TeamworkCommandResult result, final Window window)
-    {
-        if (result != null)
-        {
-            if (result.wasAuthFailure())
-            {
+    public static void handleServerResponseFX(TeamworkCommandResult result, final Window window) {
+        if (result != null) {
+            if (result.wasAuthFailure()) {
                 DialogManager.showErrorFX(window, "team-authentication-problem");
-            }
-            else if (result.isError() && ! result.wasAborted())
-            {
+            } else if (result.isError() && !result.wasAborted()) {
                 DialogManager.showErrorTextFX(window, result.getErrorMessage());
             }
         }
@@ -62,10 +54,9 @@ public class TeamUtils
 
     /**
      * From a set of File objects, remove those files which should be treated as
-     * binary files (and put them in a new set). 
+     * binary files (and put them in a new set).
      */
-    public static Set<File> extractBinaryFilesFromSet(Set<File> files)
-    {
+    public static Set<File> extractBinaryFilesFromSet(Set<File> files) {
         Set<File> binFiles = new HashSet<File>();
         Iterator<File> i = files.iterator();
         while (i.hasNext()) {
@@ -74,7 +65,7 @@ public class TeamUtils
                 continue;
             }
             String fname = f.getName();
-            if (! fname.endsWith(".txt") && ! fname.endsWith(".java")) {
+            if (!fname.endsWith(".txt") && !fname.endsWith(".java")) {
                 binFiles.add(f);
                 i.remove();
             }
@@ -87,9 +78,8 @@ public class TeamUtils
      * the backup name. The backup files are created in the system's temp
      * folder/directory.
      */
-    public static Map<File,File> backupFiles(Set<File> files) throws IOException
-    {
-        Map<File,File> rmap = new HashMap<File,File>();
+    public static Map<File, File> backupFiles(Set<File> files) throws IOException {
+        Map<File, File> rmap = new HashMap<File, File>();
         for (Iterator<File> i = files.iterator(); i.hasNext(); ) {
             File tempFile = File.createTempFile("bluejvcs", null);
             File srcFile = i.next();
@@ -98,17 +88,16 @@ public class TeamUtils
         }
         return rmap;
     }
-    
+
     /**
      * Copy a set of files, then delete the source files. This is used to
      * restore a backup created by the backupFiles() method. The source
      * files (i.e. the backup files) are deleted afterwards.
      */
-    public static void restoreBackups(Map<File,File> rmap) throws IOException
-    {
-        Iterator<Map.Entry<File,File>> i = rmap.entrySet().iterator();
+    public static void restoreBackups(Map<File, File> rmap) throws IOException {
+        Iterator<Map.Entry<File, File>> i = rmap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry<File,File> entry = i.next();
+            Map.Entry<File, File> entry = i.next();
             File orig = entry.getKey();
             File backup = entry.getValue();
             FileUtility.copyFile(backup, orig);

@@ -30,12 +30,11 @@ import java.util.List;
 /**
  * A class defining the debugger thread primitives needed by BlueJ.
  *
- * @author  Michael Cahill
- * @author  Michael Kolling
- * @author  Andrew Patterson
+ * @author Michael Cahill
+ * @author Michael Kolling
+ * @author Andrew Patterson
  */
-public abstract class DebuggerThread
-{
+public abstract class DebuggerThread {
     public abstract String getName();
 
     @OnThread(Tag.VMEventHandler)
@@ -43,15 +42,19 @@ public abstract class DebuggerThread
 
     @OnThread(Tag.VMEventHandler)
     public abstract boolean isSuspended();
+
     @OnThread(Tag.VMEventHandler)
     public abstract boolean isAtBreakpoint();
 
     @OnThread(Tag.VMEventHandler)
     public abstract String getClass(int frameNo);
+
     @OnThread(Tag.VMEventHandler)
     public abstract String getClassSourceName(int frameNo);
+
     @OnThread(Tag.VMEventHandler)
     public abstract int getLineNumber(int frameNo);
+
     public abstract boolean isKnownSystemThread();
 
     /**
@@ -63,11 +66,13 @@ public abstract class DebuggerThread
 
     @OnThread(Tag.VMEventHandler)
     public abstract List<FXPlatformSupplier<VarDisplayInfo>> getLocalVariables(int frameNo);
+
     @OnThread(Tag.VMEventHandler)
     public abstract boolean varIsObject(int frameNo, int index);
+
     @OnThread(Tag.VMEventHandler)
     public abstract DebuggerObject getStackObject(int frameNo, int index);
-    
+
     /**
      * Return the current instance object of some frame on this thread.
      * The returned object may represent the null reference if the frame
@@ -75,7 +80,7 @@ public abstract class DebuggerThread
      */
     @OnThread(Tag.VMEventHandler)
     public abstract DebuggerObject getCurrentObject(int frameNo);
-    
+
     /**
      * Return the current class of this thread (may return null if the
      * class cannot be determined).
@@ -84,10 +89,12 @@ public abstract class DebuggerThread
     public abstract DebuggerClass getCurrentClass(int frameNo);
 
     public abstract void setSelectedFrame(int frame);
+
     public abstract int getSelectedFrame();
 
     @OnThread(Tag.VMEventHandler)
     public abstract void halt();
+
     @OnThread(Tag.VMEventHandler)
     public abstract void cont();
 
@@ -104,7 +111,7 @@ public abstract class DebuggerThread
      */
     @OnThread(Tag.VMEventHandler)
     public abstract void stepInto();
-    
+
     @OnThread(Tag.Any)
     public abstract boolean sameThread(DebuggerThread thread);
 }

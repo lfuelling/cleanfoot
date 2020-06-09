@@ -21,9 +21,6 @@
  */
 package bluej.editor.stride;
 
-import java.util.Collections;
-import java.util.Map;
-
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCanvas;
 import bluej.stride.generic.FrameCursor;
@@ -33,26 +30,26 @@ import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * A sum type that holds either an EditableSlot or a FrameCursor.
- *
+ * <p>
  * Package-visible
  */
-class CursorOrSlot
-{
+class CursorOrSlot {
     // Exactly one of these two fields is null, and the other is non-null
     private final EditableSlot slot;
     private final FrameCursor cursor;
 
-    public CursorOrSlot(EditableSlot slot)
-    {
+    public CursorOrSlot(EditableSlot slot) {
         if (slot == null) throw new NullPointerException();
         this.slot = slot;
         this.cursor = null;
     }
 
-    public CursorOrSlot(FrameCursor cursor)
-    {
+    public CursorOrSlot(FrameCursor cursor) {
         if (cursor == null) throw new NullPointerException();
         this.slot = null;
         this.cursor = cursor;
@@ -62,8 +59,7 @@ class CursorOrSlot
      * Checks whether the frame cursor, or the frame that the slot belongs to,
      * is directly inside the given canvas.
      */
-    public boolean isInsideCanvas(FrameCanvas canvas)
-    {
+    public boolean isInsideCanvas(FrameCanvas canvas) {
         // Find the nearest canvas:
         FrameCanvas ourCanvas;
         if (cursor != null)
@@ -77,8 +73,7 @@ class CursorOrSlot
     /**
      * Gets the frame that the slot belongs to, or the frame which the cursor's canvas is inside.
      */
-    public Frame getParentFrame()
-    {
+    public Frame getParentFrame() {
         if (slot != null)
             return slot.getParentFrame();
         else
@@ -89,8 +84,7 @@ class CursorOrSlot
      * Gets the menu items for this slot/cursor (for window menu when focused, or right-click menu)
      */
     @OnThread(Tag.FXPlatform)
-    public Map<EditableSlot.TopLevelMenu, EditableSlot.MenuItems> getMenuItems(boolean contextMenu)
-    {
+    public Map<EditableSlot.TopLevelMenu, EditableSlot.MenuItems> getMenuItems(boolean contextMenu) {
         return slot != null ? slot.getMenuItems(contextMenu) : Collections.singletonMap(EditableSlot.TopLevelMenu.EDIT, cursor.getMenuItems(false));
     }
 
@@ -98,8 +92,7 @@ class CursorOrSlot
      * Delegates to .equals on the cursor/slot
      */
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -110,26 +103,22 @@ class CursorOrSlot
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = slot != null ? slot.hashCode() : 0;
         result = 31 * result + (cursor != null ? cursor.hashCode() : 0);
         return result;
     }
 
-    public boolean matchesSlot(EditableSlot s)
-    {
+    public boolean matchesSlot(EditableSlot s) {
         return this.slot == s;
     }
 
     // Null if item is a slot
-    public FrameCursor getCursor()
-    {
+    public FrameCursor getCursor() {
         return cursor;
     }
 
-    public RecallableFocus getRecallableFocus()
-    {
+    public RecallableFocus getRecallableFocus() {
         if (cursor != null)
             return cursor;
         return slot;

@@ -21,51 +21,45 @@
  */
 package bluej.stride.framedjava.errors;
 
-import java.util.Collections;
-import java.util.List;
-
 import bluej.stride.framedjava.ast.StringSlotFragment;
+import bluej.utility.javafx.FXRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.utility.javafx.FXRunnable;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An error which indicates an extra semi-colon at the end of a slot.
  * We now prevent semi-colons in most slots, so this should rarely (or never?)
  * occur.
  */
-public class UnneededSemiColonError extends SyntaxCodeError
-{
+public class UnneededSemiColonError extends SyntaxCodeError {
     private final FXRunnable fix;
 
     /**
      * Creates an error about a semi-colon at the end of a slot, with a quick fix to remove it.
      *
      * @param slot The slot with the semi-colon
-     * @param fix An action which will remove the semi-colon
+     * @param fix  An action which will remove the semi-colon
      */
     @OnThread(Tag.Any)
-    public UnneededSemiColonError(StringSlotFragment slot, FXRunnable fix)
-    {
+    public UnneededSemiColonError(StringSlotFragment slot, FXRunnable fix) {
         super(slot, "Unnecessary semi-colon at end of slot");
         this.fix = fix;
     }
 
     @Override
-    public List<FixSuggestion> getFixSuggestions()
-    {
+    public List<FixSuggestion> getFixSuggestions() {
         return Collections.singletonList(new FixSuggestion() {
-            
+
             @Override
-            public String getDescription()
-            {
+            public String getDescription() {
                 return "Remove semi-colon";
             }
-            
+
             @Override
-            public void execute()
-            {
+            public void execute() {
                 fix.run();
             }
         });

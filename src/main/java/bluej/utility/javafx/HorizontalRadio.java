@@ -21,9 +21,6 @@
  */
 package bluej.utility.javafx;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Pos;
@@ -34,39 +31,44 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 
-import bluej.extensions.SourceType;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
 
 /**
  * A set of controls which look like toggleable push buttons, of which
  * only one can be selected.  They are actually implemented as radio buttons,
  * to get the right interface interactions, hence the name of the class.
- * 
+ * <p>
  * Useful if you small (2--5) fixed set of choices but want to display them
  * in one row, rather than down a column.
- * 
+ * <p>
  * Note: the styling for this is currently in dialogs.css, so it won't work
  * outside a dialog unless you rearrange the CSS files.
  */
-public class HorizontalRadio<T>
-{
-    /** The HBox containing the buttons */
+public class HorizontalRadio<T> {
+    /**
+     * The HBox containing the buttons
+     */
     private final HBox hBox;
-    /** A map from value to buttons. */
+    /**
+     * A map from value to buttons.
+     */
     private final IdentityHashMap<T, ButtonBase> buttonsByValue = new IdentityHashMap<>();
-    /** The currently selected item. */
+    /**
+     * The currently selected item.
+     */
     private final SimpleObjectProperty<T> selected = new SimpleObjectProperty<T>();
 
     /**
      * Creates a set of buttons for the given list of choices.
-     * 
+     * <p>
      * Often this is an enum.  The text on each button is determined by calling toString on the item.
      */
-    public HorizontalRadio(List<T> choices)
-    {
+    public HorizontalRadio(List<T> choices) {
         List<Node> buttons = new ArrayList<>();
         ToggleGroup toggleGroup = new ToggleGroup();
-        for (int i = 0; i < choices.size(); i++)
-        {
+        for (int i = 0; i < choices.size(); i++) {
             T value = choices.get(i);
             ToggleButton button = new RadioButton(value.toString());
             buttonsByValue.put(value, button);
@@ -87,16 +89,14 @@ public class HorizontalRadio<T>
     /**
      * Gets the actual GUI node containing all the buttons.
      */
-    public HBox getButtons()
-    {
+    public HBox getButtons() {
         return hBox;
     }
 
     /**
      * Allows you to observe the current selection.
      */
-    public ReadOnlyObjectProperty<T> selectedProperty()
-    {
+    public ReadOnlyObjectProperty<T> selectedProperty() {
         return selected;
     }
 
@@ -104,15 +104,12 @@ public class HorizontalRadio<T>
      * Selects the given item.  This must be the same reference as one
      * of the items in the list passed to the constructor.
      */
-    public void select(T item)
-    {
+    public void select(T item) {
         buttonsByValue.get(item).fire();
     }
 
-    public void setDisable(boolean disabled)
-    {
-        for (ButtonBase button : buttonsByValue.values())
-        {
+    public void setDisable(boolean disabled) {
+        for (ButtonBase button : buttonsByValue.values()) {
             button.setDisable(disabled);
         }
     }

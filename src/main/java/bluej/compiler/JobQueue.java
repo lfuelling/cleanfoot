@@ -21,27 +21,24 @@
  */
 package bluej.compiler;
 
+import bluej.Config;
+import bluej.classmgr.BPClassLoader;
+import bluej.utility.Utility;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import bluej.Config;
-import bluej.classmgr.BPClassLoader;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-
 /**
  * Reasonably generic interface between the BlueJ IDE and the Java compiler.
- * 
+ *
  * @author Michael Cahill
  */
-public class JobQueue
-{
+public class JobQueue {
     private static JobQueue queue = null;
 
-    public static synchronized JobQueue getJobQueue()
-    {
+    public static synchronized JobQueue getJobQueue() {
         if (queue == null) {
             queue = new JobQueue();
         }
@@ -56,8 +53,7 @@ public class JobQueue
     /**
      * Construct the JobQueue. This is private; use getJobQueue() to get the job queue instance.
      */
-    private JobQueue()
-    {
+    private JobQueue() {
         compiler = new CompilerAPICompiler();
         thread = new CompilerThread();
 
@@ -71,21 +67,20 @@ public class JobQueue
 
     /**
      * Adds a job to the compile queue.
-     * 
-     * @param sources   The files to compile
-     * @param observer  Observer to be notified when compilation begins,
-     *                  errors/warnings, completes. can be null
-     * @param classPath The classpath to use to locate objects/source code
-     * @param destDir   Destination for class files?
-     * @param suppressUnchecked    Suppress "unchecked" warning in java 1.5
+     *
+     * @param sources           The files to compile
+     * @param observer          Observer to be notified when compilation begins,
+     *                          errors/warnings, completes. can be null
+     * @param classPath         The classpath to use to locate objects/source code
+     * @param destDir           Destination for class files?
+     * @param suppressUnchecked Suppress "unchecked" warning in java 1.5
      */
     public void addJob(CompileInputFile[] sources, CompileObserver observer, BPClassLoader bpClassLoader, File destDir,
-            boolean suppressUnchecked, Charset fileCharset, CompileReason reason, CompileType type)
-    {
+                       boolean suppressUnchecked, Charset fileCharset, CompileReason reason, CompileType type) {
         List<String> options = new ArrayList<String>();
         String optionString = Config.getPropString(Compiler.COMPILER_OPTIONS, "");
         options.addAll(Utility.dequoteCommandLine(optionString));
-        
+
         thread.addJob(new Job(sources, compiler, observer, bpClassLoader,
                 destDir, suppressUnchecked, options, fileCharset, type, reason));
     }
@@ -93,14 +88,13 @@ public class JobQueue
     /**
      * Wait until the compiler job queue is empty, then return.
      */
-    public void waitForEmptyQueue()
-    {
+    public void waitForEmptyQueue() {
         synchronized (thread) {
             while (thread.isBusy()) {
                 try {
                     thread.wait();
+                } catch (InterruptedException ex) {
                 }
-                catch (InterruptedException ex) {}
             }
         }
     }

@@ -27,12 +27,11 @@ import javafx.scene.Node;
  * A marker to indicate that this component can have its focus saved and recalled.
  * Used mainly during undo/redo to put focus back to the place where the modification occurred
  */
-public interface RecallableFocus
-{
+public interface RecallableFocus {
     boolean isFocused();
-    
+
     int getFocusInfo(); // Will be passed back to recallFocus
-    
+
     // Returns an item to scroll to, if possible.
     Node recallFocus(int info);
 }

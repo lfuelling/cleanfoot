@@ -29,22 +29,19 @@ import threadchecker.Tag;
 
 /**
  * Represents a "? super ..." wildcard entity, where the bound has not yet been resolved.
- * 
+ *
  * @author Davin McCall
  */
-public class WildcardSuperEntity extends TypeArgumentEntity
-{
+public class WildcardSuperEntity extends TypeArgumentEntity {
     private final JavaEntity superBound;
-    
-    public WildcardSuperEntity(JavaEntity superBound)
-    {
+
+    public WildcardSuperEntity(JavaEntity superBound) {
         this.superBound = superBound;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public GenTypeParameter getType()
-    {
+    public GenTypeParameter getType() {
         TypeEntity ebType = superBound.resolveAsType();
         if (ebType != null) {
             GenTypeSolid cbType = ebType.getType().asSolid();

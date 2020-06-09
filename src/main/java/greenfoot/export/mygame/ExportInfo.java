@@ -26,11 +26,10 @@ import javafx.scene.image.Image;
 /**
  * Details about a scenario needed for export. The precise details available will depend on the
  * export function (eg screenshot is only available for web export).
- * 
+ *
  * @author Davin McCall
  */
-public class ExportInfo extends ScenarioInfo
-{
+public class ExportInfo extends ScenarioInfo {
     // Fields which will not be saved in the scenario local properties,
     // but will be passed to the exporter. Some of them may be saved in
     // the exported version, depending on the exported version type.
@@ -45,27 +44,26 @@ public class ExportInfo extends ScenarioInfo
     /**
      * Construct an ExportInfo with information based on the ScenarioInfo provided.
      */
-    public ExportInfo(ScenarioInfo src)
-    {
+    public ExportInfo(ScenarioInfo src) {
         super(src);
     }
-    
+
     /**
      * If we're updating an existing scenario, return a description of the update.
+     *
      * @see #isUpdate()
      */
-    public String getUpdateDescription()
-    {
+    public String getUpdateDescription() {
         return updateDescription;
     }
 
     /**
      * Set the update description (if this is an update).
-     * @param updateDescription   The update description provided by the user.
+     *
+     * @param updateDescription The update description provided by the user.
      * @see #setUpdate(boolean)
      */
-    public void setUpdateDescription(String updateDescription)
-    {
+    public void setUpdateDescription(String updateDescription) {
         this.updateDescription = updateDescription;
     }
 
@@ -73,8 +71,7 @@ public class ExportInfo extends ScenarioInfo
      * Check whether this is (as far as we're aware) an update of an existing scenario.
      * If it is {@link #getUpdateDescription()} will return a description of the update.
      */
-    public boolean isUpdate()
-    {
+    public boolean isUpdate() {
         return update;
     }
 
@@ -83,88 +80,77 @@ public class ExportInfo extends ScenarioInfo
      * {@link #setUpdateDescription(String)} to set the update description
      * as provided by the user.
      */
-    public void setUpdate(boolean update)
-    {
+    public void setUpdate(boolean update) {
         this.update = update;
     }
 
     /**
      * Returns the image that is to be used as icon for this scenario.
      */
-    public Image getImage()
-    {
+    public Image getImage() {
         return image;
     }
 
     /**
      * Sets the image that is to be used as icon for this scenario.
      */
-    public void setImage(Image image)
-    {
+    public void setImage(Image image) {
         this.image = image;
     }
 
     /**
      * Returns the file name that will be exported to. Used for local export.
      */
-    public String getExportFileName()
-    {
+    public String getExportFileName() {
         return exportFileName;
     }
 
     /**
      * Sets the file name that will be exported to. Used in local export.
      */
-    public void setExportFileName(String exportFileName)
-    {
+    public void setExportFileName(String exportFileName) {
         this.exportFileName = exportFileName;
     }
 
     /**
      * Returns the user name. Used for web publish.
      */
-    public String getUserName()
-    {
+    public String getUserName() {
         return userName;
     }
 
     /**
      * Sets the user name. Used in web publish.
      */
-    public void setUserName(String userName)
-    {
+    public void setUserName(String userName) {
         this.userName = userName;
     }
 
     /**
      * Returns the user's password. Used for web publish.
      */
-    public String getPassword()
-    {
+    public String getPassword() {
         return password;
     }
 
     /**
      * Sets the user's password. Used in web publish.
      */
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         this.password = password;
     }
 
     /**
      * Returns True if the scenario's screenshot to be kept, false otherwise.
      */
-    public boolean isKeepSavedScreenshot()
-    {
+    public boolean isKeepSavedScreenshot() {
         return keepSavedScreenshot;
     }
 
     /**
      * Sets True if the scenario's screenshot should be kept, false otherwise.
      */
-    public void setKeepSavedScreenshot(boolean keepSavedScreenshot)
-    {
+    public void setKeepSavedScreenshot(boolean keepSavedScreenshot) {
         this.keepSavedScreenshot = keepSavedScreenshot;
     }
 }

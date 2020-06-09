@@ -24,23 +24,20 @@ package greenfoot.collision.ibsp;
 /**
  * A cache for BSP nodes, allowing object re-use. Might help reduce garbage collection
  * impact.
- * 
+ *
  * @author Davin McCall
  */
-public class BSPNodeCache
-{
+public class BSPNodeCache {
     private static final int CACHE_SIZE = 1000;
-    
-    private static final BSPNode [] cache = new BSPNode[CACHE_SIZE];
+
+    private static final BSPNode[] cache = new BSPNode[CACHE_SIZE];
     private static int tail = 0;
     private static int size = 0;
-    
-    public static BSPNode getBSPNode()
-    {
+
+    public static BSPNode getBSPNode() {
         if (size == 0) {
-            return new BSPNode(new Rect(0,0,0,0), 0, 0);
-        }
-        else {
+            return new BSPNode(new Rect(0, 0, 0, 0), 0, 0);
+        } else {
             int ppos = tail - size;
             if (ppos < 0) {
                 ppos += CACHE_SIZE;
@@ -52,19 +49,18 @@ public class BSPNodeCache
             return node;
         }
     }
-    
-    public static void returnNode(BSPNode node)
-    {
+
+    public static void returnNode(BSPNode node) {
         node.blankNode();
         cache[tail++] = node;
         if (tail == CACHE_SIZE) {
             tail = 0;
         }
         size = Math.min(size + 1, CACHE_SIZE);
-        
+
         if (node.getLeft() != null || node.getRight() != null) {
             throw new RuntimeException("HHHHH!");
         }
-        
+
     }
 }

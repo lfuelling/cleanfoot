@@ -21,37 +21,34 @@
  */
 package bluej.extensions.editor;
 
-import bluej.pkgmgr.target.*;
+import bluej.pkgmgr.target.ClassTarget;
 
 /**
  * This class acts as a bridge between the extensions.editor classes
  * and BlueJ-internal to provide access to methods which
  * shouldn't be documented in the Extensions API Javadoc. By using this class,
  * those methods can be made package-local.
- *
+ * <p>
  * This class should be excluded when the Javadoc API documentation is generated.
  *
- * @version $Id: EditorBridge.java 10754 2013-07-05 18:13:03Z nccb $
  * @author Damiano Bolla, University of Kent at Canterbury, 2004
- */ 
-public class EditorBridge
-{
+ * @version $Id: EditorBridge.java 10754 2013-07-05 18:13:03Z nccb $
+ */
+public class EditorBridge {
     /**
-     *  Returns a new Editor for the given ClassTarget.
+     * Returns a new Editor for the given ClassTarget.
      *
-     * @param  aTarget  Bluej Class Target to retrieve the editor from
-     * @return          Proxy editor object or null if it cannot be created
+     * @param aTarget Bluej Class Target to retrieve the editor from
+     * @return Proxy editor object or null if it cannot be created
      */
-    public static Editor newEditor(ClassTarget aTarget)
-    {
+    public static Editor newEditor(ClassTarget aTarget) {
         bluej.editor.Editor bjEditor = aTarget.getEditor();
-        if (bjEditor == null) 
+        if (bjEditor == null)
             return null;
         return new Editor(bjEditor.assumeText());
     }
-    
-    public static bluej.editor.Editor getEditor(Editor editor)
-    {
+
+    public static bluej.editor.Editor getEditor(Editor editor) {
         return editor.getEditor();
     }
 }

@@ -36,17 +36,15 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class DuplicateClassDialog extends InputDialog<String>
-{
+public class DuplicateClassDialog extends InputDialog<String> {
     /**
      * Creates a DuplicateClassDialog, which prompts the user to enter (or confirm a suggested) name for the new class.
      *
-     * @param parent      the PkgMgrFrame's window which represents the package working on.
-     * @param name        the suggested name for the duplicated class.
-     * @param sourceType  the type of the class's source; currently, Java or Stride.
+     * @param parent     the PkgMgrFrame's window which represents the package working on.
+     * @param name       the suggested name for the duplicated class.
+     * @param sourceType the type of the class's source; currently, Java or Stride.
      */
-    public DuplicateClassDialog(Window parent, String name, SourceType sourceType)
-    {
+    public DuplicateClassDialog(Window parent, String name, SourceType sourceType) {
         super(Config.getString("pkgmgr.duplicate.title"), Config.getString("pkgmgr.newClass.label"),
                 Config.getString("pkgmgr.newClass.prompt"), "new-class-dialog", "." + sourceType.name());
         initOwner(parent);
@@ -55,24 +53,19 @@ public class DuplicateClassDialog extends InputDialog<String>
     }
 
     @Override
-    public String convert(String fieldText)
-    {
+    public String convert(String fieldText) {
         return fieldText.trim(); // Validation is done in convert
     }
 
     @Override
-    public boolean validate(String oldInput, String newInput)
-    {
+    public boolean validate(String oldInput, String newInput) {
         newInput = newInput.trim();
-        
-        if (!newInput.isEmpty() && JavaNames.isIdentifier(newInput))
-        {
+
+        if (!newInput.isEmpty() && JavaNames.isIdentifier(newInput)) {
             setOKEnabled(true);
             setErrorText("");
             return true;
-        }
-        else
-        {
+        } else {
             setErrorText(Config.getString("pkgmgr.duplicate.error.notValidClassName"));
             setOKEnabled(false);
             return true; // Let it be invalid, but show error

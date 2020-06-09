@@ -31,95 +31,82 @@ import threadchecker.Tag;
  * access to Actor methods that are package protected. We need some
  * package-protected methods, because we don't want them to show up
  * in the public interface visible to users.
- * 
- * @author Poul Henriksen 
+ *
+ * @author Poul Henriksen
  */
-public class ActorVisitor
-{
-    public static void setLocationInPixels(Actor actor, int dragBeginX, int dragBeginY)
-    {
+public class ActorVisitor {
+    public static void setLocationInPixels(Actor actor, int dragBeginX, int dragBeginY) {
         actor.setLocationInPixels(dragBeginX, dragBeginY);
     }
-    
+
     /**
      * Get the X co-ordinate of an actor's position, in cells
      */
-    public static int getX(Actor actor)
-    {
+    public static int getX(Actor actor) {
         return actor.x;
     }
-    
+
     /**
      * Get the Y co-ordinate of an actor's position, in cells
      */
-    public static int getY(Actor actor)
-    {
+    public static int getY(Actor actor) {
         return actor.y;
     }
-    
+
     /**
      * Get the rotation of an actor, in degrees, from 0-359
      */
-    public static int getRotation(Actor actor)
-    {
+    public static int getRotation(Actor actor) {
         return actor.rotation;
     }
-    
+
     /**
      * Get the world that an actor resides in (null if none).
      */
-    public static World getWorld(Actor actor)
-    {
+    public static World getWorld(Actor actor) {
         return actor.world;
     }
-   
+
     /**
      * Checks whether the specified point (specified in pixel co-ordinates) is within the area
      * covered by the (rotated) graphical representation of the given actor.
-     * 
-     * @param actor  The relevant actor
-     * @param px  The (world relative) x pixel co-ordinate
-     * @param py  The (world relative) y pixel co-ordinate
-     * @return  true if the pixel is within the actor's bounds; false otherwise
+     *
+     * @param actor The relevant actor
+     * @param px    The (world relative) x pixel co-ordinate
+     * @param py    The (world relative) y pixel co-ordinate
+     * @return true if the pixel is within the actor's bounds; false otherwise
      */
-    public static boolean containsPoint(Actor actor, int px, int py)
-    {
+    public static boolean containsPoint(Actor actor, int px, int py) {
         return actor.containsPoint(px, py);
     }
 
-    public static boolean intersects(Actor actor, Actor other)
-    {
+    public static boolean intersects(Actor actor, Actor other) {
         return actor.intersects(other);
     }
-    
-    public static int toPixel(Actor actor, int x) 
-    {
+
+    public static int toPixel(Actor actor, int x) {
         return actor.toPixel(x);
     }
-    
-    public static Rect getBoundingRect(Actor actor) 
-    {
+
+    public static Rect getBoundingRect(Actor actor) {
         return actor.getBoundingRect();
     }
-    
-    public static void setData(Actor actor, Object n)
-    {
+
+    public static void setData(Actor actor, Object n) {
         actor.setData(n);
     }
-    
-    public static Object getData(Actor actor)
-    {
+
+    public static Object getData(Actor actor) {
         return actor.getData();
     }
-    
+
     /**
      * Get the display image for an actor. This is the last image that was
      * set using setImage(). The returned image should not be modified.
-     * 
-     * @param actor  The actor whose display image to retrieve
+     *
+     * @param actor The actor whose display image to retrieve
      */
-    public static GreenfootImage getDisplayImage(Actor actor)
-    {
+    public static GreenfootImage getDisplayImage(Actor actor) {
         return actor.getImage();
     }
 
@@ -128,8 +115,7 @@ public class ActorVisitor
      * Actor.getImage(), but it will return the greenfoot logo image
      * if that returns null.
      */
-    public static GreenfootImage getDragImage(Actor actor)
-    {
+    public static GreenfootImage getDragImage(Actor actor) {
         GreenfootImage image = actor.getImage();
         if (image == null) {
             image = Actor.greenfootImage;
@@ -138,32 +124,28 @@ public class ActorVisitor
     }
 
     @OnThread(Tag.Any)
-    public static void setDelegate(ActorDelegate instance)
-    {
+    public static void setDelegate(ActorDelegate instance) {
         Actor.setDelegate(instance);
     }
-    
-    public static int getSequenceNumber(Actor actor)
-    {
+
+    public static int getSequenceNumber(Actor actor) {
         return actor.getSequenceNumber();
     }
-    
+
     /**
      * Get the sequence number of the given actor from the last paint
      * operation on the world. (Returns whatever was set using the
      * setLastPaintSeqNum method).
      */
-    public static int getLastPaintSeqNum(Actor actor)
-    {
+    public static int getLastPaintSeqNum(Actor actor) {
         return actor.getLastPaintSeqNum();
     }
-    
+
     /**
      * Set the sequence number of the given actor from the last paint
      * operation on the world.
      */
-    public static void setLastPaintSeqNum(Actor actor, int num)
-    {
+    public static void setLastPaintSeqNum(Actor actor, int num) {
         actor.setLastPaintSeqNum(num);
     }
 }

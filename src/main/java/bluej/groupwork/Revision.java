@@ -23,48 +23,41 @@ package bluej.groupwork;
 
 /**
  * A revision number with associated information - author, date, comment.
- * 
+ *
  * @author Davin McCall
  */
-public class Revision
-{
+public class Revision {
     private final String author;
     private final String date;
     private final String comment;
-    
-    public Revision(String author, String date, String comment)
-    {
+
+    public Revision(String author, String date, String comment) {
         this.author = author;
         this.date = date;
         this.comment = comment;
     }
-    
-    public String getAuthor()
-    {
+
+    public String getAuthor() {
         return author;
     }
-    
-    public String getDateString()
-    {
+
+    public String getDateString() {
         return date;
     }
-    
-    public String getMessage()
-    {
+
+    public String getMessage() {
         return comment;
     }
-    
-    public int hashCode()
-    {
+
+    public int hashCode() {
         return author.hashCode() + date.hashCode() + comment.hashCode();
     }
-    
-    public boolean equals(Object other)
-    {
+
+    public boolean equals(Object other) {
         if (other instanceof Revision) {
             Revision rother = (Revision) other;
             return rother.author.equals(author) && rother.date.equals(date)
-                && rother.comment.equals(comment);
+                    && rother.comment.equals(comment);
         }
         return false;
     }

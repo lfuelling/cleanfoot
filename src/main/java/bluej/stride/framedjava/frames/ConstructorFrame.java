@@ -21,54 +21,33 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javafx.beans.binding.DoubleExpression;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-
 import bluej.Config;
-import bluej.stride.framedjava.ast.AccessPermissionFragment;
-import bluej.stride.framedjava.ast.ExpressionSlotFragment;
-import bluej.stride.framedjava.ast.JavadocUnit;
-import bluej.stride.framedjava.ast.NameDefSlotFragment;
-import bluej.stride.framedjava.ast.ParamFragment;
-import bluej.stride.framedjava.ast.SuperThis;
-import bluej.stride.framedjava.ast.SuperThisParamsExpressionFragment;
-import bluej.stride.framedjava.ast.SuperThisFragment;
-import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.ast.*;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.ConstructorElement;
 import bluej.stride.framedjava.elements.NormalMethodElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.SuperThisParamsExpressionSlot;
-import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
 import bluej.stride.operations.CustomFrameOperation;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.slots.ChoiceSlot;
 import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.slots.FormalParameters;
-import bluej.stride.slots.HeaderItem;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
+import javafx.beans.binding.DoubleExpression;
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.*;
 
 public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
 
@@ -98,7 +77,7 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
     }
 
     public ConstructorFrame(InteractionManager editor, AccessPermissionFragment access, String documentation,
-            SuperThisFragment delegate, ExpressionSlotFragment delegateParams, boolean enabled) {
+                            SuperThisFragment delegate, ExpressionSlotFragment delegateParams, boolean enabled) {
         this(editor);
         this.access.setValue(access.getValue());
         access.registerSlot(this.access);
@@ -214,8 +193,7 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
                     true, ExtensionSource.INSIDE_FIRST, ExtensionSource.MODIFIER)));
 
             return extensions;
-        }
-        else {
+        } else {
             return Arrays.asList(new ExtensionDescription('\b', Config.getString("frame.class.remove.super"),
                     () -> removeSuperThis(), true, ExtensionSource.INSIDE_FIRST));
         }
@@ -223,25 +201,24 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public List<FrameOperation> getContextOperations()
-    {
+    public List<FrameOperation> getContextOperations() {
         List<FrameOperation> r = new ArrayList<>(super.getContextOperations());
 
         r.add(new CustomFrameOperation(getEditor(), "constructor->method",
                 Arrays.asList(Config.getString("frame.operation.change"), Config.getString("frame.operation.change.to.method")),
                 MenuItemOrder.TRANSFORM, this, () -> {
-                    // TODO AA enhance the code
-                    Frame parent = getParentCanvas().getParent().getFrame();
-                    if (parent instanceof ClassFrame) {
-                        FrameCanvas p = ((ClassFrame) parent).getMethodsCanvas();
-                        FrameCursor c = p.getLastCursor();
-                        NormalMethodElement el = new NormalMethodElement(null, new AccessPermissionFragment(this, access),
-                                false, false, new TypeSlotFragment("", ""), new NameDefSlotFragment(""), generateParams(), throwsPane.getTypes(),
-                                getContents(), new JavadocUnit(getDocumentation()), frameEnabledProperty.get());
-                        c.insertBlockAfter(el.createFrame(getEditor()));
-                        getParentCanvas().removeBlock(this);
-                    }
-                }));
+            // TODO AA enhance the code
+            Frame parent = getParentCanvas().getParent().getFrame();
+            if (parent instanceof ClassFrame) {
+                FrameCanvas p = ((ClassFrame) parent).getMethodsCanvas();
+                FrameCursor c = p.getLastCursor();
+                NormalMethodElement el = new NormalMethodElement(null, new AccessPermissionFragment(this, access),
+                        false, false, new TypeSlotFragment("", ""), new NameDefSlotFragment(""), generateParams(), throwsPane.getTypes(),
+                        getContents(), new JavadocUnit(getDocumentation()), frameEnabledProperty.get());
+                c.insertBlockAfter(el.createFrame(getEditor()));
+                getParentCanvas().removeBlock(this);
+            }
+        }));
 
         return r;
     }
@@ -252,39 +229,31 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
     }
 
     @Override
-    protected FrameContentRow makeHeader(String stylePrefix)
-    {
-        return new MethodHeaderRow(this, stylePrefix)
-        {
+    protected FrameContentRow makeHeader(String stylePrefix) {
+        return new MethodHeaderRow(this, stylePrefix) {
             @Override
-            protected EditableSlot getSlotAfterParams()
-            {
+            protected EditableSlot getSlotAfterParams() {
                 return throwsPane.getTypeSlots().findFirst().orElse(null);
             }
 
             @Override
-            protected EditableSlot getSlotBeforeParams()
-            {
+            protected EditableSlot getSlotBeforeParams() {
                 return access;
             }
         };
     }
 
     @Override
-    public boolean tryRestoreTo(CodeElement codeElement)
-    {
-        if (codeElement instanceof ConstructorElement)
-        {
-            ConstructorElement ce = (ConstructorElement)codeElement;
+    public boolean tryRestoreTo(CodeElement codeElement) {
+        if (codeElement instanceof ConstructorElement) {
+            ConstructorElement ce = (ConstructorElement) codeElement;
             if (this.element.hasDelegate() && !ce.hasDelegate()) {
                 removeSuperThis();
             }
-            if (!this.element.hasDelegate() && ce.hasDelegate())
-            {
+            if (!this.element.hasDelegate() && ce.hasDelegate()) {
                 addSuperThis(new SuperThisFragment(ce.getDelegate()), new SuperThisParamsExpressionFragment(ce.getDelegateParams(), ce.getDelegateParamsJava()));
             }
-            if (this.element.hasDelegate() && ce.hasDelegate())
-            {
+            if (this.element.hasDelegate() && ce.hasDelegate()) {
                 restoreDelegate(ce);
             }
             restoreDetails(ce);
@@ -293,8 +262,7 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
         return false;
     }
 
-    private void restoreDelegate(ConstructorElement ce)
-    {
+    private void restoreDelegate(ConstructorElement ce) {
         if (!superThis.getValue(null).equals(ce.getDelegate())) {
             superThis.setValue(ce.getDelegate());
         }
@@ -304,35 +272,27 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
     }
 
     @Override
-    public boolean focusWhenJustAdded()
-    {
+    public boolean focusWhenJustAdded() {
         getCanvas().getFirstCursor().requestFocus();
         return true;
     }
 
     @Override
-    protected DoubleExpression tweakOpeningCurlyY()
-    {
-        if (callRow == null)
-        {
+    protected DoubleExpression tweakOpeningCurlyY() {
+        if (callRow == null) {
             return super.tweakOpeningCurlyY();
-        }
-        else
-        {
+        } else {
             return callRow.flowPaneHeight().negate();
         }
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         super.setView(oldView, newView, animate);
 
-        if (callRow != null)
-        {
-            if (newView == View.JAVA_PREVIEW)
-            {
+        if (callRow != null) {
+            if (newView == View.JAVA_PREVIEW) {
                 double maxAmount = getCanvas().getCurlyBracketHeight();
                 JavaFXUtil.addChangeListener(animate.getProgress(), t -> {
                     callRow.getNode().setTranslateY(t.doubleValue() * maxAmount);
@@ -345,23 +305,19 @@ public class ConstructorFrame extends MethodFrameWithBody<ConstructorElement> {
                 FXRunnable setPad = () -> getCanvas().setTopOutsideBorderBackgroundPadding(Optional.of(-2 + callRow.getSceneBounds().getHeight()));
                 setPad.run();
                 animate.addOnStopped(setPad);
-            }
-            else if (oldView == View.JAVA_PREVIEW)
-            {
+            } else if (oldView == View.JAVA_PREVIEW) {
                 getCanvas().setTopOutsideBorderBackgroundPadding(Optional.empty());
                 double orig = callRow.getNode().getTranslateY();
                 JavaFXUtil.addChangeListener(animate.getOppositeProgress(), t -> {
                     callRow.getNode().setTranslateY(t.doubleValue() * orig);
-                }); 
+                });
             }
 
 
-            if (newView.isBirdseye() || oldView.isBirdseye())
-            {
+            if (newView.isBirdseye() || oldView.isBirdseye()) {
                 animate.getProgress().addListener((prop, oldVal, newVal) -> {
                     // When you cross the half way point:
-                    if (oldVal.doubleValue() < 0.5 && newVal.doubleValue() >= 0.5)
-                    {
+                    if (oldVal.doubleValue() < 0.5 && newVal.doubleValue() >= 0.5) {
                         callRow.setVisible(!newView.isBirdseye());
                     }
                 });

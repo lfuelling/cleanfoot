@@ -21,8 +21,7 @@
  */
 package threadchecker;
 
-public enum Tag
-{
+public enum Tag {
     // FXPlatform is the FX thread, Swing is the EDT
     // FX means either FX thread or a loader thread for FX
     // SwingIsFX means designed to work on Swing, now relying on them being same thread.
@@ -66,12 +65,11 @@ public enum Tag
 
     /**
      * Checks if this tag on a method is allowed when overriding the given (potentially null) parent method tag.
-     * 
+     * <p>
      * The rule is pretty simple: if the parent tag is present, it must match this tag.
      * If the parent tag is empty, this tag must be Any (because the untagged parent can be called from any thread, so we can too)
      */
-    public boolean canOverride(Tag parent)
-    {
+    public boolean canOverride(Tag parent) {
         if (parent == null)
             return this == Any;
         else if (parent == FXPlatform && this == FX)
@@ -86,21 +84,20 @@ public enum Tag
 
     /**
      * Checks if code tagged with this tag can call a method tagged with the given (potentially null) tag.
-     * 
+     * <p>
      * The rule is simple: we return false if the destination tag is Unique; or is FX/Swing and does not match this tag.
      * In all other cases we return true.
      */
-    public boolean canCall(Tag dest, boolean sameInstance)
-    {
+    public boolean canCall(Tag dest, boolean sameInstance) {
         if (dest == null || dest == Any) // Can call dest any from any source
             return true;
         else if (dest == Tag.FX && this == Tag.FXPlatform)
             return true; // FXPlatform can call FX, but not vice versa
         else if ((dest == Tag.SwingIsFX && (this == Tag.FXPlatform || this == Tag.Swing))
-              || (this == Tag.SwingIsFX && (dest == Tag.FXPlatform || dest == Tag.Swing)))
+                || (this == Tag.SwingIsFX && (dest == Tag.FXPlatform || dest == Tag.Swing)))
             return true;
         else
             return this == dest;
-        
+
     }
 }

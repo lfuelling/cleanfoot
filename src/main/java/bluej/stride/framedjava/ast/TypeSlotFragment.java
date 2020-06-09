@@ -21,11 +21,6 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.stream.Stream;
-
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.LocatableElement.LocationMap;
 import bluej.stride.framedjava.errors.*;
@@ -36,31 +31,31 @@ import bluej.utility.javafx.FXPlatformConsumer;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class TypeSlotFragment extends StructuredSlotFragment
-{
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
+
+public class TypeSlotFragment extends StructuredSlotFragment {
     private TypeSlot slot;
     private boolean hasEarlyErrors;
 
-    public TypeSlotFragment(String content, String javaCode, TypeSlot slot)
-    {
+    public TypeSlotFragment(String content, String javaCode, TypeSlot slot) {
         super(content, javaCode);
         this.slot = slot;
     }
-    
-    public TypeSlotFragment(String content, String javaCode)
-    {
+
+    public TypeSlotFragment(String content, String javaCode) {
         this(content, javaCode, null);
     }
 
     @Override
-    public Map<String, CodeElement> getVars()
-    {
+    public Map<String, CodeElement> getVars() {
         return Collections.emptyMap();
     }
 
     @Override
-    public String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator)
-    {
+    public String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator) {
         if (!dest.substitute() || (content != null && Parser.parseableAsType(content)))
             return content;
         else
@@ -69,8 +64,7 @@ public class TypeSlotFragment extends StructuredSlotFragment
     }
 
     @Override
-    public Stream<SyntaxCodeError> findEarlyErrors()
-    {
+    public Stream<SyntaxCodeError> findEarlyErrors() {
         // In all these cases, we will have an early error:
         hasEarlyErrors = true;
         if (content != null && content.isEmpty())
@@ -89,39 +83,33 @@ public class TypeSlotFragment extends StructuredSlotFragment
     @Override
     @OnThread(Tag.FXPlatform)
     public Future<List<DirectSlotError>> findLateErrors(InteractionManager editor, CodeElement parent,
-                                                        LocationMap rootPathMap)
-    {
+                                                        LocationMap rootPathMap) {
         CompletableFuture<List<DirectSlotError>> f = new CompletableFuture<>();
 
         ArrayList<Integer> indexOfErrors = new ArrayList<>();
         ArrayList<String> typesList = new ArrayList<>();
 
-        if (hasEarlyErrors)
-        {
+        if (hasEarlyErrors) {
             f.complete(Collections.emptyList());
             return f;
         }
 
         // Handle Generic types or Array types
         if ((content.contains("<") && content.contains(">")) ||
-                (content.contains("[") && content.contains("]")))
-        {
+                (content.contains("[") && content.contains("]"))) {
             // Replacing all the "<" and ">" with "," makes searching for type errors
             // inside a generic content easier.
             String modifiedContent = content.replaceAll("[<>\\]\\[]", ",");
             int index = 0;
-            while (!modifiedContent.equals(""))
-            {
+            while (!modifiedContent.equals("")) {
                 String type = modifiedContent.substring(0, modifiedContent.indexOf(","));
-                if (!type.equals(""))
-                {
+                if (!type.equals("")) {
                     indexOfErrors.add(index);
                     typesList.add(type);
                 }
                 index = index + type.length() + 1;
                 modifiedContent = modifiedContent.substring(modifiedContent.indexOf(",") + 1);
-                if (!modifiedContent.contains(",") && !modifiedContent.equals(""))
-                {
+                if (!modifiedContent.contains(",") && !modifiedContent.equals("")) {
                     indexOfErrors.add(index);
                     typesList.add(modifiedContent);
                     break;
@@ -133,16 +121,14 @@ public class TypeSlotFragment extends StructuredSlotFragment
 
         // No point looking for a type that isn't syntactically valid:
         // Also, don't mess with arrays or generics or qualified types:
-        if (content.contains("[") || content.contains("<") || content.contains("."))
-        {
+        if (content.contains("[") || content.contains("<") || content.contains(".")) {
             f.complete(Collections.emptyList());
             return f;
         }
 
         editor.withTypes(types -> {
 
-            if (types.containsKey(content))
-            {
+            if (types.containsKey(content)) {
                 // Match -- no error
                 f.complete(Collections.emptyList());
                 return;
@@ -150,7 +136,8 @@ public class TypeSlotFragment extends StructuredSlotFragment
             // Otherwise, give error and suggest corrections
             final UnknownTypeError error = new UnknownTypeError(this, content, slot::setText, editor,
                     types.values().stream(), editor.getImportSuggestions().values().stream().
-                    flatMap(Collection::stream)) {};
+                    flatMap(Collection::stream)) {
+            };
             error.recordPath(rootPathMap.locationFor(this));
             f.complete(Arrays.asList(error));
         });
@@ -159,26 +146,24 @@ public class TypeSlotFragment extends StructuredSlotFragment
 
     /**
      * It checks for type errors and it returns a list of errors (wrapped as a Future).
-     * @param typesList the list of found types
-     * @param indexList the list of type indexes in the slot
-     * @param editor the editor of the class
+     *
+     * @param typesList   the list of found types
+     * @param indexList   the list of type indexes in the slot
+     * @param editor      the editor of the class
      * @param rootPathMap the root map from JavaFragment to XPath String identifying the location of that fragment.
      * @return the Future list of errors
      */
     @OnThread(Tag.FXPlatform)
     private Future<List<DirectSlotError>> checkForTypeErrors(
             ArrayList<String> typesList, ArrayList<Integer> indexList, InteractionManager editor,
-            LocationMap rootPathMap)
-    {
+            LocationMap rootPathMap) {
         CompletableFuture<List<DirectSlotError>> f = new CompletableFuture<>();
         ArrayList<DirectSlotError> listOfErrors = new ArrayList<>();
         editor.withTypes(types -> {
 
             int i = 0;
-            for(String t : typesList)
-            {
-                if (types.containsKey(t))
-                {
+            for (String t : typesList) {
+                if (types.containsKey(t)) {
                     // Match -- no error
                     i = i + 1;
                     continue;
@@ -198,15 +183,13 @@ public class TypeSlotFragment extends StructuredSlotFragment
         });
         return f;
     }
-    
+
     @Override
-    public TypeSlot getSlot()
-    {
+    public TypeSlot getSlot() {
         return slot;
     }
 
-    public void registerSlot(TypeSlot slot)
-    {
+    public void registerSlot(TypeSlot slot) {
         if (this.slot == null)
             this.slot = slot;
     }

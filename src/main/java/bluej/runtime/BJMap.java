@@ -24,44 +24,40 @@ package bluej.runtime;
 /**
  * A simple map implementation, for use in J2ME. Not efficient, but fine for
  * how it is presently used.
- * 
+ *
  * @author Davin McCall
  */
-public class BJMap<K,V>
-{
+public class BJMap<K, V> {
     private V[] values;
     private K[] keys;
-    
+
     @SuppressWarnings("unchecked")
-    public BJMap()
-    {
+    public BJMap() {
         values = (V[]) new Object[0];
         keys = (K[]) new Object[0];
     }
-    
-    public V get(K key)
-    {
+
+    public V get(K key) {
         for (int i = 0; i < keys.length; i++) {
             if (keys[i].equals(key)) {
                 return values[i];
             }
         }
-        
+
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
-    public void put(K key, V value)
-    {
+    public void put(K key, V value) {
         for (int i = 0; i < keys.length; i++) {
             if (keys[i].equals(key)) {
                 values[i] = value;
                 return;
             }
         }
-        
-        K [] newKeys = (K []) new Object[keys.length + 1];
-        V [] newValues = (V []) new Object[keys.length + 1];
+
+        K[] newKeys = (K[]) new Object[keys.length + 1];
+        V[] newValues = (V[]) new Object[keys.length + 1];
         System.arraycopy(keys, 0, newKeys, 0, keys.length);
         System.arraycopy(values, 0, newValues, 0, keys.length);
         newKeys[keys.length] = key;
@@ -69,27 +65,25 @@ public class BJMap<K,V>
         keys = newKeys;
         values = newValues;
     }
-    
+
     @SuppressWarnings("unchecked")
-    public void remove(K key)
-    {
+    public void remove(K key) {
         for (int i = 0; i < keys.length; i++) {
             if (keys[i].equals(key)) {
-                K [] newKeys = (K []) new Object[keys.length - 1];
-                V [] newValues = (V []) new Object[keys.length - 1];
+                K[] newKeys = (K[]) new Object[keys.length - 1];
+                V[] newValues = (V[]) new Object[keys.length - 1];
                 System.arraycopy(keys, 0, newKeys, 0, i);
-                System.arraycopy(keys, i+1, newKeys, i, keys.length - i - 1);
+                System.arraycopy(keys, i + 1, newKeys, i, keys.length - i - 1);
                 System.arraycopy(values, 0, newValues, 0, i);
-                System.arraycopy(values, i+1, newValues, i, keys.length - i - 1);
+                System.arraycopy(values, i + 1, newValues, i, keys.length - i - 1);
                 keys = newKeys;
                 values = newValues;
                 return;
             }
         }
     }
-    
-    public K[] getKeys()
-    {
+
+    public K[] getKeys() {
         return keys;
     }
 }

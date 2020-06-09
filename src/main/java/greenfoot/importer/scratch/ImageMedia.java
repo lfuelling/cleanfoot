@@ -21,6 +21,7 @@
  */
 package greenfoot.importer.scratch;
 
+import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,48 +29,40 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-
 /**
  * Equivalent of the Scratch ImageMedia class.
- * 
+ * <p>
  * This is primarily a container that holds a ScratchImage inside it (which you can get at with getImage()).
- * 
+ * <p>
  * It also has support for things like holding an original copy of a JPEG
  * and compositing text with images, but we don't support that at the moment.
- * 
- * @author neil
  *
+ * @author neil
  */
-public class ImageMedia extends ScratchMedia
-{
+public class ImageMedia extends ScratchMedia {
     // If non-null, the File that the image has been saved into
     private File imageFile;
 
-    public ImageMedia(int version, List<ScratchObject> scratchObjects)
-    {
+    public ImageMedia(int version, List<ScratchObject> scratchObjects) {
         super(ScratchUserObject.IMAGE_MEDIA, version, scratchObjects);
     }
 
     // Fields:
     //  form (ScratchImage), rotationCenter (?), textBox (?), jpegBytes (?), compositeForm (?) 
-    
-    public int fields()
-    {
+
+    public int fields() {
         return super.fields() + 5;
-    }    
-    
-    private ScratchImage getImage()
-    {
+    }
+
+    private ScratchImage getImage() {
         if (scratchObjects.get(super.fields() + 4) != null) {
             return (ScratchImage) scratchObjects.get(super.fields() + 4);
         } else {
-            return (ScratchImage)scratchObjects.get(super.fields() + 0);
+            return (ScratchImage) scratchObjects.get(super.fields() + 0);
         }
     }
-    
-    private byte[] getJpegBytes()
-    {
+
+    private byte[] getJpegBytes() {
         ScratchObject obj = scratchObjects.get(super.fields() + 3);
         if (obj == null) {
             return null;
@@ -77,14 +70,12 @@ public class ImageMedia extends ScratchMedia
             return (byte[]) obj.getValue();
         }
     }
-    
-    public ScratchPoint getRotationCentre()
-    {
+
+    public ScratchPoint getRotationCentre() {
         return (ScratchPoint) scratchObjects.get(super.fields() + 1);
     }
-    
-    public int getWidth()
-    {
+
+    public int getWidth() {
         byte[] jpegBytes = getJpegBytes();
         if (jpegBytes != null) {
             try {
@@ -94,11 +85,10 @@ public class ImageMedia extends ScratchMedia
             }
         } else {
             return getImage().getWidth();
-        }        
+        }
     }
-    
-    public int getHeight()
-    {
+
+    public int getHeight() {
         byte[] jpegBytes = getJpegBytes();
         if (jpegBytes != null) {
             try {
@@ -108,25 +98,25 @@ public class ImageMedia extends ScratchMedia
             }
         } else {
             return getImage().getHeight();
-        }        
+        }
     }
 
-    @Override public File saveInto(File destDir, Properties props, String prefix) throws IOException
-    {       
+    @Override
+    public File saveInto(File destDir, Properties props, String prefix) throws IOException {
         if (imageFile == null) {
             byte[] jpegBytes = getJpegBytes();
-            
+
             String extension = jpegBytes == null ? "png" : "jpg";
-            
+
             File imageDir = new File(destDir, "images");
             imageDir.mkdirs();
-            for (int i = -1;;i++) {
+            for (int i = -1; ; i++) {
                 // First try without addition, then append numbers until we find a free file:
                 imageFile = new File(imageDir, prefix + mungeChars(getMediaName()) + (i < 0 ? "" : "_" + i) + "." + extension);
                 if (false == imageFile.exists())
                     break;
             }
-            
+
             if (jpegBytes != null) {
                 FileOutputStream fos = new FileOutputStream(imageFile);
                 fos.write(jpegBytes);
@@ -135,12 +125,11 @@ public class ImageMedia extends ScratchMedia
                 ImageIO.write(getImage().getBufferedImage(), "png", imageFile);
             }
         }
-        
+
         return imageFile;
     }
-    
-    private static String mungeChars(String name)
-    {
+
+    private static String mungeChars(String name) {
         // Replace special characters (colons and slashes) with underscore:
         return name.replaceAll("[:/\\\\]", "_");
     }

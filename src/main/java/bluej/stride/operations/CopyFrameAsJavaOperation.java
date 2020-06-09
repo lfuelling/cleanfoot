@@ -21,9 +21,6 @@
  */
 package bluej.stride.operations;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.Config;
 import bluej.stride.framedjava.frames.GreenfootFrameUtil;
 import bluej.stride.generic.Frame;
@@ -32,23 +29,22 @@ import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class CopyFrameAsJavaOperation extends FrameOperation
-{
-    public CopyFrameAsJavaOperation(InteractionManager editor)
-    {
+import java.util.Arrays;
+import java.util.List;
+
+public class CopyFrameAsJavaOperation extends FrameOperation {
+    public CopyFrameAsJavaOperation(InteractionManager editor) {
         super(editor, "COPY-JAVA", Combine.ALL);
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         GreenfootFrameUtil.doCopyAsJava(frames);
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.copy.as.java"), MenuItemOrder.COPY));
     }
 }

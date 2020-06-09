@@ -21,10 +21,7 @@
  */
 package bluej.stride.framedjava.convert;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import bluej.Config;
 import bluej.utility.Utility;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -32,29 +29,26 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 
-import bluej.Config;
-import threadchecker.OnThread;
-import threadchecker.Tag;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A dialog shown when the user has tried to convert Java to Stride,
  * either by pasting from the clipboard or a full-class conversion,
- * and there has been either an error or warnings. 
+ * and there has been either an error or warnings.
  */
-public class ConvertResultDialog
-{
+public class ConvertResultDialog {
     private final Alert alert;
-    
+
     /**
      * Constructor for when both parses failed during a paste.  The xmlParseError
      * parameter contains the failure for parsing the XML,
      * in case the problem was the clipboard had been messed with.
-     * 
+     * <p>
      * The convertError parameter is the error (usually a parse failure)
      * in doing the Java->Stride conversion.
      */
-    public ConvertResultDialog(String xmlParseError, String convertError)
-    {
+    public ConvertResultDialog(String xmlParseError, String convertError) {
         alert = new Alert(Alert.AlertType.ERROR, Config.getString("stride.convert.paste.errors"), ButtonType.OK);
         alert.setTitle(Config.getString("stride.convert.paste.errors.title"));
         alert.setHeaderText(alert.getTitle());
@@ -66,12 +60,11 @@ public class ConvertResultDialog
 
     /**
      * Constructor for when both parsing failed during a full conversion.
-     *
+     * <p>
      * The convertError parameter is the error (usually a parse failure)
      * in doing the Java->Stride conversion.
      */
-    public ConvertResultDialog(String convertError)
-    {
+    public ConvertResultDialog(String convertError) {
         alert = new Alert(Alert.AlertType.ERROR, Config.getString("stride.convert.whole.errors"), ButtonType.OK);
         alert.setTitle(Config.getString("stride.convert.whole.errors.title"));
         alert.setHeaderText(alert.getTitle());
@@ -86,12 +79,11 @@ public class ConvertResultDialog
 
     /**
      * Constructor for when the conversion succeeded, but had warnings.
-     * 
+     * <p>
      * You should not pass an empty list; if there are no warnings, why are you
      * showing this dialog?
      */
-    public ConvertResultDialog(List<String> warnings)
-    {
+    public ConvertResultDialog(List<String> warnings) {
         alert = new Alert(Alert.AlertType.WARNING, Config.getString("stride.convert.warnings"), ButtonType.OK);
         alert.setTitle(Config.getString("stride.convert.warnings.title"));
         alert.setHeaderText(alert.getTitle());
@@ -99,10 +91,9 @@ public class ConvertResultDialog
         addDetails(warnings.stream().collect(Collectors.joining("\n")));
     }
 
-    private void addDetails(String extra)
-    {
+    private void addDetails(String extra) {
         alert.getDialogPane().setMaxWidth(600.0);
-        
+
         TextArea extraDisplay = new TextArea(extra);
         extraDisplay.setWrapText(true);
         extraDisplay.setPrefRowCount(8);
@@ -115,8 +106,7 @@ public class ConvertResultDialog
         alert.getDialogPane().setContent(vBox);
     }
 
-    public void showAndWait()
-    {
+    public void showAndWait() {
         alert.showAndWait();
     }
 }

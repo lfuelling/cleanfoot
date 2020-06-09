@@ -26,9 +26,6 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import bluej.Config;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
@@ -39,32 +36,25 @@ import bluej.stride.framedjava.elements.SwitchElement;
 import bluej.stride.framedjava.frames.BreakFrame.BreakEncloser;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
-import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.FrameTypeCheck;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.MultiCanvasFrame;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Debug;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Container-block representing a switch-case statement.
  */
 public class SwitchFrame extends MultiCanvasFrame
-  implements CodeFrame<SwitchElement>, DebuggableParentFrame
-{
+        implements CodeFrame<SwitchElement>, DebuggableParentFrame {
     private static final String SWITCH_STYLE_PREFIX = "switch-";
     private final ExpressionSlot<FilledExpressionSlotFragment> expression;
     private final JavaCanvas casesCanvas;
@@ -76,8 +66,7 @@ public class SwitchFrame extends MultiCanvasFrame
     /**
      * Default constructor.
      */
-    private SwitchFrame(InteractionManager editor)
-    {
+    private SwitchFrame(InteractionManager editor) {
         super(editor, "switch", SWITCH_STYLE_PREFIX);
         this.editor = editor;
 
@@ -86,11 +75,10 @@ public class SwitchFrame extends MultiCanvasFrame
 
 
         //Parameters
-        expression = new FilledExpressionSlot(editor, this, this, getHeaderRow(), SWITCH_STYLE_PREFIX){
+        expression = new FilledExpressionSlot(editor, this, this, getHeaderRow(), SWITCH_STYLE_PREFIX) {
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean backspaceAtStart()
-            {
+            public boolean backspaceAtStart() {
                 if (isAlmostBlank()) {
                     new PullUpContentsOperation(editor).activate(getParentFrame());
                     return true;
@@ -102,16 +90,14 @@ public class SwitchFrame extends MultiCanvasFrame
         setHeaderRow(new SlotLabel("("), expression, new SlotLabel(")"));
         expression.onTextPropertyChange(updateSidebarCurried("switch "));
     }
-    
-    public SwitchFrame(InteractionManager editor, ExpressionSlotFragment expression, boolean enabled)
-    {
+
+    public SwitchFrame(InteractionManager editor, ExpressionSlotFragment expression, boolean enabled) {
         this(editor);
         this.expression.setText(expression);
         frameEnabledProperty.set(enabled);
     }
 
-    public boolean addDefault()
-    {
+    public boolean addDefault() {
         if (defaultCanvas != null) {
             return false; //Already have one
         }
@@ -123,36 +109,31 @@ public class SwitchFrame extends MultiCanvasFrame
         return true;
     }
 
-    private void removeDefault()
-    {
+    private void removeDefault() {
         if (defaultCanvas != null) {
             removeCanvas(defaultCanvas);
             defaultCanvas = null;
         }
     }
-    
-    public static FrameFactory<SwitchFrame> getFactory()
-    {
+
+    public static FrameFactory<SwitchFrame> getFactory() {
         return new FrameFactory<SwitchFrame>() {
             @Override
-            public SwitchFrame createBlock(InteractionManager editor)
-            {
+            public SwitchFrame createBlock(InteractionManager editor) {
                 SwitchFrame switchFrame = new SwitchFrame(editor);
                 switchFrame.getFirstInternalCursor().insertBlockAfter(CaseFrame.getFactory().createBlock(editor));
                 return switchFrame;
             }
-            
+
             @Override
-            public Class<SwitchFrame> getBlockClass()
-            { 
+            public Class<SwitchFrame> getBlockClass() {
                 return SwitchFrame.class;
             }
         };
     }
-    
+
     @Override
-    public void pullUpContents()
-    {
+    public void pullUpContents() {
         // casesCanvas
         // Make copy because we're about to modify the contents:
         List<Frame> casesFrames = new ArrayList<>(casesCanvas.getBlockContents());
@@ -180,17 +161,14 @@ public class SwitchFrame extends MultiCanvasFrame
         editor.modifiedFrame(this, false);
     }
 
-    public void pullUpInnerCaseContents(CaseFrame frame)
-    {
+    public void pullUpInnerCaseContents(CaseFrame frame) {
         int index = casesCanvas.getBlockContents().indexOf(frame);
         if (index < 0) {
             throw new IllegalStateException("CaseFrame should be in the casesCanvas");
-        }
-        else if (index == 0) {
+        } else if (index == 0) {
             // TODO waiting a design decision
             Debug.message("pullUpInnerCaseContents @ SwitchFrame: Unimplemented case, waiting a design decision");
-        }
-        else {
+        } else {
             List<Frame> contents = frame.getValidPulledStatements();
             CaseFrame previous = (CaseFrame) casesCanvas.getBlockContents().get(index - 1);
             // Add a BlankFrame in between
@@ -202,8 +180,7 @@ public class SwitchFrame extends MultiCanvasFrame
         editor.modifiedFrame(this, false);
     }
 
-    private void pullUpDefaultContents()
-    {
+    private void pullUpDefaultContents() {
         if (defaultCanvas == null) {
             throw new IllegalStateException("Default couldn't be null if this method is invoked.");
         }
@@ -211,8 +188,7 @@ public class SwitchFrame extends MultiCanvasFrame
         if (casesCount == 0) {
             // TODO waiting a design decision
             Debug.message("pullUpDefaultContents @ SwitchFrame: Unimplemented case, waiting a design decision");
-        }
-        else {
+        } else {
             List<Frame> defaultContents = new ArrayList<>(defaultCanvas.getBlockContents());
             defaultContents.forEach(frame -> frame.setParentCanvas(null));
             defaultContents.forEach(c -> defaultCanvas.removeBlock(c));
@@ -230,14 +206,12 @@ public class SwitchFrame extends MultiCanvasFrame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-    {
+    public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
         return getCasesCanvas().showDebugBefore(null, debug);
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         List<CodeElement> casesContents = new ArrayList<>();
         casesCanvas.getBlocksSubtype(CodeFrame.class).forEach(f -> {
             f.regenerateCode();
@@ -256,77 +230,65 @@ public class SwitchFrame extends MultiCanvasFrame
     }
 
     @Override
-    public SwitchElement getCode()
-    {
+    public SwitchElement getCode() {
         return element;
     }
 
     @Override
-    public BreakEncloser asBreakEncloser()
-    {
+    public BreakEncloser asBreakEncloser() {
         return BreakEncloser.SWITCH;
     }
 
-    public JavaCanvas getCasesCanvas()
-    {
+    public JavaCanvas getCasesCanvas() {
         return casesCanvas;
     }
 
-    public JavaCanvas getDefaultCanvas()
-    {
+    public JavaCanvas getDefaultCanvas() {
         return defaultCanvas;
     }
 
-    public DebuggableParentFrame getCasesDebug()
-    {
+    public DebuggableParentFrame getCasesDebug() {
         return new DebuggableParentFrame() {
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
                 return ((JavaCanvas) getParentCanvas()).showDebugBefore(SwitchFrame.this, debug);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
                 return getCasesCanvas().showDebugBefore(null, debug);
             }
-            
+
             @Override
-            public FrameCanvas getParentCanvas()
-            {
+            public FrameCanvas getParentCanvas() {
                 //TODO is this right?
                 return SwitchFrame.this.getParentCanvas();
             }
         };
     }
 
-    public DebuggableParentFrame getDefaultDebug()
-    {
+    public DebuggableParentFrame getDefaultDebug() {
         return new DebuggableParentFrame() {
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
                 // TODO check it
-                return ((JavaCanvas)getParentCanvas()).showDebugBefore(SwitchFrame.this, debug);
+                return ((JavaCanvas) getParentCanvas()).showDebugBefore(SwitchFrame.this, debug);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
                 // TODO check it
                 return getDefaultCanvas().showDebugBefore(null, debug);
             }
 
             @Override
-            public FrameCanvas getParentCanvas()
-            {
+            public FrameCanvas getParentCanvas() {
                 //TODO is this right?
                 return SwitchFrame.this.getParentCanvas();
             }
@@ -334,8 +296,7 @@ public class SwitchFrame extends MultiCanvasFrame
     }
 
     @Override
-    public boolean focusWhenJustAdded()
-    {
+    public boolean focusWhenJustAdded() {
         expression.requestFocus();
         return true;
     }
@@ -366,37 +327,28 @@ public class SwitchFrame extends MultiCanvasFrame
     */
 
     @Override
-    public FrameTypeCheck check(FrameCanvas canvas)
-    {
-        if (canvas == casesCanvas)
-        {
+    public FrameTypeCheck check(FrameCanvas canvas) {
+        if (canvas == casesCanvas) {
             return new FrameTypeCheck() {
                 @Override
-                public boolean canInsert(StrideCategory category)
-                {
+                public boolean canInsert(StrideCategory category) {
                     return category == StrideCategory.CASE;
                 }
 
                 @Override
-                public boolean canPlace(Class<? extends Frame> type)
-                {
+                public boolean canPlace(Class<? extends Frame> type) {
                     return type.equals(CaseFrame.class);
                 }
             };
-        }
-        else if (canvas == defaultCanvas)
-        {
+        } else if (canvas == defaultCanvas) {
             return StrideDictionary.checkStatement();
-        }
-        else
-        {
+        } else {
             throw new IllegalStateException("Asking about unknown child of SwitchFrame");
         }
     }
 
     @Override
-    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas)
-    {
+    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursorInCanvas) {
         List<ExtensionDescription> result = new ArrayList<>(super.getAvailableExtensions(canvas, cursorInCanvas));
 
         if (defaultCanvas == null) {
@@ -404,13 +356,11 @@ public class SwitchFrame extends MultiCanvasFrame
                     "Add default", SwitchFrame.this::addDefault, true, ExtensionSource.INSIDE_FIRST, ExtensionSource.INSIDE_LATER, ExtensionSource.AFTER));
         }
 
-        if (canvas == casesCanvas)
-        {
+        if (canvas == casesCanvas) {
             result.add(new ExtensionDescription('\b', Config.getString("frame.switch.remove.switch"),
                     () -> new PullUpContentsOperation(editor).activate(getFrame()), false, ExtensionSource.INSIDE_FIRST));
         }
-        if (defaultCanvas != null && canvas == defaultCanvas)
-        {
+        if (defaultCanvas != null && canvas == defaultCanvas) {
             result.add(new ExtensionDescription('\b', Config.getString("frame.switch.remove.default"),
                     SwitchFrame.this::pullUpDefaultContents, false, ExtensionSource.INSIDE_FIRST));
         }
@@ -418,8 +368,7 @@ public class SwitchFrame extends MultiCanvasFrame
         return result;
     }
 
-    public boolean isAlmostBlank()
-    {
+    public boolean isAlmostBlank() {
         return getEditableSlotsDirect().allMatch(EditableSlot::isAlmostBlank) &&
                 defaultCanvas == null &&
                 (casesCanvas.blockCount() == 0 || (casesCanvas.blockCount() == 1 && casesCanvas.getBlockContents().get(0).isAlmostBlank()));
@@ -427,19 +376,16 @@ public class SwitchFrame extends MultiCanvasFrame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         super.setView(oldView, newView, animate);
         JavaFXUtil.setPseudoclass("bj-java-preview", newView == View.JAVA_PREVIEW, sidebar.getStyleable());
 
         boolean java = newView == View.JAVA_PREVIEW;
-        if (isFrameEnabled() && (java || oldView == View.JAVA_PREVIEW))
-        {
+        if (isFrameEnabled() && (java || oldView == View.JAVA_PREVIEW)) {
             if (defaultCanvas != null) {
                 casesCanvas.previewCurly(java, true, false, header.getLeftFirstItem(), null, animate);
                 defaultCanvas.previewCurly(java, false, true, header.getLeftFirstItem(), null, animate);
-            }
-            else {
+            } else {
                 casesCanvas.previewCurly(java, header.getLeftFirstItem(), null, animate);
             }
         }

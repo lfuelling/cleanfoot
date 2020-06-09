@@ -31,32 +31,31 @@ import threadchecker.Tag;
  * The type of source that is available.
  */
 @OnThread(Tag.Any)
-public enum SourceType
-{
+public enum SourceType {
     NONE, Java, Stride;
 
-    public static SourceType getEnum(String s)
-    {
+    public static SourceType getEnum(String s) {
         if (s == null || s.equals("null")) {
             return NONE;
         }
         String lowerCase = s.toLowerCase();
-        if(lowerCase.equals("stride")){
+        if (lowerCase.equals("stride")) {
             return Stride;
         }
-        if(lowerCase.equals("java")){
+        if (lowerCase.equals("java")) {
             return Java;
         }
         throw new IllegalArgumentException("No Enum specified for this string");
     }
-    
-    public String getExtension()
-    {
-        switch (this)
-        {
-            case Java: return "java";
-            case Stride: return "stride";
-            default: return "";
+
+    public String getExtension() {
+        switch (this) {
+            case Java:
+                return "java";
+            case Stride:
+                return "stride";
+            default:
+                return "";
         }
     }
 }

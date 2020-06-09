@@ -21,44 +21,39 @@
  */
 package bluej.extmgr;
 
-import javax.swing.JMenuItem;
-
 import bluej.extensions.BPackage;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
 import bluej.pkgmgr.Package;
 
+import javax.swing.*;
+
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Package
  * menu.
- * 
+ *
  * @author Simon Gerlach
  */
-public class PackageExtensionMenu implements ExtensionMenu
-{
+public class PackageExtensionMenu implements ExtensionMenu {
     private final Package bluejPackage;
 
     /**
      * Constructor. Creates a new {@link PackageExtensionMenu}.
-     * 
-     * @param bluejPackage
-     *            The current package opened in BlueJ.
+     *
+     * @param bluejPackage The current package opened in BlueJ.
      */
-    public PackageExtensionMenu(Package bluejPackage)
-    {
+    public PackageExtensionMenu(Package bluejPackage) {
         this.bluejPackage = bluejPackage;
     }
 
     @Override
-    public JMenuItem getMenuItem(MenuGenerator menuGenerator)
-    {
+    public JMenuItem getMenuItem(MenuGenerator menuGenerator) {
         BPackage bPackage = ExtensionBridge.newBPackage(bluejPackage);
         return menuGenerator.getPackageMenuItem(bPackage);
     }
 
     @Override
-    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem)
-    {
+    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem) {
         BPackage bPackage = ExtensionBridge.newBPackage(bluejPackage);
         menuGenerator.notifyPostPackageMenu(bPackage, onThisItem);
     }

@@ -21,45 +21,33 @@
  */
 package bluej.groupwork.svn;
 
+import bluej.groupwork.*;
+import bluej.utility.Debug;
+import org.tigris.subversion.javahl.*;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Depth;
-import org.tigris.subversion.javahl.SVNClientInterface;
-import org.tigris.subversion.javahl.Status;
-import org.tigris.subversion.javahl.StatusCallback;
-
-import bluej.groupwork.LogHistoryListener;
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusListener;
-import bluej.groupwork.TeamSettings;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.utility.Debug;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 /**
  * A subversion repository implementation.
- * 
+ *
  * @author Davin McCall
  */
 public class SvnRepository
-    implements Repository
-{
+        implements Repository {
     private final File projectPath;
     private final String protocol; // Only for data collection
     private final String reposUrl;
-    
+
     private final SVNClientInterface client;
     private final Object clientLock = new Object();
-    
-    public SvnRepository(File projectPath, String protocol, String reposUrl, SVNClientInterface client)
-    {
+
+    public SvnRepository(File projectPath, String protocol, String reposUrl, SVNClientInterface client) {
         this.projectPath = projectPath;
         this.protocol = protocol;
         this.reposUrl = reposUrl;
@@ -69,24 +57,21 @@ public class SvnRepository
     /* (non-Javadoc)
      * @see bluej.groupwork.Repository#versionsDirectories()
      */
-    public boolean versionsDirectories()
-    {
+    public boolean versionsDirectories() {
         return true;
     }
-    
+
     /* (non-Javadoc)
      * @see bluej.groupwork.Repository#setPassword(bluej.groupwork.TeamSettings)
      */
-    public void setPassword(TeamSettings newSettings)
-    {
+    public void setPassword(TeamSettings newSettings) {
         client.password(newSettings.getPassword());
     }
-    
+
     /* (non-Javadoc)
      * @see bluej.groupwork.Repository#checkout(java.io.File)
      */
-    public TeamworkCommand checkout(File projectPath)
-    {
+    public TeamworkCommand checkout(File projectPath) {
         return new SvnCheckoutCommand(this, projectPath);
     }
 
@@ -94,8 +79,7 @@ public class SvnRepository
      * @see bluej.groupwork.Repository#commitAll(java.util.Set, java.util.Set, java.util.Set, java.util.Set, java.lang.String)
      */
     public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
-            Set<File> deletedFiles, Set<File> files, String commitComment)
-    {
+                                     Set<File> deletedFiles, Set<File> files, String commitComment) {
         return new SvnCommitAllCommand(this, newFiles, binaryNewFiles, deletedFiles,
                 files, commitComment);
     }
@@ -103,42 +87,36 @@ public class SvnRepository
     /*
      * @see bluej.groupwork.Repository#getAllLocallyDeletedFiles(java.util.Set)
      */
-    public void getAllLocallyDeletedFiles(final Set<File> files)
-    {
+    public void getAllLocallyDeletedFiles(final Set<File> files) {
         synchronized (clientLock) {
             try {
                 client.status(projectPath.getAbsolutePath(), Depth.infinity,
                         false, false, false, false, null,
                         new StatusCallback() {
-                    public void doStatus(Status status)
-                    {
-                        File file = new File(status.getPath());
-                        if (! file.exists()) {
-                            files.add(file);
-                        }
-                    }
-                });
-            }
-            catch (ClientException ce) {
+                            public void doStatus(Status status) {
+                                File file = new File(status.getPath());
+                                if (!file.exists()) {
+                                    files.add(file);
+                                }
+                            }
+                        });
+            } catch (ClientException ce) {
                 Debug.reportError("Subversion: ClientException when getting local status", ce);
             }
         }
     }
 
-    public TeamworkCommand getLogHistory(LogHistoryListener listener)
-    {
+    public TeamworkCommand getLogHistory(LogHistoryListener listener) {
         return new SvnHistoryCommand(this, listener);
     }
 
     /* (non-Javadoc)
      * @see bluej.groupwork.Repository#getMetadataFilter()
      */
-    public FileFilter getMetadataFilter()
-    {
+    public FileFilter getMetadataFilter() {
         return new FileFilter() {
-            public boolean accept(File pathname)
-            {
-                return ! pathname.getName().equals(".svn"); 
+            public boolean accept(File pathname) {
+                return !pathname.getName().equals(".svn");
             }
         };
     }
@@ -146,42 +124,36 @@ public class SvnRepository
     /*
      * @see bluej.groupwork.Repository#getModules(java.util.List)
      */
-    public TeamworkCommand getModules(List<String> modules)
-    {
+    public TeamworkCommand getModules(List<String> modules) {
         return new SvnModulesCommand(this, modules);
     }
 
     /*
      * @see bluej.groupwork.Repository#getStatus(bluej.groupwork.StatusListener, java.util.Set, boolean)
      */
-    public TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote)
-    {
+    public TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote) {
         return new SvnStatusCommand(this, listener, filter, includeRemote);
     }
 
     /*
      * @see bluej.groupwork.Repository#prepareCreateDir(java.io.File)
      */
-    public void prepareCreateDir(final File dir)
-    {
+    public void prepareCreateDir(final File dir) {
         try {
             client.status(dir.getAbsolutePath(), Depth.empty, false, true, true, false, null,
                     new StatusCallback() {
-                public void doStatus(Status stat)
-                {
-                    if (! stat.isManaged()) {
-                        try {
-                            client.add(dir.getAbsolutePath(), Depth.empty, true, false, true);
+                        public void doStatus(Status stat) {
+                            if (!stat.isManaged()) {
+                                try {
+                                    client.add(dir.getAbsolutePath(), Depth.empty, true, false, true);
+                                } catch (ClientException ce) {
+                                    Debug.message("Exception while doing svn add on directory: "
+                                            + ce.getLocalizedMessage());
+                                }
+                            }
                         }
-                        catch (ClientException ce) {
-                            Debug.message("Exception while doing svn add on directory: "
-                                    + ce.getLocalizedMessage());
-                        }
-                    }
-                }
-            });
-        }
-        catch (ClientException ce) {
+                    });
+        } catch (ClientException ce) {
             Debug.message("Exception while doing svn status on new directory: "
                     + ce.getLocalizedMessage());
         }
@@ -190,26 +162,23 @@ public class SvnRepository
     /*
      * @see bluej.groupwork.Repository#prepareDeleteDir(java.io.File)
      */
-    public boolean prepareDeleteDir(File dir)
-    {
+    public boolean prepareDeleteDir(File dir) {
         synchronized (clientLock) {
             try {
-                client.remove(new String[] {dir.getAbsolutePath()}, "", true, false, Collections.emptyMap());
-            }
-            catch (ClientException ce) {
+                client.remove(new String[]{dir.getAbsolutePath()}, "", true, false, Collections.emptyMap());
+            } catch (ClientException ce) {
                 Debug.message("Exception while doing svn remove on directory: "
                         + ce.getLocalizedMessage());
             }
         }
-        
+
         return false;
     }
 
     /*
      * @see bluej.groupwork.Repository#shareProject()
      */
-    public TeamworkCommand shareProject()
-    {
+    public TeamworkCommand shareProject() {
         return new SvnShareCommand(this);
     }
 
@@ -218,52 +187,45 @@ public class SvnRepository
      * subversion commands internally, to acquire the client lock.
      */
     @OnThread(Tag.Worker)
-    public TeamworkCommandResult execCommand(SvnCommand command)
-    {
+    public TeamworkCommandResult execCommand(SvnCommand command) {
         synchronized (clientLock) {
             return command.doCommand(client);
         }
     }
-    
+
     /**
      * Get the subversion URL for this project
      */
-    public String getReposUrl()
-    {
+    public String getReposUrl() {
         return reposUrl;
     }
-    
+
     /**
      * Get the path of the working copy
      */
-    public File getProjectPath()
-    {
+    public File getProjectPath() {
         return projectPath;
     }
-    
+
     /**
      * Get the client interface directly.
      */
-    public SVNClientInterface getClient()
-    {
+    public SVNClientInterface getClient() {
         return client;
     }
 
     @Override
-    public String getVCSType()
-    {
+    public String getVCSType() {
         return "SVN";
     }
 
     @Override
-    public String getVCSProtocol()
-    {
+    public String getVCSProtocol() {
         return protocol;
     }
 
     @Override
-    public TeamworkCommand pushChanges()
-    {
+    public TeamworkCommand pushChanges() {
         throw new UnsupportedOperationException("Not supported");
     }
 }

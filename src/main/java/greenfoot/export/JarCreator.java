@@ -21,18 +21,15 @@
  */
 package greenfoot.export;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import bluej.Boot;
+import bluej.Config;
+import bluej.extensions.SourceType;
+import bluej.pkgmgr.Project;
+import bluej.utility.BlueJFileReader;
+import bluej.utility.Debug;
+import bluej.utility.FileUtility;
+
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -48,73 +45,87 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
-import bluej.Boot;
-import bluej.Config;
-import bluej.extensions.SourceType;
-import bluej.pkgmgr.Project;
-import bluej.utility.BlueJFileReader;
-import bluej.utility.Debug;
-import bluej.utility.FileUtility;
-
 /**
  * Utility class to create jar or zip files from a Greenfoot project.
- * 
+ *
  * @author Poul Henriksen <polle@polle.org>
  */
-public class JarCreator
-{
-    private static final String SOURCE_SUFFIX = "." + SourceType.Java.toString().toLowerCase();    
+public class JarCreator {
+    private static final String SOURCE_SUFFIX = "." + SourceType.Java.toString().toLowerCase();
 
-    /** Should source files be included in the jar? */
+    /**
+     * Should source files be included in the jar?
+     */
     private boolean includeSource;
 
-    /** The main class attribute for the JAR. */
+    /**
+     * The main class attribute for the JAR.
+     */
     private String mainClass;
-    
-    /** Directory where the jar is exported to. */
+
+    /**
+     * Directory where the jar is exported to.
+     */
     private final File exportDir;
-    
-    /** Directory to be exported. */
+
+    /**
+     * Directory to be exported.
+     */
     private File projectDir;
-    
-    /** Name of the jar file that will be created. */
+
+    /**
+     * Name of the jar file that will be created.
+     */
     private final String jarName;
-    
-    /** List of extra jars that should be put in the same dir as the created jar (the exportDir)*/
+
+    /**
+     * List of extra jars that should be put in the same dir as the created jar (the exportDir)
+     */
     private final List<File> extraJars = new LinkedList<>();
-    
-    /** List of extra jars whose contents should be put into the created jar */
+
+    /**
+     * List of extra jars whose contents should be put into the created jar
+     */
     private final List<File> extraJarsInJar = new LinkedList<>();
 
-    /** List of paths to external jars that should be included in the manifest's classpath. */
+    /**
+     * List of paths to external jars that should be included in the manifest's classpath.
+     */
     private final List<String> extraExternalJars = new LinkedList<>();
-    
+
     private final List<File> dirs = new LinkedList<>();
     private final List<PrefixedFile> prefixDirs = new LinkedList<>();
 
-    /** array of directory names not to be included in jar file * */
+    /**
+     * array of directory names not to be included in jar file *
+     */
     private final List<String> skipDirs = new LinkedList<>();
 
-    /** array of file names not to be included in jar file * */
+    /**
+     * array of file names not to be included in jar file *
+     */
     private final List<String> skipFiles = new LinkedList<>();
-    
-    /** The maninfest */ 
+
+    /**
+     * The maninfest
+     */
     private final Manifest manifest = new Manifest();
-    
-    /** Properties that contains information read by the GreenfootScnearioViewer */
+
+    /**
+     * Properties that contains information read by the GreenfootScnearioViewer
+     */
     private final Properties properties;
- 
+
     private boolean isZip = false;
 
     /**
      * Prepares a new jar creator. Once everything is set up, call create()
-     * 
+     *
      * @param exportDir The directory in which to store the jar-file and any
-     *            other resources required. Must exist and be writable
-     * @param jarName The name of the jar file.
+     *                  other resources required. Must exist and be writable
+     * @param jarName   The name of the jar file.
      */
-    private JarCreator(File exportDir, String jarName)
-    {
+    private JarCreator(File exportDir, String jarName) {
         File jarFile = new File(exportDir, jarName);
         if (!jarFile.canWrite() && jarFile.exists()) {
             throw new IllegalArgumentException("Cannot write file: " + jarFile);
@@ -123,25 +134,24 @@ public class JarCreator
         this.jarName = jarName;
         properties = new Properties();
     }
-    
+
     /**
      * Export the class files for a project.
-     * 
+     * <p>
      * Convenience constructor that includes settings that are common for all
      * projects and export types. This will exclude BlueJ metafiles.
-     * 
-     * @param project The project to be exported.
-     * @param exportDir The directory to export to.
-     * @param jarName Name of the jar file that should be created.
-     * @param worldClass Name of the main class.
+     *
+     * @param project      The project to be exported.
+     * @param exportDir    The directory to export to.
+     * @param jarName      Name of the jar file that should be created.
+     * @param worldClass   Name of the main class.
      * @param lockScenario Should the exported scenario include 'act'
-     *            and speedslider.
+     *                     and speedslider.
      * @param hideControls Should the exported scenario include the controls panel
-     * @param applet Whether the export is for an applet on a webpage (true) or for a stand-alone JAR (false) 
+     * @param applet       Whether the export is for an applet on a webpage (true) or for a stand-alone JAR (false)
      */
     public JarCreator(Project project, File exportDir, String jarName, String worldClass,
-                      boolean lockScenario, boolean hideControls, boolean fullScreen, boolean applet)
-    {   
+                      boolean lockScenario, boolean hideControls, boolean fullScreen, boolean applet) {
         this(project, exportDir, jarName, worldClass, lockScenario, applet);
         properties.put("scenario.hideControls", "" + hideControls);
         properties.put("scenario.fullScreen", "" + fullScreen);
@@ -149,58 +159,57 @@ public class JarCreator
 
     /**
      * Export the class files for a project.
-     * 
+     * <p>
      * Convenience constructor that includes settings that are common for all
      * projects and export types. This will exclude BlueJ metafiles.
-     * 
-     * @param project The project to be exported.
-     * @param exportDir The directory to export to.
-     * @param jarName Name of the jar file that should be created.
-     * @param worldClass Name of the main class.
+     *
+     * @param project      The project to be exported.
+     * @param exportDir    The directory to export to.
+     * @param jarName      Name of the jar file that should be created.
+     * @param worldClass   Name of the main class.
      * @param lockScenario Should the exported scenario include 'act'
-     *            and speedslider.
-     * @param applet Whether the export is for an applet on a webpage (true) or for a stand-alone JAR (false) 
+     *                     and speedslider.
+     * @param applet       Whether the export is for an applet on a webpage (true) or for a stand-alone JAR (false)
      */
     public JarCreator(Project project, File exportDir, String jarName, String worldClass,
-                      boolean lockScenario, boolean applet)
-    {   
+                      boolean lockScenario, boolean applet) {
         this(exportDir, jarName);
-        
+
         // get the project directory        
         projectDir = project.getProjectDir();
-        
+
         String scenarioName = project.getProjectName();
-        
+
         addFile(projectDir);
 
         // skip CVS stuff
         addSkipDir("CVS");
         addSkipFile(".cvsignore");
-        
+
         // skip Subversion files
         addSkipDir(".svn");
-        
+
         // skip Mac files
         addSkipFile(".DS_Store");
-        
+
         // skip doc dir
         addSkipDir(projectDir.getPath() + System.getProperty("file.separator") + "doc");
-        
+
         // skip the export dir (in case it is in the projectDir)
         addSkipDir(exportDir.getAbsolutePath());
-        
+
         // skip BlueJ files
         addSkipFile(".ctxt");
         addSkipFile("bluej.pkg");
-        addSkipFile("bluej.pkh");   
-        
+        addSkipFile("bluej.pkh");
+
         // Exlude +libs. These should be added with the addJar() method.
         addSkipDir(Project.projectLibDirName);
-        
+
         // Set the main class
         String mainClass = (applet ? GreenfootScenarioViewer.class : GreenfootScenarioApplication.class).getCanonicalName();
         setMainClass(mainClass);
-        
+
         // Add the properties read by the GreenfootScenarioViewer
         properties.put("project.name", scenarioName);
         properties.put("project.greenfootversion", Boot.GREENFOOT_VERSION);
@@ -226,63 +235,61 @@ public class JarCreator
         properties.put("controls.reset.longDescription", Config.getString("controls.reset.longDescription"));
         properties.put("controls.reset.shortDescription", Config.getString("controls.reset.shortDescription"));
         properties.put("controls.speedSlider.tooltip", Config.getString("controls.speedSlider.tooltip"));
-        
+
         // Error messages etc
         properties.put("sound-line-unavailable", Config.getString("sound-line-unavailable"));
     }
-    
+
     /**
      * Export source code. Includes all the project files. Creates a dir in the
      * zip with the same name as the project dir.
      *
      * <p>Convenience constructor that includes settings that are common for all
      * projects and export types.
-     * 
-     * @param project The project to be exported.
+     *
+     * @param project   The project to be exported.
      * @param exportDir The directory to export to.
-     * @param zipName Name of the jar file that should be created.
+     * @param zipName   Name of the jar file that should be created.
      */
-    public JarCreator(Project project, File exportDir, String zipName)
-    {   
+    public JarCreator(Project project, File exportDir, String zipName) {
         this(exportDir, zipName);
-        
+
         isZip = true;
-        
+
         projectDir = project.getProjectDir();
-        
-        addFile(projectDir);        
-        
+
+        addFile(projectDir);
+
         // skip CVS stuff
         addSkipDir("CVS");
         addSkipFile(".cvsignore");
-        
+
         // skip Subversion files
         addSkipDir(".svn");
-        
+
         // skip Mac files
         addSkipFile(".DS_Store");
-        
+
         // skip doc dir
         addSkipDir(projectDir.getPath() + System.getProperty("file.separator") + "doc");
-        
+
         // skip the export dir (in case it is in the projectDir)
         addSkipDir(exportDir.getAbsolutePath());
-        
+
         // skip the greenfoot subdir that are in the projects
         addSkipDir(projectDir.getPath() + System.getProperty("file.separator") + "greenfoot");
-        
+
         // skip BlueJ files
         addSkipFile("bluej.pkg");
-        addSkipFile("bluej.pkh");   
-        
+        addSkipFile("bluej.pkh");
+
         includeSource(true);
     }
-    
+
     /**
      * Creates the jar file with the current settings.
      */
-    public void create()
-    {        
+    public void create() {
         File jarFile = new File(exportDir, jarName);
         File propertiesFile = null;
         File soundFile = null;
@@ -292,7 +299,7 @@ public class JarCreator
         try {
             oStream = new BufferedOutputStream(new FileOutputStream(jarFile));
             String pathPrefix = ""; // Put everything in top level of jar
-            if (! isZip) {
+            if (!isZip) {
                 // It is a jar file so we write the manifest and the properties.
                 writeManifest();
                 propertiesFile = new File(projectDir, "standalone.properties");
@@ -300,84 +307,72 @@ public class JarCreator
                 soundFile = new File(projectDir, "soundindex.list");
                 writeSoundFilesList(soundFile);
                 jStream = new JarOutputStream(oStream, manifest);
-            }
-            else {
+            } else {
                 // It is a zip, so we want a dir with the project name inside the zip
                 pathPrefix = projectDir.getName() + "/";
                 jStream = new ZipOutputStream(oStream);
             }
             // Write contents of directories added
-            for(File dir : dirs) {
+            for (File dir : dirs) {
                 writeFileToJar(dir, pathPrefix, jStream, jarFile.getCanonicalFile(), true);
             }
-            for(PrefixedFile dir : prefixDirs) {
+            for (PrefixedFile dir : prefixDirs) {
                 writeFileToJar(dir.getFile(), pathPrefix + dir.getPrefix(), jStream, jarFile.getCanonicalFile(), true);
             }
-            for(File jar : extraJarsInJar) {
+            for (File jar : extraJarsInJar) {
                 writeJarToJar(jar, jStream);
             }
-            copyLibsToDir(extraJars, exportDir);            
-        }
-        catch (IOException exc) {
+            copyLibsToDir(extraJars, exportDir);
+        } catch (IOException exc) {
             Debug.reportError("problem writing jar file: " + exc);
-        }
-        finally {
+        } finally {
             try {
                 if (jStream != null)
                     jStream.close();
+            } catch (IOException e) {
             }
-            catch (IOException e) {}
-            if(propertiesFile != null) {
+            if (propertiesFile != null) {
                 propertiesFile.delete();
             }
         }
     }
 
-    private void writeSoundFilesList(File file)
-    {
+    private void writeSoundFilesList(File file) {
         BufferedWriter os;
         try {
             file.createNewFile();
             os = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-            for (String name : new File(projectDir, "sounds").list())
-            {
+            for (String name : new File(projectDir, "sounds").list()) {
                 os.write(name + "\n");
             }
             os.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Debug.reportError("Error writing list of sounds: ", e);
         }
-        
+
     }
 
     /**
      * Writes the properties to the given file.
      */
-    private void writePropertiesFile(File file)
-    {
+    private void writePropertiesFile(File file) {
         OutputStream os = null;
         try {
             file.createNewFile();
             os = new BufferedOutputStream(new FileOutputStream(file));
             properties.store(os, "Properties for running Greenfoot scenarios alone.");
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             try {
                 if (os != null) {
                     os.close();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -386,30 +381,28 @@ public class JarCreator
 
     /**
      * Puts an entry into to the manifest file.
-     * 
-     * @param key The key 
+     *
+     * @param key   The key
      * @param value The value
      */
-    public void putManifestEntry(String key, String value)
-    {
+    public void putManifestEntry(String key, String value) {
         Attributes attr = manifest.getMainAttributes();
         value = fixNewlines(value);
         attr.put(new Attributes.Name(key), value);
     }
-    
-    private String fixNewlines(String value)
-    {
+
+    private String fixNewlines(String value) {
         StringBuffer buffer = new StringBuffer(value.length());
-        
+
         //(?m) MULTILINE is required for $ and ^ to work. 
         //(?s) DOTALL makes . match newlines as well.
         String newLineRegExp = "(?m)(?s)$.^";
         //\\z matches end of input, so this will match all trailing newlines.
         String trailingNewLineReqExp = "$.\\z";
-        String[] lines = value.split(newLineRegExp + "|" + trailingNewLineReqExp );
+        String[] lines = value.split(newLineRegExp + "|" + trailingNewLineReqExp);
         for (int i = 0; i < lines.length; i++) {
             String string = lines[i];
-            if(i!=0) {
+            if (i != 0) {
                 buffer.append("<br>");
             }
             buffer.append(string);
@@ -420,23 +413,20 @@ public class JarCreator
     /**
      * Writes entries to the manifest file.
      */
-    private void writeManifest()
-    {
+    private void writeManifest() {
         // Construct classpath with used library jars
         String classpath = "";
 
         // add extra jars to classpath
-        for (File extraJar : extraJars)
-        {
+        for (File extraJar : extraJars) {
             classpath += " " + extraJar.getName();
         }
-        
+
         // add extra external jars to classpath
-        for (String extraExternalJar : extraExternalJars)
-        {
+        for (String extraExternalJar : extraExternalJars) {
             classpath += " " + extraExternalJar;
         }
-        
+
         Attributes attr = manifest.getMainAttributes();
         attr.put(Attributes.Name.MANIFEST_VERSION, "1.0");
         attr.put(Attributes.Name.MAIN_CLASS, mainClass);
@@ -446,82 +436,74 @@ public class JarCreator
     /**
      * Whether to include sources or not.
      */
-    public void includeSource(boolean b)
-    {
+    public void includeSource(boolean b) {
         includeSource = b;
     }
-    
+
     /**
      * Sets the main class for this JAR. The class that contains the main method
      * or Applet class.
-     * 
+     *
      * @param mainClass
      */
-    public void setMainClass(String mainClass)
-    {
+    public void setMainClass(String mainClass) {
         this.mainClass = mainClass;
     }
 
     /**
      * Adds a jar file to be distributed together with this jar-file. It will be
      * copied into the same location as the jar-file created (the exportDir).
-     * 
+     *
      * <p>This will usually be the jars +libs dir and userlib jars
-     * 
+     *
      * @param jar A jar file.
      */
-    public void addJar(File jar)
-    {
+    public void addJar(File jar) {
         extraJars.add(jar);
     }
-    
-    /** 
-     * Add a jar to the list of extra jars whose contents should be put into the created jar 
-     * 
+
+    /**
+     * Add a jar to the list of extra jars whose contents should be put into the created jar
+     *
      * <p>This will usually be the jars +libs dir and userlib jars
-     * 
+     *
      * @param jar A jar file.
      */
-    public void addJarToJar(File jar)
-    {
+    public void addJarToJar(File jar) {
         extraJarsInJar.add(jar);
     }
 
     /**
      * Adds a location of an external jar file. This will be added to the
      * classpath of the manifest.
-     * 
-     * @param  path Usually a URL or a relative path.
+     *
+     * @param path Usually a URL or a relative path.
      */
-    public void addToClassPath(String path)
-    {
+    public void addToClassPath(String path) {
         extraExternalJars.add(path);
     }
-    
+
     /**
      * Directory or file to include in export.
      */
-    public void addFile(File file)
-    {
+    public void addFile(File file) {
         dirs.add(file);
     }
 
-    
+
     /**
      * Directory or file to include in export, with the given prefix added when putting
      * it into the jar.
      */
-    public void addFile(String prefix, File file)
-    {
+    public void addFile(String prefix, File file) {
         prefixDirs.add(new PrefixedFile(prefix, file));
     }
-    
+
     /**
      * All dirs that end with the specified string will be skipped.
      * Be aware of platform dependent file separators.
      */
-    public void addSkipDir(String dir)
-    {
+    public void addSkipDir(String dir) {
         skipDirs.add(dir);
     }
 
@@ -530,8 +512,7 @@ public class JarCreator
      * All files that end with the specified string will be skipped.
      * Be aware of platform dependent file separators.
      */
-    public void addSkipFile(String file)
-    {
+    public void addSkipFile(String file) {
         skipFiles.add(file);
     }
 
@@ -542,43 +523,38 @@ public class JarCreator
      * file)
      */
     private void writeDirToJar(File sourceDir, String pathPrefix, ZipOutputStream stream, File outputFile)
-        throws IOException
-    {
-        if (!skipDir(sourceDir))
-        {
+            throws IOException {
+        if (!skipDir(sourceDir)) {
             File[] dir = sourceDir.listFiles();
-            for (File sourceFile : dir)
-            {
+            for (File sourceFile : dir) {
                 writeFileToJar(sourceFile, pathPrefix, stream, outputFile, false);
             }
         }
     }
-    
+
     /**
      * Writes a file or directory to a jar. Recursively called for
      * subdirectories. outputFile should be the canonical file representation of
      * the Jar file we are creating (to prevent including itself in the Jar
-     * file). If the source file does not exist, this method will just return without 
+     * file). If the source file does not exist, this method will just return without
      * doing anything.
-     * 
+     *
      * @param onlyDirContents If sourceFile is a dir, this parameter indicates that
-     *           the contents of the dir should be added, not the dir itself.
+     *                        the contents of the dir should be added, not the dir itself.
      */
     private void writeFileToJar(File sourceFile, String pathPrefix, ZipOutputStream stream, File outputFile, boolean onlyDirContents)
-        throws IOException
-    {
-        if(!sourceFile.exists()) {
+            throws IOException {
+        if (!sourceFile.exists()) {
             // if the file is not available, just return.
             return;
         }
-        
-        if(sourceFile.isDirectory()) {
-            if(!onlyDirContents) {
-                pathPrefix += sourceFile.getName()  + "/";
+
+        if (sourceFile.isDirectory()) {
+            if (!onlyDirContents) {
+                pathPrefix += sourceFile.getName() + "/";
             }
             writeDirToJar(sourceFile, pathPrefix, stream, outputFile);
-        }
-        else {
+        } else {
             // check against a list of files we don't want to export and also
             // check that we don't try to export the jar file we are writing
             // (hangs the machine)
@@ -588,50 +564,43 @@ public class JarCreator
             }
         }
     }
-    
+
     /**
      * Write the contents of a jar into another jar stream. If the source file does not exist,
      * this method will just return without doing anything.
      */
     private void writeJarToJar(File inputJar, ZipOutputStream outputStream)
-        throws IOException
-    {
-        if(!inputJar.exists()) {
+            throws IOException {
+        if (!inputJar.exists()) {
             // if the file is not available, just return.
             return;
         }
-        
+
         JarInputStream inputStream = new JarInputStream(
                 new BufferedInputStream(new FileInputStream(inputJar)));
-        
+
         ZipEntry inputEntry = inputStream.getNextJarEntry();
-        while(inputEntry != null) {
+        while (inputEntry != null) {
             //TODO: What if we have duplicate files????
             outputStream.putNextEntry(inputEntry);
             FileUtility.copyStream(inputStream, outputStream);
             inputStream.closeEntry();
             inputEntry = inputStream.getNextJarEntry();
-        }        
+        }
         inputStream.close();
     }
 
     /**
      * Copy all files specified in the given list to the new jar directory.
      */
-    private void copyLibsToDir(List<File> userLibs, File destDir)
-    {
-        for (File lib : userLibs)
-        {
+    private void copyLibsToDir(List<File> userLibs, File destDir) {
+        for (File lib : userLibs) {
             // Ignore files that do not exist
-            if (lib.exists())
-            {
+            if (lib.exists()) {
                 File destFile = new File(destDir, lib.getName());
-                try
-                {
+                try {
                     FileUtility.copyFile(lib, destFile);
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     Debug.reportError("Error when copying file: " + lib + " to: " + destFile, e);
                 }
             }
@@ -642,13 +611,10 @@ public class JarCreator
      * Test whether a given directory should be skipped (not included) in
      * export.
      */
-    private boolean skipDir(File dir) throws IOException
-    {
+    private boolean skipDir(File dir) throws IOException {
 
-        for (String skipDir : skipDirs)
-        {
-            if (dir.getCanonicalFile().getPath().endsWith(skipDir))
-            {
+        for (String skipDir : skipDirs) {
+            if (dir.getCanonicalFile().getPath().endsWith(skipDir)) {
                 return true;
             }
         }
@@ -656,16 +622,15 @@ public class JarCreator
     }
 
     /**
-     * Checks whether a file should be skipped during a copy operation. 
+     * Checks whether a file should be skipped during a copy operation.
      */
-    private boolean skipFile(String fileName, boolean skipSource)
-    {
+    private boolean skipFile(String fileName, boolean skipSource) {
 
-        for(String skipFile : skipFiles) {
+        for (String skipFile : skipFiles) {
             if (fileName.endsWith(skipFile))
-                return true;            
+                return true;
         }
-        
+
         if (fileName.endsWith(SOURCE_SUFFIX))
             return !includeSource;
 
@@ -679,29 +644,25 @@ public class JarCreator
      * File.seperator)
      */
     private void writeJarEntry(File file, ZipOutputStream stream, String entryName)
-        throws IOException
-    {
+            throws IOException {
         InputStream in = null;
         try {
             in = new BufferedInputStream(new FileInputStream(file));
             stream.putNextEntry(new ZipEntry(entryName));
             FileUtility.copyStream(in, stream);
-        }
-        catch (ZipException exc) {
+        } catch (ZipException exc) {
             Debug.message("warning: " + exc);
-        }
-        finally {
+        } finally {
             if (in != null)
                 in.close();
         }
     }
-    
-    public void generateHTMLSkeleton(File outputFile, String title, int width, int height)
-    {
-        Hashtable<String,String> translations = new Hashtable<>();
+
+    public void generateHTMLSkeleton(File outputFile, String title, int width, int height) {
+        Hashtable<String, String> translations = new Hashtable<>();
 
         translations.put("TITLE", title);
-       // translations.put("COMMENT", htmlComment);
+        // translations.put("COMMENT", htmlComment);
         translations.put("CLASSFILE", mainClass + ".class");
         // whilst it would be nice to be able to have no codebase, it is in the
         // HTML template file and hence even if we define no CODEBASE here, it
@@ -729,36 +690,32 @@ public class JarCreator
 
         String baseName = "greenfoot/templates/html.tmpl";
         File template = Config.getLanguageFile(baseName);
-        
+
         try {
             Charset utf8 = StandardCharsets.UTF_8;
             BlueJFileReader.translateFile(template, outputFile, translations, utf8, utf8);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Debug.reportError("Exception during file translation from " + template + " to " + outputFile);
             e.printStackTrace();
         }
     }
-    
-    static class PrefixedFile 
-    {
+
+    static class PrefixedFile {
         private final File file;
-        public File getFile()
-        {
+
+        public File getFile() {
             return file;
         }
 
-        public String getPrefix()
-        {
+        public String getPrefix() {
             return prefix;
         }
 
         private final String prefix;
 
-        public PrefixedFile(String prefix, File file) 
-        {
+        public PrefixedFile(String prefix, File file) {
             this.prefix = prefix;
             this.file = file;
-        }    
+        }
     }
 }

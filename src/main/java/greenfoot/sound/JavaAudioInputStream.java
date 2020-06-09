@@ -21,38 +21,34 @@
  */
 package greenfoot.sound;
 
-import java.io.IOException;
-import java.net.URL;
+import bluej.utility.Debug;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-
-import bluej.utility.Debug;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Wrapper classer for a AudioInputStream. It just delegates all methods
  * to the wrapped class except for restart().
- * 
+ *
  * @author Poul Henriksen
  */
-public class JavaAudioInputStream implements GreenfootAudioInputStream
-{
+public class JavaAudioInputStream implements GreenfootAudioInputStream {
     private AudioInputStream stream;
     private final URL url;
     private boolean readingHasStarted = false;
     private boolean open;
 
     public JavaAudioInputStream(URL url) throws UnsupportedAudioFileException,
-    IOException
-    {
+            IOException {
         this.url = url;
         open();
     }
 
-    public void open() throws UnsupportedAudioFileException, IOException
-    {
+    public void open() throws UnsupportedAudioFileException, IOException {
         if (!open) {
             readingHasStarted = false;
 
@@ -69,9 +65,8 @@ public class JavaAudioInputStream implements GreenfootAudioInputStream
         }
     }
 
-    public void restart() throws UnsupportedAudioFileException, IOException
-    {
-        if(!open || readingHasStarted() || stream == null) {
+    public void restart() throws UnsupportedAudioFileException, IOException {
+        if (!open || readingHasStarted() || stream == null) {
             open = false;
             open();
         }
@@ -79,98 +74,82 @@ public class JavaAudioInputStream implements GreenfootAudioInputStream
 
     /**
      * Whether reading from this stream has begun.
-     * 
+     *
      * @return True if it has been restarted and no reading has been done since.
-     *         False otherwise.
+     * False otherwise.
      */
-    private boolean readingHasStarted()
-    {
+    private boolean readingHasStarted() {
         return readingHasStarted;
     }
 
-    public String getSource()
-    {
+    public String getSource() {
         return url.toString();
     }
 
-    public int available() throws IOException
-    {
+    public int available() throws IOException {
         return stream.available();
     }
 
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         open = false;
         stream.close();
     }
 
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
-        if (! (obj instanceof JavaAudioInputStream) ) {
+        if (!(obj instanceof JavaAudioInputStream)) {
             return false;
         }
-        return stream.equals(((JavaAudioInputStream)obj).stream);
+        return stream.equals(((JavaAudioInputStream) obj).stream);
     }
 
-    public AudioFormat getFormat()
-    {
+    public AudioFormat getFormat() {
         return stream.getFormat();
     }
 
-    public long getFrameLength()
-    {
+    public long getFrameLength() {
         return stream.getFrameLength();
     }
 
-    public int hashCode()
-    {
+    public int hashCode() {
         return stream.hashCode();
     }
 
-    public void mark(int readlimit)
-    {
+    public void mark(int readlimit) {
         stream.mark(readlimit);
     }
 
-    public boolean markSupported()
-    {
+    public boolean markSupported() {
         return stream.markSupported();
     }
 
-    public int read() throws IOException
-    {
+    public int read() throws IOException {
         readingHasStarted = true;
         return stream.read();
     }
 
-    public int read(byte[] b, int off, int len) throws IOException
-    {
+    public int read(byte[] b, int off, int len) throws IOException {
         readingHasStarted = true;
         return stream.read(b, off, len);
     }
 
-    public int read(byte[] b) throws IOException
-    {
+    public int read(byte[] b) throws IOException {
         readingHasStarted = true;
         return stream.read(b);
     }
 
-    public void reset() throws IOException
-    {
+    public void reset() throws IOException {
         stream.reset();
     }
 
-    public long skip(long n) throws IOException
-    {
+    public long skip(long n) throws IOException {
         readingHasStarted = true;
         return stream.skip(n);
     }
 
-    public String toString()
-    {
+    public String toString() {
         return stream.toString();
     }
 }

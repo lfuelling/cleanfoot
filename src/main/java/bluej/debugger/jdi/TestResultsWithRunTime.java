@@ -32,23 +32,19 @@ public class TestResultsWithRunTime {
     private List<DebuggerTestResult> results;
     private int totalRunTime;
 
-    public void setResults(List<DebuggerTestResult> results)
-    {
+    public void setResults(List<DebuggerTestResult> results) {
         this.results = results;
     }
 
-    public void setTotalRunTime(int totalRunTime)
-    {
+    public void setTotalRunTime(int totalRunTime) {
         this.totalRunTime = totalRunTime;
     }
 
-    public List<DebuggerTestResult> getResults() 
-    {
+    public List<DebuggerTestResult> getResults() {
         return results;
     }
 
-    public int getTotalRunTime()
-    {
+    public int getTotalRunTime() {
         return totalRunTime;
     }
 }

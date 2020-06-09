@@ -31,20 +31,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.util.Duration;
 
-import java.util.function.Consumer;
-
 /**
  * Created by neil on 21/03/2016.
  */
-public class CircleCountdown extends Canvas
-{
+public class CircleCountdown extends Canvas {
     // Goes from 1 down to 0:
     private final SimpleDoubleProperty time = new SimpleDoubleProperty(1);
     private final Timeline timeline;
 
     //TODO allow stroke color to be set from CSS
-    public CircleCountdown(double size, Color strokeColor, Duration duration)
-    {
+    public CircleCountdown(double size, Color strokeColor, Duration duration) {
         super(size, size);
         timeline = new Timeline(20.0, new KeyFrame(duration, new KeyValue(time, 0)));
 
@@ -61,16 +57,14 @@ public class CircleCountdown extends Canvas
         timeline.play();
     }
 
-    public void addOnFinished(FXRunnable action)
-    {
+    public void addOnFinished(FXRunnable action) {
         JavaFXUtil.addChangeListener(time, t -> {
             if (t.doubleValue() == 0.0)
                 action.run();
         });
     }
 
-    public void stop()
-    {
+    public void stop() {
         timeline.stop();
     }
 }

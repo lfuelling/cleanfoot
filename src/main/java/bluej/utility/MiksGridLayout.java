@@ -20,22 +20,21 @@
  LICENSE.txt file that accompanied this code.
  */
 package bluej.utility;
+
 import java.awt.*;
 
 /**
  * MiksGridLayout - a grid layout with non-homogenous column widths.
  */
-public class MiksGridLayout extends GridLayout
-{
+public class MiksGridLayout extends GridLayout {
     // Specifies which row receives additional vertical space
     private int verticalExpandingRow = -1;
-    
+
     /**
-     * Creates a grid layout with the specified number of rows and 
+     * Creates a grid layout with the specified number of rows and
      * columns.
      */
-    public MiksGridLayout(int rows, int cols)
-    {
+    public MiksGridLayout(int rows, int cols) {
         this(rows, cols, 0, 0);
     }
 
@@ -43,31 +42,28 @@ public class MiksGridLayout extends GridLayout
      * Creates a grid layout with the specified number of rows and columns,
      * and the given gap between each column and row.
      */
-    public MiksGridLayout(int rows, int cols, int hgap, int vgap)
-    {
+    public MiksGridLayout(int rows, int cols, int hgap, int vgap) {
         super(rows, cols, hgap, vgap);
     }
-    
+
     // Sets which row receives additional vertical space
     // (by default it is the last one)
-    public void setVerticallyExpandingRow(int row)
-    {
+    public void setVerticallyExpandingRow(int row) {
         verticalExpandingRow = row;
     }
 
-    /** 
-     * Determines the preferred size of the container argument using 
-     * this grid layout. 
+    /**
+     * Determines the preferred size of the container argument using
+     * this grid layout.
      */
     @Override
-    public Dimension preferredLayoutSize(Container parent)
-    {
+    public Dimension preferredLayoutSize(Container parent) {
         synchronized (parent.getTreeLock()) {
             Insets insets = parent.getInsets();
             int ncomponents = parent.getComponentCount();
             int nrows = getRows();
             int ncols = getColumns();
-            
+
             if (nrows > 0) {
                 ncols = (ncomponents + nrows - 1) / nrows;
             } else {
@@ -77,7 +73,7 @@ public class MiksGridLayout extends GridLayout
             int[] colWidth = new int[ncols];
             int[] rowHeight = new int[nrows];
 
-            for(int i = 0; i < ncomponents; i++) {
+            for (int i = 0; i < ncomponents; i++) {
                 Component comp = parent.getComponent(i);
                 Dimension d = comp.getPreferredSize();
                 int row = i / ncols;
@@ -88,36 +84,35 @@ public class MiksGridLayout extends GridLayout
                 if (colWidth[col] < d.width) {
                     colWidth[col] = d.width;
                 }
-            }            
-            
+            }
+
             int allColWidth = 0;
-            for(int col = 0; col < ncols; col++) {
+            for (int col = 0; col < ncols; col++) {
                 allColWidth += colWidth[col];
             }
-            
+
             int allRowHeight = 0;
-            for(int row = 0; row < nrows; row++) {
+            for (int row = 0; row < nrows; row++) {
                 allRowHeight += rowHeight[row];
             }
-            
-            return new Dimension(insets.left + insets.right + allColWidth + (ncols-1)*getHgap(), 
-                         insets.top + insets.bottom + allRowHeight + (nrows-1)*getVgap());
+
+            return new Dimension(insets.left + insets.right + allColWidth + (ncols - 1) * getHgap(),
+                    insets.top + insets.bottom + allRowHeight + (nrows - 1) * getVgap());
         }
     }
 
     /**
-     * Determines the minimum size of the container argument using this 
-     * grid layout. 
+     * Determines the minimum size of the container argument using this
+     * grid layout.
      */
     @Override
-    public Dimension minimumLayoutSize(Container parent)
-    {
+    public Dimension minimumLayoutSize(Container parent) {
         synchronized (parent.getTreeLock()) {
             Insets insets = parent.getInsets();
             int ncomponents = parent.getComponentCount();
             int nrows = getRows();
             int ncols = getColumns();
-            
+
             if (nrows > 0) {
                 ncols = (ncomponents + nrows - 1) / nrows;
             } else {
@@ -127,7 +122,7 @@ public class MiksGridLayout extends GridLayout
             int[] colWidth = new int[ncols];
             int[] rowHeight = new int[nrows];
 
-            for(int i = 0; i < ncomponents; i++) {
+            for (int i = 0; i < ncomponents; i++) {
                 Component comp = parent.getComponent(i);
                 Dimension d = comp.getMinimumSize();
                 int row = i / ncols;
@@ -138,29 +133,28 @@ public class MiksGridLayout extends GridLayout
                 if (colWidth[col] < d.width) {
                     colWidth[col] = d.width;
                 }
-            }            
-            
+            }
+
             int allColWidth = 0;
-            for(int col = 0; col < ncols; col++) {
+            for (int col = 0; col < ncols; col++) {
                 allColWidth += colWidth[col];
             }
-            
+
             int allRowHeight = 0;
-            for(int row = 0; row < nrows; row++) {
+            for (int row = 0; row < nrows; row++) {
                 allRowHeight += rowHeight[row];
             }
-            
-            return new Dimension(insets.left + insets.right + allColWidth + (ncols-1)*getHgap(), 
-                         insets.top + insets.bottom + allRowHeight + (nrows-1)*getVgap());
+
+            return new Dimension(insets.left + insets.right + allColWidth + (ncols - 1) * getHgap(),
+                    insets.top + insets.bottom + allRowHeight + (nrows - 1) * getVgap());
         }
     }
 
-    /** 
-     * Lays out the specified container using this layout. 
+    /**
+     * Lays out the specified container using this layout.
      */
     @Override
-    public void layoutContainer(Container parent)
-    {
+    public void layoutContainer(Container parent) {
         synchronized (parent.getTreeLock()) {
             Insets insets = parent.getInsets();
             int ncomponents = parent.getComponentCount();
@@ -169,10 +163,10 @@ public class MiksGridLayout extends GridLayout
             int hgap = getHgap();
             int vgap = getVgap();
             boolean ltr = parent.getComponentOrientation().isLeftToRight();
-            
-            if(!ltr)
+
+            if (!ltr)
                 throw new IllegalArgumentException("Orientation oher than left-to-right not supported");
-        
+
             if (ncomponents == 0) {
                 return;
             }
@@ -181,14 +175,14 @@ public class MiksGridLayout extends GridLayout
             } else {
                 nrows = (ncomponents + ncols - 1) / ncols;
             }
-            
+
             // compute the width of each column (max width of component in column)
 
             int[] colWidth = new int[ncols];
 
-            for(int col = 0; col < ncols; col++) {
+            for (int col = 0; col < ncols; col++) {
                 int w = 0;
-                for (int i = col ; i < ncomponents ; i+=ncols) {
+                for (int i = col; i < ncomponents; i += ncols) {
                     Component comp = parent.getComponent(i);
                     Dimension d = comp.getPreferredSize();
                     if (w < d.width) {
@@ -199,18 +193,18 @@ public class MiksGridLayout extends GridLayout
             }
 
             int colSum = 0;     // all columns except last one
-            for(int col = 0; col < ncols-1; col++) {
+            for (int col = 0; col < ncols - 1; col++) {
                 colSum += colWidth[col];
             }
 
             int[] rowHeight = new int[nrows];
             int rowSum = 0;
-            
+
             // compute the height of each row (max width of component in row)
 
-            for(int row = 0; row < nrows; row++) {
+            for (int row = 0; row < nrows; row++) {
                 int h = 0;
-                for (int i = row*ncols ; (i < (row+1)*ncols) && (i < ncomponents) ; i++) {
+                for (int i = row * ncols; (i < (row + 1) * ncols) && (i < ncomponents); i++) {
                     Component comp = parent.getComponent(i);
                     Dimension d = comp.getPreferredSize();
                     if (h < d.height) {
@@ -219,32 +213,32 @@ public class MiksGridLayout extends GridLayout
                 }
                 rowHeight[row] = h;
             }
-            
+
             //The row that soaks up the extra space:
-            int soakRow = verticalExpandingRow == -1 ? nrows-1 : verticalExpandingRow;
+            int soakRow = verticalExpandingRow == -1 ? nrows - 1 : verticalExpandingRow;
 
             rowSum = 0;     // all rows except soakRow
-            for(int row = 0; row < nrows; row++) {
+            for (int row = 0; row < nrows; row++) {
                 if (row != soakRow)
                     rowSum += rowHeight[row];
             }
 
             int parentWidth = parent.getWidth() - (insets.left + insets.right);
             int parentHeight = parent.getHeight() - (insets.top + insets.bottom);
-            
+
             // set width of last column to take all the remaining space
-            colWidth[ncols-1] = (parentWidth - (ncols - 1) * hgap) - colSum;
-            if(colWidth[ncols-1] < 0)
-                colWidth[ncols-1] = 0;
-                
+            colWidth[ncols - 1] = (parentWidth - (ncols - 1) * hgap) - colSum;
+            if (colWidth[ncols - 1] < 0)
+                colWidth[ncols - 1] = 0;
+
             // set height of soakRow to take all the remaining space
             rowHeight[soakRow] = (parentHeight - (nrows - 1) * vgap) - rowSum;
-            if(rowHeight[soakRow] < 0)
+            if (rowHeight[soakRow] < 0)
                 rowHeight[soakRow] = 0;
-            
-            for (int r = 0, y = insets.top ; r < nrows ; y += rowHeight[r] + vgap, r++) {
+
+            for (int r = 0, y = insets.top; r < nrows; y += rowHeight[r] + vgap, r++) {
                 int x = insets.left;
-                for (int c = 0; c < ncols ; c++) {
+                for (int c = 0; c < ncols; c++) {
                     int i = r * ncols + c;
                     if (i < ncomponents) {
                         parent.getComponent(i).setBounds(x, y, colWidth[c], rowHeight[r]);
@@ -254,5 +248,5 @@ public class MiksGridLayout extends GridLayout
             }
         }
     }
-    
+
 }

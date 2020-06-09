@@ -27,29 +27,28 @@ import java.util.List;
 
 /**
  * A Scratch user-defined object (as opposed to an array or primitive type).
- * @author neil
  *
+ * @author neil
  */
-class ScratchUserObject extends ScratchObject
-{
+class ScratchUserObject extends ScratchObject {
     // See the table in Scratch-Object IO.ObjStream.<class>.userClasses
     protected static final int SCRATCH_SPRITE_MORPH = 124;
     protected static final int SCRATCH_STAGE_MORPH = 125;
     protected static final int IMAGE_MEDIA = 162;
     protected static final int SOUND_MEDIA = 164;
-    
+
     private final int id;
     private final int version;
     protected List<ScratchObject> scratchObjects;
-    public ScratchUserObject(int id, int version, List<ScratchObject> scratchObjects)
-    {
+
+    public ScratchUserObject(int id, int version, List<ScratchObject> scratchObjects) {
         this.id = id;
         this.version = version;
         this.scratchObjects = scratchObjects;
     }
-    
-    @Override public ScratchObject resolve(ArrayList<ScratchObject> objects)
-    {
+
+    @Override
+    public ScratchObject resolve(ArrayList<ScratchObject> objects) {
         for (int i = 0; i < scratchObjects.size(); i++) {
             ScratchObject scratchObject = scratchObjects.get(i);
             if (scratchObject != null) {
@@ -61,17 +60,15 @@ class ScratchUserObject extends ScratchObject
 
     /**
      * The number of fields that this class loads from the file in total.
-     * 
+     * <p>
      * This should usually be implemented as super.fields() + N.
      */
-    public int fields()
-    {
+    public int fields() {
         return 0;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ScratchUserObject [id=");
         builder.append(id);
@@ -82,6 +79,6 @@ class ScratchUserObject extends ScratchObject
         builder.append("}");
         return builder.toString();
     }
-    
-    
+
+
 }

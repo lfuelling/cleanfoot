@@ -30,40 +30,34 @@ import java.util.stream.Collectors;
 
 /**
  * This is a replacement for the Token class from jedit.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class Token
-{
+public class Token {
     public TokenType id;     // Token type, one of the constants declared below
     public int length;  // Length of text represented by this token
     public Token next;  // Next token in the chain
 
     @OnThread(Tag.Any)
-    public enum TokenType
-    {
+    public enum TokenType {
         DEFAULT, COMMENT_NORMAL, COMMENT_JAVADOC, COMMENT_SPECIAL, KEYWORD1, KEYWORD2, KEYWORD3, PRIMITIVE, STRING_LITERAL, CHAR_LITERAL, LABEL, OPERATOR, INVALID, END;
 
-        public String getCSSClass()
-        {
+        public String getCSSClass() {
             return "token-" + name().toLowerCase().replace("_", "-");
         }
 
         private static ImmutableSet<String> ALL_CLASSES;
 
-        public static ImmutableSet<String> allCSSClasses()
-        {
-            if (ALL_CLASSES == null)
-            {
+        public static ImmutableSet<String> allCSSClasses() {
+            if (ALL_CLASSES == null) {
                 ALL_CLASSES = ImmutableSet.copyOf(Arrays.stream(values()).map(TokenType::getCSSClass).collect(Collectors.toList()));
             }
             return ALL_CLASSES;
         }
     }
-    
-    public Token(int length, TokenType id)
-    {
+
+    public Token(int length, TokenType id) {
         this.id = id;
         this.length = length;
     }

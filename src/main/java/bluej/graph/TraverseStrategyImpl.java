@@ -29,16 +29,14 @@ import threadchecker.Tag;
 
 /**
  * A strategy to move graph selections with keyboard input.
- * 
+ *
  * @author fisker
  */
 @OnThread(Tag.FXPlatform)
 public class TraverseStrategyImpl
-    implements TraverseStrategy
-{
+        implements TraverseStrategy {
 
-    private double calcDistance(Target vertex1, Target vertex2)
-    {
+    private double calcDistance(Target vertex1, Target vertex2) {
         if (vertex1 == null || vertex2 == null) {
             return Double.POSITIVE_INFINITY;
         }
@@ -51,16 +49,15 @@ public class TraverseStrategyImpl
     }
 
     /**
-     * Given a currently selected vertex and a key press, decide which vertex 
+     * Given a currently selected vertex and a key press, decide which vertex
      * should be selected next.
-     * 
-     * @param graph  The graph we're looking at.
-     * @param currentVertex  The currently selected vertex.
-     * @param key  The key that was pressed.
-     * @return     A vertex that should be selected now.
+     *
+     * @param graph         The graph we're looking at.
+     * @param currentVertex The currently selected vertex.
+     * @param key           The key that was pressed.
+     * @return A vertex that should be selected now.
      */
-    public Target findNextVertex(Package graph, Target currentVertex, KeyCode key)
-    {
+    public Target findNextVertex(Package graph, Target currentVertex, KeyCode key) {
         int currentVertexCenterX = currentVertex.getX() + currentVertex.getWidth() / 2;
         int currentVertexCenterY = currentVertex.getY() + currentVertex.getHeight() / 2;
         int x;

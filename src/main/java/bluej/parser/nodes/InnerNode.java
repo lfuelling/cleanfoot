@@ -29,37 +29,32 @@ import bluej.parser.entity.TypeEntity;
 
 /**
  * A generic "inner" representation (for eg. loop bodies)
- * 
+ *
  * @author Davin McCall
  */
-public class InnerNode extends JavaParentNode
-{
-    public InnerNode(JavaParentNode parent)
-    {
+public class InnerNode extends JavaParentNode {
+    public InnerNode(JavaParentNode parent) {
         super(parent);
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return false;
     }
-    
+
     @Override
-    public JavaEntity getValueEntity(String name, Reflective querySource, int fromPosition)
-    {
+    public JavaEntity getValueEntity(String name, Reflective querySource, int fromPosition) {
         return getPositionedValueEntity(name, querySource, fromPosition);
     }
-    
+
     @Override
     public PackageOrClass resolvePackageOrClass(String name,
-            Reflective querySource, int fromPosition)
-    {
+                                                Reflective querySource, int fromPosition) {
         ParsedNode cnode = classNodes.get(name);
         if (cnode != null && cnode.getOffsetFromParent() <= fromPosition) {
             return new TypeEntity(new ParsedReflective((ParsedTypeNode) cnode));
         }
-        
+
         PackageOrClass rval = null;
         if (parentNode != null) {
             rval = parentNode.resolvePackageOrClass(name, querySource);

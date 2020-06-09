@@ -21,13 +21,10 @@
  */
 package bluej.pkgmgr;
 
-import javafx.stage.Window;
-
-import bluej.*;
 import bluej.Config;
 import bluej.utility.JavaNames;
-import bluej.utility.DialogManager;
 import bluej.utility.javafx.dialog.InputDialog;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -35,36 +32,29 @@ import threadchecker.Tag;
 /**
  * Dialog for creating a new Package
  *
- * @author  Justin Tan
- * @author  Michael Kolling
+ * @author Justin Tan
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-class NewPackageDialog extends InputDialog<String>
-{
-    public NewPackageDialog(Window parent)
-    {
+class NewPackageDialog extends InputDialog<String> {
+    public NewPackageDialog(Window parent) {
         super(Config.getString("pkgmgr.newPackage.title"), Config.getString("pkgmgr.newPackage.label"), Config.getString("pkgmgr.newPackage.prompt"), "new-package-dialog");
         initOwner(parent);
         setOKEnabled(false);
     }
-    
-    public String convert(String fieldText)
-    {
+
+    public String convert(String fieldText) {
         return fieldText.trim(); // Validation is done in convert
     }
-    
-    public boolean validate(String oldInput, String newInput)
-    {
+
+    public boolean validate(String oldInput, String newInput) {
         newInput = newInput.trim();
-        
-        if (!newInput.isEmpty() && JavaNames.isQualifiedIdentifier(newInput))
-        {
+
+        if (!newInput.isEmpty() && JavaNames.isQualifiedIdentifier(newInput)) {
             setOKEnabled(true);
             setErrorText("");
             return true;
-        }
-        else
-        {
+        } else {
             setErrorText(Config.getString("pkgmgr.newPackage.error"));
             setOKEnabled(false);
             return true; // Let it be invalid, but show error

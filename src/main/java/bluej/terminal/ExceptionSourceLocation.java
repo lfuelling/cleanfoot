@@ -21,57 +21,63 @@
  */
 package bluej.terminal;
 
-import java.io.File;
-
 import bluej.extensions.SourceType;
 import bluej.pkgmgr.Package;
+
+import java.io.File;
 
 /**
  * A class that holds information about the location of an exception.
  * Effectively, this represents one line in a stack-trace.
- * @author nccb
  *
+ * @author nccb
  */
-public class ExceptionSourceLocation
-{
-    /** The package */
+public class ExceptionSourceLocation {
+    /**
+     * The package
+     */
     private final Package pkg;
-    /** The unqualified class name */
+    /**
+     * The unqualified class name
+     */
     private final String className;
-    /** The line number */
+    /**
+     * The line number
+     */
     private final int lineNumber;
-    
-    /** The starting position in the document of the bit to be linked */
+
+    /**
+     * The starting position in the document of the bit to be linked
+     */
     private final int startPos;
-    /** The ending position in the document of the bit to be linked */
+    /**
+     * The ending position in the document of the bit to be linked
+     */
     private final int endPos;
-    
+
     public ExceptionSourceLocation(int startPos, int endPos,
-            Package pkg, String className, int lineNumber)
-    {
+                                   Package pkg, String className, int lineNumber) {
         this.startPos = startPos;
         this.endPos = endPos;
         this.pkg = pkg;
         this.className = className;
         this.lineNumber = lineNumber;
     }
-    
-    public int getStart()
-    {
+
+    public int getStart() {
         return startPos;
     }
-    public int getEnd()
-    {
+
+    public int getEnd() {
         return endPos;
     }
-    
-    public void showInEditor()
-    {
+
+    public void showInEditor() {
         String fileName = className.replace('.', '/') + "." + SourceType.Java.toString().toLowerCase();
-        
+
         pkg.exceptionMessage(new File(pkg.getPath(), fileName).getAbsolutePath(), lineNumber);
-        
+
     }
-    
-    
+
+
 }

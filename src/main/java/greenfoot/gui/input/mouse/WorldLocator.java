@@ -28,13 +28,13 @@ import threadchecker.Tag;
 
 /**
  * Interface for locating actors and coordinates in the world.
- * 
+ *
  * @author Poul Henriksen
  */
-public interface WorldLocator
-{
+public interface WorldLocator {
     /**
      * Gets the top most actor at the given location.
+     *
      * @param worldPixelPositionX The X pixel position in the world (not cell position)
      * @param worldPixelPositionY The Y pixel position in the world (not cell position)
      * @return The top most actor, or null if no actor.
@@ -43,14 +43,16 @@ public interface WorldLocator
 
     /**
      * Translates the coordinates from the given source component into some other coordinate system.
+     *
      * @param worldPixelPositionX The X pixel position in the world (not cell position)
      * @return The new x-coordinate
      */
     int getTranslatedX(int worldPixelPositionX);
-    
+
 
     /**
      * Translates the coordinates from the given source component into some other coordinate system.
+     *
      * @param worldPixelPositionY The Y pixel position in the world (not cell position)
      * @return The new y-coordinate
      */

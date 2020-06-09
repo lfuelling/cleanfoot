@@ -26,13 +26,12 @@ import threadchecker.Tag;
 
 /**
  * A base type for representing type arguments as they occur in a source program.
- * 
+ *
  * <p>This type does not extend JavaEntity, as it is more specialised.
- * 
+ *
  * @author Davin McCall
  */
-public abstract class TypeArgumentEntity
-{
+public abstract class TypeArgumentEntity {
     /**
      * Get the type parameter. This requires resolving the bound if not already done,
      * and so may return null if the bound is not a valid type.

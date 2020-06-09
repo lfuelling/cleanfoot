@@ -27,22 +27,20 @@ import java.util.List;
 /**
  * A factory class for creating Frame objects of type T.
  */
-public interface FrameFactory<T extends Frame>
-{
+public interface FrameFactory<T extends Frame> {
     /**
      * Creates a frame (main factory method)
      */
     T createBlock(InteractionManager editor);
-    
+
     /**
      * Creates a frame with the given contents.
      * By default, throws an exception (override if you want to support this)
      */
-    default T createBlock(InteractionManager editor, List<Frame> contents)
-    {
+    default T createBlock(InteractionManager editor, List<Frame> contents) {
         throw new IllegalArgumentException("Cannot create " + getBlockClass() + " with frame contents");
     }
-    
+
     /**
      * Gets the class for type T (work-around for lack of reification)
      */

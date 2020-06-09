@@ -28,19 +28,16 @@ import bluej.pkgmgr.PkgMgrFrame;
  * Check installed extensions. Pop up a dialog box displaying summary info
  * about each installed extension, allowing user to get a brief description
  * of each one.
- * 
+ *
  * @author Davin McCall
  * @version $Id: CheckExtensionsAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-public final class CheckExtensionsAction extends PkgMgrAction
-{
-    public CheckExtensionsAction(PkgMgrFrame pmf)
-    {
+public final class CheckExtensionsAction extends PkgMgrAction {
+    public CheckExtensionsAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.extensions");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         ExtensionsManager.getInstance().showHelp(pmf::getFXWindow);
     }

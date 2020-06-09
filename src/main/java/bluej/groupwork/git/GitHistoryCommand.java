@@ -26,34 +26,32 @@ import bluej.groupwork.LogHistoryListener;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
 import bluej.utility.Debug;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * A Git history command.
  *
  * @author Fabio Heday
  */
-public class GitHistoryCommand extends GitCommand
-{
+public class GitHistoryCommand extends GitCommand {
 
     private final LogHistoryListener listener;
 
-    public GitHistoryCommand(GitRepository repository, LogHistoryListener listener)
-    {
+    public GitHistoryCommand(GitRepository repository, LogHistoryListener listener) {
         super(repository);
         this.listener = listener;
     }
 
     @Override
-    public TeamworkCommandResult getResult()
-    {
+    public TeamworkCommandResult getResult() {
         try (Git repo = Git.open(this.getRepository().getProjectPath())) {
             Iterable<RevCommit> logs = repo.log().call();
             logs.forEach((RevCommit rev) -> {
@@ -62,7 +60,7 @@ public class GitHistoryCommand extends GitCommand
                 //e.g.: name, e-mail, date and time of commit
                 //to Access the commited files, we need to walk through the
                 //the subtree.
-                try (TreeWalk treeWalk = new TreeWalk(repo.getRepository())){
+                try (TreeWalk treeWalk = new TreeWalk(repo.getRepository())) {
                     treeWalk.addTree(rev.getTree());
                     boolean hasNext = treeWalk.next();
                     while (hasNext) {

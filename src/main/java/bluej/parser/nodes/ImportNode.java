@@ -23,19 +23,16 @@ package bluej.parser.nodes;
 
 /**
  * A parsed node representing an import statement.
- * 
+ *
  * @author Davin McCall
  */
-public class ImportNode extends InnerNode
-{
-    public ImportNode(JavaParentNode parent)
-    {
+public class ImportNode extends InnerNode {
+    public ImportNode(JavaParentNode parent) {
         super(parent);
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return true;
     }
 }

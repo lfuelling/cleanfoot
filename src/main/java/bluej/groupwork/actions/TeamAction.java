@@ -38,11 +38,10 @@ import javafx.scene.control.Tooltip;
  * This is similar to FXAbstractAction but is different in that each button or menu item is not
  * constructed here, but is instead adapted with an explicit reference to either the PkgMgrFrame
  * or Project (see useButton, useMenuItem methods).
- * 
+ *
  * @author fisker
  */
-public abstract class TeamAction
-{
+public abstract class TeamAction {
     private final StringProperty name = new SimpleStringProperty();
 
     private final BooleanProperty disabled = new SimpleBooleanProperty(false);
@@ -51,41 +50,36 @@ public abstract class TeamAction
     /**
      * Constructor for a team action which shows a dialog. An ellipsis
      * is added to the action text.
-     * 
-     * @param label   The key for action text
-     * @param showsDialog  True if an ellipsis should be appended
+     *
+     * @param label       The key for action text
+     * @param showsDialog True if an ellipsis should be appended
      */
-    public TeamAction(String label, boolean showsDialog)
-    {
+    public TeamAction(String label, boolean showsDialog) {
         setName(Config.getString(label), showsDialog);
     }
 
     /**
      * changes the name of the action.
-     * @param name 
+     *
+     * @param name
      */
-    public void setName(String name, boolean showsDialog)
-    {
-    	this.name.set(showsDialog && !name.endsWith("...") ? (name + "...") : name);
+    public void setName(String name, boolean showsDialog) {
+        this.name.set(showsDialog && !name.endsWith("...") ? (name + "...") : name);
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         disabled.set(!enabled);
     }
 
-    public boolean isDisabled()
-    {
+    public boolean isDisabled() {
         return disabled.get();
     }
 
-    public BooleanProperty disabledProperty()
-    {
+    public BooleanProperty disabledProperty() {
         return disabled;
     }
 
-    public void setShortDescription(String shortDescription)
-    {
+    public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
     }
 
@@ -93,15 +87,13 @@ public abstract class TeamAction
      * Sets the given button, which is associated with a PkgMgrFrame, to activate this action on
      * click, and use this action's title and disabled state.
      */
-    public void useButton(PkgMgrFrame pmf, ButtonBase button)
-    {
+    public void useButton(PkgMgrFrame pmf, ButtonBase button) {
         button.textProperty().unbind();
         button.textProperty().bind(name);
         button.disableProperty().unbind();
         button.disableProperty().bind(disabled);
         button.setOnAction(e -> actionPerformed(pmf));
-        if (shortDescription != null)
-        {
+        if (shortDescription != null) {
             Tooltip.install(button, new Tooltip(shortDescription));
         }
     }
@@ -110,25 +102,22 @@ public abstract class TeamAction
      * Sets the given button to activate this action on click, and use this action's title and
      * disabled state.
      */
-    public void useButton(Project project, ButtonBase button)
-    {
+    public void useButton(Project project, ButtonBase button) {
         button.textProperty().unbind();
         button.textProperty().bind(name);
         button.disableProperty().unbind();
         button.disableProperty().bind(disabled);
         button.setOnAction(e -> actionPerformed(project));
-        if (shortDescription != null)
-        {
+        if (shortDescription != null) {
             Tooltip.install(button, new Tooltip(shortDescription));
         }
     }
-    
+
     /**
      * Sets the given menu item to activate this action,
      * and use this action's title and disabled state
      */
-    public void useMenuItem(PkgMgrFrame pmf, MenuItem menuItem)
-    {
+    public void useMenuItem(PkgMgrFrame pmf, MenuItem menuItem) {
         menuItem.textProperty().unbind();
         menuItem.textProperty().bind(name);
         menuItem.disableProperty().unbind();
@@ -139,16 +128,14 @@ public abstract class TeamAction
     /**
      * The action was attached to a button not associated with a PkgMgrFrame.
      */
-    protected void actionPerformed(Project project)
-    {
+    protected void actionPerformed(Project project) {
         // not all actions require a project-oriented action
     }
 
     /**
      * The action was attached to a button or menu item associated with a PkgMgrFrame.
      */
-    protected void actionPerformed(PkgMgrFrame pmf)
-    {
+    protected void actionPerformed(PkgMgrFrame pmf) {
         actionPerformed(pmf.getProject());
     }
 }

@@ -28,7 +28,6 @@ import threadchecker.Tag;
  * Equivalent to Consumer, but clearer (including to plugin) that it runs on FX thread
  */
 @FunctionalInterface
-public interface FXConsumer<T>
-{
+public interface FXConsumer<T> {
     @OnThread(Tag.FX) void accept(T t);
 }

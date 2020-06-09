@@ -23,26 +23,23 @@ package bluej.debugger.gentype;
 
 /**
  * "? extends ..." type.
- * 
+ *
  * @author Davin McCall
  */
-public class GenTypeExtends extends GenTypeWildcard
-{
+public class GenTypeExtends extends GenTypeWildcard {
     /**
      * Construct a "? extends ..." without specifying the upper bound at this time.
      * The upper bound should then be set using "setUpperBound()".
      */
-    public GenTypeExtends()
-    {
+    public GenTypeExtends() {
         super(null, null);
     }
-    
+
     /**
      * Construct a "? extends ..." type with the specified upper bound (which
      * may be an intersection type).
      */
-    public GenTypeExtends(GenTypeSolid baseType)
-    {
+    public GenTypeExtends(GenTypeSolid baseType) {
         super(baseType, null);
     }
 }

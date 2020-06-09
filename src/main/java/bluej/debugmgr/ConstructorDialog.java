@@ -21,16 +21,6 @@
  */
 package bluej.debugmgr;
 
-import javax.swing.SwingUtilities;
-import javafx.application.Platform;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
-
 import bluej.Config;
 import bluej.debugmgr.objectbench.ObjectBenchInterface;
 import bluej.utility.JavaNames;
@@ -40,14 +30,20 @@ import bluej.views.CallableView;
 import bluej.views.ConstructorView;
 import bluej.views.TypeParamView;
 import bluej.views.View;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
-public class ConstructorDialog extends CallDialog
-{
+public class ConstructorDialog extends CallDialog {
     // Window Titles
-    private static final String appName = Config.getApplicationName(); 
+    private static final String appName = Config.getApplicationName();
     private static final String wCreateTitle = appName + ":  " + Config.getString("pkgmgr.methodCall.titleCreate");
     // MD_CREATE Specific
     static final String sNameOfInstance = Config.getString("pkgmgr.methodCall.namePrompt");
@@ -62,18 +58,16 @@ public class ConstructorDialog extends CallDialog
 
     /**
      * MethodDialog constructor.
-     * 
-     * @param parentFrame  The parent window for the dialog
-     * @param ob           The object bench to listen for object selection on
-     * @param callHistory  The call history tracker
-     * @param initialName  The initial (suggested) instance name
-     * @param constructor  The constructor or method being used
-     * @param invoker      The object invoked the constructor
      *
+     * @param parentFrame The parent window for the dialog
+     * @param ob          The object bench to listen for object selection on
+     * @param callHistory The call history tracker
+     * @param initialName The initial (suggested) instance name
+     * @param constructor The constructor or method being used
+     * @param invoker     The object invoked the constructor
      */
     public ConstructorDialog(Window parentFrame, ObjectBenchInterface ob, CallHistory callHistory,
-                             String initialName, ConstructorView constructor, Invoker invoker)
-    {
+                             String initialName, ConstructorView constructor, Invoker invoker) {
         super(parentFrame, ob, "");
         this.invoker = invoker;
 
@@ -94,7 +88,7 @@ public class ConstructorDialog extends CallDialog
         Pane tmpPanel = new VBox();
         JavaFXUtil.addStyleClass(tmpPanel, "constructor-dialog-fields");
 
-        if(!Config.isGreenfoot()) {
+        if (!Config.isGreenfoot()) {
             HBox hBox = new HBox(instName, instanceNameText);
             hBox.setAlignment(Pos.BASELINE_LEFT);
             JavaFXUtil.addStyleClass(hBox, "constructor-instance-name-row");
@@ -104,7 +98,7 @@ public class ConstructorDialog extends CallDialog
         View clazz = this.constructor.getDeclaringView();
         if (clazz.isGeneric()) {
             String name;
-            if(getFormalTypeParams(this.constructor).length > 1) {
+            if (getFormalTypeParams(this.constructor).length > 1) {
                 name = sTypeParameters + "  ";
             } else {
                 name = sTypeParameter + "  ";
@@ -126,16 +120,11 @@ public class ConstructorDialog extends CallDialog
         setDescription(writer.getNode());
 
         setOnShown(e -> {
-            if (typeParameterList != null)
-            {
+            if (typeParameterList != null) {
                 typeParameterList.getActualParameter(0).getEditor().requestFocus();
-            }
-            else if (parameterList != null)
-            {
+            } else if (parameterList != null) {
                 parameterList.getActualParameter(0).getEditor().requestFocus();
-            }
-            else
-            {
+            } else {
                 instanceNameText.requestFocus();
             }
         });
@@ -144,13 +133,11 @@ public class ConstructorDialog extends CallDialog
     /**
      * Creates a panel of type parameters for a new object
      */
-    private Pane createTypeParameterPanel(String prefix)
-    {
+    private Pane createTypeParameterPanel(String prefix) {
         TypeParamView[] formalTypeParams = getFormalTypeParams(constructor);
 
         typeParameterList = new ParameterList(formalTypeParams.length, defaultParamValue, f -> this.focusedTextField = f, this::fireOK);
-        for (TypeParamView formalTypeParam : formalTypeParams)
-        {
+        for (TypeParamView formalTypeParam : formalTypeParams) {
             typeParameterList.addNormalParameter(formalTypeParam.toString(), null, history.getHistory(formalTypeParam));
         }
         String startString = prefix + "<";
@@ -163,8 +150,7 @@ public class ConstructorDialog extends CallDialog
      * doOk - Process an "Ok" event to invoke a Constructor or Method.
      * Collects arguments and calls watcher objects (Invoker).
      */
-    public void handleOK()
-    {
+    public void handleOK() {
         String newInstanceName = getNewInstanceName();
         if (!JavaNames.isIdentifier(newInstanceName)) {
             setErrorMessage(illegalNameMsg);
@@ -172,49 +158,40 @@ public class ConstructorDialog extends CallDialog
             return;
         }
         boolean alreadyOnBench = bench != null && bench.hasObject(newInstanceName);
-        if (alreadyOnBench)
-        {
+        if (alreadyOnBench) {
             setErrorMessage(duplicateNameMsg);
             JavaFXUtil.setPseudoclass("bj-dialog-error", true, instanceNameText);
             return;
         }
         JavaFXUtil.setPseudoclass("bj-dialog-error", false, instanceNameText);
 
-        if (!parameterFieldsOk())
-        {
+        if (!parameterFieldsOk()) {
             setErrorMessage(emptyFieldMsg);
-        }
-        else if (!typeParameterFieldsOk())
-        {
+        } else if (!typeParameterFieldsOk()) {
             setErrorMessage(emptyTypeFieldMsg);
-        }
-        else
-        {
+        } else {
             setWaitCursor(true);
             invoker.callDialogOK();
         }
     }
-    
+
     /**
      * getNewInstanceName - get the contents of the instance name field.
      */
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    public String getNewInstanceName()
-    {
+    public String getNewInstanceName() {
         if (instanceNameText == null) {
             return "";
-        }
-        else {
+        } else {
             return instanceNameText.getText().trim();
         }
     }
-    
+
     /*
      * @see bluej.debugmgr.CallDialog#getCallableView()
      */
     @Override
-    protected CallableView getCallableView()
-    {
+    protected CallableView getCallableView() {
         return constructor;
     }
 }

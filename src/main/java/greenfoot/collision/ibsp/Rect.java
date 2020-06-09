@@ -21,91 +21,77 @@
  */
 package greenfoot.collision.ibsp;
 
-final public class Rect
-{
+final public class Rect {
     private int x, y, width, height;
-    
-    public Rect(int x, int y, int width, int height)
-    {
+
+    public Rect(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
     }
-    
-    public void copyFrom(Rect other)
-    {
+
+    public void copyFrom(Rect other) {
         this.x = other.x;
         this.y = other.y;
         this.width = other.width;
         this.height = other.height;
     }
-    
-    public String toString()
-    {
+
+    public String toString() {
         return ("rect (" + x + "," + y + ")-(" + (x + width) + "," + (y + height) + ")");
     }
-    
-    public int getX()
-    {
+
+    public int getX() {
         return x;
     }
-    
-    public int getMiddleX()
-    {
+
+    public int getMiddleX() {
         return x + width / 2;
     }
-    
-    public int getRight()
-    {
+
+    public int getRight() {
         return x + width;
     }
-    
-    public int getY()
-    {
+
+    public int getY() {
         return y;
     }
-        
-    public int getMiddleY()
-    {
+
+    public int getMiddleY() {
         return y + height / 2;
     }
-    
-    public int getTop()
-    {
+
+    public int getTop() {
         return y + height;
     }
 
-    public int getWidth()
-    {
+    public int getWidth() {
         return width;
     }
-    
-    public int getHeight()
-    {
+
+    public int getHeight() {
         return height;
     }
-    
-    public boolean contains(Rect other)
-    {
+
+    public boolean contains(Rect other) {
         return (x <= other.x &&
                 y <= other.y &&
                 getTop() >= other.getTop() &&
                 getRight() >= other.getRight());
     }
 
-    public static Rect getIntersection(Rect a, Rect b)
-    {
+    public static Rect getIntersection(Rect a, Rect b) {
         int a_x = a.getX();
         int a_r = a.getRight();
         int a_y = a.getY();
         int a_t = a.getTop();
-        
+
         int b_x = b.getX();
         int b_r = b.getRight();
         int b_y = b.getY();
         int b_t = b.getTop();
-        
+
         // Calculate intersection
         int i_x = Math.max(a_x, b_x);
         int i_r = Math.min(a_r, b_r);
@@ -113,45 +99,38 @@ final public class Rect
         int i_t = Math.min(a_t, b_t);
         if (i_x >= i_r || i_y >= i_t) {
             return null;
-        }
-        else {
+        } else {
             return new Rect(i_x, i_y, i_r - i_x, i_t - i_y);
         }
     }
-    
-    public static boolean equals(Rect a, Rect b)
-    {
+
+    public static boolean equals(Rect a, Rect b) {
         return a.x == b.x && a.y == b.y &&
-            a.width == b.width && a.height == b.height;
+                a.width == b.width && a.height == b.height;
     }
 
-    public void setX(int x)
-    {
+    public void setX(int x) {
         this.x = x;
     }
 
-    public void setY(int y)
-    {
+    public void setY(int y) {
         this.y = y;
     }
 
-    public void setWidth(int width)
-    {
+    public void setWidth(int width) {
         this.width = width;
     }
 
-    public void setHeight(int height)
-    {
+    public void setHeight(int height) {
         this.height = height;
     }
 
-    public boolean intersects(Rect otherBounds)
-    {        
+    public boolean intersects(Rect otherBounds) {
         if (otherBounds.x >= getRight()) {
             return false;
         } else if (x >= otherBounds.getRight()) {
             return false;
-        }         
+        }
         if (otherBounds.y >= getTop()) {
             return false;
         } else return y < otherBounds.getTop();

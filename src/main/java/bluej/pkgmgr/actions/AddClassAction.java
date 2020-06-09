@@ -26,20 +26,17 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "Add class from file" command. This allows the user to add into the current
  * project a class from another project or an external source.
- * 
+ *
  * @author Davin McCall
  * @version $Id: AddClassAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
 
-final public class AddClassAction extends PkgMgrAction
-{
-    public AddClassAction(PkgMgrFrame pmf)
-    {
+final public class AddClassAction extends PkgMgrAction {
+    public AddClassAction(PkgMgrFrame pmf) {
         super(pmf, "menu.edit.addClass");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.doAddFromFile();
     }

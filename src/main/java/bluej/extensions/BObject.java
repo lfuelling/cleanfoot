@@ -21,41 +21,43 @@
  */
 package bluej.extensions;
 
-import bluej.debugger.*;
-import bluej.debugmgr.objectbench.*;
-import bluej.pkgmgr.*;
+import bluej.debugger.DebuggerObject;
+import bluej.debugmgr.objectbench.ObjectBench;
+import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.pkgmgr.Package;
+import bluej.pkgmgr.PkgMgrFrame;
+import bluej.pkgmgr.Project;
 import bluej.pkgmgr.target.ClassTarget;
-import com.sun.jdi.*;
-import java.util.*;
+import com.sun.jdi.ObjectReference;
 import javafx.application.Platform;
+
+import java.util.HashMap;
 
 /**
  * A wrapper for an object on the BlueJ object bench.
  * This wraps an object so you can add and remove it from the bench.
  *
- * @see        BConstructor
- * @see        BMethod
- * @see        BField
- *
  * @author Clive Miller, University of Kent at Canterbury, 2002
  * @author Damiano Bolla, University of Kent at Canterbury 2003,2004
+ * @see BConstructor
+ * @see BMethod
+ * @see BField
  */
-public class BObject
-{
+public class BObject {
     private ObjectWrapper objectWrapper;
-    
-    /** An identifier for the class of this object */
+
+    /**
+     * An identifier for the class of this object
+     */
     private final Identifier wrapperId;
 
 
     /**
      * Constructor for BObject.
      *
-     * @param  aWrapper  Description of the Parameter
+     * @param aWrapper Description of the Parameter
      */
-    BObject(ObjectWrapper aWrapper)
-    {
+    BObject(ObjectWrapper aWrapper) {
         objectWrapper = aWrapper;
 
         Package bluejPkg = objectWrapper.getPackage();
@@ -72,13 +74,12 @@ public class BObject
     /**
      * Returns the package this object belongs to.
      *
-     * @return                            The package value
-     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
+     * @return The package value
+     * @throws ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this object belongs has been deleted by the user.
      */
     public BPackage getPackage()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         Package bluejPkg = wrapperId.getBluejPackage();
 
         return bluejPkg.getBPackage();
@@ -90,19 +91,20 @@ public class BObject
      * This will also remove it from the view of the object bench.
      * Once the object is removed from the bench it will not be available again.
      *
-     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
+     * @throws ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this object belongs has been deleted by the user.
      */
     public void removeFromBench()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         Package aPackage = wrapperId.getBluejPackage();
         PkgMgrFrame aFrame = wrapperId.getPackageFrame();
 
         ObjectBench aBench = aFrame.getObjectBench();
         // Take copy because we're about to blank it:
         ObjectWrapper prevWrapper = objectWrapper;
-        Platform.runLater(() -> {aBench.removeObject(prevWrapper, aPackage.getId());});
+        Platform.runLater(() -> {
+            aBench.removeObject(prevWrapper, aPackage.getId());
+        });
 
         objectWrapper = null;
     }
@@ -113,14 +115,12 @@ public class BObject
      * If you pass null as instanceName the object will have a predefined name.
      * If the object is not a valid one nothing will happen.
      *
-     *
-     * @param  instanceName               The name you want this object to have on the bench.
-     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
+     * @param instanceName The name you want this object to have on the bench.
+     * @throws ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this object belongs has been deleted by the user.
      */
     public void addToBench(String instanceName)
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         if (objectWrapper == null) {
             return;
         }
@@ -150,10 +150,9 @@ public class BObject
     /**
      * Return the name of this object on the object bench.
      *
-     * @return    The instance name if the object can be put into bench, null othervise
+     * @return The instance name if the object can be put into bench, null othervise
      */
-    public String getInstanceName()
-    {
+    public String getInstanceName() {
         if (objectWrapper == null) {
             return null;
         }
@@ -167,23 +166,22 @@ public class BObject
      * Similar to Reflection API. Note the naming inconsistency, which
      * avoids a clash with <code>java.lang.Object.getClass()</code>
      *
-     * @return                           The bClass value
-     * @throws  ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
-     * @throws  PackageNotFoundException if the Package has been deleted by the user.
+     * @return The bClass value
+     * @throws ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
+     * @throws ClassNotFoundException   if the class has been deleted by the user.
+     * @throws PackageNotFoundException if the Package has been deleted by the user.
      */
     public BClass getBClass()
-             throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException {
         // BClasses are retrieved from the BlueJ classTarget
         ClassTarget classTarget = wrapperId.getClassTarget();
-        
+
         if (classTarget == null) {
             // Not a project class; exists in a library or the Java runtime
             wrapperId.getJavaClass(); // will throw ClassNotFoundException if not loadable
             return BClass.getBClass(wrapperId);
         }
-        
+
         // There is only one instance of BClass for each ClassTarget
         return classTarget.getBClass();
     }
@@ -193,13 +191,12 @@ public class BObject
      * Returns the underlying BlueJ package.
      * Should remain visible only to package members.
      *
-     * @return                            The packageFrame value
-     * @throws  ProjectNotOpenException   if the project to which this object belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this object belongs has been deleted by the user.
+     * @return The packageFrame value
+     * @throws ProjectNotOpenException  if the project to which this object belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this object belongs has been deleted by the user.
      */
     PkgMgrFrame getPackageFrame()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         return wrapperId.getPackageFrame();
     }
 
@@ -207,10 +204,9 @@ public class BObject
     /**
      * Returns the object wrapper to be used by the invoke on methods
      *
-     * @return    The objectWrapper value
+     * @return The objectWrapper value
      */
-    ObjectWrapper getObjectWrapper()
-    {
+    ObjectWrapper getObjectWrapper() {
         return objectWrapper;
     }
 
@@ -218,10 +214,9 @@ public class BObject
     /**
      * Used by BField to get hold of the real Object
      *
-     * @return    The objectReference value
+     * @return The objectReference value
      */
-    ObjectReference getObjectReference()
-    {
+    ObjectReference getObjectReference() {
         if (objectWrapper == null) {
             return null;
         }
@@ -237,10 +232,9 @@ public class BObject
     /**
      * Returns a string representation of the Object
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
-    public String toString()
-    {
+    public String toString() {
         String className = "";
         if (objectWrapper != null) {
             className = objectWrapper.getClassName();
@@ -250,11 +244,11 @@ public class BObject
     }
 
 
-    private static final HashMap<String,String> primiMap;
+    private static final HashMap<String, String> primiMap;
 
     static {
         // This will be executed once when this class is loaded
-        primiMap = new HashMap<String,String>();
+        primiMap = new HashMap<String, String>();
         primiMap.put("boolean", "Z");
         primiMap.put("byte", "B");
         primiMap.put("short", "S");
@@ -271,11 +265,10 @@ public class BObject
      * From: java.lang.String[]
      * To:   [Ljava.lang.String;
      *
-     * @param  javaStyle  Description of the Parameter
-     * @return            Description of the Return Value
+     * @param javaStyle Description of the Parameter
+     * @return Description of the Return Value
      */
-    private String transJavaToClass(String javaStyle)
-    {
+    private String transJavaToClass(String javaStyle) {
         String className = javaStyle;
 
         int arrayCount = 0;
@@ -295,8 +288,7 @@ public class BObject
         // If I can substitute the name I will do it
         if (replace != null) {
             className = replace;
-        }
-        else {
+        } else {
             className = "L" + className + ";";
         }
 

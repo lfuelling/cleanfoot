@@ -21,53 +21,47 @@
  */
 package bluej.terminal;
 
-import java.awt.Toolkit;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.awt.*;
 
 /**
  * A type-ahead input buffer for the BlueJ terminal. Implemented with
  * a circular array.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  * @version $Id: InputBuffer.java 12537 2014-10-10 13:05:36Z nccb $
  */
 @OnThread(Tag.Any)
-public final class InputBuffer 
-{
+public final class InputBuffer {
     private final char[] buffer;
     private int bufferNextFull = 0;    // next free position
     private int bufferNextFree = 0;    // next full position
     private final int bufferSize;
     private boolean eofMark = false;
-    
+
     public static char EOF_CHAR = '\u0004'; // internal code for EOF
 
-    public InputBuffer(int size)
-    {
+    public InputBuffer(int size) {
         buffer = new char[size];
         bufferSize = size;
     }
 
-    public synchronized boolean putChar(char ch)
-    {
-        if(isFull()) {
+    public synchronized boolean putChar(char ch) {
+        if (isFull()) {
             Toolkit.getDefaultToolkit().beep();
             return false;
-        }
-        else {
+        } else {
             buffer[bufferNextFree] = ch;
             bufferNextFree = advance(bufferNextFree);
             return true;
         }
     }
 
-    public synchronized boolean putString(String input)
-    {
+    public synchronized boolean putString(String input) {
         boolean putAny = false;
-        for (char c : input.toCharArray())
-        {
+        for (char c : input.toCharArray()) {
             // Ordering crucial here; we always want to try the method
             // call regardless of the value of putAny:
             putAny = putChar(c) || putAny;
@@ -75,26 +69,23 @@ public final class InputBuffer
         return putAny;
     }
 
-    public synchronized boolean backSpace()
-    {
-        if(!isEmpty()) {
+    public synchronized boolean backSpace() {
+        if (!isEmpty()) {
             bufferNextFree = backwards(bufferNextFree);
             return true;
-        }
-        else {
+        } else {
             Toolkit.getDefaultToolkit().beep();
             return false;
         }
     }
 
-    public synchronized char getChar()
-    {
+    public synchronized char getChar() {
         // block until input available
 
-        while(isEmpty()) {
+        while (isEmpty()) {
             try {
                 wait();        // sleep until there is some input
-            } catch(InterruptedException e) {
+            } catch (InterruptedException e) {
                 // our main process is telling us
                 // we want to exit the character
                 // reading loop
@@ -115,44 +106,38 @@ public final class InputBuffer
         }
         return ch;
     }
-    
+
     /**
      * Signal that an EOF condition should be emulated by the terminal.
      */
-    public synchronized void signalEOF()
-    {
+    public synchronized void signalEOF() {
         // EOF is indicated by sending EOF_CHAR to the debug VM, which is then
         // interpreted by the custom input stream installed therein.
-        if (! isFull())
+        if (!isFull())
             putChar(EOF_CHAR);
         else
             eofMark = true;
         notifyReaders();
     }
 
-    public synchronized void notifyReaders()
-    {
+    public synchronized void notifyReaders() {
         notify();
     }
 
-    public synchronized boolean isEmpty()
-    {
+    public synchronized boolean isEmpty() {
         return bufferNextFull == bufferNextFree;
     }
 
     // This method should be synchronized if it is made public
-    private boolean isFull()
-    {
+    private boolean isFull() {
         return advance(bufferNextFree) == bufferNextFull;
     }
-    
-    private int advance(int pos)
-    {
+
+    private int advance(int pos) {
         return (++pos) % bufferSize;
     }
 
-    private int backwards(int pos)
-    {
+    private int backwards(int pos) {
         pos--;
         return (pos < 0 ? bufferSize - 1 : pos);
     }

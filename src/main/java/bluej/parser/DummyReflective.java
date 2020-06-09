@@ -21,136 +21,109 @@
  */
 package bluej.parser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import bluej.debugger.gentype.ConstructorReflective;
-import bluej.debugger.gentype.FieldReflective;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeDeclTpar;
-import bluej.debugger.gentype.MethodReflective;
-import bluej.debugger.gentype.Reflective;
+import bluej.debugger.gentype.*;
 import bluej.utility.JavaReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.*;
 
 /**
  * This class acts as purely as an access source in TextAnalyzer. It
  * is not a "real" reflective; it has a name, which can be used for
  * access checks, but that's all.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class DummyReflective extends Reflective
-{
+public class DummyReflective extends Reflective {
     private final String name;
-    
-    public DummyReflective(String name)
-    {
+
+    public DummyReflective(String name) {
         this.name = name;
     }
-    
+
     @Override
-    public Reflective getArrayOf()
-    {
+    public Reflective getArrayOf() {
         return null;
     }
 
     @Override
-    public Map<String, FieldReflective> getDeclaredFields()
-    {
+    public Map<String, FieldReflective> getDeclaredFields() {
         return Collections.emptyMap();
     }
 
     @Override
-    public Map<String, Set<MethodReflective>> getDeclaredMethods()
-    {
+    public Map<String, Set<MethodReflective>> getDeclaredMethods() {
         return Collections.emptyMap();
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public Reflective getRelativeClass(String name)
-    {
+    public Reflective getRelativeClass(String name) {
         return null;
     }
 
     @Override
-    public List<GenTypeClass> getSuperTypes()
-    {
+    public List<GenTypeClass> getSuperTypes() {
         List<GenTypeClass> l = new ArrayList<GenTypeClass>(1);
         l.add(new GenTypeClass(new JavaReflective(Object.class)));
         return l;
     }
 
     @Override
-    public List<Reflective> getSuperTypesR()
-    {
+    public List<Reflective> getSuperTypesR() {
         List<Reflective> l = new ArrayList<Reflective>(1);
         l.add(new JavaReflective(Object.class));
         return l;
     }
 
     @Override
-    public List<GenTypeDeclTpar> getTypeParams()
-    {
+    public List<GenTypeDeclTpar> getTypeParams() {
         return Collections.emptyList();
     }
 
     @Override
-    public boolean isAssignableFrom(Reflective r)
-    {
+    public boolean isAssignableFrom(Reflective r) {
         return false;
     }
 
     @Override
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return false;
     }
 
     @Override
-    public boolean isPublic()
-    {
+    public boolean isPublic() {
         return false;
     }
 
     @Override
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         return false;
     }
-    
+
     @Override
-    public boolean isFinal()
-    {
+    public boolean isFinal() {
         return false;
     }
-    
+
     @Override
-    public Reflective getInnerClass(String name)
-    {
+    public Reflective getInnerClass(String name) {
         return null;
     }
 
     @Override
-    public String getModuleName()
-    {
+    public String getModuleName() {
         return null;
     }
 
     @Override
-    public List<ConstructorReflective> getDeclaredConstructors()
-    {
+    public List<ConstructorReflective> getDeclaredConstructors() {
         return Collections.emptyList();
     }
 }

@@ -26,18 +26,7 @@ import bluej.Config;
 import bluej.pkgmgr.Project;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.ResizableCanvas;
-import greenfoot.sound.MemoryAudioInputStream;
-import greenfoot.sound.Sound;
-import greenfoot.sound.SoundPlaybackListener;
-import greenfoot.sound.SoundRecorder;
-import greenfoot.sound.SoundStream;
-
-import java.io.File;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicReference;
-
+import greenfoot.sound.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
@@ -53,16 +42,21 @@ import javafx.stage.Stage;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
+
 
 /**
  * The GUI class for the sound recorder.
- * 
+ *
  * @author neil
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class SoundRecorderControls extends Stage
-{
+public class SoundRecorderControls extends Stage {
     private final Player player = new Player();
     private final SoundRecorder recorder = new SoundRecorder();
 
@@ -101,16 +95,14 @@ public class SoundRecorderControls extends Stage
      * Creates a SoundRecorderDialog that will save the sounds
      * in the sounds directory of the given project.
      */
-    public SoundRecorderControls(Project project)
-    {
+    public SoundRecorderControls(Project project) {
         this.setWidth(450);
         this.setHeight(400);
         this.setMinWidth(450);
         this.setMinHeight(400);
         setTitle(Config.getString("soundRecorder.title"));
         Image icon = BlueJTheme.getApplicationFxIcon("greenfoot", false);
-        if (icon != null)
-        {
+        if (icon != null) {
             getIcons().add(icon);
         }
 
@@ -120,11 +112,10 @@ public class SoundRecorderControls extends Stage
         setProject(project);
     }
 
-    private void buildUI()
-    {
+    private void buildUI() {
         BorderPane soundAndControls = new BorderPane(soundPanel, null, null, buildControlBox(), null);
         soundAndControls.setPadding(new Insets(12));
-        BorderPane.setMargin(soundPanel, new Insets(12,12,12,12));
+        BorderPane.setMargin(soundPanel, new Insets(12, 12, 12, 12));
         soundAndControls.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(5, 5, 5, 5, false), null)));//new Insets(12)
         VBox.setVgrow(soundAndControls, Priority.ALWAYS);
 
@@ -144,21 +135,18 @@ public class SoundRecorderControls extends Stage
     /**
      * Change the project associated with this sound recorder.
      */
-    public void setProject(Project project)
-    {
+    public void setProject(Project project) {
         saveState.setProjectSoundDir(getSoundDir(project));
     }
 
     /**
      * Builds the controls: record/trim/play
      */
-    private Pane buildControlBox()
-    {
+    private Pane buildControlBox() {
         recordStop.setFocusTraversable(false);
         recordStop.setOnAction(event ->
         {
-            if (!recording)
-            {
+            if (!recording) {
                 //Start recording
                 currentRecording = recorder.startRecording();
                 recordStop.setText(stopRecordLabel);
@@ -166,8 +154,8 @@ public class SoundRecorderControls extends Stage
                 recording = true;
                 new Timer().scheduleAtFixedRate(new TimerTask() {
                     List<byte[]> lastValue = null;
-                    public void run()
-                    {
+
+                    public void run() {
                         List<byte[]> curValue = currentRecording.get();
                         if (curValue != lastValue)
                             Platform.runLater(soundPanel::paintComponent);
@@ -176,9 +164,7 @@ public class SoundRecorderControls extends Stage
                         lastValue = curValue;
                     }
                 }, 100, 200);
-            }
-            else
-            {
+            } else {
                 stopRecording();
             }
         });
@@ -209,14 +195,10 @@ public class SoundRecorderControls extends Stage
      *
      * @return the sound directory as a file.  Will return null if the project is null.
      */
-    private static File getSoundDir(Project project)
-    {
-        if (project != null)
-        {
+    private static File getSoundDir(Project project) {
+        if (project != null) {
             return new File(project.getProjectDir(), "sounds");
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
@@ -224,41 +206,32 @@ public class SoundRecorderControls extends Stage
     /**
      * Updates trim and play buttons based on whether the selection is active
      */
-    private void updateButtons()
-    {
+    private void updateButtons() {
         trim.setDisable(!selectionActive);
         playStop.setText(selectionActive ? playSelectionLabel : playLabel);
     }
-    
+
     /**
      * A class that handles playing sound, controlled by a play/stop button (for which this is the ActionListener).
      */
-    private class Player implements SoundPlaybackListener
-    {
+    private class Player implements SoundPlaybackListener {
         private final Timer timer = new Timer();
         private TimerTask repaintWhilePlaying;
         private SoundStream stream;
 
         @OnThread(Tag.FXPlatform)
-        public void act()
-        {
-            if (playing)
-            {
+        public void act() {
+            if (playing) {
                 if (stream != null)
                     stream.stop(); //Everything will be done in the stop callback, below
-            }
-            else
-            {
+            } else {
                 MemoryAudioInputStream memoryStream;
                 final int start;
-                if (selectionActive)
-                {
+                if (selectionActive) {
                     start = getSelectionStartOffset();
                     int len = getSelectionFinishOffset() - start;
                     memoryStream = new MemoryAudioInputStream(recorder.getRawSound(), start, len, recorder.getFormat());
-                }
-                else
-                {
+                } else {
                     start = 0;
                     memoryStream = new MemoryAudioInputStream(recorder.getRawSound(), recorder.getFormat());
                 }
@@ -268,11 +241,10 @@ public class SoundRecorderControls extends Stage
                 stream.play();
                 playStop.setText(stopPlayLabel);
                 recordStop.setDisable(true);
-                
+
                 repaintWhilePlaying = new TimerTask() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         playbackPosition = start + stream.getLongFramePosition();
                         Platform.runLater(soundPanel::paintComponent);
                     }
@@ -282,20 +254,17 @@ public class SoundRecorderControls extends Stage
         }
 
         @OnThread(Tag.Any)
-        public void playbackPaused(Sound sound)
-        {
+        public void playbackPaused(Sound sound) {
             //Shouldn't happen as we don't have a pause button
         }
 
         @OnThread(Tag.Any)
-        public void playbackStarted(Sound sound)
-        {
+        public void playbackStarted(Sound sound) {
             //Nothing to do
         }
 
         @OnThread(Tag.Any)
-        public void playbackStopped(Sound sound)
-        {
+        public void playbackStopped(Sound sound) {
             Platform.runLater(() ->
             {
                 updateButtons();
@@ -307,8 +276,7 @@ public class SoundRecorderControls extends Stage
         }
 
         @OnThread(Tag.Any)
-        public void soundClosed(Sound sound)
-        {
+        public void soundClosed(Sound sound) {
             // Nothing to do            
         }
     }
@@ -317,18 +285,15 @@ public class SoundRecorderControls extends Stage
      * A panel for displaying the recorded sound.
      */
     @OnThread(Tag.FXPlatform)
-    private class SoundPanel extends ResizableCanvas
-    {
-        private SoundPanel()
-        {
+    private class SoundPanel extends ResizableCanvas {
+        private SoundPanel() {
             this.addEventHandler(MouseEvent.MOUSE_PRESSED, this::mousePressed);
             this.addEventHandler(MouseEvent.MOUSE_RELEASED, this::mouseReleased);
             this.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::mouseDragged);
             onResize = this::paintComponent;
         }
 
-        protected void paintComponent()
-        {
+        protected void paintComponent() {
             GraphicsContext g = getGraphicsContext2D();
 
             double width = getWidth();
@@ -340,67 +305,52 @@ public class SoundRecorderControls extends Stage
             g.setFill(Color.BLACK);
             g.fillRect(0, 0, width, height);
 
-            if (recording || (sound != null && sound.length > 0))
-            {
-                if (selectionActive)
-                {
+            if (recording || (sound != null && sound.length > 0)) {
+                if (selectionActive) {
                     g.setFill(Color.GRAY);
                     g.fillRect(Math.min(selectionBegin, selectionEnd) * width, 0,
-                               Math.abs(selectionBegin - selectionEnd) * width, height);
+                            Math.abs(selectionBegin - selectionEnd) * width, height);
                 }
 
                 // Get this outside the loop to make sure it's consistent:
                 byte[][] rec = null;
                 int recLength = 0;
-                if (recording)
-                {
+                if (recording) {
                     List<byte[]> recList = currentRecording.get();
-                    if (recList != null)
-                    {
+                    if (recList != null) {
                         rec = recList.toArray(new byte[0][]);
-                        for (byte[] chunk : rec)
-                        {
+                        for (byte[] chunk : rec) {
                             //Shouldn't have any null chunks, but just in case:
                             int chunkLength = chunk == null ? 0 : chunk.length;
                             recLength += chunkLength;
                         }
                     }
-                }
-                else
-                {
+                } else {
                     recLength = sound.length;
                 }
 
                 int curRecChunk = 0;
                 int prevChunksLength = 0;
 
-                for (int i = 0; i < width; i++)
-                {
+                for (int i = 0; i < width; i++) {
                     float pos = (float) i / (float) width;
                     float f = 0;
                     // Use rec test rather than "recording" in case "recording" changes mid-paint:
-                    if (rec != null)
-                    {
+                    if (rec != null) {
                         int index = (int) (pos * (float) recLength);
-                        if (recLength == 0 || index >= recLength)
-                        {
+                        if (recLength == 0 || index >= recLength) {
                             // No data yet:
                             f = 0.0f;
-                        }
-                        else
-                        {
+                        } else {
                             // We have a list of chunks that make up the current recording:
                             //  Skip forward to right chunk if needed:
-                            while (index >= prevChunksLength + rec[curRecChunk].length)
-                            {
+                            while (index >= prevChunksLength + rec[curRecChunk].length) {
                                 prevChunksLength += rec[curRecChunk].length;
                                 curRecChunk += 1;
                             }
                             f = (float) rec[curRecChunk][index - prevChunksLength] / 128.0f;
                         }
-                    }
-                    else if (sound != null)
-                    {
+                    } else if (sound != null) {
                         int index = (int) (pos * (float) sound.length);
                         f = (float) sound[index] / 128.0f;
                     }
@@ -411,8 +361,7 @@ public class SoundRecorderControls extends Stage
                     g.strokeLine(i, middle - waveHeight, i, middle + waveHeight);
                 }
 
-                if (playing)
-                {
+                if (playing) {
                     g.setStroke(Color.RED);
                     float playPosRel = (float) playbackPosition / (float) recLength;
                     int pos = (int) (playPosRel * (float) width);
@@ -422,34 +371,29 @@ public class SoundRecorderControls extends Stage
         }
 
         /**
-         *  Works out whether the given number (0->1) is inside the current selection (if there is one)
+         * Works out whether the given number (0->1) is inside the current selection (if there is one)
          *
          * @param f value to test if it is in the selected range
          * @return true if the passed value is within the selected range
          */
-        private boolean inSelection(float f)
-        {
+        private boolean inSelection(float f) {
             return selectionActive && f >= Math.min(selectionBegin, selectionEnd)
-              && f <= Math.max(selectionBegin, selectionEnd);
+                    && f <= Math.max(selectionBegin, selectionEnd);
         }
 
-        public void mousePressed(MouseEvent e)
-        {
-            if (recorder.getRawSound() != null)
-            {
+        public void mousePressed(MouseEvent e) {
+            if (recorder.getRawSound() != null) {
                 // Selection only becomes active if they drag.
                 // Otherwise this is just a click and actually ends up removing the selection:
                 selectionActive = false;
                 selectionDrawing = true;
                 selectionBegin = calculatePosition(e.getX());
                 selectionEnd = selectionBegin;
-            }            
+            }
         }
 
-        public void mouseReleased(MouseEvent e)
-        {
-            if (selectionDrawing)
-            {
+        public void mouseReleased(MouseEvent e) {
+            if (selectionDrawing) {
                 selectionDrawing = false;
                 selectionEnd = calculatePosition(e.getX());
                 if (selectionBegin == selectionEnd)
@@ -459,18 +403,15 @@ public class SoundRecorderControls extends Stage
             updateButtons();
         }
 
-        public void mouseDragged(MouseEvent e)
-        {
-            if (selectionDrawing)
-            {
+        public void mouseDragged(MouseEvent e) {
+            if (selectionDrawing) {
                 selectionEnd = calculatePosition(e.getX());
                 selectionActive = true;
                 paintComponent();
             }
         }
 
-        private double calculatePosition(double x)
-        {
+        private double calculatePosition(double x) {
             double pos = x / getWidth();
             // Clamp to the range 0->1:
             pos = Math.max(0, pos);
@@ -484,11 +425,10 @@ public class SoundRecorderControls extends Stage
      *
      * @return the index of the selection start
      */
-    private int getSelectionStartOffset()
-    {
+    private int getSelectionStartOffset() {
         double start = Math.min(selectionBegin, selectionEnd);
         float length = recorder.getRawSound().length;
-        return (int)(start * length);
+        return (int) (start * length);
     }
 
     /**
@@ -496,17 +436,14 @@ public class SoundRecorderControls extends Stage
      *
      * @return the index of the selection end
      */
-    private int getSelectionFinishOffset()
-    {
+    private int getSelectionFinishOffset() {
         double finish = Math.max(selectionBegin, selectionEnd);
         float length = recorder.getRawSound().length;
-        return (int)(finish * length);
+        return (int) (finish * length);
     }
-    
-    private void stopRecording()
-    {
-        if (recording)
-        {
+
+    private void stopRecording() {
+        if (recording) {
             recorder.stopRecording();
             playStop.setDisable(false);
             saveState.changed(true);
@@ -516,8 +453,7 @@ public class SoundRecorderControls extends Stage
         }
     }
 
-    public SimpleBooleanProperty getShowingProperty()
-    {
+    public SimpleBooleanProperty getShowingProperty() {
         return showingProperty;
     }
 }

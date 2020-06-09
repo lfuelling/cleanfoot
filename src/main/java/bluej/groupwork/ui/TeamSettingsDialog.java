@@ -29,7 +29,6 @@ import bluej.utility.javafx.JavaFXUtil;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Window;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -41,8 +40,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class TeamSettingsDialog extends FXCustomizedDialog<TeamSettings>
-{
+public class TeamSettingsDialog extends FXCustomizedDialog<TeamSettings> {
     private final TeamSettingsController teamSettingsController;
     private final TeamSettingsPanel teamSettingsPanel;
     private Button okButton;
@@ -51,13 +49,12 @@ public class TeamSettingsDialog extends FXCustomizedDialog<TeamSettings>
      * Create a team settings dialog with a reference to the team settings
      * controller that it manipulates.
      */
-    public TeamSettingsDialog(Window owner, TeamSettingsController controller)
-    {
+    public TeamSettingsDialog(Window owner, TeamSettingsController controller) {
         super(owner, "team.settings.title", "team-settings");
         setResizable(false);
         teamSettingsController = controller;
 
-        if(teamSettingsController.hasProject()) {
+        if (teamSettingsController.hasProject()) {
             setTitle(getTitle() + " - " + teamSettingsController.getProject().getProjectName());
         }
 
@@ -67,20 +64,19 @@ public class TeamSettingsDialog extends FXCustomizedDialog<TeamSettings>
         teamSettingsPanel = new TeamSettingsPanel(teamSettingsController, this, getDialogPane().getStyleClass());
         getDialogPane().setContent(teamSettingsPanel);
         DialogManager.centreDialog(this);
-        
+
         setOnShown(e -> {
             // The dialog logic steals focus to one of the buttons, we need a runLater to steal it back:
-            JavaFXUtil.runAfterCurrent(() -> teamSettingsPanel.doRequestFocus()); 
+            JavaFXUtil.runAfterCurrent(() -> teamSettingsPanel.doRequestFocus());
         });
-        
+
         setResultConverter(bt -> bt == ButtonType.OK ? getSettings() : null);
     }
 
     /**
      * Set up the buttons panel to contain ok and cancel buttons, and associate their actions.
      */
-    private void prepareButtonPane()
-    {
+    private void prepareButtonPane() {
         // Set the button types.
         getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
 
@@ -103,21 +99,18 @@ public class TeamSettingsDialog extends FXCustomizedDialog<TeamSettings>
      * group, prefix, server and protocol. Called when the team settings
      * dialog is connected to a project already.
      */
-    public void disableRepositorySettings()
-    {
+    public void disableRepositorySettings() {
         teamSettingsPanel.disableRepositorySettings();
     }
 
     /**
      * Get the settings specified by the user
      */
-    public TeamSettings getSettings()
-    {
+    public TeamSettings getSettings() {
         return teamSettingsPanel.getSettings();
     }
 
-    public Button getOkButton()
-    {
+    public Button getOkButton() {
         return okButton;
     }
 }

@@ -28,13 +28,11 @@ import threadchecker.Tag;
 /**
  * A warning which occurred during the conversion from Java to Stride
  */
-public abstract class ConversionWarning
-{
+public abstract class ConversionWarning {
     private final String text;
 
     // labelId is looked up in the Strings, then item is appended
-    private ConversionWarning(String labelId, String item)
-    {
+    private ConversionWarning(String labelId, String item) {
         this.text = Config.getString(labelId).trim() + " " + item;
     }
 
@@ -42,10 +40,8 @@ public abstract class ConversionWarning
      * An unsupported modifier (e.g. synchronized, volatile) or annotation (e.g. @Test) was found
      */
     @OnThread(Tag.Any)
-    public static class UnsupportedModifier extends ConversionWarning
-    {
-        public UnsupportedModifier(String context, String modifier)
-        {
+    public static class UnsupportedModifier extends ConversionWarning {
+        public UnsupportedModifier(String context, String modifier) {
             super("stride.convert.unsupported.modifier", context + ": " + modifier);
         }
     }
@@ -54,10 +50,8 @@ public abstract class ConversionWarning
      * An unsupported language feature was found (e.g. synchronized block, anonymous inner class)
      */
     @OnThread(Tag.Any)
-    public static class UnsupportedFeature extends ConversionWarning
-    {
-        public UnsupportedFeature(String feature)
-        {
+    public static class UnsupportedFeature extends ConversionWarning {
+        public UnsupportedFeature(String feature) {
             super("stride.convert.unsupported.feature", ": " + feature);
         }
     }
@@ -65,14 +59,12 @@ public abstract class ConversionWarning
     /**
      * Gets the message to show to the user
      */
-    public String getMessage()
-    {
+    public String getMessage() {
         return text;
     }
 
     // For better output in test failures:
-    public String toString()
-    {
+    public String toString() {
         return getClass() + "[" + text + "]";
     }
 }

@@ -21,29 +21,28 @@
  */
 package bluej.views;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+
 /**
- ** @author Michael Cahill
- **
- ** FormattedPrintWriter - provides formatting on top of a PrintWriter
+ * * @author Michael Cahill
+ * *
+ * * FormattedPrintWriter - provides formatting on top of a PrintWriter
  **/
-@OnThread(value = Tag.FXPlatform,ignoreParent = true)
-public abstract class FormattedPrintWriter extends PrintWriter
-{
-    public FormattedPrintWriter(OutputStream out)
-    {
+@OnThread(value = Tag.FXPlatform, ignoreParent = true)
+public abstract class FormattedPrintWriter extends PrintWriter {
+    public FormattedPrintWriter(OutputStream out) {
         super(out);
     }
 
     public abstract void setBold(boolean bold);
+
     public abstract void setItalic(boolean italic);
+
     protected abstract void indentLine();
-    
+
     public abstract void println(String line);
 }

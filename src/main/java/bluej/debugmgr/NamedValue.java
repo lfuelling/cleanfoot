@@ -26,12 +26,11 @@ import bluej.debugger.gentype.JavaType;
 /**
  * A named value, such as an object on the object bench or a local variable
  * in the code page.
- * 
+ *
  * @author Davin McCall
  * @version $Id: NamedValue.java 6215 2009-03-30 13:28:25Z polle $
  */
-public interface NamedValue
-{
+public interface NamedValue {
     /**
      * Get the name of the named value.
      */
@@ -44,12 +43,12 @@ public interface NamedValue
      * available.
      */
     boolean isInitialized();
-    
+
     /**
      * Check whether the value of this named value can be modified.
      */
     boolean isFinal();
-    
+
     /**
      * Get the nominated type of this value.
      */

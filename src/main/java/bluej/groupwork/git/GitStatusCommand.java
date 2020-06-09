@@ -26,44 +26,37 @@ import bluej.groupwork.TeamStatusInfo;
 import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
-import static bluej.groupwork.git.GitUtilities.findForkPoint;
-import static bluej.groupwork.git.GitUtilities.getBehindCount;
-import static bluej.groupwork.git.GitUtilities.getDiffs;
-import static bluej.groupwork.git.GitUtilities.getFileNameFromDiff;
-import static bluej.groupwork.git.GitUtilities.isAheadOnly;
 import bluej.utility.Debug;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.IndexDiff;
+import org.eclipse.jgit.revwalk.RevCommit;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.lib.IndexDiff;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
+import static bluej.groupwork.git.GitUtilities.*;
 
 /**
  * Checks the status of a Git repository
  *
  * @author Fabio Hedayioglu
  */
-public class GitStatusCommand extends GitCommand
-{
+public class GitStatusCommand extends GitCommand {
     StatusListener listener;
     FileFilter filter;
     boolean includeRemote;
 
-    public GitStatusCommand(GitRepository repository, StatusListener listener, FileFilter filter, boolean includeRemote)
-    {
+    public GitStatusCommand(GitRepository repository, StatusListener listener, FileFilter filter, boolean includeRemote) {
         super(repository);
         this.listener = listener;
         this.filter = filter;
@@ -72,21 +65,19 @@ public class GitStatusCommand extends GitCommand
 
     @Override
     @OnThread(Tag.Worker)
-    public TeamworkCommandResult getResult()
-    {
+    public TeamworkCommandResult getResult() {
         boolean didFilesChange = true;
         LinkedList<TeamStatusInfo> returnInfo = new LinkedList<>();
         File gitPath = this.getRepository().getProjectPath();
 
-        try (Git repo = Git.open(this.getRepository().getProjectPath()))
-        {
+        try (Git repo = Git.open(this.getRepository().getProjectPath())) {
             //check local status
             org.eclipse.jgit.api.Status s = repo.status().call();
 
             // A file which has had changes merged as a result of a pull will be in a "unmerged"
             // state, and will appear in "uncommitted changes" as well as "conflicting" (with
             // BOTH_MODIFIED or one of the other "stages").
-            
+
             s.getMissing().stream()
                     .filter(p -> filter.accept(new File(gitPath, p)))
                     .forEach(item -> {
@@ -103,7 +94,7 @@ public class GitStatusCommand extends GitCommand
                         returnInfo.add(new TeamStatusInfo(new File(gitPath, item), "", null,
                                 Status.DELETED));
                     });
-            
+
             s.getUncommittedChanges().stream()
                     .filter(p -> filter.accept(new File(gitPath, p)))
                     .forEach(item -> {
@@ -128,20 +119,16 @@ public class GitStatusCommand extends GitCommand
                     .filter(p -> filter.accept(new File(gitPath, p)))
                     .forEach(item -> {
                         TeamStatusInfo teamInfo = getTeamStatusInfo(returnInfo, new File(gitPath, item));
-                        if (teamInfo == null)
-                        {
+                        if (teamInfo == null) {
                             Debug.message("Git unexpected status: file is "
                                     + "conflicting but not otherwise noted? (" + item + ")");
                             teamInfo = new TeamStatusInfo(new File(gitPath, item), "", null, Status.NEEDS_MERGE);
                             returnInfo.add(teamInfo);
-                        }
-                        else
-                        {
+                        } else {
                             IndexDiff.StageState sstate = conflictsMap.get(item);
                             // Note: for local status, NEEDS_MERGE actually means "needs commit to
                             // resolve merge".
-                            switch (sstate)
-                            {
+                            switch (sstate) {
                                 case DELETED_BY_THEM:
                                     teamInfo.setStatus(Status.CONFLICT_LMRD);
                                     break;
@@ -175,52 +162,48 @@ public class GitStatusCommand extends GitCommand
             }
 
             RevCommit forkPoint = findForkPoint(repo.getRepository(), "origin/master", "HEAD");
-            
+
             //find diffs between master/head and the forkpoint.
             listOfDiffsLocal = getDiffs(repo, "HEAD", forkPoint);
             //check for differences between forkpoint and remote repo head.
             listOfDiffsRemote = getDiffs(repo, "origin/master", forkPoint);
             updateRemoteStatus(gitPath, listOfDiffsLocal, listOfDiffsRemote, returnInfo);
-            
-            if (returnInfo.isEmpty()){
+
+            if (returnInfo.isEmpty()) {
                 didFilesChange = false;
             }
 
             if (listener != null) {
                 // Git does not show any add up-to-date file. We need to add them manually to returnInfo.
                 addUpToDateFiles(returnInfo, gitPath);
-                
+
                 while (!returnInfo.isEmpty()) {
                     TeamStatusInfo teamInfo = returnInfo.removeFirst();
                     listener.gotStatus(teamInfo);
                 }
                 listener.statusComplete(new GitStatusHandle(getRepository(), didFilesChange && isAheadOnly(repo), didFilesChange && getBehindCount(repo) > 0));
             }
-        }
-        catch (IOException | GitAPIException | NoWorkTreeException | GitTreeException ex)
-        {
+        } catch (IOException | GitAPIException | NoWorkTreeException | GitTreeException ex) {
             Debug.reportError("Git status command exception", ex);
             return new TeamworkCommandError(ex.getMessage(), ex.getLocalizedMessage());
         }
-        
+
         return new TeamworkCommandResult();
     }
 
     /**
      * Search a directory (recursively). For all files with no status currently recorded, add an
      * "unchanged" status entry.
-     * 
-     * @param returnInfo  list of file status
-     * @param path        path to search
+     *
+     * @param returnInfo list of file status
+     * @param path       path to search
      */
-    private void addUpToDateFiles(LinkedList<TeamStatusInfo> returnInfo, File path)
-    {
+    private void addUpToDateFiles(LinkedList<TeamStatusInfo> returnInfo, File path) {
         for (File item : path.listFiles()) {
             if (filter.accept(item)) {
                 if (item.isDirectory()) {
                     addUpToDateFiles(returnInfo, item);
-                }
-                else {
+                } else {
                     TeamStatusInfo itemStatus = getTeamStatusInfo(returnInfo, item);
                     if (itemStatus == null) {
                         //file does not exist in the list, therefore it is up-to-date.
@@ -236,11 +219,10 @@ public class GitStatusCommand extends GitCommand
      * checks if a file already has an entry on returnInfo
      *
      * @param returnInfo list of TeamStatusInfo to be checked
-     * @param file file to check
+     * @param file       file to check
      * @return null if there is no entry of that file. The entry if it exists.
      */
-    private TeamStatusInfo getTeamStatusInfo(LinkedList<TeamStatusInfo> returnInfo, File file)
-    {
+    private TeamStatusInfo getTeamStatusInfo(LinkedList<TeamStatusInfo> returnInfo, File file) {
         try {
             return returnInfo.stream().filter(entry -> entry.getFile().getPath().contains(file.getPath())).findFirst().get();
         } catch (Exception e) {
@@ -249,16 +231,14 @@ public class GitStatusCommand extends GitCommand
     }
 
 
-    private Optional<DiffEntry> getDiffFromList(List<DiffEntry> list, DiffEntry entry)
-    {
+    private Optional<DiffEntry> getDiffFromList(List<DiffEntry> list, DiffEntry entry) {
         Optional<DiffEntry> result;
         String entryFileName = getFileNameFromDiff(entry);
         result = list.stream().filter(p -> getFileNameFromDiff(p).equals(entryFileName)).findFirst();
         return result;
     }
 
-    private void updateRemoteStatus(LinkedList<TeamStatusInfo> returnInfo, File file, Status remoteStatus)
-    {
+    private void updateRemoteStatus(LinkedList<TeamStatusInfo> returnInfo, File file, Status remoteStatus) {
         TeamStatusInfo entry = getTeamStatusInfo(returnInfo, file);
         if (entry != null) {
             entry.setRemoteStatus(remoteStatus);
@@ -269,8 +249,7 @@ public class GitStatusCommand extends GitCommand
         }
     }
 
-    private void updateRemoteStatus(File gitPath, List<DiffEntry> listOfDiffsLocal, List<DiffEntry> listOfDiffsRemote, LinkedList<TeamStatusInfo> returnInfo)
-    {
+    private void updateRemoteStatus(File gitPath, List<DiffEntry> listOfDiffsLocal, List<DiffEntry> listOfDiffsRemote, LinkedList<TeamStatusInfo> returnInfo) {
         //first check local changes that does not appear in the remote list.
         for (DiffEntry localDiffItem : listOfDiffsLocal) {
             File file = new File(gitPath, getFileNameFromDiff(localDiffItem));
@@ -297,7 +276,7 @@ public class GitStatusCommand extends GitCommand
                         TeamStatusInfo entry = getTeamStatusInfo(returnInfo, file);
                         switch (localDiffItem.get().getChangeType()) {
                             case MODIFY:
-                                if (entry == null){
+                                if (entry == null) {
                                     //this file was in need of a merge, however, since it does not appears 
                                     //in the local status, the merge was committed and needs to be pushed.
                                     updateRemoteStatus(returnInfo, file, Status.NEEDS_PUSH);
@@ -344,7 +323,7 @@ public class GitStatusCommand extends GitCommand
                         }
                     } else {
                         updateRemoteStatus(returnInfo, file, Status.NEEDS_CHECKOUT);
-                        if (!file.exists()){
+                        if (!file.exists()) {
                             //this file will be added, but does not exist in the local repository.
                             TeamStatusInfo tsi = getTeamStatusInfo(returnInfo, file);
                             tsi.setStatus(Status.NEEDS_CHECKOUT);

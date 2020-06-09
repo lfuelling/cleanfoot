@@ -35,7 +35,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -48,8 +47,7 @@ import java.util.Objects;
  * @author Neil Brown
  */
 @OnThread(Tag.FXPlatform)
-public abstract class FXAbstractAction
-{
+public abstract class FXAbstractAction {
     private String name;
 
     private boolean hasMenuItem = false;
@@ -58,47 +56,40 @@ public abstract class FXAbstractAction
     protected final ObjectProperty<KeyCombination> accelerator;
     private final Node buttonGraphic;
 
-    protected FXAbstractAction(String name)
-    {
-        this(name, (KeyCombination)null);
+    protected FXAbstractAction(String name) {
+        this(name, (KeyCombination) null);
     }
 
-    protected FXAbstractAction(String name, KeyCombination accelerator)
-    {
+    protected FXAbstractAction(String name, KeyCombination accelerator) {
         this.name = name;
         this.accelerator = new SimpleObjectProperty<>(accelerator);
         this.buttonGraphic = null;
     }
 
-    protected FXAbstractAction(String name, Node buttonGraphic)
-    {
+    protected FXAbstractAction(String name, Node buttonGraphic) {
         this.name = name;
         this.accelerator = new SimpleObjectProperty<>(null);
         this.buttonGraphic = buttonGraphic;
     }
 
-    protected FXAbstractAction(String name, Image buttonImage)
-    {
+    protected FXAbstractAction(String name, Image buttonImage) {
         this(name, new ImageView(buttonImage));
     }
 
     public abstract void actionPerformed(boolean viaContextMenu);
 
-    public void bindEnabled(BooleanExpression enabled)
-    {
+    public void bindEnabled(BooleanExpression enabled) {
         if (enabled != null)
             disabled.bind(enabled.not());
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         if (disabled.isBound())
             disabled.unbind();
         disabled.set(!enabled);
     }
 
-    public boolean isDisabled()
-    {
+    public boolean isDisabled() {
         return disabled.get();
     }
 
@@ -109,23 +100,19 @@ public abstract class FXAbstractAction
      * the documentation view is showing, for example.  So their GUI enabled status
      * is actually the conjunction of being enabled and available.
      */
-    public void setAvailable(boolean available)
-    {
+    public void setAvailable(boolean available) {
         unavailable.set(!available);
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public KeyCombination getAccelerator()
-    {
+    public KeyCombination getAccelerator() {
         return accelerator.get();
     }
 
-    public Button makeButton()
-    {
+    public Button makeButton() {
         Button button = new Button(name);
         button.disableProperty().bind(disabled.or(unavailable));
         button.setOnAction(e -> actionPerformed(false));
@@ -140,26 +127,23 @@ public abstract class FXAbstractAction
      * don't set a separate entry in the key map.  So don't call this
      * unless you're actually going to have the menu item available on the menu.
      */
-    public MenuItem makeMenuItem()
-    {
+    public MenuItem makeMenuItem() {
         MenuItem menuItem = new MenuItem(name);
         prepareMenuItem(menuItem);
         return menuItem;
     }
 
-    private void prepareMenuItem(MenuItem menuItem)
-    {
+    private void prepareMenuItem(MenuItem menuItem) {
         setMenuActionAndDisable(menuItem, false);
         boolean cmdPlusMinusOnMac = Config.isMacOS() && accelerator.get() != null &&
                 (accelerator.get().equals(new KeyCodeCombination(KeyCode.EQUALS, KeyCombination.SHORTCUT_DOWN))
-                    || accelerator.get().equals(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN))
-                    || accelerator.get().equals(new KeyCodeCombination(KeyCode.EQUALS, KeyCombination.META_DOWN))
-                    || accelerator.get().equals(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.META_DOWN)));
+                        || accelerator.get().equals(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN))
+                        || accelerator.get().equals(new KeyCodeCombination(KeyCode.EQUALS, KeyCombination.META_DOWN))
+                        || accelerator.get().equals(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.META_DOWN)));
         // We don't set Cmd-+ or Cmd-- as a menu accelerator on Mac because a JavaFX bug
         // prevents them working as a menu item.  So we set them as a shortcut on the text pane
         // involved.  (See the caller of hasMenuItem).
-        if (!cmdPlusMinusOnMac)
-        {
+        if (!cmdPlusMinusOnMac) {
             menuItem.acceleratorProperty().bind(accelerator);
             hasMenuItem = true;
         }
@@ -168,21 +152,18 @@ public abstract class FXAbstractAction
     /**
      * Makes a MenuItem which will run this action, but without an accelerator.
      */
-    public MenuItem makeContextMenuItem()
-    {
+    public MenuItem makeContextMenuItem() {
         MenuItem menuItem = new MenuItem(name);
         setMenuActionAndDisable(menuItem, true);
         return menuItem;
     }
 
-    private void setMenuActionAndDisable(MenuItem menuItem, boolean contextMenu)
-    {
+    private void setMenuActionAndDisable(MenuItem menuItem, boolean contextMenu) {
         menuItem.disableProperty().bind(disabled.or(unavailable));
         menuItem.setOnAction(e -> actionPerformed(true));
     }
 
-    public String toString()
-    {
+    public String toString() {
         return name;
     }
 
@@ -192,8 +173,7 @@ public abstract class FXAbstractAction
     }*/
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -203,8 +183,7 @@ public abstract class FXAbstractAction
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return name.hashCode();
     }
 
@@ -212,20 +191,20 @@ public abstract class FXAbstractAction
      * Determines whether this action has a menu item which has been created, and which has the given
      * shortcut as an accelerator (compared using .equals method).  We don't check if the menu item
      * is actually visible, or enabled, etc, that's up to the caller.
+     *
      * @param shortcut
      * @return
      */
-    public boolean hasMenuItemWithAccelerator(KeyCombination shortcut)
-    {
+    public boolean hasMenuItemWithAccelerator(KeyCombination shortcut) {
         return hasMenuItem && Objects.equals(accelerator.get(), shortcut);
     }
 
     /**
      * changes the name of the action.
+     *
      * @param name the new name to be assigned
      */
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 }

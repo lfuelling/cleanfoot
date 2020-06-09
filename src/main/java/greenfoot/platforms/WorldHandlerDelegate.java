@@ -30,26 +30,26 @@ import threadchecker.Tag;
 /**
  * Interface to classes that contain specialized behaviour for the WorldHandler
  * depending on where and how the Greenfoot project is running.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.Simulation)
-public interface WorldHandlerDelegate
-{    
+public interface WorldHandlerDelegate {
     /**
      * A new world has been set as the active world.
-     * @param oldWorld   The previously active world
-     * @param newWorld   The new active world
+     *
+     * @param oldWorld The previously active world
+     * @param newWorld The new active world
      */
     @OnThread(Tag.Any)
     void setWorld(World oldWorld, World newWorld);
 
     /**
      * Instantiate a new world and do any initialisation needed to activate that world.
-     * 
-     * @param className The fully qualified name of the world class to instantiate
-     *                  if a specific class is wanted.  If null, use the most recently
-     *                  instantiated world class.
+     *
+     * @param className  The fully qualified name of the world class to instantiate
+     *                   if a specific class is wanted.  If null, use the most recently
+     *                   instantiated world class.
      * @param runIfError A piece of code to run if there is an error during instantiation.
      *                   This is passed as a Runnable rather than handled by return because
      *                   we may hop thread to do the instantiation, so we cannot directly
@@ -60,7 +60,7 @@ public interface WorldHandlerDelegate
 
     @OnThread(Tag.Any)
     void discardWorld(World world);
-    
+
     /**
      * An actor was added into the world (by any means, possibly programmatically). Called with the world locked.
      */
@@ -74,11 +74,13 @@ public interface WorldHandlerDelegate
     /**
      * A world of the given class name is now being initialised.
      */
-    default void initialisingWorld(String className) {}
+    default void initialisingWorld(String className) {
+    }
 
     /**
      * Repaint the world.
-     * @param drawWorld The world to be painted
+     *
+     * @param drawWorld  The world to be painted
      * @param forcePaint Force paint (ignore any optimisations to not paint frames too often, etc)
      */
     void paint(World drawWorld, boolean forcePaint);
@@ -92,5 +94,6 @@ public interface WorldHandlerDelegate
     /**
      * The world construction has completed.
      */
-    default void finishedInitialisingWorld() {}
+    default void finishedInitialisingWorld() {
+    }
 }

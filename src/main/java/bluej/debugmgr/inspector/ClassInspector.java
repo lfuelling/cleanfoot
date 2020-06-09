@@ -21,20 +21,6 @@
  */
 package bluej.debugmgr.inspector;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
-
 import bluej.Config;
 import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
@@ -42,18 +28,27 @@ import bluej.pkgmgr.Package;
 import bluej.testmgr.record.InvokerRecord;
 import bluej.utility.JavaNames;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A window that displays the static fields in an class.
- * 
+ *
  * @author Michael Kolling
  * @author Poul Henriksen
  */
 @OnThread(Tag.FXPlatform)
-public class ClassInspector extends Inspector
-{
+public class ClassInspector extends Inspector {
     // === static variables ===
 
     protected final static String CLASS_INSPECT_TITLE = Config.getString("debugger.inspector.class.title");
@@ -67,7 +62,7 @@ public class ClassInspector extends Inspector
 
     protected final static String noFieldsMsg = Config.getString("debugger.inspector.class.noFields");
     protected final static String numFields = Config.getString("debugger.inspector.numFields");
-    
+
     // === instance variables ===
 
     protected DebuggerClass myClass;
@@ -76,10 +71,8 @@ public class ClassInspector extends Inspector
 
     /**
      * Note: 'pkg' may be null if getEnabled is false.
-     *  
      */
-    public ClassInspector(DebuggerClass clss, InspectorManager inspectorManager, Package pkg, InvokerRecord ir, final Window parent)
-    {
+    public ClassInspector(DebuggerClass clss, InspectorManager inspectorManager, Package pkg, InvokerRecord ir, final Window parent) {
         super(inspectorManager, pkg, ir, StageStyle.TRANSPARENT);
 
         myClass = clss;
@@ -104,12 +97,11 @@ public class ClassInspector extends Inspector
     /**
      * Build the GUI
      */
-    protected void makeFrame()
-    {
+    protected void makeFrame() {
         String className = JavaNames.stripPrefix(myClass.getName());
         String headerString = null;
         String suffix = " " + numFields + " " + getListData().size();
-        if(myClass.isEnum()) {
+        if (myClass.isEnum()) {
             setTitle(ENUM_INSPECT_TITLE + " " + className + suffix);
             headerString = ENUM_NAME_LABEL + " " + className;
         } else if (myClass.isInterface()) {
@@ -119,14 +111,14 @@ public class ClassInspector extends Inspector
             setTitle(CLASS_INSPECT_TITLE + " " + className + suffix);
             headerString = CLASS_NAME_LABEL + " " + className;
         }
-        
+
         // Create the header
         Pane header = new VBox();
         Label headerLabel = new Label(headerString);
-        
+
         header.getChildren().add(headerLabel);
         JavaFXUtil.addStyleClass(header, "inspector-header", "inspector-class-header");
-        
+
         // Create the main panel (field list, Get/Inspect buttons)
 
         BorderPane mainPanel = new BorderPane();
@@ -171,14 +163,12 @@ public class ClassInspector extends Inspector
     /**
      * True if this inspector is used to display a method call result.
      */
-    protected boolean showingResult()
-    {
+    protected boolean showingResult() {
         return false;
     }
 
     @Override
-    protected boolean shouldAutoUpdate()
-    {
+    protected boolean shouldAutoUpdate() {
         return Config.isGreenfoot();
     }
 
@@ -187,8 +177,7 @@ public class ClassInspector extends Inspector
      */
     @Override
     @OnThread(Tag.FXPlatform)
-    protected List<FieldInfo> getListData()
-    {
+    protected List<FieldInfo> getListData() {
         List<DebuggerField> fields = myClass.getStaticFields();
         List<FieldInfo> fieldInfos = new ArrayList<FieldInfo>(fields.size());
         for (DebuggerField field : fields) {
@@ -202,15 +191,13 @@ public class ClassInspector extends Inspector
     /**
      * An element in the field list was selected.
      */
-    protected void listElementSelected(int slot)
-    {
+    protected void listElementSelected(int slot) {
         DebuggerField field = slot == -1 ? null : myClass.getStaticField(slot);
-        if (field != null && field.isReferenceType() && ! field.isNull()) {
+        if (field != null && field.isReferenceType() && !field.isNull()) {
             setCurrentObj(field.getValueObject(null), field.getName(), field.getType().toString());
 
             setButtonsEnabled(true, Modifier.isPublic(field.getModifiers()));
-        }
-        else {
+        } else {
             setCurrentObj(null, null, null);
             setButtonsEnabled(false, false);
         }
@@ -219,37 +206,32 @@ public class ClassInspector extends Inspector
     /**
      * Show the inspector for the class of an object.
      */
-    protected void showClass()
-    {
-    // nothing to do here - this is the class already
+    protected void showClass() {
+        // nothing to do here - this is the class already
     }
 
     /**
      * We are about to inspect an object - prepare.
      */
-    protected void prepareInspection()
-    {
-    // nothing to do here
+    protected void prepareInspection() {
+        // nothing to do here
     }
-    
+
     /**
      * Remove this inspector.
      */
-    protected void remove()
-    {
-        if(inspectorManager != null) {
+    protected void remove() {
+        if (inspectorManager != null) {
             inspectorManager.removeInspector(myClass);
         }
     }
 
-    protected int getPreferredRows()
-    {
+    protected int getPreferredRows() {
         return 8;
     }
 
     @Override
-    public Region getContent()
-    {
+    public Region getContent() {
         return contentPane;
     }
 }

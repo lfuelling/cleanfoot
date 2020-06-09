@@ -24,43 +24,37 @@ package bluej.debugger.gentype;
 /**
  * This class represents a field in a Java type represented
  * by a Reflective.
- * 
+ *
  * @author Davin McCall
  */
-public class FieldReflective
-{
+public class FieldReflective {
     private final String name;
     private final JavaType type;
     private final int modifiers;
     private final Reflective declaringType;
-    
-    public FieldReflective(String name, JavaType type, int modifiers, Reflective declaringType)
-    {
+
+    public FieldReflective(String name, JavaType type, int modifiers, Reflective declaringType) {
         this.name = name;
         this.type = type;
         this.modifiers = modifiers;
         this.declaringType = declaringType;
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return name;
     }
-    
-    public JavaType getType()
-    {
+
+    public JavaType getType() {
         return type;
     }
-    
-    public int getModifiers()
-    {
+
+    public int getModifiers() {
         return modifiers;
     }
 
-    public Reflective getDeclaringType()
-    {
+    public Reflective getDeclaringType() {
         return declaringType;
     }
-    
-    
+
+
 }

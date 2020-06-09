@@ -24,16 +24,9 @@ package greenfoot.collision;
 import greenfoot.Actor;
 import greenfoot.ActorVisitor;
 
-import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.awt.*;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Very good when objects only span one cell. <br>
@@ -42,63 +35,56 @@ import java.util.TreeSet;
  * is big. <br>
  * Very poor performance when objects span multiple cells (noOfObjects^2) <br>
  * TODO: check performance with objects that spans multiple cells.
- * 
+ *
  * @author Poul Henriksen
  */
 public class GridCollisionChecker
-    implements CollisionChecker
-{
-    class Cell
-    {
-        private final HashMap<Class<?>,List<Actor>> classMap = new HashMap<Class<?>,List<Actor>>();
+        implements CollisionChecker {
+    class Cell {
+        private final HashMap<Class<?>, List<Actor>> classMap = new HashMap<Class<?>, List<Actor>>();
         private final List<Actor> objects = new ArrayList<Actor>();
 
-        public void add(Actor thing)
-        {
+        public void add(Actor thing) {
             Class<?> clazz = thing.getClass();
             List<Actor> list = classMap.get(clazz);
             if (list == null) {
                 list = new ArrayList<Actor>();
                 classMap.put(clazz, list);
             }
-            if(!list.contains(thing)) {
+            if (!list.contains(thing)) {
                 list.add(thing);
             }
-            if(!objects.contains(thing)) {
+            if (!objects.contains(thing)) {
                 objects.add(thing);
             }
         }
 
         @SuppressWarnings("unchecked")
-        public <T> List<T> get(Class<T> cls)
-        {
+        public <T> List<T> get(Class<T> cls) {
             return (List<T>) classMap.get(cls);
         }
 
-        public void remove(Actor object)
-        {
+        public void remove(Actor object) {
             objects.remove(object);
             List<Actor> classes = classMap.get(object.getClass());
-            if(classes != null) {
+            if (classes != null) {
                 classes.remove(object);
             }
         }
 
-        public boolean isEmpty()
-        {
+        public boolean isEmpty() {
             return objects.isEmpty();
         }
 
         /**
          * Returns all objects in this cell. Be carefull not to modify this
          * collection!!!
-         * 
+         * <p>
          * TODO For performace testing it has not been made imuttable...
-         * 
+         *
          * @return
          */
-        public List<Actor> getAll()
-        {
+        public List<Actor> getAll() {
             return objects;
         }
     }
@@ -106,55 +92,45 @@ public class GridCollisionChecker
     /**
      * A grid world is made up of cells. Each location in the grid is
      * represented by a cell.
-     * 
+     *
      * @author Poul Henriksen
      */
-    private class GridWorld
-    {
+    private class GridWorld {
         protected Cell[][] world;
 
-        public GridWorld(int width, int height)
-        {
+        public GridWorld(int width, int height) {
             world = new Cell[width][height];
         }
 
-        public Cell get(int x, int y)
-        {
+        public Cell get(int x, int y) {
             return world[x][y];
         }
 
-        public void set(int x, int y, Cell cell)
-        {
+        public void set(int x, int y, Cell cell) {
             world[x][y] = cell;
         }
 
-        public int getWidth()
-        {
+        public int getWidth() {
             return world.length;
         }
 
-        public int getHeight()
-        {
+        public int getHeight() {
             return world[0].length;
         }
     }
 
-    private class WrappingGridWorld extends GridWorld
-    {
-        public WrappingGridWorld(int width, int height)
-        {
+    private class WrappingGridWorld extends GridWorld {
+        public WrappingGridWorld(int width, int height) {
             super(width, height);
         }
 
-        public Cell get(int x, int y)
-        {
+        public Cell get(int x, int y) {
             x = wrap(x, getWidth());
             y = wrap(y, getHeight());
             return world[x][y];
         }
 
-        public void set(int x, int y, Cell cell)
-        {
+        public void set(int x, int y, Cell cell) {
             x = wrap(x, getWidth());
             y = wrap(y, getHeight());
             world[x][y] = cell;
@@ -162,7 +138,7 @@ public class GridCollisionChecker
     }
 
     public static class Statistics {
-        
+
         private static final String format = "%15s%15s%15s%15s%15s%15s";
         private long objectsAt;
         private long intersectionObjects;
@@ -196,13 +172,12 @@ public class GridCollisionChecker
             objectsInDirection++;
         }
 
-        private void initStartTime()
-        {
-            if(startTime == -1) {
+        private void initStartTime() {
+            if (startTime == -1) {
                 startTime = System.currentTimeMillis();
             }
         }
-        
+
         public String toString() {
             return String.format(format, Long.valueOf(startTime),
                     Long.valueOf(objectsAt),
@@ -211,7 +186,7 @@ public class GridCollisionChecker
                     Long.valueOf(neighbours),
                     Long.valueOf(objectsInDirection));
         }
-        
+
         public static String headerString() {
             return String.format(format, "startTime",
                     "objectsAt",
@@ -221,42 +196,38 @@ public class GridCollisionChecker
                     "inDirection");
         }
     }
-    
-    
+
+
     private Set<Actor> objects;
 
     private boolean wrap;
 
     private GridWorld world;
     private int cellSize;
-    
+
     private Statistics currentStats = new Statistics();
     private final List<Statistics> allStats = new ArrayList<Statistics>();
     private static final boolean PRINT_STATS = false;
-    
 
-    public void initialize(int width, int height, int cellSize, boolean wrap)
-    {
+
+    public void initialize(int width, int height, int cellSize, boolean wrap) {
         this.wrap = wrap;
         this.cellSize = cellSize;
         objects = null;
         if (PRINT_STATS) {
             System.out.println(Statistics.headerString());
             objects = new TreeSet<Actor>(new Comparator<Actor>() {
-                public int compare(Actor arg0, Actor arg1)
-                {
+                public int compare(Actor arg0, Actor arg1) {
                     return arg0.hashCode() - arg1.hashCode();
                 }
             });
-        }
-        else {
+        } else {
             objects = new HashSet<Actor>();
         }
-        
+
         if (wrap) {
             world = new WrappingGridWorld(width, height);
-        }
-        else {
+        } else {
             world = new GridWorld(width, height);
         }
     }
@@ -265,13 +236,11 @@ public class GridCollisionChecker
      * Adds a Actor to the world. <br>
      * If the coordinates of the object is outside the worlds bounds, an
      * exception is thrown.
-     * 
-     * @param thing
-     *            The new object to add.
+     *
+     * @param thing The new object to add.
      */
     public synchronized void addObject(Actor thing)
-        throws ArrayIndexOutOfBoundsException
-    {
+            throws ArrayIndexOutOfBoundsException {
         testBounds(thing);
 
         if (!objects.contains(thing)) {
@@ -287,11 +256,10 @@ public class GridCollisionChecker
         }
     }
 
-    private void testBounds(Actor thing)
-    {
+    private void testBounds(Actor thing) {
         int ax = ActorVisitor.getX(thing);
         int ay = ActorVisitor.getY(thing);
-        
+
         if (ax >= getWidth()) {
             throw new ArrayIndexOutOfBoundsException(ax);
         }
@@ -309,18 +277,17 @@ public class GridCollisionChecker
     /*
      * TODO: Bad performance. Can be improved MUCH if we only handle worlds
      * wehre objects spans a single cell.
-     * 
+     *
      * @see Actor#contains(int, int)
      */
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls)
-    {
-        if(wrap) {
+    public <T extends Actor> List<T> getObjectsAt(int x, int y, Class<T> cls) {
+        if (wrap) {
             x = wrap(x, world.getWidth());
             y = wrap(y, world.getWidth());
         }
         List<T> objectsThere = new ArrayList<T>();
-        for (Iterator<Actor> iter = objects.iterator(); iter.hasNext();) {
+        for (Iterator<Actor> iter = objects.iterator(); iter.hasNext(); ) {
             currentStats.incGetObjectsAt();
             Actor actor = iter.next();
             int ax = x * cellSize + cellSize / 2;
@@ -335,25 +302,20 @@ public class GridCollisionChecker
     /**
      * Gets all objects within the given radius and of the given class (or
      * subclass).
-     * 
-     * 
+     * <p>
+     * <p>
      * The center of the circle is considered to be at the center of the cell.
      * Objects which have the center within the circle is considered to be in
      * range.
-     * 
-     * @param x
-     *            The x-coordinate of the center
-     * @param y
-     *            The y-coordinate of the center
-     * @param r
-     *            The radius
-     * @param cls
-     *            Only objects of this class (or subclasses) are returned
+     *
+     * @param x   The x-coordinate of the center
+     * @param y   The y-coordinate of the center
+     * @param r   The radius
+     * @param cls Only objects of this class (or subclasses) are returned
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getObjectsInRange(int x, int y, int r, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjectsInRange(int x, int y, int r, Class<T> cls) {
         // TODO Optimise: if it is faster, run through all grid cells in the
         // distance instead. (based on number of objects vs. cells to run
         // through)
@@ -375,16 +337,13 @@ public class GridCollisionChecker
     /**
      * Returns the shortest distance from the cell (center of cell ) to the
      * center of the greenfoot object.
-     * 
-     * @param x
-     *            x-coordinate of the cell
-     * @param y
-     *            y-coordinate of the cell
+     *
+     * @param x     x-coordinate of the cell
+     * @param y     y-coordinate of the cell
      * @param actor
      * @return
      */
-    private double distance(int x, int y, Actor actor)
-    {
+    private double distance(int x, int y, Actor actor) {
         // TODO should x,y be wrapped?
         double gx = ActorVisitor.getX(actor);
         double gy = ActorVisitor.getY(actor);
@@ -407,12 +366,10 @@ public class GridCollisionChecker
 
     /**
      * Removes the object
-     * 
-     * @param object
-     *            the object to remove
+     *
+     * @param object the object to remove
      */
-    public synchronized void removeObject(Actor object)
-    {
+    public synchronized void removeObject(Actor object) {
         int ax = ActorVisitor.getX(object);
         int ay = ActorVisitor.getY(object);
         Cell cell = world.get(ax, ay);
@@ -421,30 +378,28 @@ public class GridCollisionChecker
             if (cell.isEmpty()) {
                 world.set(ax, ay, null);
             }
-        } 
+        }
         objects.remove(object);
     }
 
     /**
      * Gets the width of the world.
      */
-    public int getWidth()
-    {
+    public int getWidth() {
         return world.getWidth();
     }
 
     /**
      * Gets the height of the world.
      */
-    public int getHeight()
-    {
+    public int getHeight() {
         return world.getHeight();
     }
 
     /*
      * Updates the location of the object in the world.
-     * 
-     * 
+     *
+     *
      * @param object
      *            The object which should be updated
      * @param oldX
@@ -452,8 +407,7 @@ public class GridCollisionChecker
      * @param oldY
      *            The old Y location of the object
      */
-    public void updateObjectLocation(Actor object, int oldX, int oldY)
-    {
+    public void updateObjectLocation(Actor object, int oldX, int oldY) {
         Cell cell = world.get(oldX, oldY);
         if (cell != null) {
             cell.remove(object);
@@ -474,8 +428,7 @@ public class GridCollisionChecker
         cell.add(object);
     }
 
-    public void updateObjectSize(Actor object)
-    {
+    public void updateObjectSize(Actor object) {
         // we don't care, because we do not directly use the object size for
         // anything.
         return;
@@ -485,10 +438,9 @@ public class GridCollisionChecker
      * This is very slow in this implementation as it checks against all objects
      */
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getIntersectingObjects(Actor actor, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getIntersectingObjects(Actor actor, Class<T> cls) {
         List<T> intersecting = new ArrayList<T>();
-        for (Iterator<Actor> iter = objects.iterator(); iter.hasNext();) {
+        for (Iterator<Actor> iter = objects.iterator(); iter.hasNext(); ) {
             Actor element = iter.next();
             currentStats.incGetIntersectingObjects();
             if (element != actor && ActorVisitor.intersects(actor, element) && (cls == null || cls.isInstance(element))) {
@@ -502,8 +454,7 @@ public class GridCollisionChecker
      * @see greenfoot.collision.CollisionChecker#getNeighbours(int, boolean,
      *      java.lang.Class)
      */
-    public <T extends Actor> List<T> getNeighbours(Actor actor, int distance, boolean diag, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getNeighbours(Actor actor, int distance, boolean diag, Class<T> cls) {
         int x = ActorVisitor.getX(actor);
         int y = ActorVisitor.getY(actor);
         List<T> c = new ArrayList<T>();
@@ -534,8 +485,7 @@ public class GridCollisionChecker
                     }
                 }
             }
-        }
-        else {
+        } else {
             int d = distance;
             int xStart = x;
             int yStart = y;
@@ -587,51 +537,48 @@ public class GridCollisionChecker
      * Return all objects that intersect a straight line from this object at a
      * specified angle. The angle is clockwise relative to the current rotation
      * of the object. <br>
-     * 
-     * This implementation is likely to change. Currently it uses a Bresenham algorithm. 
+     * <p>
+     * This implementation is likely to change. Currently it uses a Bresenham algorithm.
      *
-     * @param x x-coordinate
-     * @param y y-coordinate
-     * @param angle The angle relative to current rotation of the object.
+     * @param x      x-coordinate
+     * @param y      y-coordinate
+     * @param angle  The angle relative to current rotation of the object.
      * @param length How far we want to look (in cells)
-     * @param cls Class of objects to look for (passing 'null' will find all
-     *            objects).
+     * @param cls    Class of objects to look for (passing 'null' will find all
+     *               objects).
      */
-    public <T extends Actor> List<T> getObjectsInDirection(int x, int y, int angle, int length, Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjectsInDirection(int x, int y, int angle, int length, Class<T> cls) {
         // The current implementation is using a Bresenham algorithm which is
         // probably not the one we want to use. The definition should probably
         // be the following:
         // Draw a line from the center of the start cell. EVERY object that is in a cell that this line intersects should be returned.
-        
+
         // using Bresenham algo
         List<T> result = new ArrayList<T>();
         double dy = (2 * Math.sin(Math.toRadians(angle)));
-        double dx =  (2 * Math.cos(Math.toRadians(angle)));
+        double dx = (2 * Math.cos(Math.toRadians(angle)));
         int lxMax = (int) Math.abs(Math.round(length * Math.cos(Math.toRadians(angle))));
         int lyMax = (int) Math.abs(Math.round(length * Math.sin(Math.toRadians(angle))));
-        
+
         int stepx, stepy;
 
         if (dy < 0) {
             dy = -dy;
             stepy = -1;
-        }
-        else {
+        } else {
             stepy = 1;
         }
         if (dx < 0) {
             dx = -dx;
             stepx = -1;
-        }
-        else {
+        } else {
             stepx = 1;
         }
 
         result.addAll(getObjectsAt(x, y, cls));
         if (dx > dy) {
             double fraction = dy - (dx / 2); // same as 2*dy - dx
-            for(int l=0; l< lxMax; l++) {
+            for (int l = 0; l < lxMax; l++) {
                 currentStats.incGetObjectsInDirection();
                 if (fraction >= 0) {
                     y += stepy;
@@ -642,10 +589,9 @@ public class GridCollisionChecker
 
                 result.addAll(getObjectsAt(x, y, cls));
             }
-        }
-        else {
+        } else {
             double fraction = dx - (dy / 2);
-            for(int l=0; l< lyMax; l++) {
+            for (int l = 0; l < lyMax; l++) {
                 currentStats.incGetObjectsInDirection();
                 if (fraction >= 0) {
                     x += stepx;
@@ -661,35 +607,30 @@ public class GridCollisionChecker
     }
 
     /**
-     * 
      * Determines if x lies between 0 and width. If wrapping is on this will
      * always return true.
-     * 
+     *
      * @param xPos
      * @return
      */
-    private boolean withinBounds(int x, int width)
-    {
+    private boolean withinBounds(int x, int width) {
         return wrap || (!wrap && x >= 0 && x < width);
     }
-    
+
     /**
      * wraps the number x with the width
      */
-    private int wrap(int x, int width)
-    {
+    private int wrap(int x, int width) {
         int remainder = x % width;
         if (remainder < 0) {
             return width + remainder;
-        }
-        else {
+        } else {
             return remainder;
         }
     }
 
 
-    public void startSequence()
-    {
+    public void startSequence() {
         if (PRINT_STATS) {
             System.out.println(currentStats);
         }
@@ -698,10 +639,9 @@ public class GridCollisionChecker
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Actor> List<T> getObjects(Class<T> cls)
-    {
+    public <T extends Actor> List<T> getObjects(Class<T> cls) {
         List<T> objectsThere = new ArrayList<T>();
-        for (Iterator<Actor> iter = objects.iterator(); iter.hasNext();) {
+        for (Iterator<Actor> iter = objects.iterator(); iter.hasNext(); ) {
             currentStats.incGetObjectsAt();
             Actor actor = iter.next();
             if (cls == null || cls.isInstance(actor)) {
@@ -711,36 +651,32 @@ public class GridCollisionChecker
         return objectsThere;
     }
 
-    public List<Actor> getObjectsList()
-    {
+    public List<Actor> getObjectsList() {
         List<Actor> l = new ArrayList<Actor>(objects);
         return l;
     }
-    
-    public <T extends Actor> T getOneObjectAt(Actor actor, int dx, int dy, Class<T> cls)
-    {
+
+    public <T extends Actor> T getOneObjectAt(Actor actor, int dx, int dy, Class<T> cls) {
         List<T> neighbours = getObjectsAt(dx, dy, cls);
         neighbours.remove(actor);
-        if(!neighbours.isEmpty()) {
+        if (!neighbours.isEmpty()) {
             return neighbours.get(0);
         } else {
             return null;
         }
     }
 
-    public <T extends Actor> T getOneIntersectingObject(Actor object, Class<T> cls)
-    {
+    public <T extends Actor> T getOneIntersectingObject(Actor object, Class<T> cls) {
         List<T> intersecting = getIntersectingObjects(object, cls);
-        if(!intersecting.isEmpty()) {
+        if (!intersecting.isEmpty()) {
             return intersecting.get(0);
         } else {
-            return null; 
+            return null;
         }
     }
 
-    public void paintDebug(Graphics g)
-    {
+    public void paintDebug(Graphics g) {
         // TODO Auto-generated method stub
-        
+
     }
 }

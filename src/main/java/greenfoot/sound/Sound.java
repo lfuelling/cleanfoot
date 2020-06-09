@@ -23,15 +23,13 @@ package greenfoot.sound;
 
 /**
  * Interface for different types of sounds supported by Greenfoot.
- * 
+ *
+ * @author Poul Henriksen
  * @see SoundStream
  * @see MidiFileSound
  * @see SoundClip
- * @author Poul Henriksen 
- *
  */
-public interface Sound
-{
+public interface Sound {
 
     /**
      * Closes this sound. Will immediately release any resources for the sound.
@@ -39,63 +37,60 @@ public interface Sound
     void close();
 
     /**
-     * Stop this sound. 
-     *
+     * Stop this sound.
+     * <p>
      * After this method has been called: isStopped=true, isPlaying=false, isPaused=false.
      */
     void stop();
 
     /**
      * Pause the song. Paused sounds can be resumed.
-     *
+     * <p>
      * After this method has been called: isStopped=false, isPlaying=false, isPaused=true.
      */
     void pause();
 
     /**
-     * Play this sound. 
-     * 
+     * Play this sound.
+     * <p>
      * After this method has been called and no exception occurs: isStopped=false, isPlaying=true, isPaused=false.
      * If a problem occurs it should be: isStopped=true, isPlaying=false, isPaused=false.
-     * 
      */
     void play();
 
     /**
-     * Plays this sound in a loop. 
-     * 
+     * Plays this sound in a loop.
+     * <p>
      * After this method has been called and no exception occurs: isStopped=false, isPlaying=true, isPaused=false.
      * If a problem occurs it should be: isStopped=true, isPlaying=false, isPaused=false.
-     * 
      */
     void loop();
 
     /**
      * True if the sound is currently playing.
-     * 
      */
     boolean isPlaying();
 
     /**
      * True if the sound is currently paused.
-     * 
      */
     boolean isPaused();
 
     /**
      * True if the sound is currently paused.
-     * 
      */
     boolean isStopped();
 
     /**
      * Set the sound volume.
+     *
      * @param level the level between 0-100 of the sound.
      */
     void setVolume(int level);
 
     /**
      * Get the current volume of the sound.
+     *
      * @return the sound volume, between 0-100.
      */
     int getVolume();

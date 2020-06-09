@@ -26,17 +26,15 @@ import threadchecker.Tag;
 
 /**
  * Java 1.4 version of JavaUtils
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class JavaUtils14
-{
+public class JavaUtils14 {
     /**
      * Gets nicely formatted strings describing the parameter types.
      */
-    public static String[] getParameterTypes(Class<?>[] params)
-    {
+    public static String[] getParameterTypes(Class<?>[] params) {
         String[] parameterTypes = new String[params.length];
         for (int j = 0; j < params.length; j++) {
             String typeName = getTypeName(params[j]);
@@ -49,8 +47,7 @@ public class JavaUtils14
      * Get a type name, with prefix stripped. For array types return the base
      * type name plus the appropriate number of "[]" qualifiers.
      */
-    public static String getTypeName(Class<?> type)
-    {
+    public static String getTypeName(Class<?> type) {
         return JavaNames.stripPrefix(JavaUtils.getFQTypeName(type));
     }
 }

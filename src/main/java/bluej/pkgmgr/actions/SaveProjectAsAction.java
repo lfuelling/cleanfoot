@@ -21,9 +21,6 @@
  */
 package bluej.pkgmgr.actions;
 
-import java.io.File;
-import java.io.IOException;
-
 import bluej.Config;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
@@ -33,62 +30,54 @@ import bluej.utility.Debug;
 import bluej.utility.DialogManager;
 import bluej.utility.FileUtility;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * User chooses "save project as". This allows saving the project under a
  * different name, to make a backup etc.
- * 
+ *
  * @author Davin McCall
  */
-final public class SaveProjectAsAction extends PkgMgrAction
-{
-    public SaveProjectAsAction(PkgMgrFrame pmf)
-    {
+final public class SaveProjectAsAction extends PkgMgrAction {
+    public SaveProjectAsAction(PkgMgrFrame pmf) {
         super(pmf, "menu.package.saveAs");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         saveAs(pmf, pmf.getProject());
     }
-    
-    public void saveAs(PkgMgrFrame frame, Project project)
-    {
+
+    public void saveAs(PkgMgrFrame frame, Project project) {
         // get a file name to save under
         File newName = FileUtility.getSaveProjectFX(project, frame.getFXWindow(), Config.getString("pkgmgr.saveAs.title"));
 
-        if (newName == null)
-        {
+        if (newName == null) {
             return;
         }
-        
+
         try {
             project.saveAll();
             project.saveAllEditors();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             DialogManager.showErrorFX(frame.getFXWindow(), "cannot-save-project");
             return;
         }
-        
-        if (! ProjectUtils.saveProjectCopy(project, newName, frame.getFXWindow()))
-        {
+
+        if (!ProjectUtils.saveProjectCopy(project, newName, frame.getFXWindow())) {
             return;
         }
-        
+
         // Copy successful: close the current project and open the new one
         PkgMgrFrame.closeProject(project);
         Project openProj = Project.openProject(newName.getAbsolutePath());
 
-        if (openProj != null)
-        {
+        if (openProj != null) {
             Package pkg = openProj.getPackage("");
             PkgMgrFrame pmf = PkgMgrFrame.createFrame(pkg, null);
             pmf.setVisible(true);
-        }
-        else
-        {
+        } else {
             Debug.message("Save as: could not open package under new name");
         }
     }

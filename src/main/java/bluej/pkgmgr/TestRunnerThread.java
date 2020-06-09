@@ -32,33 +32,28 @@ import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
  * Provide a thread class for running unit tests.
- * 
+ * <p>
  * Unit tests are user code so they must be executed on a seperate thread.
  * This class provides the means to do this.
- * 
+ * <p>
  * There are two primary modes of operation: run a single test (methodname != null),
  * and run all tests for a series of ClassTargets.
- * 
+ *
  * @author Davin McCall
  */
-public class TestRunnerThread extends Thread
-{
+public class TestRunnerThread extends Thread {
     @OnThread(Tag.Worker)
     private final Iterator<ClassTarget> testIterator;
     private final PkgMgrFrame pmf;
 
     private final String methodName; // Name of the test method; null to run all tests.
-    
+
     private final int state;
     private final Project project;
 
@@ -66,21 +61,19 @@ public class TestRunnerThread extends Thread
      * Construct a test runner thread for running multiple tests.
      */
     @OnThread(Tag.FXPlatform)
-    public TestRunnerThread(PkgMgrFrame pmf, Iterator<ClassTarget> i)
-    {
+    public TestRunnerThread(PkgMgrFrame pmf, Iterator<ClassTarget> i) {
         this.pmf = pmf;
         this.project = pmf.getProject();
         this.methodName = null;
         testIterator = i;
         state = 0;
     }
-    
+
     /**
      * Construct a test runner thread for running a single test.
      */
     @OnThread(Tag.FXPlatform)
-    public TestRunnerThread(PkgMgrFrame pmf, ClassTarget ct, String methodName)
-    {
+    public TestRunnerThread(PkgMgrFrame pmf, ClassTarget ct, String methodName) {
         this.pmf = pmf;
         this.project = pmf.getProject();
         List<ClassTarget> l = new ArrayList<ClassTarget>(1);
@@ -91,48 +84,36 @@ public class TestRunnerThread extends Thread
     }
 
     @OnThread(value = Tag.Worker, ignoreParent = true)
-    public void run()
-    {
-        while (testIterator.hasNext()) 
-        {
+    public void run() {
+        while (testIterator.hasNext()) {
 
             ClassTarget ct = testIterator.next();
 
             List<String> allMethods;
-            if (methodName == null)
-            {
+            if (methodName == null) {
                 // Run all tests for a target, so find out what they are:
                 CompletableFuture<List<String>> methodsFuture = new CompletableFuture<>();
                 Platform.runLater(() -> startTestFindMethods(ct, methodsFuture));
-                try
-                {
+                try {
                     allMethods = methodsFuture.get();
-                }
-                catch (InterruptedException | ExecutionException e)
-                {
+                } catch (InterruptedException | ExecutionException e) {
                     Debug.reportError(e);
                     allMethods = Collections.emptyList();
                 }
-            }
-            else 
-            {
+            } else {
                 // Run only a single test.
                 allMethods = Arrays.asList(methodName);
             }
 
             // State 1 has given us the tests we need to run. Now run them:
-            if (allMethods.size() == 1)
-            {
+            if (allMethods.size() == 1) {
                 TestResultsWithRunTime lastResult = project.getDebugger().runTestMethod(ct.getQualifiedName(), methodName);
                 // Add the test result to the test display frame:
                 Platform.runLater(() -> showNextResult(lastResult.getResults().get(0)));
-            }
-            else
-            {
+            } else {
                 TestResultsWithRunTime lastResults = project.getDebugger().runTestMethod(ct.getQualifiedName(), null);
                 // Add all test results to the test display frame:
-                for(DebuggerTestResult result : lastResults.getResults())
-                {
+                for (DebuggerTestResult result : lastResults.getResults()) {
                     Platform.runLater(() -> showNextResult(result));
                 }
                 Platform.runLater(() -> TestDisplayFrame.getTestDisplay()
@@ -148,8 +129,7 @@ public class TestRunnerThread extends Thread
     }
 
     @OnThread(Tag.FXPlatform)
-    private void showNextResult(DebuggerTestResult lastResult)
-    {
+    private void showNextResult(DebuggerTestResult lastResult) {
         // Here we add a test result to the test display frame.
         boolean quiet = methodName != null && lastResult.isSuccess();
         TestDisplayFrame.getTestDisplay().addResult(lastResult, quiet);
@@ -159,13 +139,12 @@ public class TestRunnerThread extends Thread
     }
 
     @OnThread(Tag.FXPlatform)
-    private void startTestFindMethods(ClassTarget ct, CompletableFuture<List<String>> methodsFuture)
-    {
+    private void startTestFindMethods(ClassTarget ct, CompletableFuture<List<String>> methodsFuture) {
         // State 1 is where we confirm that we really do have an executable unit
         // test class, and we delegate to the unit test role to gives us some
         // test methods to executed.
 
-        if (ct.isCompiled() && ct.isUnitTest() && ! ct.isAbstract()) {
+        if (ct.isCompiled() && ct.isUnitTest() && !ct.isAbstract()) {
             UnitTestClassRole utcr = (UnitTestClassRole) ct.getRole();
 
             List<String> allMethods = utcr.startRunTest(pmf, ct, TestRunnerThread.this);
@@ -173,8 +152,7 @@ public class TestRunnerThread extends Thread
                 methodsFuture.complete(Collections.emptyList());
             else
                 methodsFuture.complete(allMethods);
-        }
-        else {
+        } else {
             methodsFuture.complete(Collections.emptyList());
         }
     }

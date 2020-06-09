@@ -21,55 +21,38 @@
  */
 package greenfoot.core;
 
-import greenfoot.GreenfootImage;
-import greenfoot.util.GreenfootUtil;
-import greenfoot.util.Version;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.Properties;
-
-
 /**
  * Represents the persistent properties associated with a greenfoot project. It
  * represents both the file that holds the properties and the actual properties.
- * 
+ *
  * @author Poul Henriksen
  */
-public interface ProjectProperties extends ReadOnlyProjectProperties
-{
+public interface ProjectProperties extends ReadOnlyProjectProperties {
     /**
-     * Sets a property as in Java's Properties class. Thread-safe. 
+     * Sets a property as in Java's Properties class. Thread-safe.
      */
     void setString(String key, String value);
 
     /**
      * Sets an int property as in Java's Properties class. Thread-safe.
      */
-    default void setInt(String key, int value)
-    {
+    default void setInt(String key, int value) {
         setString(key, Integer.toString(value));
     }
-    
+
     /**
-     * Sets a boolean property as in Java's Properties class. Thread-safe. 
+     * Sets a boolean property as in Java's Properties class. Thread-safe.
      */
-    default void setBoolean(String key, boolean value)
-    {
-        setString(key, Boolean.toString(value));        
+    default void setBoolean(String key, boolean value) {
+        setString(key, Boolean.toString(value));
     }
-    
+
     /**
      * Remove a property; return its old value. Thread-safe.
-     * @param key  The property name
+     *
+     * @param key The property name
      */
     String removeProperty(String key);
-    
+
     void save();
 }

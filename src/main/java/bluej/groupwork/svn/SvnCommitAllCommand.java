@@ -21,39 +21,31 @@
  */
 package bluej.groupwork.svn;
 
+import bluej.groupwork.TeamworkCommandAborted;
+import bluej.groupwork.TeamworkCommandError;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.utility.Debug;
+import org.tigris.subversion.javahl.*;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Depth;
-import org.tigris.subversion.javahl.PropertyData;
-import org.tigris.subversion.javahl.SVNClientInterface;
-import org.tigris.subversion.javahl.Status;
-import org.tigris.subversion.javahl.StatusCallback;
-
-import bluej.groupwork.TeamworkCommandAborted;
-import bluej.groupwork.TeamworkCommandError;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.utility.Debug;
-
 /**
  * A subversion command to commit files.
- * 
+ *
  * @author Davin McCall
  */
-public class SvnCommitAllCommand extends SvnCommand
-{
+public class SvnCommitAllCommand extends SvnCommand {
     protected Set<File> newFiles;
     protected Set<File> binaryNewFiles;
     protected Set<File> deletedFiles;
     protected Set<File> files;
     protected String commitComment;
-    
+
     public SvnCommitAllCommand(SvnRepository repository, Set<File> newFiles, Set<File> binaryNewFiles,
-            Set<File> deletedFiles, Set<File> files, String commitComment)
-    {
+                               Set<File> deletedFiles, Set<File> files, String commitComment) {
         super(repository);
         this.newFiles = newFiles;
         this.binaryNewFiles = binaryNewFiles;
@@ -62,10 +54,9 @@ public class SvnCommitAllCommand extends SvnCommand
         this.commitComment = commitComment;
     }
 
-    protected TeamworkCommandResult doCommand()
-    {
+    protected TeamworkCommandResult doCommand() {
         SVNClientInterface client = getClient();
-        
+
         // A class to allow callbacks to pass back status information.
         class StatusRef {
             Status status;
@@ -76,80 +67,77 @@ public class SvnCommitAllCommand extends SvnCommand
             Iterator<File> i = newFiles.iterator();
             while (i.hasNext()) {
                 File newFile = i.next();
-                
+
                 final StatusRef statusRef = new StatusRef();
-                
+
                 client.status(newFile.getAbsolutePath(), Depth.empty, false, true, true, false, null,
                         new StatusCallback() {
                             @Override
-                            public void doStatus(Status status)
-                            {
+                            public void doStatus(Status status) {
                                 statusRef.status = status;
                             }
                         });
-                
-                
+
+
                 Status status = statusRef.status;
-                if (! status.isManaged()) {
+                if (!status.isManaged()) {
                     client.add(newFile.getAbsolutePath(), Depth.empty, false, false, true);
-                    if (! newFile.isDirectory()) {
+                    if (!newFile.isDirectory()) {
                         client.propertySet(newFile.getAbsolutePath(), PropertyData.EOL_STYLE,
                                 "native", Depth.empty, null, false, null);
                     }
                 }
             }
-            
+
             // And binary files
             i = binaryNewFiles.iterator();
             while (i.hasNext()) {
                 File newFile = i.next();
-                
+
                 final StatusRef statusRef = new StatusRef();
                 client.status(newFile.getAbsolutePath(), Depth.empty, false, true, true, false, null,
                         new StatusCallback() {
                             @Override
-                            public void doStatus(Status status)
-                            {
+                            public void doStatus(Status status) {
                                 statusRef.status = status;
                             }
                         });
                 Status status = statusRef.status;
-                if (! status.isManaged()) {
+                if (!status.isManaged()) {
                     client.add(newFile.getAbsolutePath(), Depth.empty, false, false, true);
-                    if (! newFile.isDirectory()) {
+                    if (!newFile.isDirectory()) {
                         client.propertySet(newFile.getAbsolutePath(), PropertyData.MIME_TYPE,
                                 "application/octet-stream", Depth.empty, null, false, null);
                     }
                 }
             }
-            
+
             // "svn delete" removed files
             i = deletedFiles.iterator();
             while (i.hasNext()) {
                 File newFile = i.next();
-                client.remove(new String[] {newFile.getAbsolutePath()}, "", true, false, Collections.emptyMap());
+                client.remove(new String[]{newFile.getAbsolutePath()}, "", true, false, Collections.emptyMap());
             }
-            
+
             // now do the commit
-            String [] commitFiles = new String[files.size()];
+            String[] commitFiles = new String[files.size()];
             i = files.iterator();
             for (int j = 0; j < commitFiles.length; j++) {
                 File file = i.next();
                 commitFiles[j] = file.getAbsolutePath();
             }
             client.commit(commitFiles, commitComment, Depth.empty, false, false, null, Collections.emptyMap());
-            
+
             //force delete of files that, for some reason where 
             //not deleted by the commit.
             deleteFilesLocally(deletedFiles);
-            
-            
-            if (! isCancelled()) {
+
+
+            if (!isCancelled()) {
                 return new TeamworkCommandResult();
             }
-        }
-        catch (ClientException ce) {
-            if (! isCancelled()) {
+        } catch (ClientException ce) {
+            if (!isCancelled()) {
                 Debug.reportError("Subversion commit all exception", ce);
                 return new TeamworkCommandError(ce.getMessage(), ce.getLocalizedMessage());
             }
@@ -157,13 +145,13 @@ public class SvnCommitAllCommand extends SvnCommand
 
         return new TeamworkCommandAborted();
     }
-    
+
     /**
      * remove files and directories in a file set.
+     *
      * @param filesSet set with the files to be removed.
      */
-    private void deleteFilesLocally(Set<File> filesSet)
-    {
+    private void deleteFilesLocally(Set<File> filesSet) {
         Iterator<File> i = filesSet.iterator();
         while (i.hasNext()) {
             File file = i.next();
@@ -172,25 +160,25 @@ public class SvnCommitAllCommand extends SvnCommand
                 if (file.isDirectory()) {
                     for (File c : file.listFiles()) {
                         deleteDirectory(c);
-}
+                    }
                 }
                 file.delete(); //file or directory, must be ready to be delete here.
             }
         }
     }
-    
+
     /**
      * Method to remove files and directories recursively.
+     *
      * @param f file to be deleted.
      */
-    private void deleteDirectory(File f)
-    {
+    private void deleteDirectory(File f) {
         if (f.exists() && f.isDirectory()) {
             for (File c : f.listFiles()) {
                 deleteDirectory(c); //recursively remove all files in sulbdirectories
             }
             f.delete();
-        } else if (f.exists() && f.isFile()){
+        } else if (f.exists() && f.isFile()) {
             f.delete();
         }
     }

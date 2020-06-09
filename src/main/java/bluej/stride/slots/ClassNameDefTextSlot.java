@@ -32,34 +32,29 @@ import bluej.stride.generic.InteractionManager;
 import java.util.Collections;
 import java.util.List;
 
-public class ClassNameDefTextSlot extends TextSlot<NameDefSlotFragment>
-{
-    public <T extends Frame & CodeFrame<? extends CodeElement>> 
-    ClassNameDefTextSlot(InteractionManager editor, T frameParent, FrameContentRow row, String stylePrefix)
-    {
+public class ClassNameDefTextSlot extends TextSlot<NameDefSlotFragment> {
+    public <T extends Frame & CodeFrame<? extends CodeElement>>
+    ClassNameDefTextSlot(InteractionManager editor, T frameParent, FrameContentRow row, String stylePrefix) {
         super(editor, frameParent, frameParent, row, null, stylePrefix, Collections.emptyList());
-        
-        addValueListener((slot, oldValue, newValue, parent) -> 
-            // We don't differentiate start and part, as that just gets too fiddly during editing:
-            newValue.chars().allMatch(Character::isJavaIdentifierPart)
+
+        addValueListener((slot, oldValue, newValue, parent) ->
+                // We don't differentiate start and part, as that just gets too fiddly during editing:
+                newValue.chars().allMatch(Character::isJavaIdentifierPart)
         );
     }
-    
+
     @Override
-    public NameDefSlotFragment createFragment(String content)
-    {
+    public NameDefSlotFragment createFragment(String content) {
         return new NameDefSlotFragment(content, this);
     }
 
     @Override
-    public void valueChangedLostFocus(String oldValue, String newValue)
-    {
+    public void valueChangedLostFocus(String oldValue, String newValue) {
         // TODO Rename compilation unit        
     }
 
     @Override
-    public List<? extends PossibleLink> findLinks()
-    {
+    public List<? extends PossibleLink> findLinks() {
         // The name is defined here, so there's never any links to go somewhere else
         return Collections.emptyList();
     }

@@ -29,59 +29,50 @@ import threadchecker.Tag;
  * Represents the result of running a single test method.
  */
 @OnThread(Tag.Any)
-public class JdiTestResultError extends JdiTestResult
-{
+public class JdiTestResultError extends JdiTestResult {
     SourceLocation failPoint;
 
-    JdiTestResultError(String className, String methodName, String exceptionMsg, String traceMsg, SourceLocation failPoint, int runTimeMs)
-    {
+    JdiTestResultError(String className, String methodName, String exceptionMsg, String traceMsg, SourceLocation failPoint, int runTimeMs) {
         super(className, methodName, runTimeMs);
 
         this.exceptionMsg = exceptionMsg;
 
         if (traceMsg != null) {
             this.traceMsg = getFilteredTrace(traceMsg);
-        }
-        else {
+        } else {
             this.traceMsg = null;
         }
 
         this.failPoint = failPoint;
     }
-    
+
     @Override
-    public String getExceptionMessage()
-    {
+    public String getExceptionMessage() {
         return exceptionMsg;
     }
 
     @Override
-    public String getTrace()
-    {
+    public String getTrace() {
         return traceMsg;
     }
-    
+
     @Override
-    public SourceLocation getExceptionLocation()
-    {
+    public SourceLocation getExceptionLocation() {
         return failPoint;
     }
 
     @Override
-    public boolean isError()
-    {
+    public boolean isError() {
         return true;
     }
 
     @Override
-    public boolean isFailure()
-    {
+    public boolean isFailure() {
         return false;
     }
 
     @Override
-    public boolean isSuccess()
-    {
+    public boolean isSuccess() {
         return false;
     }
 }

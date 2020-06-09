@@ -23,43 +23,34 @@ package bluej.stride.generic;
 
 import javafx.scene.Node;
 
-import bluej.utility.javafx.SharedTransition;
-
-public abstract class DocumentedSingleCanvasFrame extends SingleCanvasFrame
-{
+public abstract class DocumentedSingleCanvasFrame extends SingleCanvasFrame {
     protected DocumentationTextArea documentationPane;
-    
-    protected DocumentedSingleCanvasFrame(InteractionManager editor, String caption, String stylePrefix)
-    {
+
+    protected DocumentedSingleCanvasFrame(InteractionManager editor, String caption, String stylePrefix) {
         super(editor, caption, stylePrefix);
         documentationPane = new DocumentationTextArea(editor, this, this, stylePrefix);
         contents.setAll(documentationPane, getHeaderRow(), canvas);
     }
 
-    public String getDocumentation()
-    {
+    public String getDocumentation() {
         return documentationPane.getText();
     }
-    
-    public void setDocumentation(String s)
-    {
+
+    public void setDocumentation(String s) {
         documentationPane.setText(s);
     }
 
-    public void setDocumentationPromptText(String s)
-    {
+    public void setDocumentationPromptText(String s) {
         documentationPane.setPromptText(s);
     }
 
     @Override
-    public void pullUpContents()
-    {
+    public void pullUpContents() {
         // This kind of frames can't be removed keeping their contents.
     }
 
     @Override
-    protected double getRightMarginFor(Node n)
-    {
+    protected double getRightMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 6.0;
         else
@@ -67,8 +58,7 @@ public abstract class DocumentedSingleCanvasFrame extends SingleCanvasFrame
     }
 
     @Override
-    protected double getLeftMarginFor(Node n)
-    {
+    protected double getLeftMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 6.0;
         else
@@ -76,8 +66,7 @@ public abstract class DocumentedSingleCanvasFrame extends SingleCanvasFrame
     }
 
     @Override
-    protected double getBottomMarginFor(Node n)
-    {
+    protected double getBottomMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 4.0;
         else

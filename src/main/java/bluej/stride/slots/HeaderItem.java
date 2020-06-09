@@ -24,7 +24,6 @@ package bluej.stride.slots;
 import bluej.stride.framedjava.ast.links.PossibleLink;
 import bluej.stride.generic.Frame;
 import bluej.utility.javafx.SharedTransition;
-
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 
@@ -34,26 +33,28 @@ import java.util.List;
 /**
  * A HeaderItem is anything which might appear in a FlowPane header in a Frame.  This is typically
  * a slot, or a label.
- *
+ * <p>
  * Importantly, there is a one-to-many correspondence between HeaderItem and actual Node components to
  * display in the FlowPane (not one-to-one as you might expect).  This is because things like ExpressionSlot
  * are one HeaderItem, but are implemented using multiple nodes (which means that they can then wrap individually
  * in the FlowPane, rather than as one clump, for long expressions).
- *
+ * <p>
  * Generally, HeaderItem is just used to get hold of the graphical nodes (via getComponents); anything more
  * complicated is usually related to slots, which can be accessed via the asEditable method.
  */
-public interface HeaderItem
-{
+public interface HeaderItem {
     ObservableList<? extends Node> getComponents();
-    
+
     // Returns null if not editable
     EditableSlot asEditable();
 
-    default List<? extends PossibleLink> findLinks() {return Collections.emptyList();}
+    default List<? extends PossibleLink> findLinks() {
+        return Collections.emptyList();
+    }
 
     /**
      * Notifies the slot to change to the current view (normal, Java preview, bird's eye)
+     *
      * @see bluej.stride.generic.Frame.View
      */
     void setView(Frame.View oldView, Frame.View newView, SharedTransition animate);

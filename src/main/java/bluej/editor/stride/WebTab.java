@@ -60,8 +60,7 @@ import java.util.WeakHashMap;
  * A tab in the FXTabbedEditor which just contains a WebView.
  */
 @OnThread(Tag.FX)
-public class WebTab extends FXTab
-{
+public class WebTab extends FXTab {
     private final WebView browser;
     private final boolean tutorial;
     private FXTabbedEditor parent;
@@ -72,16 +71,15 @@ public class WebTab extends FXTab
 
     /**
      * Constructs a WebTab with a WebView in it
+     *
      * @param url The initial URL to display in the WebView.
      */
     @OnThread(Tag.FXPlatform)
-    public WebTab(String url, boolean enableTutorial)
-    {
+    public WebTab(String url, boolean enableTutorial) {
         super(false);
         browser = new WebView();
         this.tutorial = enableTutorial;
-        if (enableTutorial)
-        {
+        if (enableTutorial) {
             setClosable(false);
             JavaFXUtil.addChangeListenerPlatform(this.browser.getEngine().documentProperty(), this::tutorialDocumentMangle);
         }
@@ -96,8 +94,7 @@ public class WebTab extends FXTab
         setContent(browser);
         textProperty().bind(browser.getEngine().titleProperty());
 
-        menuManager = new TabMenuManager(this)
-        {
+        menuManager = new TabMenuManager(this) {
             final List<Menu> menus = Collections.singletonList(JavaFXUtil.makeMenu(Config.getString("frame.webmenu.title"),
                     mainMoveMenu,
                     JavaFXUtil.makeMenuItem(Config.getString("frame.webmenu.open.external"), () -> {
@@ -109,8 +106,7 @@ public class WebTab extends FXTab
 
             @Override
             @OnThread(Tag.FXPlatform)
-            List<Menu> getMenus()
-            {
+            List<Menu> getMenus() {
                 updateMoveMenus();
                 return menus;
             }
@@ -120,73 +116,62 @@ public class WebTab extends FXTab
     /**
      * Gets an icon to display next to web view tabs
      */
-    private Node getWebIcon()
-    {
+    private Node getWebIcon() {
         Label j = new Label("W");
         JavaFXUtil.addStyleClass(j, "icon-label");
         return j;
     }
 
     @Override
-    void focusWhenShown()
-    {
+    void focusWhenShown() {
         // Nothing to do
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    List<Menu> getMenus()
-    {
+    List<Menu> getMenus() {
         return menuManager.getMenus();
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    String getWebAddress()
-    {
+    String getWebAddress() {
         return browser.getEngine().getLocation();
     }
 
     @Override
-    void initialiseFX()
-    {
+    void initialiseFX() {
         //We do our initialisation in the constructor
     }
 
     @Override
-    void setParent(FXTabbedEditor parent, boolean partOfMove)
-    {
+    void setParent(FXTabbedEditor parent, boolean partOfMove) {
         this.parent = parent;
     }
 
     @Override
-    FXTabbedEditor getParent()
-    {
+    FXTabbedEditor getParent() {
         return parent;
     }
 
     @Override
-    ObservableStringValue windowTitleProperty()
-    {
+    ObservableStringValue windowTitleProperty() {
         // Take it from the tab title:
         return textProperty();
     }
 
     @Override
-    public void notifySelected()
-    {
+    public void notifySelected() {
         // Nothing to do
     }
 
     @Override
-    public void notifyUnselected()
-    {
+    public void notifyUnselected() {
         // Nothing to do
     }
 
     @Override
-    public boolean isTutorial()
-    {
+    public boolean isTutorial() {
         return tutorial;
     }
 
@@ -194,20 +179,15 @@ public class WebTab extends FXTab
      * Modifies the HTML document to turn tutorial-specific links into actions which highlight or open items.
      */
     @OnThread(Tag.FXPlatform)
-    private void tutorialDocumentMangle(Document doc)
-    {
-        if (doc != null)
-        {
+    private void tutorialDocumentMangle(Document doc) {
+        if (doc != null) {
             // First find the anchors.
             NodeList anchors = doc.getElementsByTagName("a");
-            for (int i = 0; i < anchors.getLength(); i++)
-            {
+            for (int i = 0; i < anchors.getLength(); i++) {
                 org.w3c.dom.Node anchorItem = anchors.item(i);
                 org.w3c.dom.Node anchorHref = anchorItem.getAttributes().getNamedItem("href");
-                if (anchorHref != null && anchorHref.getNodeValue() != null)
-                {
-                    if (anchorHref.getNodeValue().startsWith("class:"))
-                    {
+                if (anchorHref != null && anchorHref.getNodeValue() != null) {
+                    if (anchorHref.getNodeValue().startsWith("class:")) {
                         ((EventTarget) anchorItem).addEventListener("click", e ->
                         {
                             ((EditableTarget) parent.getProject().getTarget(anchorHref.getNodeValue().
@@ -215,56 +195,44 @@ public class WebTab extends FXTab
                                     setEditorVisible(true, false);
                             e.stopPropagation();
                         }, true);
-                    }
-                    else if (anchorHref.getNodeValue().startsWith("guicss:"))
-                    {
+                    } else if (anchorHref.getNodeValue().startsWith("guicss:")) {
                         ((EventTarget) anchorItem).addEventListener("click", e ->
                         {
                             // Hide previous overlays for project.  Do this even if new link doesn't work,
                             // as we don't want to confuse the user by still showing an old popup:
                             OverlayInfo prevOverlay = tutorialOverlays.get(parent.getProject());
-                            if (prevOverlay != null)
-                            {
+                            if (prevOverlay != null) {
                                 prevOverlay.hide();
                             }
 
                             String nodeCSS = anchorHref.getNodeValue().substring("guicss:".length());
 
                             final Window targetWindow;
-                            if (nodeCSS.startsWith("Terminal"))
-                            {
+                            if (nodeCSS.startsWith("Terminal")) {
                                 targetWindow = parent.getProject().getTerminal().getWindow();
                                 nodeCSS = nodeCSS.substring("Terminal".length());
-                            }
-                            else if (nodeCSS.startsWith("Editor"))
-                            {
+                            } else if (nodeCSS.startsWith("Editor")) {
                                 targetWindow = parent.getProject().getDefaultFXTabbedEditor().getWindow();
                                 nodeCSS = nodeCSS.substring("Editor".length());
-                            }
-                            else if (nodeCSS.startsWith("TestResults"))
-                            {
+                            } else if (nodeCSS.startsWith("TestResults")) {
                                 targetWindow = TestDisplayFrame.getTestDisplay().getWindow();
                                 nodeCSS = nodeCSS.substring("TestResults".length());
-                            }
-                            else
-                            {
+                            } else {
                                 targetWindow = parent.getProject().getPackage("").getEditor().getFXWindow();
                             }
                             Node n = targetWindow.getScene().lookup(nodeCSS);
-                            if (n != null)
-                            {
+                            if (n != null) {
                                 // We can't have one popup that's hollow in the middle, so we have one per side:
                                 Bounds screenBounds = n.localToScreen(n.getBoundsInLocal());
-                                Rectangle[] rects = new Rectangle[] {
-                                    new Rectangle(screenBounds.getWidth() + 20, 5), // top
-                                    new Rectangle(5, screenBounds.getHeight() + 20), // right
-                                    new Rectangle(screenBounds.getWidth() + 20, 5), // bottom
-                                    new Rectangle(5, screenBounds.getHeight() + 20) // left
+                                Rectangle[] rects = new Rectangle[]{
+                                        new Rectangle(screenBounds.getWidth() + 20, 5), // top
+                                        new Rectangle(5, screenBounds.getHeight() + 20), // right
+                                        new Rectangle(screenBounds.getWidth() + 20, 5), // bottom
+                                        new Rectangle(5, screenBounds.getHeight() + 20) // left
                                 };
 
                                 Popup[] overlays = new Popup[4];
-                                for (int j = 0; j < 4; j++)
-                                {
+                                for (int j = 0; j < 4; j++) {
                                     rects[j].setFill(Color.RED);
                                     overlays[j] = new Popup();
                                     overlays[j].getContent().setAll(rects[j]);
@@ -297,14 +265,12 @@ public class WebTab extends FXTab
      * (clicking target, window losing focus, window changing size/position)
      * hides the overlays.
      */
-    private static class OverlayInfo implements EventHandler<MouseEvent>, ChangeListener<Object>
-    {
+    private static class OverlayInfo implements EventHandler<MouseEvent>, ChangeListener<Object> {
         private final Popup[] overlays;
         private final Node target;
         private final Window targetWindow;
 
-        public OverlayInfo(Window targetWindow, Node target, Popup[] overlays)
-        {
+        public OverlayInfo(Window targetWindow, Node target, Popup[] overlays) {
             this.targetWindow = targetWindow;
             this.target = target;
             this.overlays = overlays;
@@ -322,8 +288,7 @@ public class WebTab extends FXTab
          */
         @Override
         @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-        public void handle(MouseEvent event)
-        {
+        public void handle(MouseEvent event) {
             // Mouse has been pressed on target item, hide us:
             hide();
         }
@@ -332,10 +297,8 @@ public class WebTab extends FXTab
          * Hides the red line popups, and cleans up listeners.
          */
         @OnThread(Tag.FXPlatform)
-        public void hide()
-        {
-            for (Popup overlay : overlays)
-            {
+        public void hide() {
+            for (Popup overlay : overlays) {
                 overlay.hide();
             }
             // Need to clean up all the listeners:
@@ -352,17 +315,14 @@ public class WebTab extends FXTab
          */
         @Override
         @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-        public void changed(ObservableValue<? extends Object> observable, Object oldValue, Object newValue)
-        {
+        public void changed(ObservableValue<? extends Object> observable, Object oldValue, Object newValue) {
             // Note we are a listener for several different observable properties, so we need to work out which one
             // caused us to be called to take the appropriate action:
-            if (observable == targetWindow.focusedProperty() && ((Boolean)newValue) == false)
-            {
+            if (observable == targetWindow.focusedProperty() && ((Boolean) newValue) == false) {
                 hide();
             }
             if (observable == targetWindow.xProperty() || observable == targetWindow.yProperty()
-                    || observable == targetWindow.widthProperty() || observable == targetWindow.heightProperty())
-            {
+                    || observable == targetWindow.widthProperty() || observable == targetWindow.heightProperty()) {
                 // If they move or resize the window, hide ourselves:
                 hide();
             }

@@ -23,25 +23,22 @@ package bluej.stride.framedjava.frames;
 
 import bluej.stride.framedjava.elements.CodeElement;
 
-public interface CodeFrame<T extends CodeElement>
-{   
+public interface CodeFrame<T extends CodeElement> {
     /**
      * Regenerates the AST.  The next return of getCode() may well be different afterwards.
      */
     void regenerateCode();
-    
+
     /**
      * Gets the latest code.  Should not change unless regenerateCode is called.
      */
     T getCode();
-    
-    default BreakFrame.BreakEncloser asBreakEncloser()
-    {
+
+    default BreakFrame.BreakEncloser asBreakEncloser() {
         return null;
     }
 
-    default void setElementEnabled(boolean enabled)
-    {
+    default void setElementEnabled(boolean enabled) {
         T el = getCode();
         if (el != null)
             el.setEnable(enabled);

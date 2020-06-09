@@ -21,19 +21,17 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.util.Map;
-
 import bluej.stride.framedjava.elements.CodeElement;
+
+import java.util.Map;
 
 /**
  * Created by neil on 22/05/2016.
  */
-public abstract class StructuredSlotFragment extends StringSlotFragment
-{
+public abstract class StructuredSlotFragment extends StringSlotFragment {
     private final String javaCode;
 
-    public StructuredSlotFragment(String content, String javaCode)
-    {
+    public StructuredSlotFragment(String content, String javaCode) {
         super(content);
         // If we are using types from an old type text-slot, javaCode will be null.
         // In this case, we just use the content as the Java code:
@@ -41,8 +39,7 @@ public abstract class StructuredSlotFragment extends StringSlotFragment
     }
 
     // Used by XML serialisation:
-    public String getJavaCode()
-    {
+    public String getJavaCode() {
         return javaCode;
     }
 

@@ -21,81 +21,72 @@
  */
 package bluej.groupwork.svn;
 
+import bluej.groupwork.*;
+import bluej.groupwork.TeamStatusInfo.Status;
+import bluej.utility.Debug;
+import org.tigris.subversion.javahl.*;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
 
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Depth;
-import org.tigris.subversion.javahl.SVNClientInterface;
-import org.tigris.subversion.javahl.StatusCallback;
-import org.tigris.subversion.javahl.StatusKind;
-
-import bluej.groupwork.*;
-import bluej.groupwork.TeamStatusInfo.Status;
-import bluej.utility.Debug;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 /**
  * Subversion "status" command.
- * 
+ *
  * @author Davin McCall
  */
-public class SvnStatusCommand extends SvnCommand
-{
+public class SvnStatusCommand extends SvnCommand {
     private final StatusListener listener;
     private final FileFilter filter;
     private long currentRevision = -1;
-    
+
     public SvnStatusCommand(SvnRepository repository, StatusListener listener,
-            FileFilter filter, boolean includeRemote)
-    {
+                            FileFilter filter, boolean includeRemote) {
         super(repository);
         this.listener = listener;
         this.filter = filter;
     }
 
     @OnThread(Tag.Worker)
-    protected TeamworkCommandResult doCommand()
-    {
+    protected TeamworkCommandResult doCommand() {
         SVNClientInterface client = getClient();
         File projectPath = getRepository().getProjectPath().getAbsoluteFile();
-        
+
         try {
             final List<org.tigris.subversion.javahl.Status> statusList = new LinkedList<>();
             client.status(projectPath.getAbsolutePath(), Depth.infinity, true,
                     true, false, false, new String[0], new StatusCallback() {
-                        public void doStatus(org.tigris.subversion.javahl.Status arg0)
-                        {
+                        public void doStatus(org.tigris.subversion.javahl.Status arg0) {
                             statusList.add(arg0);
                         }
                     });
 
-            org.tigris.subversion.javahl.Status [] status = statusList.toArray(
+            org.tigris.subversion.javahl.Status[] status = statusList.toArray(
                     new org.tigris.subversion.javahl.Status[statusList.size()]);
-            
+
             /*
              * Subversion is a bit stupid. If a directory has been removed from
              * the repository, status of files within still shows as "up to date".
              * We'll fix that. We need to cache status entries until we get the
              * status for the parent directory.
              */
-            
+
             // The set of directories for which we have status
             Set<File> completed = new HashSet<File>();
             // A map (File->Set<TeamStatusInfo>) from directories for which
             // we don't yet have status, to the status of files within
-            Map<File,Set<TeamStatusInfo>> unreported = new HashMap<File,Set<TeamStatusInfo>>();
-            
+            Map<File, Set<TeamStatusInfo>> unreported = new HashMap<File, Set<TeamStatusInfo>>();
+
             for (int i = 0; i < status.length; i++) {
                 File file = new File(status[i].getPath());
-                
+
                 int textStat = status[i].getTextStatus();
-                
+
                 // All I've seen so far is "added", "deleted", "non-svn" (none).
                 int reposStat = status[i].getRepositoryTextStatus();
-                
+
                 // the repository revision doesn't seem to be valid for
                 // status "normal", or "repository: deleted".
                 // it is valid for "repository: added".
@@ -103,20 +94,18 @@ public class SvnStatusCommand extends SvnCommand
                 if (reposRev > currentRevision) {
                     currentRevision = reposRev;
                 }
-                
+
                 TeamStatusInfo rinfo = null;
-                
+
                 if (textStat == StatusKind.missing
                         || textStat == StatusKind.deleted) {
                     String rev = "" + status[i].getLastChangedRevisionNumber();
                     if (reposStat == StatusKind.modified) {
                         rinfo = new TeamStatusInfo(file, rev, "" + reposRev, Status.CONFLICT_LDRM);
-                    }
-                    else {
+                    } else {
                         rinfo = new TeamStatusInfo(file, rev, "", Status.DELETED);
                     }
-                }
-                else if ((textStat == StatusKind.unversioned)
+                } else if ((textStat == StatusKind.unversioned)
                         || (textStat == StatusKind.none && reposStat == StatusKind.none)) {
                     // Bug in SVNKit 1.8.11 returns a local and remote status of "none" for unversioned local
                     // files which do not exist in the repository.
@@ -127,60 +116,49 @@ public class SvnStatusCommand extends SvnCommand
                             if (file.isDirectory()) {
                                 statLocalDir(file);
                             }
-                        }
-                        else {
+                        } else {
                             // conflict: added locally and in repository
                             rinfo = new TeamStatusInfo(file, "", "" + status[i].getReposLastCmtRevisionNumber(), Status.CONFLICT_ADD);
                         }
                     }
-                }
-                else if (textStat == StatusKind.normal) {
+                } else if (textStat == StatusKind.normal) {
                     if (reposStat == StatusKind.none && status[i].getRevisionNumber() == -1) {
                         // Bug in SVNKit
                         rinfo = new TeamStatusInfo(file, "", "", Status.NEEDS_COMMIT);
-                    }
-                    else if (filter.accept(file)) {
+                    } else if (filter.accept(file)) {
                         String rev = "" + status[i].getLastChangedRevisionNumber();
                         if (reposStat == StatusKind.deleted) {
                             rinfo = new TeamStatusInfo(file, rev, "", Status.REMOVED);
-                        }
-                        else if (reposStat == StatusKind.none && !file.exists()) {
+                        } else if (reposStat == StatusKind.none && !file.exists()) {
                             //Bug in SVNKit
                             //File status in the repository is normal,
                             //but the file status is none and the file
                             //doesn't exists locally anymore.
                             rinfo = new TeamStatusInfo(file, rev, "", Status.DELETED);
-                        }
-                        else if (reposStat == StatusKind.modified) {
+                        } else if (reposStat == StatusKind.modified) {
                             rinfo = new TeamStatusInfo(file, rev,
                                     "" + status[i].getReposLastCmtRevisionNumber(),
                                     Status.NEEDS_UPDATE);
-                        }
-                        else {
+                        } else {
                             rinfo = new TeamStatusInfo(file, rev, rev, Status.UP_TO_DATE);
                         }
                     }
-                }
-                else if (textStat == StatusKind.modified) {
+                } else if (textStat == StatusKind.modified) {
                     if (filter.accept(file)) {
                         String rev = "" + status[i].getLastChangedRevisionNumber();
                         if (reposStat == StatusKind.deleted) {
                             rinfo = new TeamStatusInfo(file, rev, "", Status.CONFLICT_LMRD);
-                        }
-                        else if (reposStat == StatusKind.modified) {
+                        } else if (reposStat == StatusKind.modified) {
                             rinfo = new TeamStatusInfo(file, rev, "", Status.NEEDS_MERGE);
-                        }
-                        else {
+                        } else {
                             rinfo = new TeamStatusInfo(file, rev, rev, Status.NEEDS_COMMIT);
                         }
                     }
-                }
-                else if (textStat == StatusKind.none) {
+                } else if (textStat == StatusKind.none) {
                     if (reposStat == StatusKind.added) {
                         rinfo = new TeamStatusInfo(file, "", "" + reposRev, Status.NEEDS_CHECKOUT);
                     }
-                }
-                else if (textStat == StatusKind.added) {
+                } else if (textStat == StatusKind.added) {
                     // shouldn't normally happen unless something went wrong
                     // or someone has done "svn add" from command line etc.
                     rinfo = new TeamStatusInfo(file, "", "", Status.NEEDS_COMMIT);
@@ -202,14 +180,12 @@ public class SvnStatusCommand extends SvnCommand
 //                }
 
                 if (rinfo != null) {
-                    if (! file.exists()) {
+                    if (!file.exists()) {
                         listener.gotStatus(rinfo);
-                    }
-                    else if (completed.contains(file.getParentFile())
+                    } else if (completed.contains(file.getParentFile())
                             || file.equals(projectPath)) {
                         complete(completed, unreported, rinfo);
-                    }
-                    else {
+                    } else {
                         // The status of the parent directory hasn't been reported
                         // yet. If the parent has been removed, the status we have
                         // now is incorrect; we need to cache the result into the
@@ -226,9 +202,8 @@ public class SvnStatusCommand extends SvnCommand
 
             listener.statusComplete(new SvnStatusHandle(getRepository(), currentRevision));
             return new TeamworkCommandResult();
-        }
-        catch (ClientException ce) {
-            if (! isCancelled()) {
+        } catch (ClientException ce) {
+            if (!isCancelled()) {
                 Debug.reportError("Subversion status command exception", ce);
                 return new TeamworkCommandError(ce.getMessage(), ce.getLocalizedMessage());
             }
@@ -242,9 +217,8 @@ public class SvnStatusCommand extends SvnCommand
      * unversioned (and therefore ignored) according to subversion
      */
     @OnThread(Tag.Worker)
-    private void statLocalDir(File dir)
-    {
-        File [] subFiles = dir.listFiles(filter);
+    private void statLocalDir(File dir) {
+        File[] subFiles = dir.listFiles(filter);
         for (int i = 0; i < subFiles.length; i++) {
             listener.gotStatus(new TeamStatusInfo(subFiles[i], "", "",
                     Status.NEEDS_ADD));
@@ -255,9 +229,8 @@ public class SvnStatusCommand extends SvnCommand
     }
 
     @OnThread(Tag.Worker)
-    private void complete(Set<File> completed, Map<File,Set<TeamStatusInfo>> unreported,
-            TeamStatusInfo rinfo)
-    {
+    private void complete(Set<File> completed, Map<File, Set<TeamStatusInfo>> unreported,
+                          TeamStatusInfo rinfo) {
         listener.gotStatus(rinfo);
 
         Status rinfoStat = rinfo.getStatus();
@@ -287,17 +260,13 @@ public class SvnStatusCommand extends SvnCommand
                         if (einfoStat == Status.NEEDS_ADD) {
                             // what status to give here?
                             einfoStat = Status.CONFLICT_LMRD;
-                        }
-                        else if (einfoStat == Status.NEEDS_COMMIT) {
+                        } else if (einfoStat == Status.NEEDS_COMMIT) {
                             einfoStat = Status.CONFLICT_LMRD;
-                        }
-                        else if (einfoStat == Status.NEEDS_MERGE) {
+                        } else if (einfoStat == Status.NEEDS_MERGE) {
                             einfoStat = Status.CONFLICT_LMRD;
-                        }
-                        else if (einfoStat == Status.NEEDS_UPDATE) {
+                        } else if (einfoStat == Status.NEEDS_UPDATE) {
                             einfoStat = Status.REMOVED;
-                        }
-                        else if (einfoStat == Status.UP_TO_DATE) {
+                        } else if (einfoStat == Status.UP_TO_DATE) {
                             einfoStat = Status.REMOVED;
                         }
 
@@ -305,8 +274,7 @@ public class SvnStatusCommand extends SvnCommand
                                 status.getFile(), status.getLocalVersion(),
                                 status.getRepositoryVersion(), einfoStat));
                     }
-                }
-                else {
+                } else {
                     // parent not deleted: report normally
                     complete(completed, unreported, status);
                 }

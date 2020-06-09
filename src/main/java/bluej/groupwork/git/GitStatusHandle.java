@@ -22,11 +22,7 @@
 
 package bluej.groupwork.git;
 
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusHandle;
-import bluej.groupwork.TeamStatusInfo;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.UpdateListener;
+import bluej.groupwork.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -34,28 +30,24 @@ import java.io.File;
 import java.util.Set;
 
 /**
- *
  * Implementation of StatusHandle for Git
- * 
+ *
  * @author Fabio Hedayioglu
  */
 @OnThread(Tag.FXPlatform)
-public class GitStatusHandle implements StatusHandle
-{
+public class GitStatusHandle implements StatusHandle {
     private final GitRepository repository;
     private final boolean pushNeeded, pullNeeded;
 
     @OnThread(Tag.Any)
-    public GitStatusHandle(GitRepository repository, boolean pushNeeded, boolean pullNeeded)
-    {
+    public GitStatusHandle(GitRepository repository, boolean pushNeeded, boolean pullNeeded) {
         this.repository = repository;
         this.pushNeeded = pushNeeded;
         this.pullNeeded = pullNeeded;
     }
 
     @Override
-    public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files, Set<TeamStatusInfo> forceFiles, String commitComment)
-    {
+    public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files, Set<TeamStatusInfo> forceFiles, String commitComment) {
         //we dont' need a list of binary files and regular files. merge them.
         newFiles.addAll(binaryNewFiles);
 
@@ -65,35 +57,30 @@ public class GitStatusHandle implements StatusHandle
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public TeamworkCommand updateTo(UpdateListener listener, Set<File> files, Set<File> forceFiles)
-    {
+    public TeamworkCommand updateTo(UpdateListener listener, Set<File> files, Set<File> forceFiles) {
         return new GitUpdateToCommand(repository, listener, forceFiles);
     }
 
     @Override
-    public Repository getRepository()
-    {
+    public Repository getRepository() {
         return repository;
     }
 
     @Override
-    public TeamworkCommand pushAll(Set<File> filesToPush)
-    {
+    public TeamworkCommand pushAll(Set<File> filesToPush) {
         return new GitPushChangesCommand(repository);
     }
 
     @Override
     @OnThread(Tag.Any)
-    public boolean pushNeeded()
-    {
+    public boolean pushNeeded() {
         return pushNeeded;
     }
 
     @Override
     @OnThread(Tag.Any)
-    public boolean pullNeeded()
-    {
+    public boolean pullNeeded() {
         return pullNeeded;
     }
-    
+
 }

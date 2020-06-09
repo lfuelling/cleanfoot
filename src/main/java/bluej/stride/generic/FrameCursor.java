@@ -22,22 +22,20 @@
 package bluej.stride.generic;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import bluej.Config;
-import bluej.editor.stride.FrameCatalogue;
+import bluej.stride.framedjava.ast.Loader;
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.framedjava.frames.StrideCategory;
 import bluej.stride.framedjava.frames.StrideDictionary;
+import bluej.stride.generic.FrameDictionary.Entry;
+import bluej.stride.operations.PasteFrameOperation;
+import bluej.stride.slots.EditableSlot;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import bluej.utility.Debug;
+import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SharedTransition;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -45,21 +43,13 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.NumberExpressionBase;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -69,53 +59,42 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
-
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.generic.FrameDictionary.Entry;
-import bluej.stride.operations.PasteFrameOperation;
-import bluej.stride.slots.EditableSlot;
-import bluej.utility.Debug;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Between-block horizontal cursor placeholder/button
+ *
  * @author Fraser McKay
  */
-public class FrameCursor implements RecallableFocus
-{    
+public class FrameCursor implements RecallableFocus {
     public static final int FULL_HEIGHT = 5;
     public static final int HIDE_HEIGHT = 0; // To leave a click target there
     final int ERROR_COUNT_TRIGGER = 2;
     int consecutiveErrors = 0;
     private ContextMenu menu;
     private final FrameCanvas parentCanvas;
-    
+
     private final Button node = new Button();
 
     @OnThread(Tag.FXPlatform)
-    public boolean keyTyped(final InteractionManager editor, final FrameCanvas parentCanvas, char key, boolean ctrlDown)
-    {
+    public boolean keyTyped(final InteractionManager editor, final FrameCanvas parentCanvas, char key, boolean ctrlDown) {
         if (!editor.isEditable() || !canInsert())
             return false;
 
         // Ignore accidental caps lock:
         key = Character.toLowerCase(key);
 
-        if (key == '?')
-        {
+        if (key == '?') {
             boolean show = !editor.cheatSheetShowingProperty().get();
             editor.cheatSheetShowingProperty().set(show);
             return true;
         }
 
-        if (Character.isLetter(key) || Arrays.asList('/', '\\', '*', '=', '+', '-', '\n', ' ').contains(key))
-        {
+        if (Character.isLetter(key) || Arrays.asList('/', '\\', '*', '=', '+', '-', '\n', ' ').contains(key)) {
             List<Entry<?>> available = editor.getDictionary().getFramesForShortcutKey(key).stream()
                     .filter(t -> parentCanvas.getParent().check(parentCanvas).canInsert(t.getCategory()))
                     .collect(Collectors.toList());
@@ -135,18 +114,17 @@ public class FrameCursor implements RecallableFocus
             if (!selection) {
                 Frame before = getFrameBefore();
                 // First, check if the block we are in supports this key:
-                if (CanvasParent.processInnerExtensionKey(getParentCanvas().getParent(), getParentCanvas(), this, key, FrameCursor.this, before == null))
-                {
+                if (CanvasParent.processInnerExtensionKey(getParentCanvas().getParent(), getParentCanvas(), this, key, FrameCursor.this, before == null)) {
                     // Done
                     return true;
                 }
                 // Otherwise check the frame after us:
-                else if ( getFrameAfter() != null && getFrameAfter().notifyKeyBefore(key, FrameCursor.this) ) {
+                else if (getFrameAfter() != null && getFrameAfter().notifyKeyBefore(key, FrameCursor.this)) {
                     // Done
                     return true;
                 }
                 // Otherwise check the frame before us:
-                else if ( before != null && before.notifyKeyAfter(key, FrameCursor.this) ) {
+                else if (before != null && before.notifyKeyAfter(key, FrameCursor.this)) {
                     // Done
                     return true;
                 }
@@ -155,8 +133,7 @@ public class FrameCursor implements RecallableFocus
             // Third, check if the canvas we are in supports this block generally:
             if (available.size() > 1) {
                 throw new IllegalStateException("Ambigious keypress: " + key + " in frame: " + parentCanvas.getParent() + " [" + available.stream().map(e -> e.getName()).collect(Collectors.joining(", ")) + "]");
-            }
-            else if (available.size() == 1) {
+            } else if (available.size() == 1) {
                 Entry<?> frameType = available.get(0);
 
                 if (!selection || frameType.isValidOnSelection()) {
@@ -176,8 +153,7 @@ public class FrameCursor implements RecallableFocus
                         insertBlockBefore(newFrame);
                         selected.forEach(f -> f.getParentCanvas().removeBlock(f));
                         editor.getSelection().clear();
-                    }
-                    else {
+                    } else {
                         newFrame = frameType.getFactory().createBlock(editor);
                         insertBlockBefore(newFrame);
                     }
@@ -206,7 +182,7 @@ public class FrameCursor implements RecallableFocus
                 consecutiveErrors++;
                 if (consecutiveErrors >= ERROR_COUNT_TRIGGER) {
                     BooleanProperty cheatSheetShowingProperty = editor.cheatSheetShowingProperty();
-                    if ( ! cheatSheetShowingProperty.get() ) {
+                    if (!cheatSheetShowingProperty.get()) {
                         cheatSheetShowingProperty.set(true);
                     }
                 }
@@ -223,13 +199,11 @@ public class FrameCursor implements RecallableFocus
      *
      * @return Our relative position in the enclosing frame.
      */
-    public int getCursorIndex()
-    {
+    public int getCursorIndex() {
         return parentCanvas.getCursors().indexOf(this);
     }
 
-    public static void editorClosing(InteractionManager editor)
-    {
+    public static void editorClosing(InteractionManager editor) {
         shrinkingHeightBindings.remove(editor);
     }
 
@@ -237,14 +211,13 @@ public class FrameCursor implements RecallableFocus
      * As the cursor moves up/down, we want to make it look like the blocks are sliding out of the
      * way for the cursor.  To achieve this, we actually shrink old cursor positions while
      * growing new position.
-     * 
+     * <p>
      * To link the size of the growing new position to the old shrinking positions we maintain
      * a list of current shrinkers in this class, and bind our property to their size.
      * Then we bind the height of the growing portion to be the target, minus this total height
      * of remaining shrinkers.
      */
-    private static class TotalHeightBinding extends IntegerBinding
-    {
+    private static class TotalHeightBinding extends IntegerBinding {
         private static final Duration DEFAULT_DURATION = Duration.millis(100);
         // The shortest between cursor movements that we will not animate:
         public static final long ANIMATE_GAP = 800L;
@@ -255,11 +228,9 @@ public class FrameCursor implements RecallableFocus
         // to prevent animating the grow of the cursor gaining focus:
         private long lastShrink = 0;
         private long lastGrow = 0;
-        
-        public synchronized void shrink(FrameCursor c, double target, boolean animate)
-        {
-            if (animate && System.currentTimeMillis() - lastShrink < ANIMATE_GAP)
-            {
+
+        public synchronized void shrink(FrameCursor c, double target, boolean animate) {
+            if (animate && System.currentTimeMillis() - lastShrink < ANIMATE_GAP) {
                 // Don't animate if they user is going fast up and down,
                 // as it costs a lot of time in large canvases:
                 animate = false;
@@ -269,52 +240,44 @@ public class FrameCursor implements RecallableFocus
             if (growing == c) {
                 growing = null;
             }
-            
+
             // Animate using integer property to avoid floating point half-height problems:
             // We definitely want this -- otherwise you get odd effects
-            SimpleIntegerProperty heightProp = new SimpleIntegerProperty((int)c.node.getMaxHeight());
+            SimpleIntegerProperty heightProp = new SimpleIntegerProperty((int) c.node.getMaxHeight());
             c.node.maxHeightProperty().bind(heightProp);
-            if (animate)
-            {
+            if (animate) {
                 c.animation = new Timeline(new KeyFrame(DEFAULT_DURATION, new KeyValue(heightProp, target)));
                 c.animation.play();
+            } else {
+                heightProp.set((int) target);
             }
-            else
-            {
-                heightProp.set((int)target);
-            }
-            
+
             shrinkingSpace.add(c.node.maxHeightProperty()); //Must match remove() in remove()
             bind(c.node.maxHeightProperty()); // Must match unbind() in remove()
 
             lastShrink = System.currentTimeMillis();
         }
-        
-        private synchronized void remove(FrameCursor c)
-        {
+
+        private synchronized void remove(FrameCursor c) {
             shrinkingSpace.remove(c.node.maxHeightProperty()); //Must match add in shrink()
             unbind(c.node.maxHeightProperty()); // Must match bind() in shrink()
-            if (shrinkingSpace.isEmpty() && growing != null)
-            {
+            if (shrinkingSpace.isEmpty() && growing != null) {
                 // If no one is shrinking, all animations are done:
                 growing.node.maxHeightProperty().unbind();
                 growing = null;
             }
         }
-        
-        
+
+
         @Override
-        protected int computeValue()
-        {
+        protected int computeValue() {
             int height = 0;
-            for (Iterator<NumberExpressionBase> it = shrinkingSpace.iterator(); it.hasNext();)
-            {
+            for (Iterator<NumberExpressionBase> it = shrinkingSpace.iterator(); it.hasNext(); ) {
                 NumberExpressionBase val = it.next();
-                int h = (int)Math.ceil(val.doubleValue());
+                int h = (int) Math.ceil(val.doubleValue());
                 height += h - HIDE_HEIGHT;
                 // If any have zero height, we can remove them to avoid clogging up our set:
-                if (h == 0)
-                {
+                if (h == 0) {
                     it.remove();
                     unbind(val);
                 }
@@ -322,10 +285,8 @@ public class FrameCursor implements RecallableFocus
             return height;
         }
 
-        public synchronized void grow(FrameCursor c, int target, boolean animate)
-        {
-            if (animate && System.currentTimeMillis() - lastGrow < ANIMATE_GAP)
-            {
+        public synchronized void grow(FrameCursor c, int target, boolean animate) {
+            if (animate && System.currentTimeMillis() - lastGrow < ANIMATE_GAP) {
                 // Don't animate if they user is going fast up and down,
                 // as it costs a lot of time in large canvases:
                 animate = false;
@@ -333,24 +294,20 @@ public class FrameCursor implements RecallableFocus
 
             remove(c);
             growing = c;
-            
+
             //Add dummy shrinking cursor, in case no-one is shrinking, e.g. if we came from a slot:
-            if (shrinkingSpace.isEmpty())
-            {
-                IntegerProperty dummy = new SimpleIntegerProperty(target - (int)c.node.getMaxHeight() + HIDE_HEIGHT);
+            if (shrinkingSpace.isEmpty()) {
+                IntegerProperty dummy = new SimpleIntegerProperty(target - (int) c.node.getMaxHeight() + HIDE_HEIGHT);
                 bind(dummy);
                 shrinkingSpace.add(dummy);
-                if (animate)
-                {
+                if (animate) {
                     Animation anim = new Timeline(new KeyFrame(DEFAULT_DURATION, new KeyValue(dummy, HIDE_HEIGHT)));
                     anim.play();
-                }
-                else
-                {
+                } else {
                     dummy.set(HIDE_HEIGHT);
                 }
             }
-            
+
             growing.node.maxHeightProperty().bind(Bindings.max(HIDE_HEIGHT, new ReadOnlyIntegerWrapper(target).subtract(this)));
 
             lastGrow = System.currentTimeMillis();
@@ -363,12 +320,11 @@ public class FrameCursor implements RecallableFocus
     private Canvas redCross;
     private Canvas copyingPlus;
     private ImageView dragTargetOverlayFake;
-    
+
     /**
      * Constructor
      */
-    public FrameCursor(final InteractionManager editor, final FrameCanvas parentCanvas)
-    {
+    public FrameCursor(final InteractionManager editor, final FrameCanvas parentCanvas) {
         node.getStyleClass().add("frame-cursor");
         node.setMaxWidth(100);
         node.setMaxHeight(HIDE_HEIGHT);
@@ -377,13 +333,12 @@ public class FrameCursor implements RecallableFocus
         if (parentCanvas == null) {
             throw new IllegalArgumentException("BlockCursor: parentCanvas cannot be null");
         }
-        
+
         this.editor = editor;
-        if (editor != null)
-        {
-            shrinkingHeightBindings.putIfAbsent(editor, new TotalHeightBinding()); 
+        if (editor != null) {
+            shrinkingHeightBindings.putIfAbsent(editor, new TotalHeightBinding());
         }
-        
+
         // Bind min and pref size to max size:
         node.minWidthProperty().bind(node.maxWidthProperty());
         node.prefWidthProperty().bind(node.maxWidthProperty());
@@ -392,29 +347,27 @@ public class FrameCursor implements RecallableFocus
 
         // We must start by insta-shrinking, so that the height bindings get set-up correctly
         // for the cursor:
-        shrinkingHeightBindings.get(editor).shrink(this,HIDE_HEIGHT,false);
-                                
+        shrinkingHeightBindings.get(editor).shrink(this, HIDE_HEIGHT, false);
+
         JavaFXUtil.addChangeListener(node.focusedProperty(), nowFocused -> {
             // Oddly, we can get told we are focused even after we have left the Scene,
             // so we add a check here to guard against that:
-            if (node.getScene() != null)
-            {
+            if (node.getScene() != null) {
                 animateShowHide(nowFocused, false);
             }
         });
         JavaFXUtil.addChangeListener(node.localToSceneTransformProperty(), t -> JavaFXUtil.runNowOrLater(() -> adjustDragTargetPosition()));
-        
+
         if (editor != null) {
             editor.setupFrameCursor(this);
         }
-        
+
         // We must use a filter on press because potentially this event might set
         // a selection rather than focusing on us.  If we don't use a filter to consume
         // the press, the event will be handled by focusing on us by default
         node.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             // Don't intercept the press if we are focused; might be start of drag event
-            if (e.getButton() == MouseButton.PRIMARY && editor != null && !isFocused())
-            {
+            if (e.getButton() == MouseButton.PRIMARY && editor != null && !isFocused()) {
                 // We must go via the editor, because it might have extra work to do if
                 // shift was pressed (i.e. the selection may need to be extended).
                 // Otherwise it may just focus us anyway.
@@ -422,25 +375,23 @@ public class FrameCursor implements RecallableFocus
                 e.consume();
             }
         });
-        
+
         JavaFXUtil.listenForContextMenu(node, this::showContextMenu);
         getNode().focusedProperty().addListener((observable, oldValue, nowFocused) -> {
-        {
-            if (!nowFocused)
             {
-                //Resets error count for this cursor point, so it doesn't remember errors from previous edits
-                consecutiveErrors = 0;
+                if (!nowFocused) {
+                    //Resets error count for this cursor point, so it doesn't remember errors from previous edits
+                    consecutiveErrors = 0;
+                }
             }
-        }
-    });
-
+        });
 
 
         /**
          * To insert other blocks when text input is made from this cursor
          */
         getNode().setOnKeyTyped(event -> {
-            try{
+            try {
                 String character = event.getCharacter();
                 if (!character.isEmpty()) {
                     char key = character.toCharArray()[0];
@@ -451,8 +402,7 @@ public class FrameCursor implements RecallableFocus
                         event.consume();
                     }
                 }
-            }
-            catch(Exception ex){
+            } catch (Exception ex) {
                 Debug.reportError("CURSOR KEY PRESS: ", ex);
             }
         });
@@ -463,22 +413,18 @@ public class FrameCursor implements RecallableFocus
                 return;
 
             if ((event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.DELETE)
-                    && !editor.getSelection().getSelected().isEmpty())
-            {
+                    && !editor.getSelection().getSelected().isEmpty()) {
                 List<Frame> toDelete = editor.getSelection().getSelected();
                 FrameCursor focusAfter = toDelete.get(0).getCursorBefore();
                 editor.beginRecordingState(FrameCursor.this);
                 // Check they are from our canvas:
-                if (toDelete.stream().allMatch(f -> f.getParentCanvas() == getParentCanvas()))
-                {
+                if (toDelete.stream().allMatch(f -> f.getParentCanvas() == getParentCanvas())) {
                     int effort = toDelete.stream().mapToInt(Frame::calculateEffort).sum();
                     editor.showUndoDeleteBanner(effort);
                     // We might get deleted during this code, so cache value of getParentCanvas:
                     FrameCanvas c = getParentCanvas();
                     toDelete.forEach(f -> c.removeBlock(f));
-                }
-                else
-                {
+                } else {
                     Debug.message("Warning: trying to delete selection from remote cursor");
                 }
                 editor.getSelection().clear();
@@ -490,11 +436,9 @@ public class FrameCursor implements RecallableFocus
             }
 
             //If 'delete'/backspace
-            if (event.getCode() == KeyCode.BACK_SPACE)
-            {
+            if (event.getCode() == KeyCode.BACK_SPACE) {
                 Frame target = parentCanvas.getFrameBefore(FrameCursor.this);
-                if (target != null)
-                {
+                if (target != null) {
                     editor.beginRecordingState(FrameCursor.this);
                     FrameCursor cursorBeforeTarget = parentCanvas.getCursorBefore(target);
                     editor.showUndoDeleteBanner(target.calculateEffort());
@@ -502,38 +446,28 @@ public class FrameCursor implements RecallableFocus
                     editor.modifiedFrame(target, false);
                     cursorBeforeTarget.requestFocus();
                     editor.endRecordingState(cursorBeforeTarget);
-                }
-                else
-                {
+                } else {
                     // At top; inner extension may implement backspace:
                     editor.beginRecordingState(FrameCursor.this);
                     FrameCursor cursorBeforeTarget = parentCanvas.getParent().getCursorBefore(parentCanvas);
                     CanvasParent.processInnerExtensionKey(parentCanvas.getParent(), parentCanvas, this, '\b', FrameCursor.this, true);
                     editor.endRecordingState(cursorBeforeTarget);
                 }
-            }
-            else if (event.getCode() == KeyCode.ESCAPE)
-            {
+            } else if (event.getCode() == KeyCode.ESCAPE) {
                 Frame target = parentCanvas.getFrameBefore(FrameCursor.this);
-                if (target != null){
+                if (target != null) {
                     target.escape(null, null);
-                }
-                else
-                {
+                } else {
                     //At the top. need to go to adjust to the target properly.
                     Frame BeforeTarget = parentCanvas.getParent().getCursorBefore(parentCanvas).getFrameAfter();
-                    if (BeforeTarget != null)
-                    {
+                    if (BeforeTarget != null) {
                         BeforeTarget.escape(null, null);
                     }
                 }
-            }
-            else if (event.getCode() == KeyCode.DELETE)
-            {
+            } else if (event.getCode() == KeyCode.DELETE) {
                 // Find next and do backspace:
                 Frame target = parentCanvas.getFrameAfter(FrameCursor.this);
-                if (target != null)
-                {
+                if (target != null) {
                     editor.beginRecordingState(FrameCursor.this);
                     editor.showUndoDeleteBanner(target.calculateEffort());
                     parentCanvas.removeBlock(target);
@@ -543,36 +477,30 @@ public class FrameCursor implements RecallableFocus
             }
             // Mac doesn't produce the right key typed events for Enter or Ctrl-Space
             // so we have special cases here in key pressed:
-            else if (event.getCode() == KeyCode.ENTER)
-            {
+            else if (event.getCode() == KeyCode.ENTER) {
                 keyTyped(editor, parentCanvas, '\n', false);
-            }
-            else if (event.getCode() == KeyCode.SPACE && event.isControlDown())
-            {
+            } else if (event.getCode() == KeyCode.SPACE && event.isControlDown()) {
                 keyTyped(editor, parentCanvas, ' ', event.isControlDown());
             }
         });
     }
 
-    private void animateShowHide(boolean show, boolean animate)
-    {
+    private void animateShowHide(boolean show, boolean animate) {
         // Stop any previous resizing animation:
         if (animation != null) {
             animation.stop();
         }
-        
+
         node.setOpacity(show ? 1.0 : 0.0);
-        
+
         //If we're the only item in a canvas, don't animate:
         if (getParentCanvas().blockCount() == 0) {
             node.maxHeightProperty().unbind();
             node.setMaxHeight(show ? FULL_HEIGHT : HIDE_HEIGHT);
-        }
-        else {
+        } else {
             if (show) {
                 shrinkingHeightBindings.get(editor).grow(FrameCursor.this, FULL_HEIGHT, animate);
-            }
-            else {
+            } else {
                 TotalHeightBinding heightBinding = shrinkingHeightBindings.get(editor);
                 if (heightBinding != null) // Can be null when closing the editor
                     heightBinding.shrink(FrameCursor.this, HIDE_HEIGHT, animate);
@@ -581,17 +509,15 @@ public class FrameCursor implements RecallableFocus
     }
 
     @OnThread(Tag.FXPlatform)
-    public void showAsDropTarget(boolean showAsSource, boolean dragPossible, boolean copying)
-    {
+    public void showAsDropTarget(boolean showAsSource, boolean dragPossible, boolean copying) {
         int chosen;
-        
+
         if (dragPossible) {
             chosen = showAsSource ? 1 : 0;
-        }
-        else {
+        } else {
             chosen = 2;
         }
-        
+
         // Must resize before setting drag class:
         animateShowHide(true, false);
         setDragClass(chosen);
@@ -599,34 +525,28 @@ public class FrameCursor implements RecallableFocus
     }
 
     /**
-     * 
      * @param classIndex -1 for no drag target, 0 for possible, 1 for source, 2 for imposibble
      */
     @OnThread(Tag.FXPlatform)
-    private void setDragClass(int classIndex)
-    {
+    private void setDragClass(int classIndex) {
         JavaFXUtil.selectPseudoClass(node, classIndex,
                 "bj-drag-possible", "bj-drag-source", "bj-drag-impossible");
         setDragTargetOverlayVisible(classIndex != -1, classIndex == 2);
     }
 
     @OnThread(Tag.FXPlatform)
-    private void adjustDragTargetPosition()
-    {
-        if (dragTargetOverlayFake != null)
-        {
+    private void adjustDragTargetPosition() {
+        if (dragTargetOverlayFake != null) {
             Pane dragTargetCursorPane = editor.getDragTargetCursorPane();
             Bounds scenePos = getNode().localToScene(getNode().getBoundsInLocal());
             Bounds panePos = dragTargetCursorPane.sceneToLocal(scenePos);
             dragTargetOverlayFake.setLayoutX(panePos.getMinX());
             dragTargetOverlayFake.setLayoutY(panePos.getMinY());
-            if (redCross != null)
-            {
-                redCross.setLayoutX(dragTargetOverlayFake.getLayoutX() + node.widthProperty().divide(2.0).subtract(redCross.getWidth()/2.0).get());
-                redCross.setLayoutY(dragTargetOverlayFake.getLayoutY() + node.heightProperty().divide(2.0).subtract(redCross.getHeight()/2.0).get());
+            if (redCross != null) {
+                redCross.setLayoutX(dragTargetOverlayFake.getLayoutX() + node.widthProperty().divide(2.0).subtract(redCross.getWidth() / 2.0).get());
+                redCross.setLayoutY(dragTargetOverlayFake.getLayoutY() + node.heightProperty().divide(2.0).subtract(redCross.getHeight() / 2.0).get());
             }
-            if (copyingPlus != null)
-            {
+            if (copyingPlus != null) {
                 copyingPlus.setLayoutX(dragTargetOverlayFake.getLayoutX() + node.getWidth());
                 copyingPlus.setLayoutY(dragTargetOverlayFake.getLayoutY() - copyingPlus.getWidth());
             }
@@ -634,18 +554,15 @@ public class FrameCursor implements RecallableFocus
     }
 
     @OnThread(Tag.FXPlatform)
-    private void setDragTargetOverlayVisible(boolean visible, boolean showCross)
-    {
+    private void setDragTargetOverlayVisible(boolean visible, boolean showCross) {
         Pane dragTargetCursorPane = editor.getDragTargetCursorPane();
-        if (visible)
-        {
+        if (visible) {
             Image snapshot = getNode().snapshot(null, null);
             dragTargetOverlayFake = new ImageView(snapshot);
-            
+
             dragTargetCursorPane.getChildren().add(dragTargetOverlayFake);
-            
-            if (showCross && redCross == null)
-            {
+
+            if (showCross && redCross == null) {
                 redCross = new Canvas(FULL_HEIGHT * 3, FULL_HEIGHT * 3);
                 GraphicsContext gc = redCross.getGraphicsContext2D();
                 gc.setStroke(Color.RED);
@@ -654,23 +571,18 @@ public class FrameCursor implements RecallableFocus
                 gc.strokeLine(redCross.getWidth() - 2.0, 1.0, 1.0, redCross.getHeight() - 2.0);
                 dragTargetCursorPane.getChildren().add(redCross);
             }
-            
+
             adjustDragTargetPosition();
-        }
-        else 
-        {
-            if (dragTargetOverlayFake != null)
-            {
+        } else {
+            if (dragTargetOverlayFake != null) {
                 dragTargetCursorPane.getChildren().remove(dragTargetOverlayFake);
                 dragTargetOverlayFake = null;
             }
-            if (redCross != null)
-            {
+            if (redCross != null) {
                 dragTargetCursorPane.getChildren().remove(redCross);
                 redCross = null;
             }
-            if (copyingPlus != null)
-            {
+            if (copyingPlus != null) {
                 dragTargetCursorPane.getChildren().remove(copyingPlus);
                 copyingPlus = null;
             }
@@ -678,69 +590,60 @@ public class FrameCursor implements RecallableFocus
     }
 
     @OnThread(Tag.FXPlatform)
-    public void stopShowAsDropTarget()
-    {
+    public void stopShowAsDropTarget() {
         animateShowHide(false, false);
         setDragClass(-1);
     }
-    
-    public void insertBlockAfter(Frame b)
-    {
+
+    public void insertBlockAfter(Frame b) {
         getParentCanvas().insertBlockAfter(b, this);
     }
-    
-    public void insertBlockBefore(Frame b)
-    {
+
+    public void insertBlockBefore(Frame b) {
         getParentCanvas().insertBlockBefore(b, this);
     }
-    
-    public FrameTypeCheck check()
-    {
+
+    public FrameTypeCheck check() {
         return getParentCanvas().getParent().check(getParentCanvas());
     }
 
-    public void insertFramesAfter(List<Frame> frames)
-    {
+    public void insertFramesAfter(List<Frame> frames) {
         List<Frame> rev = new ArrayList<>(frames);
         Collections.reverse(rev);
         rev.forEach(f -> getParentCanvas().insertBlockAfter(f, this));
     }
-    
+
     /**
      * Gets the next block at the same level (in the same canvas) if possible,
      * or the next valid block cursor after that (by going up a level).
      */
-    public FrameCursor getNextSkip()
-    {
+    public FrameCursor getNextSkip() {
         return parentCanvas.getNextCursor(this, false);
     }
-    
+
     /**
      * Gets the previous block at the same level (in the same canvas) if possible,
      * or the previous valid block cursor after that (by going up a level).
      */
-    public FrameCursor getPrevSkip()
-    {
+    public FrameCursor getPrevSkip() {
         return parentCanvas.getPrevCursor(this, false);
     }
-    
+
     /**
      * Gets the cursor just before the enclosing block for this cursor
      */
-    public FrameCursor getUp()
-    {
+    public FrameCursor getUp() {
         Frame frameBefore = getFrameBefore();
         if (frameBefore != null) {
             return frameBefore.getCursorBefore();
         }
         return parentCanvas.getParent().getCursorBefore(parentCanvas);
     }
-    
+
     /**
      * Gets the cursor just after the enclosing block for this cursor
      */
-    public FrameCursor getDown()
-    {
+    public FrameCursor getDown() {
         Frame frameAfter = getFrameAfter();
         if (frameAfter != null) {
             return frameAfter.getCursorAfter();
@@ -748,23 +651,19 @@ public class FrameCursor implements RecallableFocus
         return parentCanvas.getParent().getCursorAfter(parentCanvas);
     }
 
-    public Frame getFrameBefore()
-    {
+    public Frame getFrameBefore() {
         return parentCanvas.getFrameBefore(this);
     }
-    
-    public Frame getFrameAfter()
-    {
+
+    public Frame getFrameAfter() {
         return parentCanvas.getFrameAfter(this);
     }
 
-    public FrameCanvas getParentCanvas()
-    {
+    public FrameCanvas getParentCanvas() {
         return parentCanvas;
     }
-    
-    public Frame getEnclosingFrame()
-    {
+
+    public Frame getEnclosingFrame() {
         final FrameCanvas parentCanvas = getParentCanvas();
         if (parentCanvas == null) return null;
         final CanvasParent canvasParent = parentCanvas.getParent();
@@ -772,42 +671,39 @@ public class FrameCursor implements RecallableFocus
         return canvasParent.getFrame();
 
     }
-    
-    public Region getNode()
-    {
+
+    public Region getNode() {
         return node;
     }
-    
-    public void requestFocus()
-    {
+
+    public void requestFocus() {
         node.requestFocus();
     }
 
-    public Bounds getSceneBounds()
-    {
+    public Bounds getSceneBounds() {
         return node.localToScene(node.getBoundsInLocal());
     }
-    
-    /** Vanish without animating */
-    protected void disappear()
-    {
+
+    /**
+     * Vanish without animating
+     */
+    protected void disappear() {
         animateShowHide(false, false);
     }
 
-    /** Appear without animating */
-    protected void appear()
-    {
+    /**
+     * Appear without animating
+     */
+    protected void appear() {
         animateShowHide(true, false);
     }
-    
-    public InteractionManager getEditor()
-    {
+
+    public InteractionManager getEditor() {
         return this.editor;
     }
 
     @OnThread(Tag.FXPlatform)
-    private boolean showContextMenu(double screenX, double screenY)
-    {
+    private boolean showContextMenu(double screenX, double screenY) {
         if (JavaFXUtil.hasPseudoclass(node, "bj-java-preview"))
             return false;
 
@@ -823,39 +719,34 @@ public class FrameCursor implements RecallableFocus
     }
 
     @OnThread(Tag.FXPlatform)
-    public EditableSlot.MenuItems getMenuItems(boolean contextMenu)
-    {
+    public EditableSlot.MenuItems getMenuItems(boolean contextMenu) {
         boolean selection = !editor.getSelection().isEmpty();
         EditableSlot.MenuItems menuItems = new EditableSlot.MenuItems(FXCollections.observableArrayList(new PasteFrameOperation(editor).getMenuItem(contextMenu)));
-        if (!editor.getSelection().isEmpty())
-        {
-            menuItems = EditableSlot.MenuItems.concat( editor.getSelection().getMenuItems(contextMenu), menuItems);
+        if (!editor.getSelection().isEmpty()) {
+            menuItems = EditableSlot.MenuItems.concat(editor.getSelection().getMenuItems(contextMenu), menuItems);
         }
 
-        if (canInsert() && contextMenu && !selection)
-        {
+        if (canInsert() && contextMenu && !selection) {
             Menu insertMenu = new Menu("Insert");
             insertMenu.getItems().addAll(getAcceptedFramesMenuItems());
-            menuItems = EditableSlot.MenuItems.concat( new EditableSlot.MenuItems(FXCollections.observableArrayList(MenuItemOrder.INSERT_FRAME.item(insertMenu))), menuItems);
+            menuItems = EditableSlot.MenuItems.concat(new EditableSlot.MenuItems(FXCollections.observableArrayList(MenuItemOrder.INSERT_FRAME.item(insertMenu))), menuItems);
         }
 
         return menuItems;
     }
 
-    private List<MenuItem> getAcceptedFramesMenuItems()
-    {
+    private List<MenuItem> getAcceptedFramesMenuItems() {
         List<MenuItem> items = new ArrayList<>();
         List<Entry<StrideCategory>> entries = StrideDictionary.getDictionary().getAllBlocks();
         for (Entry<StrideCategory> entry : entries) {
-            if ( check().canInsert(entry.getCategory()) ) {
-                 items.add(createMenuItem(entry, this));
+            if (check().canInsert(entry.getCategory())) {
+                items.add(createMenuItem(entry, this));
             }
         }
         return items;
     }
 
-    private MenuItem createMenuItem(Entry<StrideCategory> entry, FrameCursor cursor)
-    {
+    private MenuItem createMenuItem(Entry<StrideCategory> entry, FrameCursor cursor) {
         Label d = new Label();
         d.textProperty().bind(new SimpleStringProperty(entry.getShortcuts() + "\t  " + entry.getName()));
         d.setPrefWidth(250);
@@ -875,34 +766,29 @@ public class FrameCursor implements RecallableFocus
         return item;
     }
 
-    
-    public boolean isFocused()
-    {
+
+    public boolean isFocused() {
         return node.isFocused();
     }
 
     @Override
-    public int getFocusInfo()
-    {
+    public int getFocusInfo() {
         return -1; // No info of interest
     }
 
     @Override
-    public Node recallFocus(int info)
-    {
+    public Node recallFocus(int info) {
         requestFocus();
         return node;
     }
 
     @OnThread(Tag.FXPlatform)
-    public void updateDragCopyState(boolean copying)
-    {
+    public void updateDragCopyState(boolean copying) {
         if (dragTargetOverlayFake == null)
             return;
-        
+
         Pane dragTargetCursorPane = editor.getDragTargetCursorPane();
-        if (copying && copyingPlus == null)
-        {
+        if (copying && copyingPlus == null) {
             copyingPlus = new Canvas(FULL_HEIGHT * 2 + 2, FULL_HEIGHT * 2 + 2);
             GraphicsContext gc = copyingPlus.getGraphicsContext2D();
             double middle = copyingPlus.getHeight() / 2.0;
@@ -915,27 +801,22 @@ public class FrameCursor implements RecallableFocus
             gc.strokeLine(middle, 2, middle, copyingPlus.getHeight() - 2);
             gc.strokeLine(2, middle, copyingPlus.getWidth() - 2, middle);
             dragTargetCursorPane.getChildren().add(copyingPlus);
-        }
-        else if (!copying && copyingPlus != null)
-        {
+        } else if (!copying && copyingPlus != null) {
             dragTargetCursorPane.getChildren().remove(copyingPlus);
             copyingPlus = null;
         }
-        
+
         adjustDragTargetPosition();
     }
 
 
-    public void setView(Frame.View view, SharedTransition animateProgress)
-    {
+    public void setView(Frame.View view, SharedTransition animateProgress) {
         JavaFXUtil.setPseudoclass("bj-java-preview", view == Frame.View.JAVA_PREVIEW, node);
     }
 
-    public boolean canInsert()
-    {
+    public boolean canInsert() {
         CanvasParent cp = getParentCanvas().getParent();
-        if (cp != null)
-        {
+        if (cp != null) {
             Frame f = cp.getFrame();
             if (f != null)
                 return f.isFrameEnabled();

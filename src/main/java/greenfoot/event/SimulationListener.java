@@ -24,27 +24,27 @@ package greenfoot.event;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.EventListener;
-
 /**
  * Listener for simulation events.
- * 
+ *
  * <p>Events may be dispatched from the simulation thread and must be dealt with
  * quickly.
- * 
+ *
  * @author Poul Henriksen
  */
-public interface SimulationListener
-{
+public interface SimulationListener {
     /**
      * Simulation events which can occur off the simulation thread.
      */
-    enum AsyncEvent
-    {
-        /** The simulation was paused */
+    enum AsyncEvent {
+        /**
+         * The simulation was paused
+         */
         STOPPED,
-        
-        /** The simulation speed changed */
+
+        /**
+         * The simulation speed changed
+         */
         CHANGED_SPEED,
 
         /**
@@ -58,11 +58,12 @@ public interface SimulationListener
      * Simulation events which always occur on the simulation thread
      * (and where the listener is thus called on the simulation thread)
      */
-    enum SyncEvent
-    {
-        /** The simulation started running */
+    enum SyncEvent {
+        /**
+         * The simulation started running
+         */
         STARTED,
-        
+
         /**
          * Execution of a new "Act" round has commenced.
          */
@@ -93,8 +94,8 @@ public interface SimulationListener
          */
         DELAY_LOOP_COMPLETED
     }
-    
-    
+
+
     /**
      * The simulation state changed or a simulation event occurred. The simulation may have
      * stopped, started, changed enabled state, begun a new act round, etc.

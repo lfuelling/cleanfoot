@@ -30,25 +30,23 @@ package bluej.extensions.event;
  * package and when the visibility of a dependency has changed to the opposite
  * of the previous state.
  * </p>
- * 
+ *
  * @author Simon Gerlach
  */
 public interface DependencyListener {
     /**
      * A dependency was added to the package.
-     * 
-     * @param event
-     *            A <code>DependencyEvent</code> object which describes the
-     *            event.
+     *
+     * @param event A <code>DependencyEvent</code> object which describes the
+     *              event.
      */
     void dependencyAdded(DependencyEvent event);
 
     /**
      * A dependency was removed from the package.
-     * 
-     * @param event
-     *            A <code>DependencyEvent</code> object which describes the
-     *            event.
+     *
+     * @param event A <code>DependencyEvent</code> object which describes the
+     *              event.
      */
     void dependencyRemoved(DependencyEvent event);
 
@@ -64,10 +62,9 @@ public interface DependencyListener {
      * <em>changed</em>. It is not fired if a dependency is set to a visibility
      * in which it already is.
      * </p>
-     * 
-     * @param event
-     *            A <code>DependencyEvent</code> object which describes the
-     *            event.
+     *
+     * @param event A <code>DependencyEvent</code> object which describes the
+     *              event.
      */
     void dependencyVisibilityChanged(DependencyEvent event);
 }

@@ -21,7 +21,8 @@
  */
 package bluej.utility.filefilter;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
 
 /**
  * A FileFilter that only accepts directories.
@@ -31,13 +32,11 @@ import java.io.*;
  * @author Axel Schmolitzky
  * @version $Id: DirectoryFilter.java 6215 2009-03-30 13:28:25Z polle $
  */
-public class DirectoryFilter implements FileFilter
-{
+public class DirectoryFilter implements FileFilter {
     /**
      * This method only accepts directories.
      */
-    public boolean accept(File pathname)
-    {
+    public boolean accept(File pathname) {
         return pathname.isDirectory();
     }
 }

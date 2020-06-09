@@ -27,15 +27,8 @@ import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.canvases.JavaCanvas;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.SandwichCanvasesElement;
-import bluej.stride.framedjava.frames.BlankFrame;
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.framedjava.frames.DebuggableFrame;
-import bluej.stride.framedjava.frames.DebuggableParentFrame;
-import bluej.stride.framedjava.frames.DebugInfo;
-import bluej.stride.framedjava.frames.StrideDictionary;
-import bluej.stride.framedjava.frames.GreenfootFrameUtil;
+import bluej.stride.framedjava.frames.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.operations.FrameOperation;
 import bluej.stride.operations.PullUpContentsOperation;
 import bluej.stride.slots.SlotLabel;
 import bluej.utility.Utility;
@@ -50,11 +43,11 @@ import java.util.List;
 
 /**
  * Container-block representing a common parent for if/try/switch statements.
+ *
  * @author Amjad Altadmri
  */
 public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
-    implements CodeFrame<SandwichCanvasesElement>, DebuggableFrame
-{
+        implements CodeFrame<SandwichCanvasesElement>, DebuggableFrame {
     private final String stylePrefix;
     private final String frameCaption;
     private final JavaCanvas firstCanvas;
@@ -76,8 +69,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
      * @param stylePrefix
      */
     protected SandwichCanvasesFrame(final InteractionManager editor, String frameCaption, String intermediateCanvasCaption,
-                                    String tailCanvasCaption, String stylePrefix)
-    {
+                                    String tailCanvasCaption, String stylePrefix) {
         super(editor, frameCaption, stylePrefix);
         this.frameCaption = frameCaption;
         this.editor = editor;
@@ -89,16 +81,14 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
         addCanvas(null, firstCanvas);
     }
 
-    protected void addIntermediateCanvas()
-    {
+    protected void addIntermediateCanvas() {
         addIntermediateCanvas(null, null);
     }
 
-    private void addIntermediateCanvas(FrameCanvas canvas, FrameCursor cursor, int at)
-    {
+    private void addIntermediateCanvas(FrameCanvas canvas, FrameCursor cursor, int at) {
         List<Frame> contents = new ArrayList<>();
         if (canvas != null && cursor != null) {
-            while( cursor.getFrameAfter() != null ) {
+            while (cursor.getFrameAfter() != null) {
                 contents.add(cursor.getFrameAfter());
                 cursor = cursor.getDown();
             }
@@ -107,13 +97,11 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
         addIntermediateCanvas(null, contents, at);
     }
 
-    public void addIntermediateCanvas(List<SlotFragment> slots, List contents)
-    {
+    public void addIntermediateCanvas(List<SlotFragment> slots, List contents) {
         addIntermediateCanvas(slots, contents, canvases.size());
     }
 
-    private void addIntermediateCanvas(List<SlotFragment> slots, List contents, int at)
-    {
+    private void addIntermediateCanvas(List<SlotFragment> slots, List contents, int at) {
         //begin recording state ??
         JavaCanvas intermediateCanvas = new JavaCanvas(editor, this, stylePrefix, false);
         if (contents != null) {
@@ -130,8 +118,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
 
     protected abstract FrameContentRow getFrameContentRow(List<SlotFragment> slots, JavaCanvas canvas, int at);
 
-    protected void pullUpCanvasContents(FrameCursor cursor, FrameCanvas canvas)
-    {
+    protected void pullUpCanvasContents(FrameCursor cursor, FrameCanvas canvas) {
         canvas.getFirstCursor().getUp().requestFocus(); // move cursor to the previous valid position above.
         List<Frame> contents = new ArrayList<>(canvas.getBlockContents());
         contents.forEach(frame -> {
@@ -147,8 +134,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
         editor.modifiedFrame(this, false); //notify the editor that a change has been occurred. That will trigger a file save
     }
 
-    public boolean addTailCanvas()
-    {
+    public boolean addTailCanvas() {
         if (tailCanvas != null) {
             return false; //Already have one
         }
@@ -162,8 +148,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
         return true;
     }
 
-    private void addTailCanvas(FrameCanvas canvas, FrameCursor cursor)
-    {
+    private void addTailCanvas(FrameCanvas canvas, FrameCursor cursor) {
         if (addTailCanvas()) {
             List<Frame> contents = new ArrayList<>();
             if (canvas != null && cursor != null) {
@@ -180,21 +165,19 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
 //        editor.modifiedFrame(this);
     }
 
-    protected void removeCanvas(FrameCanvas canvas)
-    {
+    protected void removeCanvas(FrameCanvas canvas) {
         super.removeCanvas(canvas);
         //check if it is an intermediate canvas
         intermediateCanvases.remove(canvas);
         //check if we are removing a tail canvas
-        if (tailCanvas == canvas){
+        if (tailCanvas == canvas) {
             tailCanvas = null;
         }
         editor.modifiedFrame(this, false);
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         List<CodeElement> firstCanvasContents = new ArrayList<>();
         firstCanvas.getBlocksSubtype(CodeFrame.class).forEach(f -> {
             f.regenerateCode();
@@ -202,10 +185,10 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
         });
 
         List<List<CodeElement>> intermediateCanvasesContents = Utility.mapList(intermediateCanvases, canvas ->
-            Utility.mapList(canvas.getBlocksSubtype(CodeFrame.class), f -> {
-                f.regenerateCode();
-                return f.getCode();
-            })
+                Utility.mapList(canvas.getBlocksSubtype(CodeFrame.class), f -> {
+                    f.regenerateCode();
+                    return f.getCode();
+                })
         );
 
         List<CodeElement> tailCanvasContents = null;
@@ -224,126 +207,106 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
                                                                      List<CodeElement> tailCanvasContents, boolean enabled);
 
     @Override
-    public SandwichCanvasesElement getCode()
-    {
+    public SandwichCanvasesElement getCode() {
         return element;
     }
 
-    public JavaCanvas getFirstCanvas()
-    {
+    public JavaCanvas getFirstCanvas() {
         return firstCanvas;
     }
 
-    public JavaCanvas getTailCanvas()
-    {
+    public JavaCanvas getTailCanvas() {
         return tailCanvas;
     }
 
-    public DebuggableParentFrame getFirstCanvasDebug()
-    {
+    public DebuggableParentFrame getFirstCanvasDebug() {
         return new DebuggableParentFrame() {
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
                 return ((JavaCanvas) getParentCanvas()).showDebugBefore(SandwichCanvasesFrame.this, debug);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
                 return getFirstCanvas().showDebugBefore(null, debug);
             }
 
             @Override
-            public FrameCanvas getParentCanvas()
-            {
+            public FrameCanvas getParentCanvas() {
                 return getFirstCanvas();
             }
         };
     }
 
-    public DebuggableParentFrame getIntermediateCanvasDebug(int intermediateCanvasIndex)
-    {
+    public DebuggableParentFrame getIntermediateCanvasDebug(int intermediateCanvasIndex) {
         return new DebuggableParentFrame() {
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-            {
-                return ((JavaCanvas)getParentCanvas()).showDebugBefore(SandwichCanvasesFrame.this, debug);
+            public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
+                return ((JavaCanvas) getParentCanvas()).showDebugBefore(SandwichCanvasesFrame.this, debug);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
                 return intermediateCanvases.get(intermediateCanvasIndex).showDebugBefore(null, debug);
             }
 
             @Override
-            public FrameCanvas getParentCanvas()
-            {
+            public FrameCanvas getParentCanvas() {
                 return intermediateCanvases.get(intermediateCanvasIndex);
             }
         };
     }
 
-    public DebuggableParentFrame getTailCanvasDebug()
-    {
+    public DebuggableParentFrame getTailCanvasDebug() {
         return new DebuggableParentFrame() {
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-            {
-                return ((JavaCanvas)getParentCanvas()).showDebugBefore(SandwichCanvasesFrame.this, debug);
+            public HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
+                return ((JavaCanvas) getParentCanvas()).showDebugBefore(SandwichCanvasesFrame.this, debug);
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug)
-            {
+            public HighlightedBreakpoint showDebugAtEnd(DebugInfo debug) {
                 return getTailCanvas().showDebugBefore(null, debug);
             }
 
             @Override
-            public FrameCanvas getParentCanvas()
-            {
+            public FrameCanvas getParentCanvas() {
                 return getTailCanvas();
             }
         };
     }
 
     @Override
-    public boolean focusWhenJustAdded()
-    {
+    public boolean focusWhenJustAdded() {
         firstCanvas.getFirstCursor().requestFocus();
         return true;
     }
 
     @Override
-    public FrameTypeCheck check(FrameCanvas canvas)
-    {
+    public FrameTypeCheck check(FrameCanvas canvas) {
         return StrideDictionary.checkStatement();
     }
 
     @Override
-    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursor)
-    {
+    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas canvas, FrameCursor cursor) {
         List<ExtensionDescription> inners = new ArrayList<>();
         inners.addAll(super.getAvailableExtensions(canvas, cursor));
 
-        if (canvas == firstCanvas)
-        {
+        if (canvas == firstCanvas) {
             inners.add(new ExtensionDescription('\b', "Remove " + frameCaption + ", keep contents", () ->
                     new PullUpContentsOperation(editor).activate(getFrame()), false, ExtensionSource.INSIDE_FIRST));
         }
 
-        if ( canvas == firstCanvas || intermediateCanvases.contains(canvas) || canvas == null)
-        {
+        if (canvas == firstCanvas || intermediateCanvases.contains(canvas) || canvas == null) {
 
             // This extension will be picked if you are in the first (mandatory) canvas, an
             // intermediate canvas, or if you are afterwards and there is no tail canvas.
@@ -360,14 +323,12 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
             }, true, ExtensionSource.MODIFIER, otherSources.toArray(new ExtensionSource[0])));
         }
 
-        if (intermediateCanvases.contains(canvas))
-        {
+        if (intermediateCanvases.contains(canvas)) {
             inners.add(new ExtensionDescription('\b', "Remove " + intermediateCanvasCaption + ", keep contents", () ->
-                pullUpCanvasContents(getCursorBefore(canvas), canvas), false, ExtensionSource.INSIDE_FIRST));
+                    pullUpCanvasContents(getCursorBefore(canvas), canvas), false, ExtensionSource.INSIDE_FIRST));
         }
 
-        if ((canvas == null || Utility.findLast(getCanvases()).orElse(null) == canvas) && tailCanvas == null)
-        {
+        if ((canvas == null || Utility.findLast(getCanvases()).orElse(null) == canvas) && tailCanvas == null) {
             // This will be picked if you are in the last canvas or outside, and there is no tail canvas:
             inners.add(new ExtensionDescription(dictionary.getExtensionChar(tailCanvasCaption), "Add " + tailCanvasCaption, () -> {
                 if (cursor == null)
@@ -377,8 +338,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
             }, true, ExtensionSource.INSIDE_FIRST, ExtensionSource.INSIDE_LATER, ExtensionSource.MODIFIER, ExtensionSource.AFTER));
         }
 
-        if (tailCanvas != null && tailCanvas == canvas)
-        {
+        if (tailCanvas != null && tailCanvas == canvas) {
             inners.add(new ExtensionDescription('\b', "Remove " + tailCanvasCaption + ", keep contents", () ->
                     pullUpCanvasContents(getCursorBefore(canvas), canvas), false, ExtensionSource.INSIDE_FIRST));
         }
@@ -388,8 +348,7 @@ public abstract class SandwichCanvasesFrame extends MultiCanvasFrame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         super.setView(oldView, newView, animate);
         JavaFXUtil.setPseudoclass("bj-java-preview", newView == View.JAVA_PREVIEW, sidebar.getStyleable());
         getCanvases().forEach(c -> {

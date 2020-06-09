@@ -24,19 +24,18 @@ package greenfoot.sound;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 
-public class SoundUtils
-{
+public class SoundUtils {
 
     /**
      * Convert an integer value between 0-100 between the specified floating
      * point values.
+     *
      * @param val the value to convert.
      * @param min the minimum floating point value.
      * @param max the maximum floating point value.
      * @return a float between the two values assuming val is between 0-100.
      */
-    public static float convertMinMax(int val, float min, float max)
-    {
+    public static float convertMinMax(int val, float min, float max) {
         float range = max - min;
         float newVal = val / (100 / range);
         return newVal + min;
@@ -45,6 +44,7 @@ public class SoundUtils
     /**
      * Convert a value on a logarithmic scale between 0-100 to a linear scale
      * in the same range.
+     *
      * @param level the logarithmic level.
      * @return the linear level.
      */
@@ -54,29 +54,26 @@ public class SoundUtils
 
     /**
      * Calculate how long it will take to play the given number of bytes.
-     * 
-     * @param bytes Number of bytes.
+     *
+     * @param bytes  Number of bytes.
      * @param format The format used to play the bytes.
      * @return time in ms or -1 if it could not be calculated.
      */
-    public static long getTimeToPlayBytes(long bytes, AudioFormat format)
-    {
+    public static long getTimeToPlayBytes(long bytes, AudioFormat format) {
         return getTimeToPlayFrames(bytes / format.getFrameSize(), format);
     }
 
     /**
      * Calculate how long it will take to play the given number of frames.
-     * 
-     * @param bytes Number of bytes.
+     *
+     * @param bytes  Number of bytes.
      * @param format The format used to play the bytes.
      * @return time in ms or -1 if it could not be calculated.
      */
-    public static long getTimeToPlayFrames(long frames, AudioFormat format)
-    {
+    public static long getTimeToPlayFrames(long frames, AudioFormat format) {
         if (format.getFrameRate() != AudioSystem.NOT_SPECIFIED) {
             return (long) (1000 * frames / format.getFrameRate());
-        }
-        else {
+        } else {
             return -1;
         }
     }
@@ -84,20 +81,17 @@ public class SoundUtils
     /**
      * Will attempt to calculate a buffer size that can hold the given time of
      * audio data. If unsuccessful it will return -1.
-     * 
+     *
      * @return size in bytes.
      */
-    public static int getBufferSizeToHold(AudioFormat format, double seconds)
-    {
+    public static int getBufferSizeToHold(AudioFormat format, double seconds) {
         int bufferSize;
         if (format.getFrameRate() != AudioSystem.NOT_SPECIFIED) {
             bufferSize = (int) Math.ceil(format.getFrameSize() * format.getFrameRate() * seconds);
-        }
-        else if (format.getSampleRate() != AudioSystem.NOT_SPECIFIED) {
+        } else if (format.getSampleRate() != AudioSystem.NOT_SPECIFIED) {
             bufferSize = (int) Math.ceil((format.getSampleSizeInBits() / 8) * format.getChannels()
                     * format.getSampleRate() * seconds);
-        }
-        else {
+        } else {
             bufferSize = -1;
         }
         return bufferSize;

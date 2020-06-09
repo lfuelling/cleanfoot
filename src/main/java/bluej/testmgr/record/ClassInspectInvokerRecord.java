@@ -24,55 +24,48 @@ package bluej.testmgr.record;
 import bluej.pkgmgr.PkgMgrFrame;
 
 /**
- * Records a single user interaction with the 
+ * Records a single user interaction with the
  * class inspection mechanisms of BlueJ.
- * 
+ * <p>
  * This record is for classes accessed through inspectors
  * (not currently working).
  *
  * @author Poul Henriksen <polle@mip.sdu.dk>
  */
-public class ClassInspectInvokerRecord extends InvokerRecord
-{   
+public class ClassInspectInvokerRecord extends InvokerRecord {
     private final String className;
 
     /**
-     * Class inspection 
-     * 
+     * Class inspection
+     *
      * @param className name of the class
-     */    
-    public ClassInspectInvokerRecord(String className)
-    {
-        this.className = className;        
-    }   
-    
+     */
+    public ClassInspectInvokerRecord(String className) {
+        this.className = className;
+    }
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
     }
 
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
+    public String toFixtureDeclaration(String firstIndent) {
         return null;
     }
-    
+
     @Override
-    public String toFixtureSetup(String secondIndent)
-    {
+    public String toFixtureSetup(String secondIndent) {
         return secondIndent + className + statementEnd;
     }
 
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         return secondIndent + className + statementEnd;
     }
-    
+
     @Override
-    public String toExpression()
-    {
-        return className;       
+    public String toExpression() {
+        return className;
     }
 }

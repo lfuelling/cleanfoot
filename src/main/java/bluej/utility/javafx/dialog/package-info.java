@@ -21,6 +21,7 @@
  */
 @OnThread(Tag.FXPlatform)
 package bluej.utility.javafx.dialog;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

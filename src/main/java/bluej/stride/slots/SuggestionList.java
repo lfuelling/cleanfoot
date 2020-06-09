@@ -21,27 +21,12 @@
  */
 package bluej.stride.slots;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import bluej.utility.Debug;
+import bluej.Config;
+import bluej.utility.Utility;
+import bluej.utility.javafx.*;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringExpression;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.CssMetaData;
@@ -65,36 +50,35 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
-
-import bluej.prefmgr.PrefMgr;
-import bluej.utility.javafx.FXPlatformConsumer;
-import bluej.utility.javafx.FXPlatformRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.Config;
-import bluej.utility.Utility;
-import bluej.utility.javafx.FXSupplier;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ScalableHeightLabel;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 /**
  * A code completion suggestion list that pops up beneath a slot to offer suggestions
  * for the user to pick from, using either the arrow keys, the mouse, or by typing more and pressing enter.
- *
+ * <p>
  * Suggestions can either be "direct", meaning that what the user has typed so far is
  * (ignoring case) an exact prefix of the suggestion, or they can be "similar" meaning
  * that what the user has typed is (ignoring case) within MAX_EDIT_DISTANCE of one
  * chunk of the suggestion.  Here, chunk means a part of the suggestion that begins
  * after an underscore (e.g. actor_details in "get_actor_details") or a case change
  * (e.g. ActorDetails in "getActorDetails").
- * 
- *  Direct suggestions are always shown first, and similar suggestions are shown beneath
- *  a suitable label.
+ * <p>
+ * Direct suggestions are always shown first, and similar suggestions are shown beneath
+ * a suitable label.
  */
 @OnThread(Tag.FXPlatform)
-public class SuggestionList
-{
+public class SuggestionList {
     // The next available SuggestionList ID; must be static to be unique across all instances:
     private static final AtomicInteger nextSuggListId = new AtomicInteger(1);
     // The SuggestionList ID for this item, used for data recording purposes:
@@ -102,30 +86,41 @@ public class SuggestionList
 
     private final SuggestionListListener listener;
 
-    private static class SuggestionListView extends ListView<SuggestionListItem>
-    {
+    private static class SuggestionListView extends ListView<SuggestionListItem> {
         private final SimpleStyleableDoubleProperty cssTypeWidthProperty = new SimpleStyleableDoubleProperty(TYPE_WIDTH_META_DATA);
-        public final SimpleStyleableDoubleProperty cssTypeWidthProperty() { return cssTypeWidthProperty; }
+
+        public final SimpleStyleableDoubleProperty cssTypeWidthProperty() {
+            return cssTypeWidthProperty;
+        }
+
         // ListView doesn't offer -fx-pref-width as style, so we implement it ourselves:
         private final SimpleStyleableDoubleProperty cssPrefWidthProperty = new SimpleStyleableDoubleProperty(PREF_WIDTH_META_DATA);
-        public final SimpleStyleableDoubleProperty cssPrefWidthProperty() { return cssPrefWidthProperty; }
+
+        public final SimpleStyleableDoubleProperty cssPrefWidthProperty() {
+            return cssPrefWidthProperty;
+        }
 
         private static final CssMetaData<SuggestionListView, Number> TYPE_WIDTH_META_DATA =
                 JavaFXUtil.cssSize("-bj-type-width", SuggestionListView::cssTypeWidthProperty);
         private static final CssMetaData<SuggestionListView, Number> PREF_WIDTH_META_DATA =
                 JavaFXUtil.cssSize("-bj-pref-width", SuggestionListView::cssPrefWidthProperty);
 
-        private static final List <CssMetaData <? extends Styleable, ? > > cssMetaDataList =
+        private static final List<CssMetaData<? extends Styleable, ?>> cssMetaDataList =
                 JavaFXUtil.extendCss(ListView.getClassCssMetaData())
-                  .add(TYPE_WIDTH_META_DATA)
-                  .add(PREF_WIDTH_META_DATA)
-                  .build();
+                        .add(TYPE_WIDTH_META_DATA)
+                        .add(PREF_WIDTH_META_DATA)
+                        .build();
 
-        public static List <CssMetaData <? extends Styleable, ? > > getClassCssMetaData() { return cssMetaDataList; }
-        @Override public List<CssMetaData<? extends Styleable, ?>> getControlCssMetaData() { return getClassCssMetaData(); }
+        public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
+            return cssMetaDataList;
+        }
 
-        public SuggestionListView(DoubleExpression typeWidth, FXPlatformConsumer<SuggestionListItem> clickListener)
-        {
+        @Override
+        public List<CssMetaData<? extends Styleable, ?>> getControlCssMetaData() {
+            return getClassCssMetaData();
+        }
+
+        public SuggestionListView(DoubleExpression typeWidth, FXPlatformConsumer<SuggestionListItem> clickListener) {
             setEditable(false);
             setCellFactory(lv -> new SuggestionCell(typeWidth, clickListener));
             prefWidthProperty().bind(cssPrefWidthProperty);
@@ -141,7 +136,7 @@ public class SuggestionList
      * The window containing the pane
      */
     private final Stage window;
-    
+
     /**
      * List of choices available for the user.  Each entry represents a different item.
      */
@@ -194,15 +189,19 @@ public class SuggestionList
      */
     private final DoubleProperty typeWidth;
 
-    /** Used when "replaying" last calculateEligible call */
+    /**
+     * Used when "replaying" last calculateEligible call
+     */
     private String lastPrefix;
-    /** Used when "replaying" last calculateEligible call */
+    /**
+     * Used when "replaying" last calculateEligible call
+     */
     private boolean lastAllowSimilar;
 
     private boolean expectingToLoseFocus = false;
 
     private final ObjectProperty<SuggestionShown> shownState = new SimpleObjectProperty<>(SuggestionShown.COMMON);
-    
+
     private FXPlatformRunnable cancelShowDocsTask;
     private final Pane docPane;
 
@@ -210,8 +209,7 @@ public class SuggestionList
 
     private final BooleanProperty moreLabelAtBottom = new SimpleBooleanProperty(true);
 
-    private static class EligibleDetail implements Comparable<EligibleDetail>
-    {
+    private static class EligibleDetail implements Comparable<EligibleDetail> {
         // The offset into the suggestion string of the matching part
         public final int suggestionOffset;
         // The edit distance between the matching part and what the user has typed.
@@ -219,26 +217,21 @@ public class SuggestionList
         // The length of what the user has typed.
         private final int length;
 
-        public EligibleDetail(int suggestionOffset, int distance, int length)
-        {
+        public EligibleDetail(int suggestionOffset, int distance, int length) {
             this.suggestionOffset = suggestionOffset;
             this.distance = distance;
             this.length = length;
         }
 
         @OnThread(value = Tag.FX, ignoreParent = true)
-        public int compareTo(EligibleDetail e)
-        {
+        public int compareTo(EligibleDetail e) {
             // If one matches at the start, that is definitely better than one
             // that matches later on, even if it has higher edit distance.
             // Compare whether one of us and "e" matches at start and other doesn't:
-            if ((suggestionOffset == 0) == (e.suggestionOffset == 0))
-            {
+            if ((suggestionOffset == 0) == (e.suggestionOffset == 0)) {
                 // Either both at start or neither; compare edit distance
                 return Integer.compare(distance, e.distance);
-            }
-            else
-            {
+            } else {
                 if (suggestionOffset == 0)
                     return -1; // We start at the beginning and are the better one
                 else
@@ -246,8 +239,7 @@ public class SuggestionList
             }
         }
 
-        public boolean close()
-        {
+        public boolean close() {
             if (distance == 0 && suggestionOffset == 0)
                 return true; // Always show direct suggestions
             if (distance == 0 && suggestionOffset != 0)
@@ -261,14 +253,12 @@ public class SuggestionList
     }
 
     // Whether the suggestion is common (shown from first trigger) or rare (shown only on second trigger)
-    public enum SuggestionShown
-    {
+    public enum SuggestionShown {
         COMMON, RARE
     }
 
     // package-visible; needs to be seen by SuggestionCell
-    class SuggestionListItem
-    {
+    class SuggestionListItem {
         // Index into the choices list
         // When this is -1, it means we are the "related items" divider label.
         public final int index;
@@ -282,21 +272,18 @@ public class SuggestionList
 
         public final BooleanProperty highlighted = new SimpleBooleanProperty(false);
 
-        public SuggestionListItem(int index, boolean typeMatch, boolean direct)
-        {
+        public SuggestionListItem(int index, boolean typeMatch, boolean direct) {
             this.index = index;
             this.typeMatch = typeMatch;
             this.direct = direct;
         }
 
-        public SuggestionDetails getDetails()
-        {
+        public SuggestionDetails getDetails() {
             return choices.get(index);
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -308,14 +295,12 @@ public class SuggestionList
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return 2 * index + (direct ? 1 : 0);
         }
     }
 
-    public static class SuggestionDetails
-    {
+    public static class SuggestionDetails {
         // The string of the choices to match the user's input against.  Cannot be null.
         public final String choice;
         // Non-matchable bit displayed at the end of a suggestion, e.g. param types.  Can be null.
@@ -325,13 +310,11 @@ public class SuggestionList
         // Whether the suggestion is common (shown from first trigger) or rare (shown only on second trigger)
         public final SuggestionShown shown;
 
-        public SuggestionDetails(String choice)
-        {
+        public SuggestionDetails(String choice) {
             this(choice, null, null, SuggestionShown.COMMON);
         }
 
-        public SuggestionDetails(String choice, String suffix, String type, SuggestionShown shown)
-        {
+        public SuggestionDetails(String choice, String suffix, String type, SuggestionShown shown) {
             if (choice == null)
                 throw new IllegalArgumentException();
             if (shown == null)
@@ -342,43 +325,36 @@ public class SuggestionList
             this.shown = shown;
         }
 
-        public boolean hasDocs()
-        {
+        public boolean hasDocs() {
             return false;
         }
 
         @OnThread(Tag.FXPlatform)
-        public Pane makeDocPane()
-        {
+        public Pane makeDocPane() {
             return null;
         }
     }
 
-    public static class SuggestionDetailsWithHTMLDoc extends SuggestionDetails
-    {
+    public static class SuggestionDetailsWithHTMLDoc extends SuggestionDetails {
         private final String docHTML;
 
-        public SuggestionDetailsWithHTMLDoc(String choice, SuggestionShown shown, String docHTML)
-        {
+        public SuggestionDetailsWithHTMLDoc(String choice, SuggestionShown shown, String docHTML) {
             super(choice, null, null, shown);
             this.docHTML = docHTML;
         }
 
-        public SuggestionDetailsWithHTMLDoc(String choice, String suffix, String type, SuggestionShown shown, String docHTML)
-        {
+        public SuggestionDetailsWithHTMLDoc(String choice, String suffix, String type, SuggestionShown shown, String docHTML) {
             super(choice, suffix, type, shown);
             this.docHTML = docHTML;
         }
 
-        public boolean hasDocs()
-        {
+        public boolean hasDocs() {
             return true;
         }
 
         @Override
         @OnThread(Tag.FXPlatform)
-        public Pane makeDocPane()
-        {
+        public Pane makeDocPane() {
             WebView webView = new WebView();
             Pane docDisplay = new BorderPane(webView);
             JavaFXUtil.addStyleClass(docDisplay, "suggestion-javadoc");
@@ -394,41 +370,36 @@ public class SuggestionList
         }
     }
 
-    public static class SuggestionDetailsWithCustomDoc extends SuggestionDetails
-    {
+    public static class SuggestionDetailsWithCustomDoc extends SuggestionDetails {
         private final FXSupplier<Pane> docMaker;
 
-        public SuggestionDetailsWithCustomDoc(String choice, String suffix, String type, SuggestionShown shown, FXSupplier<Pane> docMaker)
-        {
+        public SuggestionDetailsWithCustomDoc(String choice, String suffix, String type, SuggestionShown shown, FXSupplier<Pane> docMaker) {
             super(choice, suffix, type, shown);
             this.docMaker = docMaker;
         }
 
-        public boolean hasDocs()
-        {
+        public boolean hasDocs() {
             return true;
         }
 
-        public Pane makeDocPane()
-        {
+        public Pane makeDocPane() {
             return docMaker.get();
         }
     }
 
     /**
      * Create a SuggestionList.
-     * 
-     * @param listParent Editor (used to get overlay panes)
-     * @param choices The strings of the choices to match the user's input against
-     * @param suffixes Non-matchable bits on the end of a suggestion, e.g. param types.
-     *                 Should either be null or same length as choices, one suffix per choice. 
-     * @param types Should either be null, or the same length as choices, one type per choice
+     *
+     * @param listParent        Editor (used to get overlay panes)
+     * @param choices           The strings of the choices to match the user's input against
+     * @param suffixes          Non-matchable bits on the end of a suggestion, e.g. param types.
+     *                          Should either be null or same length as choices, one suffix per choice.
+     * @param types             Should either be null, or the same length as choices, one type per choice
      * @param highlightListener A listener for the highlighted item changing.  Can be null.
-     * @param clickListener A listener for a choice being clicked (and thus selected).  Cannot be null.
+     * @param clickListener     A listener for a choice being clicked (and thus selected).  Cannot be null.
      */
     public SuggestionList(SuggestionListParent listParent, List<? extends SuggestionDetails> choices, String targetType,
-                          SuggestionShown startShown, Consumer<Integer> highlightListener, final SuggestionListListener listener)
-    {
+                          SuggestionShown startShown, Consumer<Integer> highlightListener, final SuggestionListListener listener) {
         if (listener == null)
             throw new IllegalArgumentException("SuggestionListListener cannot be null");
 
@@ -447,8 +418,7 @@ public class SuggestionList
         this.listBox = new SuggestionListView(this.typeWidth, item -> {
             highlighted = doubleSuggestions.indexOf(item);
             int highlighted = getHighlighted();
-            if (highlighted != -1)
-            {
+            if (highlighted != -1) {
                 listener.suggestionListChoiceClicked(this, highlighted);
                 expectingToLoseFocus = true;
                 hiding = true;
@@ -469,10 +439,10 @@ public class SuggestionList
         docPane.setMinWidth(400.0);
         docPane.setMaxHeight(300.0);
         docPane.setBackground(null);
-        
+
         BorderPane listAndDocBorderPane = new BorderPane();
         JavaFXUtil.addStyleClass(listAndDocBorderPane, "suggestion-top-level");
-        
+
         // We wrap left-hand part in an AnchorPane to allow any unused space beneath the list
         // to be transparent:
         AnchorPane listAndMoreAndTransPane = new AnchorPane();
@@ -497,7 +467,7 @@ public class SuggestionList
         AnchorPane.setTopAnchor(moreLabel, 0.0);
         AnchorPane.setBottomAnchor(moreLabel, 0.0);
         JavaFXUtil.addStyleClass(moreLabelPane, "suggestion-more-label-pane");
-        
+
 
         window.setResizable(false);
         BorderPane listAndMorePane = new BorderPane();
@@ -510,16 +480,13 @@ public class SuggestionList
         AnchorPane.setRightAnchor(listAndMorePane, 0.0);
         AnchorPane.setTopAnchor(listAndMorePane, 0.0);
         JavaFXUtil.addChangeListener(moreLabelAtBottom, atBottom -> {
-            if (atBottom)
-            {
+            if (atBottom) {
                 listAndMorePane.setTop(null);
                 listAndMorePane.setBottom(shownState.get() == SuggestionShown.COMMON ? moreLabelPane : null);
                 AnchorPane.setTopAnchor(listAndMorePane, 0.0);
                 AnchorPane.setBottomAnchor(listAndMorePane, null);
                 BorderPane.setAlignment(docPane, Pos.TOP_LEFT);
-            }
-            else
-            {
+            } else {
                 listAndMorePane.setBottom(null);
                 listAndMorePane.setTop(shownState.get() == SuggestionShown.COMMON ? moreLabelPane : null);
                 AnchorPane.setTopAnchor(listAndMorePane, null);
@@ -529,8 +496,7 @@ public class SuggestionList
             JavaFXUtil.setPseudoclass("bj-at-top", !atBottom, moreLabelPane);
         });
         JavaFXUtil.addChangeListener(shownState, s -> {
-            if (s == SuggestionShown.RARE)
-            {
+            if (s == SuggestionShown.RARE) {
                 listAndMorePane.setTop(null);
                 listAndMorePane.setBottom(null);
             }
@@ -543,11 +509,9 @@ public class SuggestionList
         window.setScene(scene);
 
         listParent.setupSuggestionWindow(window);
-        
-        for (int j = 0; j <= 1; j++)
-        {
-            for (int i = 0; i < choices.size(); i++)
-            {
+
+        for (int j = 0; j <= 1; j++) {
+            for (int i = 0; i < choices.size(); i++) {
                 SuggestionDetails choice = choices.get(i);
                 SuggestionListItem sugg = new SuggestionListItem(i, (targetType != null && choice.type != null) && targetType.equals(choice.type), j == 0);
                 doubleSuggestions.add(sugg);
@@ -556,8 +520,7 @@ public class SuggestionList
         listBox.setPlaceholder(noneLabel);
 
         JavaFXUtil.addFocusListener(window, focused -> {
-            if (!focused)
-            {
+            if (!focused) {
                 hideDocDisplay();
                 hiding = true;
                 // We must hide the window during a runLater.  If we hide it straight away
@@ -573,18 +536,15 @@ public class SuggestionList
         });
 
         listAndDocBorderPane.addEventFilter(KeyEvent.KEY_TYPED, e -> {
-            if (e.getCharacter().equals(" ") && e.isControlDown())
-            {
-                if (shownState.get() == SuggestionShown.COMMON)
-                {
+            if (e.getCharacter().equals(" ") && e.isControlDown()) {
+                if (shownState.get() == SuggestionShown.COMMON) {
                     shownState.set(SuggestionShown.RARE);
                     calculateEligible(lastPrefix, lastAllowSimilar, false);
                     updateVisual(lastPrefix);
                 }
             }
             // On Mac, some keypresses can produce null character, so guard against that:
-            else if (!e.getCharacter().contains("\u0000") && listener.suggestionListKeyTyped(this, e, getHighlighted()) == SuggestionListListener.Response.DISMISS)
-            {
+            else if (!e.getCharacter().contains("\u0000") && listener.suggestionListKeyTyped(this, e, getHighlighted()) == SuggestionListListener.Response.DISMISS) {
                 expectingToLoseFocus = true;
                 hiding = true;
                 window.hide();
@@ -598,8 +558,7 @@ public class SuggestionList
         // the doc scroll bar, there's no obvious way to make up/down change
         // back to scrolling the list (which is what the user expects in this window):
         listAndDocBorderPane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            switch (e.getCode())
-            {
+            switch (e.getCode()) {
                 case UP:
                     up();
                     break;
@@ -620,13 +579,11 @@ public class SuggestionList
                     break;
                 case SPACE:
                     // On Mac, we have to check for Ctrl-Space in KEY_PRESSED, not KEY_TYPED:
-                    if (e.isControlDown())
-                    {
+                    if (e.isControlDown()) {
                         // Consume either way, because otherwise we get an invalid character:
                         e.consume();
 
-                        if (shownState.get() == SuggestionShown.COMMON)
-                        {
+                        if (shownState.get() == SuggestionShown.COMMON) {
                             shownState.set(SuggestionShown.RARE);
                             calculateEligible(lastPrefix, lastAllowSimilar, false);
                             updateVisual(lastPrefix);
@@ -638,8 +595,7 @@ public class SuggestionList
                     int selected = getHighlighted();
                     if (selected == -1 && eligibleCount() == 1)
                         selected = getFirstEligible() % choices.size();
-                    if (listener.suggestionListKeyPressed(this, e, selected) == SuggestionListListener.Response.DISMISS)
-                    {
+                    if (listener.suggestionListKeyPressed(this, e, selected) == SuggestionListListener.Response.DISMISS) {
                         expectingToLoseFocus = true;
                         hiding = true;
                         window.hide();
@@ -652,18 +608,14 @@ public class SuggestionList
     }
 
     @OnThread(Tag.FXPlatform)
-    public void show(final Node reference, final Bounds textBoundsWithinReference)
-    {
+    public void show(final Node reference, final Bounds textBoundsWithinReference) {
         // If there's only one option, don't bother showing, just choose it right off the bat:
-        if (eligibleCount() == 1)
-        {
+        if (eligibleCount() == 1) {
             boolean singleOptionAvailable = true;
             // We need to make sure there are no rare options available:
-            if (shownState.get() == SuggestionShown.COMMON)
-            {
+            if (shownState.get() == SuggestionShown.COMMON) {
                 calculateEligible(lastPrefix, lastAllowSimilar, SuggestionShown.RARE, false);
-                if (eligibleCount() != 1)
-                {
+                if (eligibleCount() != 1) {
                     //There were more options: set it back
                     calculateEligible(lastPrefix, lastAllowSimilar, SuggestionShown.COMMON, false);
                     singleOptionAvailable = false;
@@ -671,12 +623,10 @@ public class SuggestionList
                 // Otherwise, still only one option available, no need to set it back as we won't show anyway
             }
 
-            if (singleOptionAvailable)
-            {
+            if (singleOptionAvailable) {
                 int choice = getFirstEligible();
                 // If it's only a related suggestion, don't complete it!  Show window instead
-                if (choice < choices.size())
-                {
+                if (choice < choices.size()) {
                     // runLater because our caller won't expect us to call back before show has finished:
                     JavaFXUtil.runAfterCurrent(() ->
                     {
@@ -697,19 +647,16 @@ public class SuggestionList
         Window refWindow = reference.getScene().getWindow();
         // Work out most restrictive Y coordinate on all the screens our editor window is overlapping:
         double screenMaxY = Screen.getScreensForRectangle(refWindow.getX(), refWindow.getY(), refWindow.getWidth(), refWindow.getHeight())
-            .stream().mapToDouble(s -> s.getVisualBounds().getMaxY()).min().orElse(999999.0);
+                .stream().mapToDouble(s -> s.getVisualBounds().getMaxY()).min().orElse(999999.0);
 
         //editor.getCodeOverlayPane().addOverlay(pane, reference, actualXOffset, yOffset);
         double windowX = refWindow.getX() + reference.getScene().getX() + xPos + textBoundsWithinReference.getMinX() - typeWidth.get() - 1.0f; //1 pixel for border
         double windowY = refWindow.getY() + reference.getScene().getY() + reference.localToScene(reference.getBoundsInLocal()).getMinY() + textBoundsWithinReference.getMinY();
-        if (screenMaxY < window.getHeight() + windowY)
-        {
+        if (screenMaxY < window.getHeight() + windowY) {
             // Bottom of suggestions window will be off screen; we must place window above reference, not below
             windowY -= 350.0;
             moreLabelAtBottom.set(false);
-        }
-        else
-        {
+        } else {
             moreLabelAtBottom.set(true);
             // We will be below text, so add on its height:
             windowY += textBoundsWithinReference.getHeight();
@@ -733,45 +680,36 @@ public class SuggestionList
         listBox.requestFocus();
     }
 
-    private void up()
-    {
+    private void up() {
         // Go backwards through eligible completions to find previous eligible.
         // Pressing UP on top item deselects all completions
-        for (int candidate = highlighted - 1; candidate >= -1; candidate--)
-        {
-            if (candidate == -1 || eligible.containsKey(candidate))
-            {
+        for (int candidate = highlighted - 1; candidate >= -1; candidate--) {
+            if (candidate == -1 || eligible.containsKey(candidate)) {
                 setHighlighted(candidate, true);
                 break;
             }
         }
     }
 
-    private void down()
-    {
+    private void down() {
         // This works if highlighted is -1, too; advance to 0:
-        for (int candidate = highlighted + 1; candidate < doubleSuggestions.size(); candidate++)
-        {
-            if (eligible.containsKey(candidate))
-            {
+        for (int candidate = highlighted + 1; candidate < doubleSuggestions.size(); candidate++) {
+            if (eligible.containsKey(candidate)) {
                 setHighlighted(candidate, true);
                 break;
             }
         }
     }
 
-    private void home()
-    {
+    private void home() {
         setHighlighted(getFirstEligible(), true);
     }
 
-    private void end()
-    {
+    private void end() {
         setHighlighted(getLastEligible(), true);
     }
 
-    private void pageUp()
-    {
+    private void pageUp() {
         for (int i = 0; i < 10; i++)
             up();
 
@@ -780,16 +718,13 @@ public class SuggestionList
             home();
     }
 
-    private void pageDown()
-    {
+    private void pageDown() {
         for (int i = 0; i < 10; i++)
             down();
     }
 
-    protected void setHighlighted(int newHighlight, boolean scrollTo)
-    {
-        if (highlighted == newHighlight)
-        {
+    protected void setHighlighted(int newHighlight, boolean scrollTo) {
+        if (highlighted == newHighlight) {
             if (highlighted != -1 && scrollTo)
                 listBox.scrollTo(Math.max(0, showingItems.indexOf(doubleSuggestions.get(newHighlight)) - 3));
             return;
@@ -800,114 +735,97 @@ public class SuggestionList
 
         highlighted = newHighlight;
 
-        if (highlighted != -1)
-        {
+        if (highlighted != -1) {
             doubleSuggestions.get(highlighted).highlighted.set(true);
             if (scrollTo)
                 listBox.scrollTo(Math.max(0, showingItems.indexOf(doubleSuggestions.get(newHighlight)) - 3));
         }
-        
+
         if (highlightListener != null)
             highlightListener.accept(getHighlighted());
-        
+
         JavaFXUtil.runNowOrLater(() -> showDocsFor(getHighlighted()));
     }
 
-    public void calculateEligible(String prefix, boolean allowSimilar, boolean canChangeToRare)
-    {
+    public void calculateEligible(String prefix, boolean allowSimilar, boolean canChangeToRare) {
         calculateEligible(prefix, allowSimilar, shownState.get(), canChangeToRare);
     }
-    
+
     /**
      * Calculates the eligible choices (those that begin with the given prefix).
      * Does not actually do any graphical update; for that, call updateVisual
-     * @param prefix The current prefix that the user has typed
-     * @param allowSimilar Whether to allow similar items (correct for typos)
+     *
+     * @param prefix          The current prefix that the user has typed
+     * @param allowSimilar    Whether to allow similar items (correct for typos)
      * @param canChangeToRare If we are showing common and there are no suggestions, can we switch to rare?
      */
-    public void calculateEligible(String prefix, boolean allowSimilar, SuggestionShown shown, boolean canChangeToRare)
-    {
+    public void calculateEligible(String prefix, boolean allowSimilar, SuggestionShown shown, boolean canChangeToRare) {
         lastPrefix = prefix;
         lastAllowSimilar = allowSimilar;
         eligible.clear();
-        for (int i = 0; i < choices.size(); i++)
-        {
+        for (int i = 0; i < choices.size(); i++) {
             String sugg = choices.get(i).choice;
-            if (choices.get(i).shown.compareTo(shown) > 0)
-            {
+            if (choices.get(i).shown.compareTo(shown) > 0) {
                 // Cannot put in eligible because it is rare and we are only showing common
-            }
-            else if (sugg.toLowerCase().startsWith(prefix.toLowerCase()))
-            {
+            } else if (sugg.toLowerCase().startsWith(prefix.toLowerCase())) {
                 eligible.put(i, new EligibleDetail(0, 0, prefix.length()));
-            }
-            else if (allowSimilar)
-            {
+            } else if (allowSimilar) {
                 // Look if this text starts a word in the identifier:
                 List<Integer> wordStarts = splitIdentLower(sugg);
                 Optional<EligibleDetail> me = wordStarts.stream().map(j -> new EligibleDetail(j, distanceTo(prefix, sugg, j), prefix.length()))
-                    .filter(EligibleDetail::close)
-                    .sorted() // Will put smallest distance first
-                    .findFirst();
-                if (me.isPresent())
-                {
+                        .filter(EligibleDetail::close)
+                        .sorted() // Will put smallest distance first
+                        .findFirst();
+                if (me.isPresent()) {
                     eligible.put(i + doubleSuggestions.size() / 2, me.get());
                 }
             }
         }
 
-        if (eligible.isEmpty() && shown == SuggestionShown.COMMON && canChangeToRare)
-        {
+        if (eligible.isEmpty() && shown == SuggestionShown.COMMON && canChangeToRare) {
             shownState.set(SuggestionShown.RARE);
             // Go round again:
             calculateEligible(prefix, allowSimilar, SuggestionShown.RARE, false);
         }
     }
-    
-    private static int distanceTo(String prefix, String candidate, int offset)
-    {
+
+    private static int distanceTo(String prefix, String candidate, int offset) {
         // We check, given a prefix (e.g. "abc"), whether the substring of the same length (e.g. 3)
         // at the given point in the candidate is a closen enough match by edit distance
         // An exact match is edit distance 0
         prefix = prefix.toLowerCase();
         String partialLower = candidate.substring(offset, Math.min(candidate.length(), offset + prefix.length())).toLowerCase();
-        
+
         // We also check for the strings one longer and one shorter, as they might have better edit distance:
         String partialLowerShort = candidate.substring(offset, Math.min(candidate.length(), offset + Math.max(1, prefix.length() - 1))).toLowerCase();
         String partialLowerLong = candidate.substring(offset, Math.min(candidate.length(), offset + 1 + prefix.length())).toLowerCase();
-        
+
         return Math.min(
                 Utility.editDistance(partialLower, prefix),
                 Math.min(Utility.editDistance(partialLowerShort, prefix), Utility.editDistance(partialLowerLong, prefix))
-               );
+        );
     }
-    
-    private static boolean hasCase(char c)
-    {
+
+    private static boolean hasCase(char c) {
         // It has case if one of these methods returns differently to the other:
         return Character.isUpperCase(c) != Character.isLowerCase(c);
     }
 
-    private static List<Integer> splitIdentLower(String text)
-    {
+    private static List<Integer> splitIdentLower(String text) {
         int startCurWord = 0;
         List<Integer> r = new ArrayList<>();
         // We split on a change of case, or an underscore, or a dot (e.g. in Greenfoot.isKeyDown)
-        for (int i = 1 /* start at 2nd char */; i < text.length(); i++)
-        {
-            if ((hasCase(text.charAt(i)) && hasCase(text.charAt(i - 1))) && 
-               (Character.isUpperCase(text.charAt(i)) == Character.isLowerCase(text.charAt(i - 1))
-             || Character.isLowerCase(text.charAt(i)) == Character.isUpperCase(text.charAt(i - 1)))
-               && (startCurWord == 0 || i - startCurWord > 1))
-            {
+        for (int i = 1 /* start at 2nd char */; i < text.length(); i++) {
+            if ((hasCase(text.charAt(i)) && hasCase(text.charAt(i - 1))) &&
+                    (Character.isUpperCase(text.charAt(i)) == Character.isLowerCase(text.charAt(i - 1))
+                            || Character.isLowerCase(text.charAt(i)) == Character.isUpperCase(text.charAt(i - 1)))
+                    && (startCurWord == 0 || i - startCurWord > 1)) {
                 // Case change:
                 r.add(startCurWord);
                 startCurWord = i;
-            }
-            else if ((text.charAt(i) == '_' || text.charAt(i) == '.') && startCurWord < i - 1)
-            {
+            } else if ((text.charAt(i) == '_' || text.charAt(i) == '.') && startCurWord < i - 1) {
                 r.add(startCurWord);
-                startCurWord = i + 1; 
+                startCurWord = i + 1;
             }
         }
         r.add(startCurWord);
@@ -918,25 +836,20 @@ public class SuggestionList
      * Updates the available options in the dropdown, restricting it to those
      * that are currently marked as eligible.  Thus this function only has a useful effect
      * if you call calculateEligible first.
-     *
      */
-    public void updateVisual(String prefix)
-    {
+    public void updateVisual(String prefix) {
         boolean showingAnySimilar = false;
 
         // Check if we're showing any related items:
-        for (int i = 0; i < doubleSuggestions.size(); i++)
-        {
-            if (eligible.containsKey(i))
-            {
+        for (int i = 0; i < doubleSuggestions.size(); i++) {
+            if (eligible.containsKey(i)) {
                 if (i > doubleSuggestions.size() / 2)
                     showingAnySimilar = true;
             }
         }
 
         // Now we must update those that are showing, to update their completion hints and so on:
-        for (Entry<Integer, EligibleDetail> e : eligible.entrySet())
-        {
+        for (Entry<Integer, EligibleDetail> e : eligible.entrySet()) {
             // It's available to complete if either:
             // - it's the only available completion, or
             // - it's the highlighted item in the dropdown, or
@@ -947,8 +860,8 @@ public class SuggestionList
             //  - If you type "foo", then "foo" is available to complete by pressing enter
             //  - If you type "fooB" then "fooB" is available to complete if and only if no other options begin with "fooB".
             boolean canComplete = eligible.size() == 1
-                                  || highlighted == e.getKey()
-                                  || doubleSuggestions.get(e.getKey()).getDetails().choice.equals(prefix);
+                    || highlighted == e.getKey()
+                    || doubleSuggestions.get(e.getKey()).getDetails().choice.equals(prefix);
             doubleSuggestions.get(e.getKey()).eligibleAt.set(e.getValue().suggestionOffset);
             doubleSuggestions.get(e.getKey()).eligibleLength.set(prefix.length());
             doubleSuggestions.get(e.getKey()).eligibleCanTab.set(canComplete);
@@ -956,8 +869,7 @@ public class SuggestionList
 
         // Make temporary list to avoid firing listeners on showingItems more than once:
         List<SuggestionListItem> newShowingItems = new ArrayList<>();
-        for (int i = 0; i < doubleSuggestions.size(); i++)
-        {
+        for (int i = 0; i < doubleSuggestions.size(); i++) {
             if (eligible.containsKey(i))
                 newShowingItems.add(doubleSuggestions.get(i));
             if (i == choices.size() && showingAnySimilar)
@@ -968,47 +880,41 @@ public class SuggestionList
 
 
         // If we had a highlight before, but it's no longer eligible, remove the highlight:
-        if (highlighted != -1)
-        {
+        if (highlighted != -1) {
             if (!eligible.containsKey(highlighted))
                 setHighlighted(getFirstEligible(), true);
             else
                 setHighlighted(highlighted, true);
         }
     }
-    
-    public int eligibleCount()
-    {
+
+    public int eligibleCount() {
         return eligible.size();
     }
-    
-    public int getFirstEligible()
-    {
+
+    public int getFirstEligible() {
         return eligible.keySet().stream().mapToInt(i -> i).min().orElse(-1);
     }
 
-    public int getLastEligible()
-    {
+    public int getLastEligible() {
         return eligible.keySet().stream().mapToInt(i -> i).max().orElse(-1);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void highlightFirstEligible()
-    {
+    public void highlightFirstEligible() {
         setHighlighted(getFirstEligible(), false);
     }
-    
+
     // Returns an index into suggestions
-    
-    private int getHighlighted()
-    {
+
+    private int getHighlighted() {
         return choices.size() == 0 ? -1 : highlighted % choices.size();
     }
-    
-    public interface SuggestionListListener
-    {
+
+    public interface SuggestionListListener {
         /**
          * An item has been selected by clicking on it.
+         *
          * @param highlighted The index of the item in the original list passed
          *                    to the SuggestionList constructor (regardless of what is
          *                    currently eligible/ineligible).  -1 if the user clicked
@@ -1022,8 +928,8 @@ public class SuggestionList
          * will usually insert the given key into the source code document.
          *
          * @param suggestionList The originating suggestion list.
-         * @param event The key event received.
-         * @param highlighted The index of the currently highlighted item.
+         * @param event          The key event received.
+         * @param highlighted    The index of the currently highlighted item.
          * @return Whether to now close the code completion dialog, or continue showing it
          */
         @OnThread(Tag.FXPlatform)
@@ -1036,8 +942,8 @@ public class SuggestionList
          * the list, but all other key handling is up to the listener.
          *
          * @param suggestionList The originating suggestion list.
-         * @param event The key event received.
-         * @param highlighted The index of the currently highlighted item.
+         * @param event          The key event received.
+         * @param highlighted    The index of the currently highlighted item.
          * @return Whether to now close the code completion dialog, or continue showing it
          */
         @OnThread(Tag.FXPlatform)
@@ -1045,37 +951,34 @@ public class SuggestionList
 
         // Called when focus was lost and we are hiding, but not because choiceClicked() or keyTyped returned DISMISS
         @OnThread(Tag.FXPlatform)
-        default void suggestionListFocusStolen(int highlighted) { }
+        default void suggestionListFocusStolen(int highlighted) {
+        }
 
         @OnThread(Tag.FXPlatform)
-        default void hidden() { }
+        default void hidden() {
+        }
 
-        enum Response
-        {
+        enum Response {
             DISMISS, CONTINUE
         }
     }
 
-    public Optional<String> getLongestCommonPrefix()
-    {
+    public Optional<String> getLongestCommonPrefix() {
         // We look for the longest prefix of all available *direct* suggestions:
         return longestCommonPrefix(eligible.entrySet().stream()
-                  .filter(e -> e.getKey() < choices.size()) // direct only
-                  .map(e -> choices.get(e.getKey()).choice)
-                  .collect(Collectors.toList()));
+                .filter(e -> e.getKey() < choices.size()) // direct only
+                .map(e -> choices.get(e.getKey()).choice)
+                .collect(Collectors.toList()));
     }
 
-    private static Optional<String> longestCommonPrefix(List<String> srcs)
-    {
+    private static Optional<String> longestCommonPrefix(List<String> srcs) {
         return srcs.stream().reduce((a, b) -> {
             int maxLen = Math.min(a.length(), b.length());
 
             if (maxLen == 0) return "";
 
-            for (int i = 0; i < maxLen; i++)
-            {
-                if (a.charAt(i) != b.charAt(i))
-                {
+            for (int i = 0; i < maxLen; i++) {
+                if (a.charAt(i) != b.charAt(i)) {
                     return a.substring(0, i);
                 }
             }
@@ -1084,40 +987,33 @@ public class SuggestionList
             return a.substring(0, maxLen);
 
         }); // Otherwise empty if no suggestions available
-        
+
     }
 
-    public DoubleExpression widthProperty()
-    {
+    public DoubleExpression widthProperty() {
         return listBox.widthProperty();
     }
 
-    public DoubleExpression typeWidthProperty()
-    {
+    public DoubleExpression typeWidthProperty() {
         return typeWidth;
     }
 
-    public boolean isShowing()
-    {
+    public boolean isShowing() {
         return window.isShowing();
     }
-    
-    public boolean isInMiddleOfHiding()
-    {
-        return hiding ;
+
+    public boolean isInMiddleOfHiding() {
+        return hiding;
     }
 
     @OnThread(Tag.FXPlatform)
-    private void showDocsFor(int selected)
-    {
-        if (cancelShowDocsTask != null)
-        {
+    private void showDocsFor(int selected) {
+        if (cancelShowDocsTask != null) {
             cancelShowDocsTask.run();
             cancelShowDocsTask = null;
         }
         hideDocDisplay();
-        if (selected != -1 && choices.get(selected).hasDocs())
-        {
+        if (selected != -1 && choices.get(selected).hasDocs()) {
             // Schedule the docs to show after a delay, assuming they don't move before then:
             cancelShowDocsTask = JavaFXUtil.runAfter(Duration.millis(500), () -> {
                 docPane.getChildren().setAll(choices.get(selected).makeDocPane());
@@ -1125,21 +1021,18 @@ public class SuggestionList
         }
     }
 
-    private void hideDocDisplay()
-    {
+    private void hideDocDisplay() {
         docPane.getChildren().clear();
     }
 
     // Gets the ID for this code completion for the purposes of data collection.
     // Unique and constant per SuggestionList instance
-    public int getRecordingId()
-    {
+    public int getRecordingId() {
         return suggestionListId;
     }
 
     @OnThread(Tag.FXPlatform)
-    public interface SuggestionListParent
-    {
+    public interface SuggestionListParent {
         /**
          * Gets font size as a complete piece of CSS (including any "-fx-font-size:" etc)
          * ready to set as the inline style.
@@ -1150,7 +1043,7 @@ public class SuggestionList
          * Gets font size as a double, used for size calculation
          */
         double getFontSize();
-        
+
         /**
          * Add any necessary listeners to a code completion window
          */

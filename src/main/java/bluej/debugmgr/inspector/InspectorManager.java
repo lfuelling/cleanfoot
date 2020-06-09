@@ -26,71 +26,55 @@ import bluej.debugger.DebuggerObject;
 import bluej.debugmgr.ExpressionInformation;
 import bluej.pkgmgr.Package;
 import bluej.testmgr.record.InvokerRecord;
-
 import javafx.scene.Node;
 import javafx.stage.Window;
 
 
 /**
- * 
  * Interface for a manager that creates and holds references to inspectors
- * 
+ *
  * @author Poul Henriksen
  */
-public interface InspectorManager
-{
+public interface InspectorManager {
     /**
-     * 
      * Remove and dispose the inspector.
-     * 
+     *
      * @param obj Object that the inspector inspects
      */
     void removeInspector(DebuggerObject obj);
-    
+
     /**
-     * 
      * Remove and dispose the inspector.
-     * 
+     *
      * @param cls Class that the inspector inspects
      */
     void removeInspector(DebuggerClass cls);
-    
+
     /**
      * Return an ObjectInspector for an object. The inspector is visible.
      *
-     * @param info
-     *            The information about the the expression that gave this result
-     * @param obj
-     *            The object displayed by this viewer
-     * @param name
-     *            The name of this object or "null" if the name is unobtainable
-     * @param pkg
-     *            The package all this belongs to
-     * @param ir
-     *            the InvokerRecord explaining how we got this result/object if
-     *            null, the "get" button is permanently disabled
-     * @param parent
-     *            The parent frame of this frame
+     * @param info              The information about the the expression that gave this result
+     * @param obj               The object displayed by this viewer
+     * @param name              The name of this object or "null" if the name is unobtainable
+     * @param pkg               The package all this belongs to
+     * @param ir                the InvokerRecord explaining how we got this result/object if
+     *                          null, the "get" button is permanently disabled
+     * @param parent            The parent frame of this frame
      * @param animateFromCentre
      * @return The Viewer value
      */
     ObjectInspector getInspectorInstance(DebuggerObject obj,
                                          String name, Package pkg, InvokerRecord ir, Window parent, Node animateFromCentre);
-    
+
     /**
      * Return a ClassInspector for a class. The inspector is visible.
      *
-     * @param name
-     *            The name of this object or "null" if it is not on the object
-     *            bench
-     * @param getEnabled
-     *            if false, the "get" button is permanently disabled
-     * @param clss
-     *            The class displayed by this viewer
-     * @param pkg
-     *            The package all this belongs to
-     * @param parent
-     *            The parent frame of this frame
+     * @param name              The name of this object or "null" if it is not on the object
+     *                          bench
+     * @param getEnabled        if false, the "get" button is permanently disabled
+     * @param clss              The class displayed by this viewer
+     * @param pkg               The package all this belongs to
+     * @param parent            The parent frame of this frame
      * @param animateFromCentre
      * @return The Viewer value
      */
@@ -99,24 +83,23 @@ public interface InspectorManager
 
     /**
      * Return an ObjectInspector for an object. The inspector is visible.
-     * 
-     * @param obj The object displayed by this viewer
-     * @param name The name of this object or "null" if the name is unobtainable
-     * @param pkg The package all this belongs to
-     * @param ir the InvokerRecord explaining how we got this result/object if
-     *            null, the "get" button is permanently disabled
-     * @param info The information about the the expression that gave this
-     *            result
+     *
+     * @param obj    The object displayed by this viewer
+     * @param name   The name of this object or "null" if the name is unobtainable
+     * @param pkg    The package all this belongs to
+     * @param ir     the InvokerRecord explaining how we got this result/object if
+     *               null, the "get" button is permanently disabled
+     * @param info   The information about the the expression that gave this
+     *               result
      * @param parent The parent frame of this frame
      * @return The Viewer value
      */
     ResultInspector getResultInspectorInstance(DebuggerObject obj,
                                                String name, Package pkg, InvokerRecord ir, ExpressionInformation info,
                                                Window parent);
-    
+
     /**
      * Whether we are in testing mode. If true, the inspectors should show testing stuff.
-     * 
      */
     boolean inTestMode();
 }

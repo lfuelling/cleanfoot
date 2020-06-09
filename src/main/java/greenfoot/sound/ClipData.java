@@ -25,56 +25,48 @@ import javax.sound.sampled.AudioFormat;
 
 /**
  * Data for a sound clip.
- * 
+ *
  * @author Davin McCall
  */
-public class ClipData
-{
+public class ClipData {
     private final String url;
     private final byte[] buffer;
     private final AudioFormat format;
     private int activeUsers;
     private final int length; // length in sample frames
-    
+
     /**
      * Construct a ClipData with a single active user.
      */
-    public ClipData(String url, byte[] buffer, AudioFormat format, int length)
-    {
+    public ClipData(String url, byte[] buffer, AudioFormat format, int length) {
         this.url = url;
         this.buffer = buffer;
         this.format = format;
         this.length = length;
         this.activeUsers = 1;
     }
-    
-    public void addUser()
-    {
+
+    public void addUser() {
         activeUsers++;
     }
-    
-    public boolean release()
-    {
+
+    public boolean release() {
         return --activeUsers == 0;
     }
-    
-    public String getUrl()
-    {
+
+    public String getUrl() {
         return url;
     }
-    
-    public byte[] getBuffer()
-    {
+
+    public byte[] getBuffer() {
         return buffer;
     }
-    
-    public AudioFormat getFormat()
-    {
+
+    public AudioFormat getFormat() {
         return format;
     }
-    
-    public int getLength()
-    {
+
+    public int getLength() {
         return length;
     }
 }

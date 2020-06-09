@@ -21,11 +21,12 @@
  */
 package bluej.groupwork.ui;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.HashMap;
-import java.util.Map;
-
+import bluej.Config;
+import bluej.groupwork.*;
+import bluej.pkgmgr.Project;
+import bluej.utility.FXWorker;
+import bluej.utility.javafx.FXCustomizedDialog;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -38,34 +39,22 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-
-import bluej.Config;
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusHandle;
-import bluej.groupwork.StatusListener;
-import bluej.groupwork.TeamStatusInfo;
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamViewFilter;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.pkgmgr.Project;
-import bluej.utility.FXWorker;
-import bluej.utility.javafx.FXCustomizedDialog;
-import bluej.utility.javafx.JavaFXUtil;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main frame for CVS Status Dialog
  *
  * @author bquig
  * @author Amjad Altadmri
- *
  */
 @OnThread(Tag.FXPlatform)
-public class StatusFrame extends FXCustomizedDialog<Void>
-{
+public class StatusFrame extends FXCustomizedDialog<Void> {
     private final Project project;
     private Repository repository;
     private StatusTableModel statusModel;
@@ -83,8 +72,7 @@ public class StatusFrame extends FXCustomizedDialog<Void>
      * Creates a new instance of StatusFrame. Called via factory method
      * getStatusWindow.
      */
-    public StatusFrame(Project project)
-    {
+    public StatusFrame(Project project) {
         super(null, "team.status", "team-status");
         this.project = project;
         isDVCS = project.getTeamSettingsController().isDVCS();
@@ -93,16 +81,14 @@ public class StatusFrame extends FXCustomizedDialog<Void>
     }
 
     @Override
-    protected Node wrapButtonBar(Node original)
-    {
+    protected Node wrapButtonBar(Node original) {
         makeRefreshPaneComponents();
         BorderPane borderPane = new BorderPane(progressBar, null, original, null, refreshButton);
         JavaFXUtil.addStyleClass(borderPane, "replacement-button-bar");
         return borderPane;
     }
 
-    private Node makeMainPane()
-    {
+    private Node makeMainPane() {
         // try and set up a reasonable default amount of entries that avoids resizing
         // and scrolling once we get info back from repository
         statusModel = isDVCS ?
@@ -145,8 +131,7 @@ public class StatusFrame extends FXCustomizedDialog<Void>
     /**
      * Create the Refresh button and status progress bar
      */
-    private void makeRefreshPaneComponents()
-    {
+    private void makeRefreshPaneComponents() {
         // progress bar
         progressBar = new ActivityIndicator();
         progressBar.setRunning(false);
@@ -162,8 +147,7 @@ public class StatusFrame extends FXCustomizedDialog<Void>
     /**
      * Set up the buttons panel to contain a close button, and register the close action.
      */
-    private void prepareButtonPane()
-    {
+    private void prepareButtonPane() {
         //close button
         getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
         this.setOnCloseRequest(event -> {
@@ -177,15 +161,14 @@ public class StatusFrame extends FXCustomizedDialog<Void>
      * try and estimate the number of entries in status table to avoid resizing
      * once repository has responded.
      */
-    private int estimateInitialEntries()
-    {
+    private int estimateInitialEntries() {
         // Use number of targets + README.TXT
         int initialEntries = project.getFilesInProject(true, false).size() + 1;
         // may need to include diagram layout
         //if(project.includeLayout())
         //    initialEntries++;
         // Limit to a reasonable maximum
-        if(initialEntries > MAX_ENTRIES) {
+        if (initialEntries > MAX_ENTRIES) {
             initialEntries = MAX_ENTRIES;
         }
         return initialEntries;
@@ -194,16 +177,14 @@ public class StatusFrame extends FXCustomizedDialog<Void>
     /**
      * Refresh the status window.
      */
-    public void update()
-    {
+    public void update() {
         repository = project.getRepository();
         if (repository != null) {
             progressBar.setRunning(true);
             refreshButton.setDisable(true);
             worker = new StatusWorker();
             worker.start();
-        }
-        else {
+        } else {
             hide();
         }
     }
@@ -211,12 +192,11 @@ public class StatusFrame extends FXCustomizedDialog<Void>
     /**
      * Find the table entry at a particular column for a specific info object (row).
      *
-     * @param   info    the info object which occupies a row
-     * @param   col     the table column number
-     * @return          the Object at that location in the table
+     * @param info the info object which occupies a row
+     * @param col  the table column number
+     * @return the Object at that location in the table
      */
-    public Object getValueAt(TeamStatusInfo info, int col)
-    {
+    public Object getValueAt(TeamStatusInfo info, int col) {
         switch (col) {
             case 1:
                 return isDVCS ? info.getStatus() : info.getLocalVersion();
@@ -233,55 +213,47 @@ public class StatusFrame extends FXCustomizedDialog<Void>
      * Inner class to do the actual cvs status call to ensure that the UI is not
      * blocked during remote call
      */
-    class StatusWorker extends FXWorker implements StatusListener
-    {
+    class StatusWorker extends FXWorker implements StatusListener {
         ObservableList<TeamStatusInfo> resources;
         TeamworkCommand command;
         TeamworkCommandResult result;
         boolean aborted;
         FileFilter filter = project.getTeamSettingsController().getFileFilter(true, true);
 
-        public StatusWorker()
-        {
+        public StatusWorker() {
             super();
             resources = FXCollections.observableArrayList();
             //Set files = project.getTeamSettingsController().getProjectFiles(true);
             command = repository.getStatus(this, filter, true);
         }
 
-        public void abort()
-        {
+        public void abort() {
             command.cancel();
             aborted = true;
         }
 
         @OnThread(Tag.Worker)
-        public Object construct()
-        {
+        public Object construct() {
             result = command.getResult();
             return resources;
         }
 
         @OnThread(Tag.Any)
-        public void gotStatus(TeamStatusInfo info)
-        {
+        public void gotStatus(TeamStatusInfo info) {
             resources.add(info);
         }
 
         @OnThread(Tag.Any)
-        public void statusComplete(StatusHandle commitHandle)
-        {
+        public void statusComplete(StatusHandle commitHandle) {
             // Nothing to be done here.
         }
 
-        public void finished()
-        {
+        public void finished() {
             progressBar.setRunning(false);
-            if (! aborted) {
+            if (!aborted) {
                 if (result.isError()) {
                     StatusFrame.this.dialogThenHide(() -> TeamUtils.handleServerResponseFX(result, StatusFrame.this.asWindow()));
-                }
-                else {
+                } else {
                     resources.sort((info0, info1) -> info1.getStatus().ordinal() - info0.getStatus().ordinal());
 
                     TeamViewFilter filter = new TeamViewFilter();
@@ -291,21 +263,20 @@ public class StatusFrame extends FXCustomizedDialog<Void>
 
                     Map<File, String> statusMap = new HashMap<>();
 
-                    for (TeamStatusInfo s : resources)
-                    {
+                    for (TeamStatusInfo s : resources) {
                         statusMap.put(s.getFile(), s.getStatus().getStatusString());
                     }
                 }
                 refreshButton.setDisable(false);
-                if (statusTable.getItems() != null ) {
+                if (statusTable.getItems() != null) {
                     statusTable.getItems().clear();
                 }
                 statusTable.refresh();
                 statusTable.setItems(resources);
-                
+
                 // Sort by status, descending. The sort above actually does this, but this makes it visible
                 // in the UI by marking the second column header with an indicator:
-                TableColumn<TeamStatusInfo,?> secondColumn = statusTable.getColumns().get(1);
+                TableColumn<TeamStatusInfo, ?> secondColumn = statusTable.getColumns().get(1);
                 statusTable.getSortOrder().add(secondColumn);
                 secondColumn.setSortType(SortType.DESCENDING);
             }

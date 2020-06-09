@@ -21,16 +21,12 @@
  */
 package greenfoot.sound;
 
-import greenfoot.core.WorldHandler;
-import greenfoot.util.GreenfootUtil;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import bluej.Config;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-
-import bluej.Config;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * This class should be forwarded some of the common sound exceptions. It keeps
@@ -38,12 +34,10 @@ import bluej.Config;
  * makes sure not to repeatedly show the same exception which would otherwise be
  * likely to happen. For instance, it is enough to tell the user once, if a
  * soundcard can't be found, not every time a sound is attempted to be played.
- * 
+ *
  * @author Poul Henriksen
- * 
  */
-public class SoundExceptionHandler
-{
+public class SoundExceptionHandler {
     // Whether we have handled certain exceptions. We use these flags to ensure
     // we only print an error message once to avoid flooding the error output.
     private static volatile boolean lineUnavailableHandled;
@@ -51,23 +45,19 @@ public class SoundExceptionHandler
     private static volatile boolean securityHandled;
     private static boolean mp3LibHandled;
 
-    public static void handleUnsupportedAudioFileException(UnsupportedAudioFileException e, String filename)
-    {
+    public static void handleUnsupportedAudioFileException(UnsupportedAudioFileException e, String filename) {
         throw new IllegalArgumentException("Format of sound file not supported: " + filename, e);
     }
 
-    public static void handleFileNotFoundException(FileNotFoundException e, String filename)
-    {
+    public static void handleFileNotFoundException(FileNotFoundException e, String filename) {
         throw new IllegalArgumentException("Could not find sound file: " + filename, e);
     }
 
-    public static void handleIOException(IOException e, String filename)
-    {
+    public static void handleIOException(IOException e, String filename) {
         throw new IllegalArgumentException("Could not open sound file: " + filename, e);
     }
 
-    public static void handleLineUnavailableException(Exception e)
-    {
+    public static void handleLineUnavailableException(Exception e) {
         // We only want to print this error message once.
         if (!lineUnavailableHandled) {
             lineUnavailableHandled = true;
@@ -76,8 +66,7 @@ public class SoundExceptionHandler
         }
     }
 
-    public static void handleIllegalArgumentException(IllegalArgumentException e, String filename)
-    {
+    public static void handleIllegalArgumentException(IllegalArgumentException e, String filename) {
         // We only want to print this error message once.
         if (!illegalArgumentHandled) {
             illegalArgumentHandled = true;
@@ -87,8 +76,7 @@ public class SoundExceptionHandler
         }
     }
 
-    public static void handleSecurityException(SecurityException e, String filename)
-    {
+    public static void handleSecurityException(SecurityException e, String filename) {
         // We only want to print this error message once.
         if (!securityHandled) {
             securityHandled = true;
@@ -98,13 +86,11 @@ public class SoundExceptionHandler
         }
     }
 
-    public static void handleInvalidMidiDataException(InvalidMidiDataException e, String filename)
-    {
+    public static void handleInvalidMidiDataException(InvalidMidiDataException e, String filename) {
         throw new IllegalArgumentException("Invalid data in MIDI file: " + filename, e);
     }
 
-    public static void handleMp3LibNotAvailable()
-    {
+    public static void handleMp3LibNotAvailable() {
         if (!mp3LibHandled) {
             mp3LibHandled = true;
             System.err.println("MP3 library not available." + " You will not be able to play any mp3 audio files."

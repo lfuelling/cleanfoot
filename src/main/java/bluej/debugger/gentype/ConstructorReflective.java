@@ -21,19 +21,15 @@
  */
 package bluej.debugger.gentype;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import bluej.parser.ConstructorOrMethodReflective;
-import bluej.utility.JavaReflective;
+
+import java.util.List;
 
 /**
  * Created by neil on 07/09/15.
  */
-public class ConstructorReflective extends ConstructorOrMethodReflective
-{
-    public ConstructorReflective(List<GenTypeDeclTpar> tpars, List<JavaType> paramTypesList, Reflective declaringType, boolean varArgs, int modifiers)
-    {
+public class ConstructorReflective extends ConstructorOrMethodReflective {
+    public ConstructorReflective(List<GenTypeDeclTpar> tpars, List<JavaType> paramTypesList, Reflective declaringType, boolean varArgs, int modifiers) {
         this.declaringType = declaringType;
         this.modifiers = modifiers;
         this.tparTypes = tpars;

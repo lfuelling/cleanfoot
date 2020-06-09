@@ -21,43 +21,35 @@
  */
 package bluej.utility;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.LayoutManager;
-
-import javax.swing.JPanel;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * A small extension to JPanel that uses a gradient fill for the background
- * 
+ * <p>
  * This should be passed in a call to setContentPane() for a JFrame to take effect --
  * coupled with setting all panels inside the frame to non-opaque
- * @author Neil Brown
  *
+ * @author Neil Brown
  */
-public class GradientFillPanel extends JPanel
-{
-    public GradientFillPanel(LayoutManager layout)
-    {
+public class GradientFillPanel extends JPanel {
+    public GradientFillPanel(LayoutManager layout) {
         super(layout);
     }
 
     @Override
-    public void paintComponent(Graphics g)
-    {
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        
+
         if (g instanceof Graphics2D) {
-            Graphics2D g2d = (Graphics2D)g;
-            
+            Graphics2D g2d = (Graphics2D) g;
+
             int w = getWidth();
             int h = getHeight();
-            
+
             GradientPaint gp = new GradientPaint(
-                w/4, 0, new Color(236, 236, 236),
-                w*3/4, h, new Color(187, 182, 173));
+                    w / 4, 0, new Color(236, 236, 236),
+                    w * 3 / 4, h, new Color(187, 182, 173));
 
             g2d.setPaint(gp);
             g2d.fillRect(0, 0, w, h);

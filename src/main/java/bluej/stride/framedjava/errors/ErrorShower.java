@@ -21,18 +21,14 @@
  */
 package bluej.stride.framedjava.errors;
 
-import java.util.stream.Stream;
-
-import bluej.stride.framedjava.ast.JavaFragment;
 import javafx.scene.Node;
 
 /**
  * Shows errors -- does not shower you in errors ;-)
- * @author neil
  *
+ * @author neil
  */
-public interface ErrorShower 
-{
+public interface ErrorShower {
     void focusAndPositionAtError(CodeError err);
 
     Node getRelevantNodeForError(CodeError err);

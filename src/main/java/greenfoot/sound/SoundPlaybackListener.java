@@ -23,13 +23,15 @@ package greenfoot.sound;
 
 /**
  * Interface for listeners that wants to get notified when playback of a sound has started or stopped.
- * 
+ *
  * @author Poul Henriksen
  */
-public interface SoundPlaybackListener
-{
+public interface SoundPlaybackListener {
     void playbackStarted(Sound sound);
+
     void playbackPaused(Sound sound);
+
     void playbackStopped(Sound sound);
+
     void soundClosed(Sound sound);
 }

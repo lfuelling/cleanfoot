@@ -42,30 +42,28 @@ import java.util.List;
  * Utility functions to help in the process of importing directory
  * structures into BlueJ.
  *
- * @author  Michael Cahill
- * @author  Michael Kolling
- * @author  Axel Schmolitzky
- * @author  Andrew Patterson
+ * @author Michael Cahill
+ * @author Michael Kolling
+ * @author Axel Schmolitzky
+ * @author Andrew Patterson
  */
-public class Import
-{
+public class Import {
     /**
      * Attempt to convert a non-bluej Path to a Bluej project.
-     * 
+     *
      * <p>If no java source files are found, a warning dialog is displayed and
      * the conversion doesn't take place.
-     * 
+     *
      * <p>If source files are found whose package line mismatches the apparent
      * package, a warning dialog is displayed and the user is prompted to
      * either allow the package line to be corrected, or to cancel the
      * conversion.
      *
-     * @param parentWin  The parent window (used for centering dialogs)
-     * @param path       The path of the directory containing the project-to-be
-     * @return  true if the conversion was successfully completed
+     * @param parentWin The parent window (used for centering dialogs)
+     * @param path      The path of the directory containing the project-to-be
+     * @return true if the conversion was successfully completed
      */
-    public static boolean convertNonBlueJ(FXPlatformSupplier<Window> parentWin, File path)
-    {
+    public static boolean convertNonBlueJ(FXPlatformSupplier<Window> parentWin, File path) {
         // find all sub directories with Java files in them
         // then find all the Java files in those directories
         List<File> interestingDirs = Import.findInterestingDirectories(path);
@@ -93,7 +91,7 @@ public class Import
 
             try {
                 ClassInfo info = InfoParser.parse(f);
-                if (info != null && ! info.hadParseError()) {
+                if (info != null && !info.hadParseError()) {
 
                     String qf = JavaNames.convertFileToQualifiedName(path, f);
 
@@ -103,8 +101,8 @@ public class Import
                         mismatchPackagesChanged.add(qf);
                     }
                 }
+            } catch (FileNotFoundException fnfe) {
             }
-            catch (FileNotFoundException fnfe) {}
         }
 
         // now ask if they want to continue if we have detected mismatches
@@ -121,7 +119,7 @@ public class Import
         Import.convertDirectory(interestingDirs);
         return true;
     }
-    
+
     /**
      * Find all directories under a certain directory which
      * we deem 'interesting'.
@@ -129,12 +127,11 @@ public class Import
      * a java source file or contains a directory which in
      * turn contains a java source file.
      *
-     * @param   dir     the directory to look in
-     * @returns         a list of File's representing the
-     *                  interesting directories
+     * @param dir the directory to look in
+     * @returns a list of File's representing the
+     * interesting directories
      */
-    public static List<File> findInterestingDirectories(File dir)
-    {
+    public static List<File> findInterestingDirectories(File dir) {
         List<File> interesting = new LinkedList<File>();
 
         File[] files = dir.listFiles();
@@ -144,14 +141,14 @@ public class Import
 
         boolean imInteresting = false;
 
-        for (int i=0; i<files.length; i++) {
+        for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 // if any of our sub directories are interesting
                 // then we are interesting
                 // we ensure that the subdirectory would have
                 // a valid java package name before considering
                 // anything in it
-                if(JavaNames.isIdentifier(files[i].getName())) {
+                if (JavaNames.isIdentifier(files[i].getName())) {
                     List<File> subInteresting = findInterestingDirectories(files[i]);
 
                     if (subInteresting.size() > 0) {
@@ -159,8 +156,7 @@ public class Import
                         imInteresting = true;
                     }
                 }
-            }
-            else {
+            } else {
                 if (files[i].getName().endsWith("." + SourceType.Java.toString().toLowerCase()))
                     imInteresting = true;
             }
@@ -179,13 +175,12 @@ public class Import
      * Find all Java files contained in a list of
      * directory paths.
      */
-    public static List<File> findJavaFiles(List<File> dirs)
-    {
+    public static List<File> findJavaFiles(List<File> dirs) {
         List<File> interesting = new LinkedList<File>();
 
         Iterator<File> it = dirs.iterator();
 
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             File dir = it.next();
 
             File[] files = dir.listFiles();
@@ -194,7 +189,7 @@ public class Import
                 continue;
             }
 
-            for (int i=0; i<files.length; i++) {
+            for (int i = 0; i < files.length; i++) {
                 if (files[i].isFile() && files[i].getName().endsWith("." + SourceType.Java.toString().toLowerCase())) {
                     interesting.add(files[i]);
                 }
@@ -208,22 +203,20 @@ public class Import
      * Convert an existing directory structure to one
      * that BlueJ can open as a project.
      */
-    public static void convertDirectory(List<File> dirs)
-    {
+    public static void convertDirectory(List<File> dirs) {
         // create a BlueJ package file in every directory that
         // we have determined to be interesting
 
         Iterator<File> i = dirs.iterator();
 
-        while(i.hasNext()) {
+        while (i.hasNext()) {
             File f = i.next();
             try {
                 PackageFileFactory.getPackageFile(f).create();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 Debug.reportError("Could not create package files in dir: " + f, e);
             }
-          
+
         }
     }
 }

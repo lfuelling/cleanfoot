@@ -26,12 +26,12 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
-public interface SlotParent<T> extends FocusParent<T>
-{
+public interface SlotParent<T> extends FocusParent<T> {
     /**
      * For when backspace has been pressed at the start of the slot
+     *
      * @param src The slot in which backspace was pressed (it's up to SlotParent to work out the previous one
-     * that might want to act on the backspace)
+     *            that might want to act on the backspace)
      * @return True if we have focused into another slot, or deleted this slot, or somehow it is invalid to retain
      * focus in the src slot
      */

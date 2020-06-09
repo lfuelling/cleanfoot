@@ -26,23 +26,21 @@ import greenfoot.Actor;
 /**
  * An ActorNode represents a piece (or whole) of an Actor within the IBSP collision
  * checking tree. Because an actor can be split over several tree nodes, it may be
- * represented by several ActorNodes, which are linked together in a linked list. 
- * 
+ * represented by several ActorNodes, which are linked together in a linked list.
+ *
  * @author Davin McCall
  */
-public final class ActorNode
-{
+public final class ActorNode {
     private final Actor actor;
     private final BSPNode node;
     private ActorNode next;
     private ActorNode prev;
     private boolean mark;
-    
-    public ActorNode(Actor actor, BSPNode node)
-    {
+
+    public ActorNode(Actor actor, BSPNode node) {
         this.actor = actor;
         this.node = node;
-        
+
         // insert into linked list
         ActorNode first = IBSPColChecker.getNodeForActor(actor);
         this.next = first;
@@ -50,85 +48,76 @@ public final class ActorNode
         if (next != null) {
             next.prev = this;
         }
-        
+
         mark = true;
     }
-    
+
     /**
      * Clar the mark on this ActorNode. This is used by the collision
      * checker when actors reposition or resize.
      */
-    public void clearMark()
-    {
+    public void clearMark() {
         mark = false;
     }
-    
+
     /**
      * Mark this ActorNode. This is used by the collision checker when
      * actors reposition or resize.
      */
-    public void mark()
-    {
+    public void mark() {
         mark = true;
     }
-    
+
     /**
      * Check, and clear, the mark on this ActorNode. This is used by the
      * collision checker when actors reposition or resize. Returns the
      * mark value before it was cleared.
      */
-    public boolean checkMark()
-    {
+    public boolean checkMark() {
         boolean markVal = mark;
         mark = false;
         return markVal;
     }
-    
-    public Actor getActor()
-    {
+
+    public Actor getActor() {
         return actor;
     }
-    
-    public BSPNode getBSPNode()
-    {
+
+    public BSPNode getBSPNode() {
         return node;
     }
-    
+
     /**
      * Get the next ActorNode for the same actor. Returns null if this
      * is the last ActorNode for the actor.
      */
-    public ActorNode getNext()
-    {
+    public ActorNode getNext() {
         return next;
     }
-    
+
     /**
      * Remove this actor node. The node is removed from both the BSPNode
      * which contains it, and the linked list of actor nodes for the actor.
      * The next() call will still be valid, unless the next actor is also
      * removed.
      */
-    public void remove()
-    {
+    public void remove() {
         removed();
         node.actorRemoved(actor);
     }
-    
+
     /**
      * Notify this actor node that it has been removed from the BSPNode.
      * It must remove itself from the linked list of actor nodes for the
      * actor.
      */
-    public void removed()
-    {
+    public void removed() {
         if (prev == null) {
             IBSPColChecker.setNodeForActor(actor, next);
-        }
-        else {
+        } else {
             prev.next = next;
         }
-        
+
         if (next != null) {
             next.prev = prev;
         }

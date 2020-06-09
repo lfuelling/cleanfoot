@@ -35,21 +35,18 @@ import java.util.stream.Collectors;
 /**
  * Holds a list of all the extensions, and information about them (e.g. shortcut key, description)
  */
-public abstract class ExtensionsDictionary
-{
+public abstract class ExtensionsDictionary {
     // An Entry about a particular extension:
-    public static class Entry
-    {
+    public static class Entry {
         private final FrameOperation operation;
         private final List<Character> shortcutKeys;
         private final String name;
         private final String description;
-//        private final CATEGORY category;
+        //        private final CATEGORY category;
         private final boolean validOnSelection;
 
         public Entry(List<Character> shortcutKeys, FrameOperation operation, boolean validOnSelection, //CATEGORY category,
-                    String name, String description)
-        {
+                     String name, String description) {
             this.shortcutKeys = new ArrayList<>(shortcutKeys);
             this.operation = operation;
 //            this.category = category;
@@ -59,35 +56,47 @@ public abstract class ExtensionsDictionary
         }
 
         public Entry(char shortcutKey, FrameOperation operation, boolean validOnSelection, // CATEGORY category,
-                     String name, String description)
-        {
+                     String name, String description) {
             this(Arrays.asList(shortcutKey), operation, validOnSelection, //category,
                     name, description);
         }
 
 //        public boolean inCategory(CATEGORY c) { return category.equals(c); }
 
-        public boolean hasShortcut(char k) { return shortcutKeys.contains(k); }
+        public boolean hasShortcut(char k) {
+            return shortcutKeys.contains(k);
+        }
 
-        public List<Character> getReadOnlyShortcuts() { return Collections.unmodifiableList(shortcutKeys); }
+        public List<Character> getReadOnlyShortcuts() {
+            return Collections.unmodifiableList(shortcutKeys);
+        }
 
-        public FrameOperation getOperation() { return operation; }
+        public FrameOperation getOperation() {
+            return operation;
+        }
 
-        public String getName() { return name; }
+        public String getName() {
+            return name;
+        }
 
-        public String getDescription() { return description; }
+        public String getDescription() {
+            return description;
+        }
 
 //        public CATEGORY getCategory() { return category; }
 //
 //        public String getCategoryName() { return category.toString(); }
 
         @OnThread(Tag.FXPlatform)
-        public void activate(Frame frame) { operation.activate(frame); }
+        public void activate(Frame frame) {
+            operation.activate(frame);
+        }
 
-        public boolean validOnSelection() { return validOnSelection; }
+        public boolean validOnSelection() {
+            return validOnSelection;
+        }
 
-        public String getShortcuts()
-        {
+        public String getShortcuts() {
             StringBuilder builder = new StringBuilder();
             builder.append(shortcutKeys.get(0));
             for (int i = 1; i < shortcutKeys.size(); i++) {
@@ -99,16 +108,14 @@ public abstract class ExtensionsDictionary
 
     private final List<Entry> entries;
 
-    protected ExtensionsDictionary(List<Entry> entries)
-    {
+    protected ExtensionsDictionary(List<Entry> entries) {
         this.entries = entries;
     }
-    
-    public List<Entry> getAllExtensions()
-    {
+
+    public List<Entry> getAllExtensions() {
         return entries;
     }
-    
+
 //    public List<Entry<CATEGORY>> getBlocksInCategory(CATEGORY c)
 //    {
 //        return entries.stream().filter(e -> e.inCategory(c)).collect(Collectors.toList());
@@ -123,9 +130,8 @@ public abstract class ExtensionsDictionary
     /**
      * Returns empty list if no block for that key
      */
-    public List<Entry> getExtyensionsForShortcutKey(char k)
-    {
+    public List<Entry> getExtyensionsForShortcutKey(char k) {
         return entries.stream().filter(e -> e.hasShortcut(k)).collect(Collectors.toList());
     }
-    
+
 }

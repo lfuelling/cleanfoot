@@ -21,57 +21,49 @@
  */
 package bluej.stride.framedjava.elements;
 
-import java.util.stream.Stream;
-
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
 import bluej.stride.framedjava.ast.FrameFragment;
 import bluej.stride.framedjava.ast.JavaSource;
 import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.frames.BlankFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
 
-public class BlankElement extends CodeElement
-{
+import java.util.stream.Stream;
+
+public class BlankElement extends CodeElement {
     public static final String ELEMENT = "blank";
 
-    public BlankElement()
-    {
+    public BlankElement() {
     }
-    
-    public BlankElement(Element el)
-    {
+
+    public BlankElement(Element el) {
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         return new JavaSource(null, new FrameFragment(null, this, ""));
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         return new LocatableElement(this, ELEMENT);
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         return new BlankFrame(editor);
     }
 
     @Override
-    public void show(ShowReason reason)
-    {
+    public void show(ShowReason reason) {
         // Should not be called on BlankElement
         throw new IllegalStateException();
     }
 
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.empty();
     }
 }

@@ -21,29 +21,26 @@
  */
 package bluej.debugger.jdi;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import bluej.debugger.DebuggerTestResult;
 import bluej.debugger.SourceLocation;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Represents the result of running a single test method.
  */
 @OnThread(Tag.Any)
-public class JdiTestResult extends DebuggerTestResult
-{
+public class JdiTestResult extends DebuggerTestResult {
     protected String className;
     protected String methodName;
     protected String exceptionMsg, traceMsg;  // null if no failure
     protected int runTimeMs;
 
-    JdiTestResult(String className, String methodName, int runTimeMs)
-    {
+    JdiTestResult(String className, String methodName, int runTimeMs) {
         if (className == null || methodName == null)
             throw new NullPointerException("constructing JdiTestResult");
 
@@ -54,102 +51,84 @@ public class JdiTestResult extends DebuggerTestResult
         this.exceptionMsg = null;
         this.traceMsg = null;
     }
-    
-    public String getQualifiedClassName()
-    {
+
+    public String getQualifiedClassName() {
         return className;
     }
-    
-    public String getMethodName()
-    {
+
+    public String getMethodName() {
         return methodName;
     }
 
     /**
      * @see bluej.debugger.DebuggerTestResult#getExceptionMessage()
      */
-    public String getExceptionMessage()
-    {
+    public String getExceptionMessage() {
         throw new IllegalStateException("getting Exception message from successful test");
     }
 
     /**
-     * 
-     * 
      * @see bluej.debugger.DebuggerTestResult#getRunTimeMs()
      */
-    public int getRunTimeMs()
-    {
+    public int getRunTimeMs() {
         return runTimeMs;
     }
 
     /**
-     * 
      * @see bluej.debugger.DebuggerTestResult#getTrace()
      */
-    public String getTrace()
-    {
+    public String getTrace() {
         throw new IllegalStateException("getting stack trace from successful test");
     }
-    
+
     /* (non-Javadoc)
      * @see bluej.debugger.DebuggerTestResult#getExceptionLocation()
      */
-    public SourceLocation getExceptionLocation()
-    {
+    public SourceLocation getExceptionLocation() {
         throw new IllegalStateException("getting stack trace from successful test");
     }
 
     /* (non-Javadoc)
      * @see bluej.debugger.DebuggerTestResult#isError()
      */
-    public boolean isError()
-    {
+    public boolean isError() {
         return false;
     }
 
     /* (non-Javadoc)
      * @see bluej.debugger.DebuggerTestResult#isFailure()
      */
-    public boolean isFailure()
-    {
+    public boolean isFailure() {
         return false;
     }
 
     /* (non-Javadoc)
      * @see bluej.debugger.DebuggerTestResult#isSuccess()
      */
-    public boolean isSuccess()
-    {
+    public boolean isSuccess() {
         return true;
     }
 
     /**
      * Filters stack frames from internal JUnit classes
      */
-    public static String getFilteredTrace(String stack)
-    {
+    public static String getFilteredTrace(String stack) {
         String[] lines = Utility.splitLines(stack);
 
-        int lastLine = lines.length - 1;       
-        while (lastLine >= 0)
-        {
-            if (filterLine(lines[lastLine]))
-            {
+        int lastLine = lines.length - 1;
+        while (lastLine >= 0) {
+            if (filterLine(lines[lastLine])) {
                 lastLine -= 1;
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
-        
+
         return Arrays.stream(lines, 0, lastLine + 1).collect(Collectors.joining("\n"));
     }
 
-    static boolean filterLine(String line)
-    {
-        String[] patterns= new String[] {
+    static boolean filterLine(String line) {
+        String[] patterns = new String[]{
                 "junit.framework.TestCase",
                 "junit.framework.TestResult",
                 "junit.framework.TestSuite",
@@ -164,7 +143,7 @@ public class JdiTestResult extends DebuggerTestResult
                 "bluej.",
                 "java.lang.reflect.Method.invoke("
         };
-        for (int i= 0; i < patterns.length; i++) {
+        for (int i = 0; i < patterns.length; i++) {
             if (line.indexOf(patterns[i]) > 0)
                 return true;
         }

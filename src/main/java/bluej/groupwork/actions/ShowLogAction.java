@@ -27,19 +27,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * An action to show the repository history.
- * 
+ *
  * @author Davin McCall
  */
-public class ShowLogAction extends TeamAction
-{
-    public ShowLogAction()
-    {
+public class ShowLogAction extends TeamAction {
+    public ShowLogAction() {
         super(Config.getString("team.history"), false);
     }
 
     @Override
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+    public void actionPerformed(PkgMgrFrame pmf) {
         HistoryFrame hd = new HistoryFrame(pmf);
         hd.setLocationRelativeTo(pmf.getFXWindow());
         hd.show(); // showAndWait() ?

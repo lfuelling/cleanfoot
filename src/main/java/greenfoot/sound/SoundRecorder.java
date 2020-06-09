@@ -21,6 +21,9 @@
  */
 package greenfoot.sound;
 
+import bluej.utility.Debug;
+
+import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -32,38 +35,26 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.TargetDataLine;
-
-import bluej.utility.Debug;
-
 /**
  * A class that handles recording sound from the user's microphone.
- * 
+ *
  * @author neil
  */
-public class SoundRecorder
-{
+public class SoundRecorder {
     private final AudioFormat format;
     private final AtomicBoolean keepRecording = new AtomicBoolean();
     private TargetDataLine line;
-    private final BlockingQueue<byte []> recordedResultQueue = new ArrayBlockingQueue<>(1);
+    private final BlockingQueue<byte[]> recordedResultQueue = new ArrayBlockingQueue<>(1);
     private byte[] recorded;
-    
-    public SoundRecorder()
-    {
+
+    public SoundRecorder() {
         format = new AudioFormat(22050, 8, 1, true, true);
     }
 
     /**
      * Starts recording.  You should make sure to call stop() exactly once after
      * each call to start().
-     * 
+     * <p>
      * The method returns a reference from which you can pick out the current state
      * of the recording. It will first be set to null, then to be a list with the first part of the recording,
      * then a list with the first and second parts, then a list with the first, second
@@ -73,28 +64,27 @@ public class SoundRecorder
      * thereafter the lists put in the reference can all be accessed individually
      * without worrying about them being modified.  So any list got by a call to a get
      * won't be being used again by this method.
-     * 
+     * <p>
      * The reference should be updated roughly every half-second.
-     * 
+     * <p>
      * When the recording has finished, null will be put into the reference.
      */
-    public AtomicReference<List<byte[]>> startRecording()
-    {
+    public AtomicReference<List<byte[]>> startRecording() {
         try {
-            line = (TargetDataLine)AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
+            line = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
             line.open();
             if (!line.getFormat().equals(format))
                 Debug.message("Format is not as expected" + line.getFormat().toString());
             line.start();
-            
+
             keepRecording.set(true);
-            
+
             final AtomicReference<List<byte[]>> partialResult = new AtomicReference<>(null);
-                       
+
             Runnable rec = () -> {
                 // We should get a chunk every half second, which is better than every second
                 // for updating the display as we go:
-                int bufferSize = (int) (format.getSampleRate()/2) * format.getFrameSize();
+                int bufferSize = (int) (format.getSampleRate() / 2) * format.getFrameSize();
                 LinkedList<byte[]> frames = new LinkedList<>();
 
                 while (keepRecording.get()) {
@@ -119,16 +109,15 @@ public class SoundRecorder
                     try {
                         recordedResultQueue.put(merge(frames));
                         done = true;
+                    } catch (InterruptedException ignored) {
                     }
-                    catch (InterruptedException ignored) {}
                 }
             };
 
             new Thread(rec).start();
-            
+
             return partialResult;
-        }
-        catch (LineUnavailableException e) {
+        } catch (LineUnavailableException e) {
             Debug.reportError("Problem capturing sound", e);
             return null;
         }
@@ -137,48 +126,42 @@ public class SoundRecorder
     /**
      * Stops recording.  Should be called exactly once for each call to start().
      */
-    public void stopRecording()
-    {
+    public void stopRecording() {
         keepRecording.set(false);
         recorded = null;
-        while (recorded == null)
-        {
-            try
-            {
+        while (recorded == null) {
+            try {
                 recorded = recordedResultQueue.take();
+            } catch (InterruptedException ignored) {
             }
-            catch (InterruptedException ignored) {}
         }
         line.close();
     }
-    
+
     /**
      * Writes the most recent recording to the given file in WAV format
      */
-    public void writeWAV(File destination)
-    {
+    public void writeWAV(File destination) {
         ByteArrayInputStream baiStream = new ByteArrayInputStream(recorded);
-        AudioInputStream aiStream = new AudioInputStream(baiStream,format, recorded.length);
+        AudioInputStream aiStream = new AudioInputStream(baiStream, format, recorded.length);
         try {
-            AudioSystem.write(aiStream,AudioFileFormat.Type.WAVE,destination);
+            AudioSystem.write(aiStream, AudioFileFormat.Type.WAVE, destination);
             aiStream.close();
             baiStream.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Debug.reportError("Problem writing recorded sound to WAV file", e);
         }
     }
-    
+
     /**
      * Helper function to merge several arrays into one.
      */
-    private static byte[] merge(List<byte[]> frames)
-    {
+    private static byte[] merge(List<byte[]> frames) {
         int totalLength = 0;
         for (byte[] frame : frames) {
             totalLength += frame.length;
         }
-        
+
         byte[] result = new byte[totalLength];
         int curOffset = 0;
         for (byte[] frame : frames) {
@@ -191,24 +174,21 @@ public class SoundRecorder
     /**
      * Gets the raw array of bytes representing the currently recorded sound
      */
-    public byte[] getRawSound()
-    {
+    public byte[] getRawSound() {
         return recorded;
     }
-    
+
     /**
      * Trims the current sound recording (if any) to the given offsets.
-     * 
+     * <p>
      * The offsets are given as floats in the range 0 to 1.
      */
-    public void trim(double begin, double end)
-    {
-        if (recorded != null)
-        {
+    public void trim(double begin, double end) {
+        if (recorded != null) {
             float length = recorded.length;
-            int beginIndex = (int)(begin * length);
-            int endIndex = (int)(end * length);
-            
+            int beginIndex = (int) (begin * length);
+            int endIndex = (int) (end * length);
+
             recorded = Arrays.copyOfRange(recorded, beginIndex, endIndex);
         }
     }
@@ -216,8 +196,7 @@ public class SoundRecorder
     /**
      * Gets the format that was used to record the sound.
      */
-    public AudioFormat getFormat()
-    {
+    public AudioFormat getFormat() {
         return format;
     }
 }

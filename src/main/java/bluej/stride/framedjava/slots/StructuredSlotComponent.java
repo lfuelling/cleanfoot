@@ -21,46 +21,47 @@
  */
 package bluej.stride.framedjava.slots;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import bluej.stride.generic.Frame.View;
 import bluej.stride.generic.InteractionManager;
 import bluej.utility.javafx.SharedTransition;
-
-import javafx.beans.value.ObservableStringValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 /**
  * An expression slot has a hierarchy of InfixStructured items, starting with
  * one at the top-level.  Each InfixStructured has a list of contained
  * StructuredSlotComponent items, with optional Operator items between each.
  * There are three types of StructuredSlotComponent:
- *  - BracketedStructured, which has brackets (round or square) around an
- *     InfixStructured item (recurse back to the beginning of this comment...)
- *  - StringLiteralExpression, which has inside it an StructuredSlotField
- *  - StructuredSlotField, which is a single text field with text content.
- *  
- *  This interface has all the operations which are common to all its subclasses.
+ * - BracketedStructured, which has brackets (round or square) around an
+ * InfixStructured item (recurse back to the beginning of this comment...)
+ * - StringLiteralExpression, which has inside it an StructuredSlotField
+ * - StructuredSlotField, which is a single text field with text content.
+ * <p>
+ * This interface has all the operations which are common to all its subclasses.
  */
 // Package-visible
-interface StructuredSlotComponent
-{
+interface StructuredSlotComponent {
     /**
      * Place the focus at the first valid position in this component
      * (i.e. request focus and place caret)
      */
-    default void focusAtStart() { focusAtPos(getStartPos()); }
+    default void focusAtStart() {
+        focusAtPos(getStartPos());
+    }
 
     /**
      * Place the focus at the last valid position in this component
      * (i.e. request focus and place caret)
      */
-    default void focusAtEnd() { focusAtPos(getEndPos()); }
+    default void focusAtEnd() {
+        focusAtPos(getEndPos());
+    }
 
     /**
      * Request focus and place caret at the given position, traversing
@@ -80,13 +81,16 @@ interface StructuredSlotComponent
     /**
      * Only returns true if it is a plain field, and is empty.
      */
-    default boolean isFieldAndEmpty() { return false; }
+    default boolean isFieldAndEmpty() {
+        return false;
+    }
 
     /**
      * Gets the first caret position which is valid in this component.
      * Position will be relative to this component, not to the slot as a whole.
      */
     CaretPos getStartPos();
+
     /**
      * Gets the last caret position which is valid in this component.
      * Position will be relative to this component, not to the slot as a whole.
@@ -113,7 +117,7 @@ interface StructuredSlotComponent
      * Returns null if this component (and its subcomponents) doesn't have focus.
      */
     CaretPos getCurrentPos();
-    
+
     // See InfixStructured.mapCaretPosStringPos for more info
     List<InfixStructured.CaretPosMap> mapCaretPosStringPos(InfixStructured.IntCounter cur, boolean javaString);
 
@@ -128,12 +132,13 @@ interface StructuredSlotComponent
 
     /**
      * Inserts a suggestion from auto-complete.
-     *  @param subPos The caret position (relative to the current
-     * component) for insertion.
-     * @param name The text to insert
+     *
+     * @param subPos  The caret position (relative to the current
+     *                component) for insertion.
+     * @param name    The text to insert
      * @param opening
-     * @param params The parameters to insert in round brackets after the text,
-     *               or null if none.  (Empty list inserts empty brackets, null
+     * @param params  The parameters to insert in round brackets after the text,
+     *                or null if none.  (Empty list inserts empty brackets, null
      */
     @OnThread(Tag.FXPlatform)
     void insertSuggestion(CaretPos subPos, String name, char opening, List<String> params, StructuredSlot.ModificationToken token);

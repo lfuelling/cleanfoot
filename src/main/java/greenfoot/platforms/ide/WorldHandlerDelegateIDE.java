@@ -27,15 +27,15 @@ import greenfoot.World;
 import greenfoot.core.ImageCache;
 import greenfoot.core.Simulation;
 import greenfoot.core.WorldHandler;
-import greenfoot.vmcomm.VMCommsSimulation;
-import greenfoot.vmcomm.VMCommsSimulation.PaintWhen;
 import greenfoot.platforms.WorldHandlerDelegate;
 import greenfoot.record.GreenfootRecorder;
 import greenfoot.util.GreenfootUtil;
+import greenfoot.vmcomm.VMCommsSimulation;
+import greenfoot.vmcomm.VMCommsSimulation.PaintWhen;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.Color;
+import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -44,41 +44,38 @@ import java.util.List;
 
 /**
  * Implementation for running in the Greenfoot IDE.
- * 
+ *
  * @author Poul Henriksen
  */
 public class WorldHandlerDelegateIDE
-    implements WorldHandlerDelegate
-{
-    protected final Color envOpColour = new Color(152,32,32);
-    
+        implements WorldHandlerDelegate {
+    protected final Color envOpColour = new Color(152, 32, 32);
+
     private final VMCommsSimulation vmCommsSimulation;
-    
+
     private boolean worldInitialising;
     private final List<Actor> actorsToName = new ArrayList<>();
     private String mostRecentlyInstantiatedWorldClassName;
 
-    public WorldHandlerDelegateIDE(VMCommsSimulation vmCommsSimulation)
-    {
+    public WorldHandlerDelegateIDE(VMCommsSimulation vmCommsSimulation) {
         this.vmCommsSimulation = vmCommsSimulation;
     }
 
     /**
      * Clear the world from the cache.
-     * @param world  World to discard
+     *
+     * @param world World to discard
      */
     @Override
-    public void discardWorld(World world)
-    {        
+    public void discardWorld(World world) {
         ImageCache.getInstance().clearImageCache();
         vmCommsSimulation.setWorld(null);
     }
-    
+
     @Override
-    public void setWorld(final World oldWorld, final World newWorld)
-    {
+    public void setWorld(final World oldWorld, final World newWorld) {
         nameActors(actorsToName.toArray(new Actor[0]));
-        
+
         //greenfootRecorder.setWorld(newWorld);
         if (oldWorld != null) {
             discardWorld(oldWorld);
@@ -87,47 +84,40 @@ public class WorldHandlerDelegateIDE
     }
 
     @Override
-    public void initialisingWorld(String className)
-    {
+    public void initialisingWorld(String className) {
         worldInitialising = true;
         mostRecentlyInstantiatedWorldClassName = className;
         actorsToName.clear();
     }
 
     @Override
-    public void finishedInitialisingWorld()
-    {
+    public void finishedInitialisingWorld() {
         worldInitialising = false;
     }
 
     @Override
     @OnThread(Tag.Simulation)
-    public void paint(World drawWorld, boolean forcePaint)
-    {
+    public void paint(World drawWorld, boolean forcePaint) {
         vmCommsSimulation.paintRemote(forcePaint ? PaintWhen.FORCE : PaintWhen.IF_DUE);
     }
 
     @Override
-    public void notifyStoppedWithError()
-    {
+    public void notifyStoppedWithError() {
         vmCommsSimulation.notifyStoppedWithError();
     }
 
     @Override
-    public void instantiateNewWorld(String className, Runnable runIfError)
-    {
+    public void instantiateNewWorld(String className, Runnable runIfError) {
         // If not-null, store it as the most recent, ready to be used by getLastWorldClass
-        if (className != null)
-        {
+        if (className != null) {
             mostRecentlyInstantiatedWorldClassName = className;
         }
-        
+
         //greenfootRecorder.reset();
         worldInitialising = true;
         Class<? extends World> cls = getLastWorldClass();
 
-        if (cls == null)
-        {
+        if (cls == null) {
             // Can occur if last instantiated world class is not compiled,
             // or if the specified world class is not found, or if no world
             // class name has ever been specified.
@@ -141,22 +131,19 @@ public class WorldHandlerDelegateIDE
                 Constructor<?> cons = icls.getConstructor();
                 WorldHandler.getInstance().clearWorldSet();
                 World newWorld = (World) Simulation.newInstance(cons);
-                if (! WorldHandler.getInstance().checkWorldSet()) {
+                if (!WorldHandler.getInstance().checkWorldSet()) {
                     ImageCache.getInstance().clearImageCache();
                     WorldHandler.getInstance().setWorld(newWorld, false);
                 }
-            }
-            catch (LinkageError | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+            } catch (LinkageError | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
                 // InstantiationException means abstract class; shouldn't happen
                 runIfError.run();
-            }
-            catch (InvocationTargetException ite) {
+            } catch (InvocationTargetException ite) {
                 // This can happen if a static initializer block throws a Throwable.
                 // Or for other reasons.
                 ite.getCause().printStackTrace();
                 runIfError.run();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.err.println("Exception during World initialisation:");
                 e.printStackTrace();
                 runIfError.run();
@@ -169,31 +156,21 @@ public class WorldHandlerDelegateIDE
      * Get the last world class that was instantiated, if it can (still) be instantiated.
      * May return null.
      */
-    private Class<? extends World> getLastWorldClass()
-    {
-        if (mostRecentlyInstantiatedWorldClassName != null)
-        {
-            try
-            {
+    private Class<? extends World> getLastWorldClass() {
+        if (mostRecentlyInstantiatedWorldClassName != null) {
+            try {
                 // it is important that we use the right classloader
                 ClassLoader classLdr = ExecServer.getCurrentClassLoader();
                 Class<?> cls = Class.forName(mostRecentlyInstantiatedWorldClassName, false, classLdr);
-                if (GreenfootUtil.canBeInstantiated(cls))
-                {
+                if (GreenfootUtil.canBeInstantiated(cls)) {
                     return cls.asSubclass(World.class);
                 }
-            }
-            catch (java.lang.ClassNotFoundException cnfe)
-            {
+            } catch (java.lang.ClassNotFoundException cnfe) {
                 // couldn't load: that's ok, we return null
                 // cnfe.printStackTrace();
-            }
-            catch (ClassCastException cce)
-            {
+            } catch (ClassCastException cce) {
                 // The class is (no longer) a world class: ok, ignore
-            }
-            catch (LinkageError e)
-            {
+            } catch (LinkageError e) {
                 // TODO log this properly? It can happen for various reasons, not
                 // necessarily a real error.
                 e.printStackTrace();
@@ -203,8 +180,7 @@ public class WorldHandlerDelegateIDE
     }
 
     @Override
-    public void objectAddedToWorld(Actor object)
-    {
+    public void objectAddedToWorld(Actor object) {
         if (worldInitialising) {
             // This code is nasty; we look at the stack trace to see if
             // we have been called from the prepare() method of the world class.
@@ -228,7 +204,7 @@ public class WorldHandlerDelegateIDE
             if (lastWorldClassName == null) {
                 return;
             }
-            
+
             for (StackTraceElement item : methods) {
                 if (GreenfootRecorder.METHOD_NAME.equals(item.getMethodName()) &&
                         item.getClassName().equals(lastWorldClassName)) {
@@ -254,21 +230,18 @@ public class WorldHandlerDelegateIDE
      * by GreenfootDebugHandler to watch out for actors which should
      * be named.  Do not remove or rename without also editing that code.
      */
-    private void nameActors(Actor[] actor)
-    {
+    private void nameActors(Actor[] actor) {
     }
-    
+
     /**
      * Is the world currently initialising?
      */
-    public boolean initialising()
-    {
+    public boolean initialising() {
         return worldInitialising;
     }
 
     @Override
-    public String ask(final String prompt)
-    {
+    public String ask(final String prompt) {
         // As I accidentally discovered while developing, this method
         // will go wrong if called off the simulation thread.
         // That should be fine, because Greenfoot methods should always
@@ -276,10 +249,10 @@ public class WorldHandlerDelegateIDE
         // explicit exception rather than getting stuck in a loop:
         if (!Simulation.getInstance().equals(Thread.currentThread()))
             throw new RuntimeException("Greenfoot.ask can only be called from the main simulation thread");
-        
+
         // Make a new ID for the ask request:
         int askId = vmCommsSimulation.getAskId();
-        
+
         // This will block the simulation thread until we get an answer,
         // but that is the semantics of Greenfoot.ask so it's fine:
         return vmCommsSimulation.doAsk(askId, prompt);

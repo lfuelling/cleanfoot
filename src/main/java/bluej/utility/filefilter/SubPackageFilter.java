@@ -21,26 +21,25 @@
  */
 package bluej.utility.filefilter;
 
-import java.io.*;
-
 import bluej.pkgmgr.Package;
+
+import java.io.File;
+import java.io.FileFilter;
 
 /**
  * A FileFilter that only accepts BlueJ package directories.
  * An instance of this class can be used as a parameter for
  * the listFiles method of class File.
  *
- * @author  Axel Schmolitzky
+ * @author Axel Schmolitzky
  * @version $Id: SubPackageFilter.java 6347 2009-05-20 15:22:43Z polle $
  */
-public class SubPackageFilter implements FileFilter
-{
+public class SubPackageFilter implements FileFilter {
     /**
      * This method only accepts directories.
      */
-    public boolean accept(File pathname)
-    {
+    public boolean accept(File pathname) {
         return (pathname.isDirectory() &&
-                 Package.isPackage(pathname));
+                Package.isPackage(pathname));
     }
 }

@@ -22,11 +22,6 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
 import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
@@ -35,32 +30,24 @@ import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.elements.SandwichCanvasesElement;
 import bluej.stride.framedjava.elements.TryElement;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameContentItem;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SandwichCanvasesFrame;
-import bluej.stride.slots.EditableSlot;
-import bluej.stride.slots.FocusParent;
-import bluej.stride.slots.HeaderItem;
-import bluej.stride.slots.SlotLabel;
-import bluej.stride.slots.SlotTraversalChars;
-import bluej.stride.slots.SlotValueListener;
-import bluej.stride.slots.TypeCompletionCalculator;
-import bluej.stride.slots.VariableNameDefTextSlot;
+import bluej.stride.generic.*;
+import bluej.stride.slots.*;
 import bluej.utility.Debug;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Container-block representing a try-catch statement.
+ *
  * @author Fraser McKay
  */
-public class TryFrame extends SandwichCanvasesFrame
-{
+public class TryFrame extends SandwichCanvasesFrame {
     private static final String TRY_STYLE_PREFIX = "try-";
     private final List<TypeSlot> catchTypes = new ArrayList<>();
     private final List<VariableNameDefTextSlot> catchVars = new ArrayList<>();
@@ -68,40 +55,34 @@ public class TryFrame extends SandwichCanvasesFrame
     /**
      * Default constructor.
      */
-    private TryFrame(InteractionManager editor)
-    {
+    private TryFrame(InteractionManager editor) {
         super(editor, "try", "catch", "finally", TRY_STYLE_PREFIX);
     }
 
     /**
      * Construct an TryFrame by wrapping the given frames
      */
-    public TryFrame(InteractionManager editor, List<Frame> contents)
-    {
+    public TryFrame(InteractionManager editor, List<Frame> contents) {
         this(editor);
         getFirstCanvas().getFirstCursor().insertFramesAfter(contents);
     }
 
     /**
-     *
      * @param editor
      * @param tryContents
-     * @param catchTypes Same length as catchContents
-     * @param catchNames Same length as catchContents
-     * @param catchContents If empty, no catches.  Cannot be null.
+     * @param catchTypes      Same length as catchContents
+     * @param catchNames      Same length as catchContents
+     * @param catchContents   If empty, no catches.  Cannot be null.
      * @param finallyContents If null, no finally.
      */
     public TryFrame(InteractionManager editor, List<Frame> tryContents, List<TypeSlotFragment> catchTypes,
                     List<NameDefSlotFragment> catchNames, List<List<Frame>> catchContents, List<Frame> finallyContents,
-                    boolean enabled)
-    {
+                    boolean enabled) {
         this(editor, tryContents);
-        for (int i = 0; i < catchContents.size(); i++)
-        {
+        for (int i = 0; i < catchContents.size(); i++) {
             addIntermediateCanvas(Arrays.asList(catchTypes.get(i), catchNames.get(i)), catchContents.get(i));
         }
-        if (finallyContents != null)
-        {
+        if (finallyContents != null) {
             addTailCanvas();
             finallyContents.forEach(f -> getTailCanvas().insertBlockAfter(f, null));
         }
@@ -109,8 +90,7 @@ public class TryFrame extends SandwichCanvasesFrame
     }
 
     @Override
-    protected FrameContentRow getFrameContentRow(List<SlotFragment> slots, JavaCanvas canvas, int at)
-    {
+    protected FrameContentRow getFrameContentRow(List<SlotFragment> slots, JavaCanvas canvas, int at) {
         FrameContentRow row = new FrameContentRow(this, "catch-");
 
         TypeSlot type = new TypeSlot(editor, this, this, row, TypeSlot.Role.THROWS_CATCH, "catch-type-");
@@ -159,11 +139,9 @@ public class TryFrame extends SandwichCanvasesFrame
     }
 
     @Override
-    public @OnThread(Tag.FXPlatform) boolean backspaceAtStart(FrameContentItem srcRow, HeaderItem src)
-    {
-        if (catchTypes.contains(src))
-        {
-            if (((FrameContentRow)srcRow).getSlotsDirect().allMatch(EditableSlot::isAlmostBlank)) {
+    public @OnThread(Tag.FXPlatform) boolean backspaceAtStart(FrameContentItem srcRow, HeaderItem src) {
+        if (catchTypes.contains(src)) {
+            if (((FrameContentRow) srcRow).getSlotsDirect().allMatch(EditableSlot::isAlmostBlank)) {
                 FrameCanvas canvas = getCanvases().collect(Collectors.toList()).get(1 + catchTypes.indexOf(src));
                 pullUpCanvasContents(canvas.getFirstCursor().getUp(), canvas);
             }
@@ -171,12 +149,10 @@ public class TryFrame extends SandwichCanvasesFrame
         return super.backspaceAtStart(srcRow, src);
     }
 
-    public static FrameFactory<TryFrame> getFactory()
-    {
+    public static FrameFactory<TryFrame> getFactory() {
         return new FrameFactory<TryFrame>() {
             @Override
-            public TryFrame createBlock(InteractionManager editor)
-            {
+            public TryFrame createBlock(InteractionManager editor) {
                 TryFrame tryFrame = new TryFrame(editor);
                 tryFrame.addIntermediateCanvas();
                 tryFrame.getFirstCanvas().getFirstCursor().requestFocus();
@@ -184,8 +160,7 @@ public class TryFrame extends SandwichCanvasesFrame
             }
 
             @Override
-            public TryFrame createBlock(InteractionManager editor, List<Frame> contents)
-            {
+            public TryFrame createBlock(InteractionManager editor, List<Frame> contents) {
                 final TryFrame tryFrame = new TryFrame(editor, contents);
                 tryFrame.addIntermediateCanvas();
                 tryFrame.getFirstCanvas().getFirstCursor().requestFocus();
@@ -193,8 +168,7 @@ public class TryFrame extends SandwichCanvasesFrame
             }
 
             @Override
-            public Class<TryFrame> getBlockClass()
-            {
+            public Class<TryFrame> getBlockClass() {
                 return TryFrame.class;
             }
         };
@@ -202,8 +176,7 @@ public class TryFrame extends SandwichCanvasesFrame
 
     @Override
     protected SandwichCanvasesElement regenerateCodeElement(List<CodeElement> firstCanvasContents,
-             List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled)
-    {
+                                                            List<List<CodeElement>> intermediateCanvasesContents, List<CodeElement> tailCanvasContents, boolean enabled) {
         return new TryElement(this, firstCanvasContents, Utility.mapList(catchTypes, TypeSlot::getSlotElement),
                 Utility.mapList(catchVars, VariableNameDefTextSlot::getSlotElement), intermediateCanvasesContents,
                 tailCanvasContents, enabled);

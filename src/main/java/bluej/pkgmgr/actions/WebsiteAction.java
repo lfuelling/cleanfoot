@@ -29,15 +29,12 @@ import bluej.pkgmgr.PkgMgrFrame;
  * bluej.defs configuration file.
  */
 
-final public class WebsiteAction extends PkgMgrAction
-{
-    public WebsiteAction(PkgMgrFrame pmf)
-    {
+final public class WebsiteAction extends PkgMgrAction {
+    public WebsiteAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.website");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.showWebPage(Config.getPropString("bluej.url.bluej"));
     }

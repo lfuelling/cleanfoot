@@ -21,11 +21,11 @@
  */
 package bluej.extensions;
 
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
 /**
  * Extensions which wish to add a menu item to BlueJ's menus should register an
- * instance of MenuGenerator with the BlueJ proxy object.  
+ * instance of MenuGenerator with the BlueJ proxy object.
  * <p>
  * A MenuGenerator provides a set of functions which can be called back
  * by BlueJ to request the actual menu items which will be displayed, and
@@ -37,7 +37,7 @@ import javax.swing.JMenuItem;
  * that the "notify" methods below will only be called for the item which has
  * actually been added, and not any subsidiary items.
  * <p>
- * Below is a simple example which creates menus for Tools, Classes and Objects. 
+ * Below is a simple example which creates menus for Tools, Classes and Objects.
  * <p>
  * To activate the menus you instantiate an object of the MenuGenerator class
  * and then register it with the BlueJ proxy object, e.g.:
@@ -46,162 +46,157 @@ import javax.swing.JMenuItem;
  *        bluej.setMenuGenerator(myMenus);
  * </pre>
  * Note that the MenuGenerator's <code>get*MenuItem()</code> methods:<ol>
- * <li>may be called more than 
- * once during a BlueJ session, they should return a new set of MenuItems for each 
- * invocation. This is a restriction required by the Swing implementation, which 
- * does not allow sharing of MenuItems between menus. You can, of course, share 
+ * <li>may be called more than
+ * once during a BlueJ session, they should return a new set of MenuItems for each
+ * invocation. This is a restriction required by the Swing implementation, which
+ * does not allow sharing of MenuItems between menus. You can, of course, share
  * MenuActions between all of the appropriate MenuItems.
  * <li>may not be called between the registration of a new <code>MenuGenerator</code>
  * and the display of a menu. That is to say old menu items may still be active for previously
  * registered menus, despite the registration of a new <code>MenuGenerator</code>.
  * <li>will be called at least once for every menu which is displayed.
  * </ol>
- *
+ * <p>
  * The code for the example MenuBuilder class is:
  * <PRE>
  * import bluej.extensions.*;
  * import javax.swing.*;
  * import java.awt.event.*;
- *
+ * <p>
  * class MenuBuilder extends MenuGenerator {
- *     private BPackage curPackage;
- *     private BClass curClass;
- *     private BObject curObject;
- * 
- *     public JMenuItem getToolsMenuItem(BPackage aPackage) {
- *         return new JMenuItem(new SimpleAction("Click Tools", "Tools menu:"));
- *     }
- * 
- *     public JMenuItem getClassMenuItem(BClass aClass) {
- *         return new JMenuItem(new SimpleAction("Click Class", "Class menu:"));
- *     }
- * 
- *     public JMenuItem getObjectMenuItem(BObject anObject) {
- *         return new JMenuItem(new SimpleAction("Click Object", "Object menu:"));
- *     }
- *     
- *     // These methods will be called when
- *     // each of the different menus are about to be invoked.
- *     public void notifyPostToolsMenu(BPackage bp, JMenuItem jmi) {
- *         System.out.println("Post on Tools menu");
- *         curPackage = bp ; curClass = null ; curObject = null;
- *     }
- *     
- *     public void notifyPostClassMenu(BClass bc, JMenuItem jmi) {
- *         System.out.println("Post on Class menu");
- *         curPackage = null ; curClass = bc ; curObject = null;
- *     }
- *     
- *     public void notifyPostObjectMenu(BObject bo, JMenuItem jmi) {
- *         System.out.println("Post on Object menu");
- *         curPackage = null ; curClass = null ; curObject = bo;
- *     }
- *     
- *     // A utility method which pops up a dialog detailing the objects 
- *     // involved in the current (SimpleAction) menu invocation.
- *     private void showCurrentStatus(String header) {
- *         try {
- *             if (curObject != null)
- *                 curClass = curObject.getBClass();
- *             if (curClass != null)
- *                 curPackage = curClass.getPackage();
- *                 
- *             String msg = header;
- *             if (curPackage != null)
- *                 msg += "\nCurrent Package = " + curPackage;
- *             if (curClass != null)
- *                 msg += "\nCurrent Class = " + curClass;
- *             if (curObject != null)
- *                 msg += "\nCurrent Object = " + curObject;
- *             JOptionPane.showMessageDialog(null, msg);
- *         } catch (Exception exc) { }
- *     }
- *     
- *     // The nested class that instantiates the different (simple) menus.
- *     class SimpleAction extends AbstractAction {
- *         private String msgHeader;
- *         
- *         public SimpleAction(String menuName, String msg) {
- *             putValue(AbstractAction.NAME, menuName);
- *             msgHeader = msg;
- *         }
- *         public void actionPerformed(ActionEvent anEvent) {
- *             showCurrentStatus(msgHeader);
- *         }
- *     }
+ * private BPackage curPackage;
+ * private BClass curClass;
+ * private BObject curObject;
+ * <p>
+ * public JMenuItem getToolsMenuItem(BPackage aPackage) {
+ * return new JMenuItem(new SimpleAction("Click Tools", "Tools menu:"));
+ * }
+ * <p>
+ * public JMenuItem getClassMenuItem(BClass aClass) {
+ * return new JMenuItem(new SimpleAction("Click Class", "Class menu:"));
+ * }
+ * <p>
+ * public JMenuItem getObjectMenuItem(BObject anObject) {
+ * return new JMenuItem(new SimpleAction("Click Object", "Object menu:"));
+ * }
+ * <p>
+ * // These methods will be called when
+ * // each of the different menus are about to be invoked.
+ * public void notifyPostToolsMenu(BPackage bp, JMenuItem jmi) {
+ * System.out.println("Post on Tools menu");
+ * curPackage = bp ; curClass = null ; curObject = null;
+ * }
+ * <p>
+ * public void notifyPostClassMenu(BClass bc, JMenuItem jmi) {
+ * System.out.println("Post on Class menu");
+ * curPackage = null ; curClass = bc ; curObject = null;
+ * }
+ * <p>
+ * public void notifyPostObjectMenu(BObject bo, JMenuItem jmi) {
+ * System.out.println("Post on Object menu");
+ * curPackage = null ; curClass = null ; curObject = bo;
+ * }
+ * <p>
+ * // A utility method which pops up a dialog detailing the objects
+ * // involved in the current (SimpleAction) menu invocation.
+ * private void showCurrentStatus(String header) {
+ * try {
+ * if (curObject != null)
+ * curClass = curObject.getBClass();
+ * if (curClass != null)
+ * curPackage = curClass.getPackage();
+ * <p>
+ * String msg = header;
+ * if (curPackage != null)
+ * msg += "\nCurrent Package = " + curPackage;
+ * if (curClass != null)
+ * msg += "\nCurrent Class = " + curClass;
+ * if (curObject != null)
+ * msg += "\nCurrent Object = " + curObject;
+ * JOptionPane.showMessageDialog(null, msg);
+ * } catch (Exception exc) { }
+ * }
+ * <p>
+ * // The nested class that instantiates the different (simple) menus.
+ * class SimpleAction extends AbstractAction {
+ * private String msgHeader;
+ * <p>
+ * public SimpleAction(String menuName, String msg) {
+ * putValue(AbstractAction.NAME, menuName);
+ * msgHeader = msg;
+ * }
+ * public void actionPerformed(ActionEvent anEvent) {
+ * showCurrentStatus(msgHeader);
+ * }
+ * }
  * }
  * </PRE>
  *
  * @author Damiano Bolla, University of Kent at Canterbury. January 2003
  */
-public class MenuGenerator
-{
+public class MenuGenerator {
     /**
      * Returns the JMenuItem to be added to the BlueJ Tools menu.
      * Extensions should not retain references to the menu items created.
+     *
      * @deprecated As of BlueJ 1.3.5, replaced by {@link #getToolsMenuItem(BPackage bp)}
      */
     @Deprecated
-    public JMenuItem getMenuItem( )
-    {
+    public JMenuItem getMenuItem() {
         return null;
     }
 
     /**
      * Returns the JMenuItem to be added to the BlueJ Tools menu.
      * Extensions should not retain references to the menu items created.
+     *
      * @param bp the BlueJ package with which this menu item will be associated.
      */
-    public JMenuItem getToolsMenuItem(BPackage bp)
-    {
+    public JMenuItem getToolsMenuItem(BPackage bp) {
         return null;
     }
 
     /**
      * Returns the JMenuItem to be added to the BlueJ View menu. Extensions
      * should not retain references to the menu items created.
-     * 
-     * @param bPackage
-     *            The BlueJ package with which this menu item will be
-     *            associated.
+     *
+     * @param bPackage The BlueJ package with which this menu item will be
+     *                 associated.
      * @return The JMenuItem to be added to the BlueJ View menu.
      */
-    public JMenuItem getViewMenuItem(BPackage bPackage)
-    {
+    public JMenuItem getViewMenuItem(BPackage bPackage) {
         return null;
     }
 
     /**
      * Returns the JMenuItem to be added to the BlueJ Package menu. Extensions
      * should not retain references to the menu items created.
-     * 
-     * @param bPackage
-     *            The BlueJ package with which this menu item will be
-     *            associated.
+     *
+     * @param bPackage The BlueJ package with which this menu item will be
+     *                 associated.
      * @return The JMenuItem to be added to the BlueJ Package menu.
      */
-    public JMenuItem getPackageMenuItem(BPackage bPackage)
-    {
+    public JMenuItem getPackageMenuItem(BPackage bPackage) {
         return null;
     }
-  
+
     /**
      * Returns the JMenuItem to be added to the BlueJ Class menu
      * Extensions should not retain references to the menu items created.
+     *
      * @param bc the BlueJ class with which this menu item will be associated.
      */
-    public JMenuItem getClassMenuItem(BClass bc)
-    {
+    public JMenuItem getClassMenuItem(BClass bc) {
         return null;
     }
 
     /**
      * Returns the JMenuItem to be added to the BlueJ Object menu.
      * Extensions should not retain references to the menu items created.
+     *
      * @param bo the BlueJ object with which this menu item will be associated.
      */
-    public JMenuItem getObjectMenuItem(BObject bo)
-    {
+    public JMenuItem getObjectMenuItem(BObject bo) {
         return null;
     }
 
@@ -211,12 +206,12 @@ public class MenuGenerator
      * to enable/disable menu items and so on. <em>Note:</em> Due to a bug in
      * Apple's current Java implementation, this method will not be called when
      * is running on a Mac. It will start working as soon as there's a fix.
-     * @param bp the BlueJ package for which the menu is to be displayed
+     *
+     * @param bp  the BlueJ package for which the menu is to be displayed
      * @param jmi the menu item which will be displayed (as provided by the
-     * extension in a previous call to getToolsMenuItem)
+     *            extension in a previous call to getToolsMenuItem)
      */
-    public void notifyPostToolsMenu(BPackage bp, JMenuItem jmi) 
-    {
+    public void notifyPostToolsMenu(BPackage bp, JMenuItem jmi) {
         return;
     }
 
@@ -224,16 +219,13 @@ public class MenuGenerator
      * Called by BlueJ when a view menu added by an extension is about to be
      * displayed. An extension can use this notification to decide whether to
      * enable/disable menu items and so on.
-     * 
-     * @param bPackage
-     *            The BlueJ package for which the menu is to be displayed.
-     * @param menuItem
-     *            The menu item which will be displayed (as provided by the
-     *            extension in a previous call to
-     *            {@link #getViewMenuItem(BPackage)}).
+     *
+     * @param bPackage The BlueJ package for which the menu is to be displayed.
+     * @param menuItem The menu item which will be displayed (as provided by the
+     *                 extension in a previous call to
+     *                 {@link #getViewMenuItem(BPackage)}).
      */
-    public void notifyPostViewMenu(BPackage bPackage, JMenuItem menuItem)
-    {
+    public void notifyPostViewMenu(BPackage bPackage, JMenuItem menuItem) {
         return;
     }
 
@@ -241,16 +233,13 @@ public class MenuGenerator
      * Called by BlueJ when a package menu added by an extension is about to be
      * displayed. An extension can use this notification to decide whether to
      * enable/disable menu items and so on.
-     * 
-     * @param bPackage
-     *            The BlueJ package for which the menu is to be displayed.
-     * @param menuItem
-     *            The menu item which will be displayed (as provided by the
-     *            extension in a previous call to
-     *            {@link #getPackageMenuItem(BPackage)}).
+     *
+     * @param bPackage The BlueJ package for which the menu is to be displayed.
+     * @param menuItem The menu item which will be displayed (as provided by the
+     *                 extension in a previous call to
+     *                 {@link #getPackageMenuItem(BPackage)}).
      */
-    public void notifyPostPackageMenu(BPackage bPackage, JMenuItem menuItem)
-    {
+    public void notifyPostPackageMenu(BPackage bPackage, JMenuItem menuItem) {
         return;
     }
 
@@ -258,12 +247,12 @@ public class MenuGenerator
      * Called by BlueJ when a class menu added by an extension is about to
      * be displayed. An extension can use this notification to decide whether
      * to enable/disable menu items and so on.
-     * @param bc the BlueJ class for which the menu is to be displayed
+     *
+     * @param bc  the BlueJ class for which the menu is to be displayed
      * @param jmi the menu item which will be displayed (as provided by the
-     * extension in a previous call to getToolsMenuItem)
+     *            extension in a previous call to getToolsMenuItem)
      */
-    public void notifyPostClassMenu(BClass bc, JMenuItem jmi) 
-    {
+    public void notifyPostClassMenu(BClass bc, JMenuItem jmi) {
         return;
     }
 
@@ -271,12 +260,12 @@ public class MenuGenerator
      * Called by BlueJ when an object menu added by an extension is about to
      * be displayed. An extension can use this notification to decide whether
      * to enable/disable menu items and so on.
-     * @param bo the BlueJ object for which the menu is to be displayed
+     *
+     * @param bo  the BlueJ object for which the menu is to be displayed
      * @param jmi the menu item which will be displayed (as provided by the
-     * extension in a previous call to getToolsMenuItem)
+     *            extension in a previous call to getToolsMenuItem)
      */
-    public void notifyPostObjectMenu(BObject bo, JMenuItem jmi) 
-    {
+    public void notifyPostObjectMenu(BObject bo, JMenuItem jmi) {
         return;
     }
 

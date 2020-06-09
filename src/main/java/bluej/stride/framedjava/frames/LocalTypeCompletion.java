@@ -21,82 +21,71 @@
  */
 package bluej.stride.framedjava.frames;
 
-import java.util.List;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.parser.AssistContent;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.stride.framedjava.ast.Parser;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.List;
 
 @OnThread(Tag.FXPlatform)
-public class LocalTypeCompletion extends AssistContent
-{
+public class LocalTypeCompletion extends AssistContent {
     private final String type;
-    
-    private LocalTypeCompletion(ClassTarget ct)
-    {
+
+    private LocalTypeCompletion(ClassTarget ct) {
         this.type = ct.getIdentifierName();
     }
 
     // If it's an invalid name, null is returned
-    public static AssistContent getCompletion(ClassTarget ct)
-    {
-        if (Parser.parseableAsNameDef(ct.getIdentifierName()))  {
+    public static AssistContent getCompletion(ClassTarget ct) {
+        if (Parser.parseableAsNameDef(ct.getIdentifierName())) {
             // Valid type name, fine to complete:
             return new LocalTypeCompletion(ct);
         }
         return null;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return type;
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return null;
     }
 
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return null;
     }
 
     @Override
-    public CompletionKind getKind()
-    {
+    public CompletionKind getKind() {
         return CompletionKind.TYPE;
     }
 
     @Override
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         return "";
     }
-    
+
     @Override
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         // Can't have parameters, so we return null:
         return null;
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         // TODO
         return null;
     }
 
     @Override
-    public String getPackage()
-    {
+    public String getPackage() {
         return "";
     }
 }

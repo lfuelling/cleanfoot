@@ -26,28 +26,23 @@ import bluej.stride.framedjava.slots.ExpressionSlot;
 /**
  * An ExpressionSlotFragment that is not allowed to be empty
  */
-public class FilledExpressionSlotFragment extends ExpressionSlotFragment
-{
+public class FilledExpressionSlotFragment extends ExpressionSlotFragment {
 
     public FilledExpressionSlotFragment(String content, String javaCode,
-            ExpressionSlot slot)
-    {
+                                        ExpressionSlot slot) {
         super(content, javaCode, slot);
     }
 
-    public FilledExpressionSlotFragment(String content, String javaCode)
-    {
+    public FilledExpressionSlotFragment(String content, String javaCode) {
         super(content, javaCode);
     }
 
-    public FilledExpressionSlotFragment(ExpressionSlotFragment f)
-    {
+    public FilledExpressionSlotFragment(ExpressionSlotFragment f) {
         super(f);
     }
 
     @Override
-    protected boolean isRequired()
-    {
+    protected boolean isRequired() {
         return true;
     }
 

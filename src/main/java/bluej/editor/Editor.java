@@ -21,15 +21,12 @@
  */
 package bluej.editor;
 
-import java.io.IOException;
-import java.util.List;
-
 import bluej.compiler.CompileType;
 import bluej.compiler.Diagnostic;
 import bluej.debugger.DebuggerThread;
-import bluej.prefmgr.PrefMgr.PrintSize;
 import bluej.editor.stride.FrameEditor;
 import bluej.parser.symtab.ClassInfo;
+import bluej.prefmgr.PrefMgr.PrintSize;
 import bluej.stride.framedjava.elements.CallElement;
 import bluej.stride.framedjava.elements.NormalMethodElement;
 import bluej.utility.javafx.FXPlatformConsumer;
@@ -37,15 +34,17 @@ import bluej.utility.javafx.FXRunnable;
 import javafx.print.PrinterJob;
 import javafx.scene.image.Image;
 
+import java.io.IOException;
+import java.util.List;
+
 
 /**
  * Interface between an editor and the rest of BlueJ
- * 
+ *
  * @author Michael Cahill
  * @author Michael Kolling
  */
-public interface Editor
-{
+public interface Editor {
 
     /**
      * Reload and display the same file that was displayed before.
@@ -56,15 +55,15 @@ public interface Editor
     /**
      * Show the editor window. This includes whatever is necessary of the
      * following: make visible, de-iconify, bring to front of window stack.
-     * 
-     * @param vis  true to make the editor visible, or false to hide it.
+     *
+     * @param vis             true to make the editor visible, or false to hide it.
      * @param openInNewWindow if this is true, the editor opens in a new window
      */
     void setEditorVisible(boolean vis, boolean openInNewWindow);
 
     /**
      * True if the editor is open in the tabbed window.
-     * 
+     *
      * @return true if editor is an open tab
      */
     boolean isOpen();
@@ -73,14 +72,13 @@ public interface Editor
      * Save the buffer to disk under the current file name. This is an error if
      * the editor has not been given a file name (ie. if readFile was not
      * executed).
-     * 
+     * <p>
      * If save() is called on an unmodified file, it returns immediately without
      * re-writing the file to disk.
      */
     void save() throws IOException;
 
-    default void saveJavaWithoutWarning() throws IOException
-    {
+    default void saveJavaWithoutWarning() throws IOException {
         save();
     }
 
@@ -98,43 +96,43 @@ public interface Editor
      * Display a message (used for compile/runtime errors). An editor must
      * support at least two lines of message text, so the message can contain
      * a newline character.
-     *  @param message    the message to be displayed
-     * @param lineNumber    the line to move the cursor to (the line is also
-     *        highlighted)
-     * @param column        the column to move the cursor to
+     *
+     * @param message    the message to be displayed
+     * @param lineNumber the line to move the cursor to (the line is also
+     *                   highlighted)
+     * @param column     the column to move the cursor to
      */
     void displayMessage(String message, int lineNumber, int column);
 
     /**
      * Display a diagnostic message from the compiler.
-     * 
+     *
      * @param diagnostic  The diagnostic to be displayed.
-     * @param errorIndex The index of the error (first is 0, second is 1, etc)
+     * @param errorIndex  The index of the error (first is 0, second is 1, etc)
      * @param compileType The type of the compilation which caused the error to show
      * @return Whether the error was shown to the user (true) or not (false).  Some editors
-     *          only show the first error, for example, or the first N.
+     * only show the first error, for example, or the first N.
      */
     boolean displayDiagnostic(Diagnostic diagnostic, int errorIndex, CompileType compileType);
-    
+
     /**
      * Set a step mark due to execution hitting a break point / completing a step, or selection
      * of a stack frame in the debugger.
-     * 
-     * @param lineNumber  The line number of the step/selection
-     * @param message     Message to be displayed (may be null)
-     * @param isBreak     Thread execution was suspended at the given line (i.e. breakpoint/step/halt).
-     * @param thread      The thread that was suspended/selected
-     *                    
+     *
+     * @param lineNumber The line number of the step/selection
+     * @param message    Message to be displayed (may be null)
+     * @param isBreak    Thread execution was suspended at the given line (i.e. breakpoint/step/halt).
+     * @param thread     The thread that was suspended/selected
      * @return true if the debugger display is already taken care of, or
-     *         false if you still want to show the ExecControls window afterwards.
+     * false if you still want to show the ExecControls window afterwards.
      */
     boolean setStepMark(int lineNumber, String message, boolean isBreak, DebuggerThread thread);
-    
+
     /**
-     *  Display a message into the info area.
-     *  The message will be cleared when the caret is moved.
-     *  
-     *  @param msg the message to display
+     * Display a message into the info area.
+     * The message will be cleared when the caret is moved.
+     *
+     * @param msg the message to display
      */
     void writeMessage(String msg);
 
@@ -147,7 +145,7 @@ public interface Editor
 
     /**
      * Change class name.
-     * 
+     *
      * @param title        new window title
      * @param filename     new file name
      * @param javaFilename If Java source, same as filename.  If Stride source, target Java file.
@@ -157,11 +155,11 @@ public interface Editor
 
     /**
      * Set the "compiled" status, as shown in the class diagram.
-     * 
-     * @param compiled    true if the class has been compiled
+     *
+     * @param compiled true if the class has been compiled
      */
     void setCompiled(boolean compiled);
-    
+
     /**
      * Tells the editor that a compilation has begun
      *
@@ -171,11 +169,11 @@ public interface Editor
      * @return True if there is a known error
      */
     boolean compileStarted(int compilationSequence);
-    
+
     /**
      * Informs the editor that a compilation requested via the EditorWatcher interface has finished.
      *
-     * @param successful   whether the compilation was successful
+     * @param successful  whether the compilation was successful
      * @param classesKept
      */
     void compileFinished(boolean successful, boolean classesKept);
@@ -185,7 +183,7 @@ public interface Editor
      * editor display to reflect this.
      */
     void removeBreakpoints();
-    
+
     /**
      * Breakpoints have been reset due to compilation or
      * similar. Re-initialize the breakpoints by re-setting them via the
@@ -195,7 +193,7 @@ public interface Editor
 
     /**
      * Determine whether this editor has been modified from the version on disk
-     * 
+     *
      * @return a boolean indicating whether the file is modified
      */
     boolean isModified();
@@ -207,19 +205,22 @@ public interface Editor
 
     /**
      * Set the 'read-only' property of this editor.
-     * @param readOnly  If true, editor is non-editable.
+     *
+     * @param readOnly If true, editor is non-editable.
      */
     void setReadOnly(boolean readOnly);
 
     /**
      * Test if this editor is 'read-only'.
+     *
      * @return the readOnlyStatus. If true, editor is non-editable.
      */
     boolean isReadOnly();
-    
+
     /**
      * Set the view of this editor to display either the source or the interface
      * of the class.
+     *
      * @param interfaceStatus If true, display class interface, otherwise source.
      */
     void showInterface(boolean interfaceStatus);
@@ -227,8 +228,8 @@ public interface Editor
     /**
      * Returns a property of the current editor.
      *
-     * @param  propertyKey  The propertyKey of the property to retrieve.
-     * @return              the property value or null if it is not found
+     * @param propertyKey The propertyKey of the property to retrieve.
+     * @return the property value or null if it is not found
      */
     Object getProperty(String propertyKey);
 
@@ -236,8 +237,8 @@ public interface Editor
      * Set a property for the current editor. Any existing property with
      * this key will be overwritten.
      *
-     * @param  propertyKey  The property key of the new property
-     * @param  value        The new property value
+     * @param propertyKey The property key of the new property
+     * @param value       The new property value
      */
     void setProperty(String propertyKey, Object value);
 
@@ -246,26 +247,26 @@ public interface Editor
      * TextEditor implementation is available.
      */
     TextEditor assumeText();
-    
+
     /**
      * Obtain the FrameEditor implementation of this editor, if it has one. May return null if no
      * FrameEditor implementation is available.
      */
     FrameEditor assumeFrame();
-    
+
     /**
      * Create a new method, or appending the contents if the method already exists
      *
      * @param method element
-     * @param after will be passed true if the method did not exist already and was inserted, false otherwise (will always be run)
+     * @param after  will be passed true if the method did not exist already and was inserted, false otherwise (will always be run)
      */
     void insertAppendMethod(NormalMethodElement method, FXPlatformConsumer<Boolean> after);
 
     /**
      * Insert a method call in constructor, if it does not already exists
-     * 
-     * @param methodCall element 
-     * @param after will be passed true if the call did not exist already and was inserted
+     *
+     * @param methodCall element
+     * @param after      will be passed true if the call did not exist already and was inserted
      */
     void insertMethodCallInConstructor(String className, CallElement methodCall, FXPlatformConsumer<Boolean> after);
 
@@ -308,19 +309,21 @@ public interface Editor
 
     /**
      * Removes any imports that exactly match the given imports (e.g. java,awt,Color, java.util.*)
-     * 
+     * <p>
      * Other imports which may overlap (e.g. java.awt.*, java.util.List) will not be altered.
      */
     void removeImports(List<String> importTargets);
 
     /**
      * Set the header image (in the tab header) for this editor
+     *
      * @param image The image to use (any size).
      */
     void setHeaderImage(Image image);
 
     /**
      * Sets the editor's last modified time for the file.
+     *
      * @param millisSinceEpoch
      */
     void setLastModified(long millisSinceEpoch);

@@ -39,12 +39,7 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.OverrunStyle;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -60,16 +55,16 @@ import org.fxmisc.richtext.model.TwoDimensional.Position;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.text.Segment;
 import java.util.*;
 import java.util.Map.Entry;
-import javax.swing.text.Segment;
 
 /**
  * A Swing view implementation that does syntax colouring and adds some utility.
  *
  * <p>A BlueJSyntaxView (or subclass) instance is normally created by an implementation of
  * the EditorKit interface.
- * 
+ *
  * <p>The original version of this class was based on SyntaxView from JEdit. Little of
  * that code remains.
  *
@@ -79,9 +74,10 @@ import javax.swing.text.Segment;
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class BlueJSyntaxView
-{
-    /** (NaviView) Paint method inner scope? if false, whole method will be highlighted as a single block */
+public class BlueJSyntaxView {
+    /**
+     * (NaviView) Paint method inner scope? if false, whole method will be highlighted as a single block
+     */
     private static final boolean PAINT_METHOD_INNER = false;
 
     private static final int LEFT_INNER_SCOPE_MARGIN = 5;
@@ -89,11 +85,11 @@ public class BlueJSyntaxView
     private static final int RIGHT_SCOPE_MARGIN = 4;
     private static final int CURVED_CORNER_SIZE = 4;
     private static final int PARAGRAPH_MARGIN = 24;
-    
+
     // See comments in getImageFor for more info.
     // 1 means draw edge, 2 means draw filling
     @OnThread(Tag.FX)
-    private static final int[][] CORNER_TEMPLATE = new int[][] {
+    private static final int[][] CORNER_TEMPLATE = new int[][]{
             {0, 0, 1, 1},
             {0, 1, 2, 2},
             {1, 2, 2, 2},
@@ -106,7 +102,7 @@ public class BlueJSyntaxView
     private int imageCacheLineHeight;
     private ReadOnlyDoubleProperty widthProperty; // width of editor view
     private MoeEditorPane editorPane;
-    
+
     // Draw a "small" version:
     @OnThread(Tag.FX)
     private final boolean small = false;
@@ -132,19 +128,16 @@ public class BlueJSyntaxView
     // Each item in the list maps the list index (as number of spaces) to indent amount
     private final List<Double> cachedSpaceSizes = new ArrayList<>();
 
-    public enum ParagraphAttribute
-    {
+    public enum ParagraphAttribute {
         STEP_MARK("bj-step-mark"), BREAKPOINT("bj-breakpoint"), ERROR("bj-error");
 
         private final String pseudoClass;
 
-        ParagraphAttribute(String pseudoClass)
-        {
+        ParagraphAttribute(String pseudoClass) {
             this.pseudoClass = pseudoClass;
         }
 
-        public String getPseudoclass()
-        {
+        public String getPseudoclass() {
             return pseudoClass;
         }
     }
@@ -154,22 +147,21 @@ public class BlueJSyntaxView
      * When this is zero, it means it is not yet fully valid as the editor has not
      * yet appeared on screen.
      */
-    private final Map<ParsedNode,Integer> nodeIndents = new HashMap<ParsedNode,Integer>();
+    private final Map<ParsedNode, Integer> nodeIndents = new HashMap<ParsedNode, Integer>();
 
     /**
-      * Are we in the middle of an update which comes from the RichTextFX stream of changes?
-      * If so, we must not ask for character bounds because the offset calculations
-      * are all wrong, and a layout may be forced resulting in inconsistent state in
-      * RichTextFX (and an exception being thrown: catching the exception is not enough
-      * to avoid the incorrect state).
-    */
+     * Are we in the middle of an update which comes from the RichTextFX stream of changes?
+     * If so, we must not ask for character bounds because the offset calculations
+     * are all wrong, and a layout may be forced resulting in inconsistent state in
+     * RichTextFX (and an exception being thrown: catching the exception is not enough
+     * to avoid the incorrect state).
+     */
     private boolean duringUpdate;
 
     /**
      * Creates a new BlueJSyntaxView.
      */
-    public BlueJSyntaxView(MoeSyntaxDocument document, ScopeColors scopeColors)
-    {
+    public BlueJSyntaxView(MoeSyntaxDocument document, ScopeColors scopeColors) {
         this.document = document;
         this.syntaxHighlighting = PrefMgr.flagProperty(PrefMgr.HIGHLIGHTING);
         this.imageCache = new FXCache<>(s -> drawImageFor(s, imageCacheLineHeight), 40);
@@ -193,8 +185,7 @@ public class BlueJSyntaxView
         JavaFXUtil.addChangeListenerPlatform(scopeColors.scopeClassColorProperty(), str -> {
             // If printing, don't run later as we're not on the main thread.
             // Instead, the printing code will trigger the necessary recalculation.
-            if (!document.isPrinting())
-            {
+            if (!document.isPrinting()) {
                 // runLater to make sure all colours have been set:
                 JavaFXUtil.runAfterCurrent(() ->
                 {
@@ -205,38 +196,36 @@ public class BlueJSyntaxView
             }
         });
     }
-    
+
     /**
      * Get the editor pane that this view is associated with.
      */
-    public MoeEditorPane getEditorPane()
-    {
+    public MoeEditorPane getEditorPane() {
         return editorPane;
     }
 
     /**
      * Mark the syntax view as being during an update.  Don't forget
      * to match every true call with a later false call.
+     *
      * @param duringUpdate
      */
-    public void setDuringUpdate(boolean duringUpdate)
-    {
+    public void setDuringUpdate(boolean duringUpdate) {
         this.duringUpdate = duringUpdate;
     }
 
     /**
      * Gets the syntax token styles for a given line of code.
-     *
+     * <p>
      * Returns null if there are no styles to apply (e.g. on a blank line or one with only whitespace).
      */
-    protected final StyleSpans<ImmutableSet<String>> getTokenStylesFor(int lineIndex, MoeSyntaxDocument document)
-    {
+    protected final StyleSpans<ImmutableSet<String>> getTokenStylesFor(int lineIndex, MoeSyntaxDocument document) {
         StyleSpansBuilder<ImmutableSet<String>> lineStyle = new StyleSpansBuilder<>();
         Token tokens = document.getTokensForLine(lineIndex);
         boolean addedAny = false;
-        for(;;) {
+        for (; ; ) {
             TokenType id = tokens.id;
-            if(id == TokenType.END)
+            if (id == TokenType.END)
                 break;
 
             lineStyle.add(syntaxHighlighting.get() ? ImmutableSet.of(id.getCSSClass()) : ImmutableSet.of(), tokens.length);
@@ -252,34 +241,30 @@ public class BlueJSyntaxView
 
     /**
      * Recalculate scope margins in the given line range. All line numbers are 0-based.
-     * 
-     * @param pendingScopes  map to store updated scope margin information.
-     * @param firstLineIncl  the first line in the range to update (inclusive).
-     * @param lastLineIncl   the last line in the range to update (inclusive).
+     *
+     * @param pendingScopes map to store updated scope margin information.
+     * @param firstLineIncl the first line in the range to update (inclusive).
+     * @param lastLineIncl  the last line in the range to update (inclusive).
      */
-    public void recalculateScopes(Map<Integer, ScopeInfo> pendingScopes, int firstLineIncl, int lastLineIncl)
-    {
+    public void recalculateScopes(Map<Integer, ScopeInfo> pendingScopes, int firstLineIncl, int lastLineIncl) {
         // editorPane is null during testing -- just skip updating the scopes in that case:
         if (editorPane == null)
             return;
-        
+
         recalcScopeMarkers(pendingScopes,
                 (widthProperty == null || widthProperty.get() == 0) ? 200 :
-                        ((int)widthProperty.get() - PARAGRAPH_MARGIN),
+                        ((int) widthProperty.get() - PARAGRAPH_MARGIN),
                 firstLineIncl, lastLineIncl, false);
     }
 
-    public Image getImageFor(ScopeInfo s, int lineHeight)
-    {
-        if (lineHeight == 0)
-        {
+    public Image getImageFor(ScopeInfo s, int lineHeight) {
+        if (lineHeight == 0) {
             return new WritableImage(1, 1);
         }
 
         // Many of the images we use will be duplicated, e.g. for multiple lines in the same body of a block
         // So we keep them in a cache to save unnecessary effort drawing new line backgrounds:
-        if (lineHeight != imageCacheLineHeight)
-        {
+        if (lineHeight != imageCacheLineHeight) {
             imageCache.clear();
             imageCacheLineHeight = lineHeight;
         }
@@ -292,27 +277,23 @@ public class BlueJSyntaxView
         return copy(imageCache.get(s));
     }
 
-    private static Image copy(Image original)
-    {
-        return new WritableImage(original.getPixelReader(), (int)original.getWidth(), (int)original.getHeight());
+    private static Image copy(Image original) {
+        return new WritableImage(original.getPixelReader(), (int) original.getWidth(), (int) original.getHeight());
     }
 
     @OnThread(Tag.FX)
-    private Image drawImageFor(ScopeInfo s, int lineHeight)
-    {
+    private Image drawImageFor(ScopeInfo s, int lineHeight) {
         WritableImage image = new WritableImage(s.nestedScopes.stream()
                 .mapToInt(n -> n.leftRight.rhs + 1).max().orElse(1) + 1, lineHeight);
 
-        for (ScopeInfo.SingleNestedScope singleNestedScope : s.nestedScopes)
-        {
+        for (ScopeInfo.SingleNestedScope singleNestedScope : s.nestedScopes) {
             LeftRight leftRight = singleNestedScope.leftRight;
             int padding = small ? 0 : CURVED_CORNER_SIZE;
             int sideTopMargin = leftRight.starts ? padding : 0;
             int sideBottomMargin = leftRight.ends ? padding : 0;
             fillRect(image.getPixelWriter(), leftRight.lhs, 0 + sideTopMargin, padding,
                     lineHeight - sideBottomMargin - sideTopMargin, leftRight.fillColor);
-            for (int y = sideTopMargin; y < lineHeight - sideBottomMargin; y++)
-            {
+            for (int y = sideTopMargin; y < lineHeight - sideBottomMargin; y++) {
                 image.getPixelWriter().setColor(leftRight.lhs, y, leftRight.edgeColor);
             }
 
@@ -323,30 +304,23 @@ public class BlueJSyntaxView
             // things like HiDPI would be difficult.  So it is the simplest solution to just
             // draw a simple curved corner ourselves:
 
-            if (leftRight.starts)
-            {
-                for (int x = 0; x < padding; x++)
-                {
-                    for (int y = 0; y < padding; y++)
-                    {
-                        if (CORNER_TEMPLATE[y][x] != 0)
-                        {
+            if (leftRight.starts) {
+                for (int x = 0; x < padding; x++) {
+                    for (int y = 0; y < padding; y++) {
+                        if (CORNER_TEMPLATE[y][x] != 0) {
                             Color c = (CORNER_TEMPLATE[y][x] == 1) ?
-                                    leftRight.edgeColor : leftRight.fillColor; 
+                                    leftRight.edgeColor : leftRight.fillColor;
                             image.getPixelWriter().setColor(leftRight.lhs + x, y, c);
                         }
                     }
                 }
             }
-            if (leftRight.ends)
-            {
-                for (int x = 0; x < padding; x++)
-                {
-                    for (int y = 0; y < padding; y++)
-                    {
+            if (leftRight.ends) {
+                for (int x = 0; x < padding; x++) {
+                    for (int y = 0; y < padding; y++) {
                         if (CORNER_TEMPLATE[y][x] != 0) {
                             Color c = (CORNER_TEMPLATE[y][x] == 1) ?
-                                    leftRight.edgeColor : leftRight.fillColor; 
+                                    leftRight.edgeColor : leftRight.fillColor;
                             image.getPixelWriter().setColor(leftRight.lhs + x, lineHeight - 1 - y, c);
                         }
                     }
@@ -358,18 +332,14 @@ public class BlueJSyntaxView
             fillRect(image.getPixelWriter(), middle.lhs + padding, 0, middle.rhs - middle.lhs - padding,
                     lineHeight, middle.bodyColor);
 
-            if (middle.topColor != null)
-            {
-                for (int x = middle.lhs + padding; x < middle.rhs; x++)
-                {
+            if (middle.topColor != null) {
+                for (int x = middle.lhs + padding; x < middle.rhs; x++) {
                     image.getPixelWriter().setColor(x, 0, middle.topColor);
                 }
             }
 
-            if (middle.bottomColor != null)
-            {
-                for (int x = middle.lhs + padding; x < middle.rhs; x++)
-                {
+            if (middle.bottomColor != null) {
+                for (int x = middle.lhs + padding; x < middle.rhs; x++) {
                     image.getPixelWriter().setColor(x, lineHeight - 1, middle.bottomColor);
                 }
             }
@@ -378,35 +348,28 @@ public class BlueJSyntaxView
             // Right edge:
             fillRect(image.getPixelWriter(), leftRight.rhs - padding, 0 + sideTopMargin, padding,
                     lineHeight - sideBottomMargin - sideTopMargin, leftRight.fillColor);
-            
-            for (int y = sideTopMargin; y < lineHeight - sideBottomMargin; y++)
-            {
+
+            for (int y = sideTopMargin; y < lineHeight - sideBottomMargin; y++) {
                 image.getPixelWriter().setColor(leftRight.rhs, y, leftRight.edgeColor);
             }
 
-            if (leftRight.starts && leftRight.rhs > padding)
-            {
-                for (int x = 0; x < padding; x++)
-                {
-                    for (int y = 0; y < padding; y++)
-                    {
+            if (leftRight.starts && leftRight.rhs > padding) {
+                for (int x = 0; x < padding; x++) {
+                    for (int y = 0; y < padding; y++) {
                         if (CORNER_TEMPLATE[y][x] != 0) {
                             Color c = (CORNER_TEMPLATE[y][x] == 1) ?
-                                    leftRight.edgeColor : leftRight.fillColor; 
+                                    leftRight.edgeColor : leftRight.fillColor;
                             image.getPixelWriter().setColor(leftRight.rhs - x, y, c);
                         }
                     }
                 }
             }
-            if (leftRight.ends && leftRight.rhs > padding)
-            {
-                for (int x = 0; x < padding; x++)
-                {
-                    for (int y = 0; y < padding; y++)
-                    {
+            if (leftRight.ends && leftRight.rhs > padding) {
+                for (int x = 0; x < padding; x++) {
+                    for (int y = 0; y < padding; y++) {
                         if (CORNER_TEMPLATE[y][x] != 0) {
                             Color c = (CORNER_TEMPLATE[y][x] == 1) ?
-                                    leftRight.edgeColor : leftRight.fillColor; 
+                                    leftRight.edgeColor : leftRight.fillColor;
                             image.getPixelWriter().setColor(leftRight.rhs - x, lineHeight - 1 - y, c);
                         }
                     }
@@ -414,12 +377,9 @@ public class BlueJSyntaxView
             }
         }
 
-        if (s.getAttributes().contains(ParagraphAttribute.STEP_MARK))
-        {
+        if (s.getAttributes().contains(ParagraphAttribute.STEP_MARK)) {
             blend(image, scopeColors.stepMarkOverlayColorProperty().get());
-        }
-        else if (s.getAttributes().contains(ParagraphAttribute.BREAKPOINT))
-        {
+        } else if (s.getAttributes().contains(ParagraphAttribute.BREAKPOINT)) {
             blend(image, scopeColors.breakpointOverlayColorProperty().get());
         }
 
@@ -427,13 +387,10 @@ public class BlueJSyntaxView
     }
 
     @OnThread(Tag.FX)
-    private static void blend(WritableImage image, Color rgba)
-    {
+    private static void blend(WritableImage image, Color rgba) {
         Color c = new Color(rgba.getRed(), rgba.getGreen(), rgba.getBlue(), 1.0);
-        for (int x = 0; x < image.getWidth(); x++)
-        {
-            for (int y = 0; y < image.getHeight(); y++)
-            {
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
                 Color prev = image.getPixelReader().getColor(x, y);
                 image.getPixelWriter().setColor(x, y, prev.interpolate(c, rgba.getOpacity()));
             }
@@ -441,32 +398,26 @@ public class BlueJSyntaxView
     }
 
     @OnThread(Tag.FX)
-    private static void fillRect(PixelWriter pixelWriter, int x, int y, int w, int h, Color c)
-    {
+    private static void fillRect(PixelWriter pixelWriter, int x, int y, int w, int h, Color c) {
         // If we're trying to draw off the left-hand/top edge, just truncate the rectangles
-        if (x < 0)
-        {
+        if (x < 0) {
             // If x is -4, we want to take +4 off the width:
             w -= -x;
             x = 0;
         }
-        if (y < 0)
-        {
+        if (y < 0) {
             h -= -y;
             y = 0;
         }
 
-        for (int i = 0; i < w; i++)
-        {
-            for (int j = 0; j < h; j++)
-            {
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
                 pixelWriter.setColor(x + i, y + j, c);
             }
         }
     }
 
-    public void setEditorPane(MoeEditorPane editorPane)
-    {
+    public void setEditorPane(MoeEditorPane editorPane) {
         this.editorPane = editorPane;
         this.widthProperty = editorPane.widthProperty();
         JavaFXUtil.addChangeListenerPlatform(widthProperty, w -> {
@@ -484,8 +435,7 @@ public class BlueJSyntaxView
      * A container for three line segments and elements: the previous (or above) line, the
      * current line, and the next (or below) line.
      */
-    private class ThreeLines
-    {
+    private class ThreeLines {
         Segment aboveLineSeg;
         Segment thisLineSeg;
         Segment belowLineSeg;
@@ -498,21 +448,19 @@ public class BlueJSyntaxView
     /**
      * Re-calculate scope margins for the given lines, and add changed margin information to the given
      * map. Line numbers are 0-based.
-     * 
-     * @param pendingScopes  a map of (line number : scope information) for updated scope margins
-     * @param fullWidth      the full width of the view, used for determining right margin
-     * @param firstLine      the first line in the range to process (inclusive).
-     * @param lastLine       the last line in the range to process (inclusive).
-     * @param onlyMethods    true if only methods should be scope highlighted and not constructs inside.
+     *
+     * @param pendingScopes a map of (line number : scope information) for updated scope margins
+     * @param fullWidth     the full width of the view, used for determining right margin
+     * @param firstLine     the first line in the range to process (inclusive).
+     * @param lastLine      the last line in the range to process (inclusive).
+     * @param onlyMethods   true if only methods should be scope highlighted and not constructs inside.
      */
     protected void recalcScopeMarkers(Map<Integer, ScopeInfo> pendingScopes, int fullWidth,
-            int firstLine, int lastLine, boolean onlyMethods)
-    {
+                                      int firstLine, int lastLine, boolean onlyMethods) {
         Element map = document.getDefaultRootElement();
         ParsedNode rootNode = document.getParsedNode();
 
-        if (rootNode == null)
-        {
+        if (rootNode == null) {
             // Not initialised yet
             return;
         }
@@ -520,7 +468,7 @@ public class BlueJSyntaxView
         int aboveLine = firstLine - 1;
         List<NodeAndPosition<ParsedNode>> prevScopeStack = new LinkedList<NodeAndPosition<ParsedNode>>();
         int curLine = firstLine;
-        
+
         ThreeLines lines = new ThreeLines();
         lines.aboveLineSeg = new Segment();
         lines.thisLineSeg = new Segment();
@@ -552,30 +500,26 @@ public class BlueJSyntaxView
 
             // curLine is zero-based, but getParagraphAttributes is one-based:
             ScopeInfo scope = new ScopeInfo(getParagraphAttributes(curLine + 1));
-            
+
             if (prevScopeStack.isEmpty()) {
                 break;
             }
 
             drawScopes(fullWidth, scope, document, lines, prevScopeStack, onlyMethods, 0);
-            if (! scope.equals(document.getDocument().getParagraphStyle(curLine)))
-            {
+            if (!scope.equals(document.getDocument().getParagraphStyle(curLine))) {
                 pendingScopes.put(curLine, scope);
-            }
-            else
-            {
+            } else {
                 pendingScopes.remove(curLine);
             }
-            
+
             // Next line
             curLine++;
             if (curLine <= lastLine) {
                 lines.aboveLineEl = lines.thisLineEl;
-                lines.thisLineEl = lines.belowLineEl; 
+                lines.thisLineEl = lines.belowLineEl;
                 if (curLine + 1 < map.getElementCount()) {
                     lines.belowLineEl = map.getElement(curLine + 1);
-                }
-                else {
+                } else {
                     lines.belowLineEl = null;
                 }
                 Segment oldAbove = lines.aboveLineSeg;
@@ -592,8 +536,7 @@ public class BlueJSyntaxView
         }
     }
 
-    private class DrawInfo
-    {
+    private class DrawInfo {
         final ScopeInfo scopes;
         ThreeLines lines;
 
@@ -603,15 +546,14 @@ public class BlueJSyntaxView
         Color color1;    // Edge colour
         Color color2;    // Fill colour
 
-        private DrawInfo(ScopeInfo scopes)
-        {
+        private DrawInfo(ScopeInfo scopes) {
             this.scopes = scopes;
         }
     }
 
     /**
      * Draw the scope highlighting for one line of the document.
-     * 
+     *
      * @param fullWidth      the width of the editor view
      * @param g              the graphics context to render to
      * @param document       the document
@@ -619,8 +561,7 @@ public class BlueJSyntaxView
      * @param prevScopeStack the stack of nodes (from outermost to innermost) at the beginning of the current line
      */
     private void drawScopes(int fullWidth, ScopeInfo scopes, MoeSyntaxDocument document, ThreeLines lines,
-            List<NodeAndPosition<ParsedNode>> prevScopeStack, boolean onlyMethods, int nodeDepth)
-    {
+                            List<NodeAndPosition<ParsedNode>> prevScopeStack, boolean onlyMethods, int nodeDepth) {
         int rightMargin = small ? 0 : 10;
 
         ListIterator<NodeAndPosition<ParsedNode>> li = prevScopeStack.listIterator();
@@ -640,7 +581,7 @@ public class BlueJSyntaxView
                 return;
             }
 
-            if (! drawNode(drawInfo, nap, onlyMethods)) {
+            if (!drawNode(drawInfo, nap, onlyMethods)) {
                 continue;
             }
 
@@ -652,7 +593,7 @@ public class BlueJSyntaxView
             // Draw the start node
             int xpos = getNodeIndent(document, nap, lines.thisLineEl,
                     lines.thisLineSeg);
-            if (xpos != - 1 && xpos <= fullWidth) {
+            if (xpos != -1 && xpos <= fullWidth) {
                 boolean starts = nodeSkipsStart(nap, lines.aboveLineEl, lines.aboveLineSeg);
                 boolean ends = nodeSkipsEnd(napPos, napEnd, lines.belowLineEl, lines.belowLineSeg);
                 int rbound = getNodeRBound(nap, fullWidth - rightMargin, nodeDepth,
@@ -666,9 +607,7 @@ public class BlueJSyntaxView
                 drawInfo.color2 = colors[1];
 
                 drawInfo.scopes.nestedScopes.add(calculatedNestedScope(drawInfo, xpos, rbound));
-            }
-            else if (xpos == -1)
-            {
+            } else if (xpos == -1) {
                 // Mark as incomplete so we know to redraw later:
                 drawInfo.scopes.incomplete = true;
             }
@@ -692,7 +631,7 @@ public class BlueJSyntaxView
                 nodeDepth--;
             }
 
-            if (! li.hasPrevious()) return;
+            if (!li.hasPrevious()) return;
             NodeAndPosition<ParsedNode> napParent = li.previous();
             li.next();
 
@@ -704,11 +643,12 @@ public class BlueJSyntaxView
 
             while (nextNap != null) {
                 li.add(nextNap);
-                li.previous(); li.next();  // so remove works
+                li.previous();
+                li.next();  // so remove works
                 napPos = nextNap.getPosition();
                 napEnd = napPos + nextNap.getSize();
-                
-                if (napPos < lines.thisLineEl.getEndOffset() && ! nodeSkipsStart(nextNap, lines.thisLineEl, lines.thisLineSeg)) {
+
+                if (napPos < lines.thisLineEl.getEndOffset() && !nodeSkipsStart(nextNap, lines.thisLineEl, lines.thisLineSeg)) {
                     if (drawNode(drawInfo, nextNap, onlyMethods)) {
                         // Draw it
                         nodeDepth++;
@@ -717,7 +657,7 @@ public class BlueJSyntaxView
                         int rbound = getNodeRBound(nextNap, fullWidth - rightMargin, nodeDepth,
                                 lines.thisLineEl, lines.thisLineSeg);
                         drawInfo.node = nextNap.getNode();
-                        Color [] colors = colorsForNode(drawInfo.node);
+                        Color[] colors = colorsForNode(drawInfo.node);
                         drawInfo.color1 = colors[0];
                         drawInfo.color2 = colors[1];
                         drawInfo.starts = nodeSkipsStart(nextNap, lines.aboveLineEl,
@@ -730,7 +670,7 @@ public class BlueJSyntaxView
                         }
                     }
                 }
-                
+
                 nap = nextNap;
                 nextNap = nextNap.getNode().findNodeAtOrAfter(napPos, napPos);
             }
@@ -742,28 +682,24 @@ public class BlueJSyntaxView
      *
      * @param startOffset The offset into the document of the character we want the left edge for
      * @return If available, Optional.of(left-edge-X-in-pixels-in-local-coords).  If it is not available
-     *         (which is very possible: *always* check for Optional.empty), then Optional.empty will be returned.
+     * (which is very possible: *always* check for Optional.empty), then Optional.empty will be returned.
      */
-    private OptionalInt getLeftEdge(int startOffset)
-    {
-        if (editorPane == null)
-        {
+    private OptionalInt getLeftEdge(int startOffset) {
+        if (editorPane == null) {
             return OptionalInt.empty();
         }
-        
+
         Position position = document.offsetToPosition(startOffset);
 
         int column = position.getMinor();
         String lineText = document.getDocument().getParagraph(position.getMajor()).getText();
         boolean allSpaces = (column == 0) || lineText.lastIndexOf(' ', column - 1) == 0;
 
-        if (!editorPane.lineIsVisible(position.getMajor()) && (!allSpaces || cachedSpaceSizes.size() <= 4))
-        {
+        if (!editorPane.lineIsVisible(position.getMajor()) && (!allSpaces || cachedSpaceSizes.size() <= 4)) {
             // If we are printing, we'll never be able to get the on-screen position
             // for our off-screen editor.  So we must make our best guess at positions
             // using measureString
-            if (document.isPrinting())
-            {
+            if (document.isPrinting()) {
                 TextField field = new TextField();
                 field.styleProperty().bind(editorPane.styleProperty());
                 // Have to put TextField into a Scene for CSS to take effect:
@@ -774,11 +710,9 @@ public class BlueJSyntaxView
                 // I admit, I don't understand why we need the 1.05 fudge factor here,
                 // but after an hour or two of fiddling, it's the only thing I've found
                 // that makes the measureString backgrounds line-up with the editor pane text:
-                int positionSpaceWidth = (int)(singleSpaceWidth * position.getMinor() * 1.05);
+                int positionSpaceWidth = (int) (singleSpaceWidth * position.getMinor() * 1.05);
                 return OptionalInt.of(positionSpaceWidth + PARAGRAPH_MARGIN);
-            }
-            else
-            {
+            } else {
                 return OptionalInt.empty();
             }
         }
@@ -815,31 +749,26 @@ public class BlueJSyntaxView
          * think of any situation where that is not the case.  We clear the array when the font size changes.
          */
 
-        if (allSpaces)
-        {
+        if (allSpaces) {
             // All spaces, we can use/update cached space indents
             int numberOfSpaces = column;
-            while (numberOfSpaces >= cachedSpaceSizes.size())
-            {
+            while (numberOfSpaces >= cachedSpaceSizes.size()) {
                 // We have more spaces than the cache; we must update it if we can
                 Optional<Bounds> screenBounds = Optional.empty();
-                if (!duringUpdate)
-                {
+                if (!duringUpdate) {
                     screenBounds = editorPane.getCharacterBoundsOnScreen(
                             startOffset - numberOfSpaces + cachedSpaceSizes.size(),
                             startOffset - numberOfSpaces + cachedSpaceSizes.size() + 1);
                 }
                 // If the character isn't on screen, we're not going to be able to calculate indent,
                 // and we know we haven't got a cached indent, so give up:
-                if (!screenBounds.isPresent())
-                {
+                if (!screenBounds.isPresent()) {
                     // If we've got a few spaces, we can make a reasonable estimate, on the basis
                     // that space characters are going to be the same width as each other.
-                    if (cachedSpaceSizes.size() >= 4)
-                    {
+                    if (cachedSpaceSizes.size() >= 4) {
                         int highestSpaces = cachedSpaceSizes.size() - 1;
-                        double highestWidth = cachedSpaceSizes.get(highestSpaces) - cachedSpaceSizes.get(0); 
-                        return OptionalInt.of((int)(highestWidth / highestSpaces * numberOfSpaces
+                        double highestWidth = cachedSpaceSizes.get(highestSpaces) - cachedSpaceSizes.get(0);
+                        return OptionalInt.of((int) (highestWidth / highestSpaces * numberOfSpaces
                                 + cachedSpaceSizes.get(0)));
                     }
                     return OptionalInt.empty();
@@ -848,25 +777,18 @@ public class BlueJSyntaxView
                 cachedSpaceSizes.add(indent);
             }
             return OptionalInt.of(cachedSpaceSizes.get(numberOfSpaces).intValue());
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 Optional<Bounds> screenBounds = Optional.empty();
-                if (!duringUpdate && startOffset + 1 < editorPane.getLength())
-                {
+                if (!duringUpdate && startOffset + 1 < editorPane.getLength()) {
                     screenBounds = editorPane.getCharacterBoundsOnScreen(startOffset, startOffset + 1);
                 }
 
-                if (screenBounds.isPresent())
-                {
+                if (screenBounds.isPresent()) {
                     double indent = editorPane.screenToLocal(screenBounds.get()).getMinX();
                     return OptionalInt.of((int) indent);
                 }
-            }
-            catch (IllegalArgumentException | IndexOutOfBoundsException e)
-            {
+            } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                 // These shouldn't occur but there have been some related bugs, and it is better to
                 // catch the exception and leave the editor in a (somewhat) usable state. We'll log
                 // the error, however:
@@ -880,12 +802,12 @@ public class BlueJSyntaxView
 
     /**
      * Check whether a node needs to be drawn.
+     *
      * @param info
      * @param node
      * @return
      */
-    private boolean drawNode(DrawInfo info, NodeAndPosition<ParsedNode> nap, boolean onlyMethods)
-    {
+    private boolean drawNode(DrawInfo info, NodeAndPosition<ParsedNode> nap, boolean onlyMethods) {
         int napPos = nap.getPosition();
         int napEnd = napPos + nap.getSize();
 
@@ -894,7 +816,7 @@ public class BlueJSyntaxView
             return false;
         }
 
-        if (! nap.getNode().isContainer() && ! nap.getNode().isInner()) {
+        if (!nap.getNode().isContainer() && !nap.getNode().isInner()) {
             return false;
         }
 
@@ -902,7 +824,7 @@ public class BlueJSyntaxView
             if (nap.getNode().getNodeType() == ParsedNode.NODETYPE_METHODDEF) {
                 return true;
             }
-            if (! PAINT_METHOD_INNER) {
+            if (!PAINT_METHOD_INNER) {
                 return false;
             }
         }
@@ -914,40 +836,36 @@ public class BlueJSyntaxView
         return !nodeSkipsEnd(napPos, napEnd, info.lines.thisLineEl, info.lines.thisLineSeg);
     }
 
-    private Color getBackgroundColor()
-    {
+    private Color getBackgroundColor() {
         return BK;
     }
 
     /**
      * Get the scope highlighting colours for a given node.
      */
-    private Color[] colorsForNode(ParsedNode node)
-    {
+    private Color[] colorsForNode(ParsedNode node) {
         if (node.isInner()) {
-            return new Color[] { C3, getBackgroundColor() };
-        }
-        else {
+            return new Color[]{C3, getBackgroundColor()};
+        } else {
             if (node.getNodeType() == ParsedNode.NODETYPE_METHODDEF) {
-                return new Color[] { M1, M2 };
+                return new Color[]{M1, M2};
             }
             if (node.getNodeType() == ParsedNode.NODETYPE_ITERATION) {
-                return new Color[] { I1, I2 };
+                return new Color[]{I1, I2};
             }
             if (node.getNodeType() == ParsedNode.NODETYPE_SELECTION
                     || node.getNodeType() == ParsedNode.NODETYPE_NONE) {
-                return new Color[] { S1, S2 };
+                return new Color[]{S1, S2};
             }
-            return new Color[] { C1, C2 };
+            return new Color[]{C1, C2};
         }
     }
 
     /**
      * Create a nested scope record based on the supplied information.
      */
-    private ScopeInfo.SingleNestedScope calculatedNestedScope(DrawInfo info, int xpos, int rbound)
-    {
-        if (! small) {
+    private ScopeInfo.SingleNestedScope calculatedNestedScope(DrawInfo info, int xpos, int rbound) {
+        if (!small) {
             xpos -= info.node.isInner() ? LEFT_INNER_SCOPE_MARGIN : LEFT_OUTER_SCOPE_MARGIN;
         }
 
@@ -958,24 +876,22 @@ public class BlueJSyntaxView
 
     /**
      * Draw the center part of a scope (not the left or right edge, but the bit in between)
-     * @param info  general drawing information
-     * @param xpos  the leftmost x-coordinate to draw from
+     *
+     * @param info    general drawing information
+     * @param xpos    the leftmost x-coordinate to draw from
      * @param rbounds the rightmost x-coordinate to draw to
      */
-    private Middle getScopeMiddle(DrawInfo info, int xpos, int rbounds)
-    {
+    private Middle getScopeMiddle(DrawInfo info, int xpos, int rbounds) {
         Color color1 = info.color1;
         Color color2 = info.color2;
         boolean startsThisLine = info.starts;
         boolean endsThisLine = info.ends;
 
         Middle middle = new Middle(color2, xpos, rbounds - 1);
-        if (startsThisLine)
-        {
+        if (startsThisLine) {
             middle.drawTop(color1);
         }
-        if (endsThisLine)
-        {
+        if (endsThisLine) {
             middle.drawBottom(color1);
         }
         return middle;
@@ -984,15 +900,14 @@ public class BlueJSyntaxView
     /**
      * Find the rightmost bound of a node on a particular line.
      *
-     * @param napEnd  The end of the node (position in the document just beyond the node)
-     * @param fullWidth  The full width to draw to (for the outermost mode)
-     * @param nodeDepth  The node depth
-     * @param lineEl   line element of the line to find the bound for
-     * @param lineSeg  Segment containing text of the current line
+     * @param napEnd    The end of the node (position in the document just beyond the node)
+     * @param fullWidth The full width to draw to (for the outermost mode)
+     * @param nodeDepth The node depth
+     * @param lineEl    line element of the line to find the bound for
+     * @param lineSeg   Segment containing text of the current line
      */
     private int getNodeRBound(NodeAndPosition<ParsedNode> nap, int fullWidth, int nodeDepth,
-            Element lineEl, Segment lineSeg)
-    {
+                              Element lineEl, Segment lineSeg) {
         int napEnd = nap.getEnd();
         int rbound = fullWidth - nodeDepth * (small ? 0 : RIGHT_SCOPE_MARGIN);
         if (lineEl == null || napEnd >= lineEl.getEndOffset()) {
@@ -1001,7 +916,7 @@ public class BlueJSyntaxView
         if (napEnd < lineEl.getStartOffset()) {
             return rbound;
         }
-        
+
         // If there is some text between the node end and the end of the line, we want to clip the
         // node short so that the text does not appear to be part of the node.
         int nwsb = findNonWhitespaceComment(nap, lineEl, lineSeg, napEnd - lineEl.getStartOffset());
@@ -1020,12 +935,11 @@ public class BlueJSyntaxView
      * starts later). This takes into account that the node may "officially" start on the
      * line, but only have white space, in which case it can be moved down to the next line.
      */
-    private boolean nodeSkipsStart(NodeAndPosition<ParsedNode> nap, Element lineEl, Segment segment)
-    {
+    private boolean nodeSkipsStart(NodeAndPosition<ParsedNode> nap, Element lineEl, Segment segment) {
         if (lineEl == null) {
             return true;
         }
-        
+
         int napPos = nap.getPosition();
         int napEnd = nap.getEnd();
         if (napPos > lineEl.getStartOffset() && napEnd > lineEl.getEndOffset()) {
@@ -1045,8 +959,7 @@ public class BlueJSyntaxView
      * previous line, by way of not having any actual text on this line. Return true if
      * so.
      */
-    private boolean nodeSkipsEnd(int napPos, int napEnd, Element lineEl, Segment segment)
-    {
+    private boolean nodeSkipsEnd(int napPos, int napEnd, Element lineEl, Segment segment) {
         if (lineEl == null) {
             return true;
         }
@@ -1071,8 +984,7 @@ public class BlueJSyntaxView
      * is used if available.
      */
     private int getNodeIndent(MoeSyntaxDocument doc, NodeAndPosition<ParsedNode> nap, Element lineEl,
-            Segment segment)
-    {
+                              Segment segment) {
 
         if (lineEl == null) {
             return Integer.MAX_VALUE;
@@ -1080,7 +992,7 @@ public class BlueJSyntaxView
 
         int napPos = nap.getPosition();
         int napEnd = nap.getEnd();
-        
+
         if (napPos >= lineEl.getEndOffset()) {
             return Integer.MAX_VALUE;
         }
@@ -1101,13 +1013,10 @@ public class BlueJSyntaxView
         // hope that the editor is now visible:
         if (indent == null || indent <= 0) {
             // No point trying to re-calculate the indent if the line isn't on screen:
-            if (editorPane != null && (editorPane.lineIsVisible(doc.offsetToPosition(lineEl.getStartOffset()).getMajor()) || doc.isPrinting()))
-            {
+            if (editorPane != null && (editorPane.lineIsVisible(doc.offsetToPosition(lineEl.getStartOffset()).getMajor()) || doc.isPrinting())) {
                 indent = getNodeIndent(doc, nap);
                 nodeIndents.put(nap.getNode(), indent);
-            }
-            else
-            {
+            } else {
                 indent = -1;
             }
         }
@@ -1121,8 +1030,7 @@ public class BlueJSyntaxView
             int nws = findNonWhitespaceBwards(segment, napPos - lineEl.getStartOffset() - 1, 0);
             if (nws != -1) {
                 OptionalInt lboundsX = getLeftEdge(lineEl.getStartOffset() + nws + 1);
-                if (lboundsX.isPresent())
-                {
+                if (lboundsX.isPresent()) {
                     xpos = Math.max(xpos, lboundsX.getAsInt() - PARAGRAPH_MARGIN);
                 }
             }
@@ -1134,8 +1042,7 @@ public class BlueJSyntaxView
     /**
      * Calculate the indent for a node.
      */
-    private int getNodeIndent(MoeSyntaxDocument doc, NodeAndPosition<ParsedNode> nap)
-    {
+    private int getNodeIndent(MoeSyntaxDocument doc, NodeAndPosition<ParsedNode> nap) {
         try {
             int indent = Integer.MAX_VALUE;
 
@@ -1154,7 +1061,7 @@ public class BlueJSyntaxView
                     scopeStack.remove(scopeStack.size() - 1);
                     top = scopeStack.get(scopeStack.size() - 1);
                 }
-                
+
                 // Re-build the scope stack and skip inner nodes.
                 // Note, we find nodes at curpos + 1 to avoid nodes which *end* here, but we filter
                 // out nodes which do not span curpos within the loop:
@@ -1169,7 +1076,7 @@ public class BlueJSyntaxView
                     top = nextChild;
                     nextChild = top.getNode().findNodeAt(curpos + 1, top.getPosition());
                 }
-                
+
                 // Ok, we've skipped inner nodes
                 int line = map.getElementIndex(curpos);
                 Element lineEl = map.getElement(line);
@@ -1189,44 +1096,38 @@ public class BlueJSyntaxView
                 if (nws == lineOffset) {
                     // Ok, at this position we have non-white space and are not in an inner
                     OptionalInt cboundsX = getLeftEdge(curpos);
-                    if (cboundsX.isPresent())
-                    {
+                    if (cboundsX.isPresent()) {
                         indent = Math.min(indent, cboundsX.getAsInt() - PARAGRAPH_MARGIN);
                     }
                     curpos = lineEl.getEndOffset();
-                }
-                else if (nws == -1) {
+                } else if (nws == -1) {
                     curpos = lineEl.getEndOffset();
-                }
-                else {
+                } else {
                     // We need to check for inner nodes at the adjusted position
                     curpos += nws - lineOffset;
                 }
             }
 
             return indent == Integer.MAX_VALUE ? -1 : indent;
-        }
-        catch (IndexOutOfBoundsException e)
-        {
+        } catch (IndexOutOfBoundsException e) {
             return -1;
         }
     }
-    
-    private int[] reassessIndentsAdd(int dmgStart, int dmgEnd)
-    {
+
+    private int[] reassessIndentsAdd(int dmgStart, int dmgEnd) {
         MoeSyntaxDocument doc = document;
         ParsedCUNode pcuNode = doc.getParsedNode();
         if (pcuNode == null) {
-            return new int[] {dmgStart, dmgEnd};
+            return new int[]{dmgStart, dmgEnd};
         }
-        
+
         Element map = doc.getDefaultRootElement();
         int ls = map.getElementIndex(dmgStart);
         int le = map.getElementIndex(dmgEnd);
         Segment segment = new Segment();
-        
+
         try {
-            int [] dmgRange = new int[2];
+            int[] dmgRange = new int[2];
             dmgRange[0] = dmgStart;
             dmgRange[1] = dmgEnd;
 
@@ -1235,11 +1136,11 @@ public class BlueJSyntaxView
             int lineEndPos = map.getElement(le).getEndOffset();
             Element lineEl = map.getElement(ls);
             NodeAndPosition<ParsedNode> top =
-                pcuNode.findNodeAtOrAfter(lineEl.getStartOffset(), 0);
+                    pcuNode.findNodeAtOrAfter(lineEl.getStartOffset(), 0);
             while (top != null && top.getEnd() == lineEl.getStartOffset()) {
                 top = top.nextSibling();
             }
-            
+
             if (top == null) {
                 // No nodes at all.
                 return dmgRange;
@@ -1251,15 +1152,15 @@ public class BlueJSyntaxView
                     return dmgRange;
                 }
             }
-            
+
             scopeStack.add(top);
             NodeAndPosition<ParsedNode> nap = top.getNode().findNodeAtOrAfter(lineEl.getStartOffset() + 1,
                     top.getPosition());
             while (nap != null) {
                 scopeStack.add(nap);
-                nap = nap.getNode().findNodeAtOrAfter(lineEl.getStartOffset() + 1, nap.getPosition());                
+                nap = nap.getNode().findNodeAtOrAfter(lineEl.getStartOffset() + 1, nap.getPosition());
             }
-            
+
             outer:
             while (true) {
                 // Skip to the next line which has text on it
@@ -1298,11 +1199,11 @@ public class BlueJSyntaxView
                         topNap = topNap.getNode().findNodeAtOrAfter(curpos + 1, topNap.getPosition());
                     }
                 }
-                
+
                 if (scopeStack.isEmpty()) {
                     break;
                 }
-                
+
                 // At this point:
                 // - curpos is the position of the first non-whitespace on the current line (it may be
                 //   prior to damageStart, but in that case it will be on the same line)
@@ -1320,8 +1221,7 @@ public class BlueJSyntaxView
                     if (next.getPosition() <= curpos) {
                         // Node is present on this line (begins before curpos)
                         updateNodeIndent(next, indent - PARAGRAPH_MARGIN, nodeIndents.get(next.getNode()), dmgRange);
-                    }
-                    else if (next.getPosition() < lineEl.getEndOffset()) {
+                    } else if (next.getPosition() < lineEl.getEndOffset()) {
                         // Node starts on this line, after curpos.
                         nws = findNonWhitespace(segment, next.getPosition() - lineEl.getStartOffset());
                         Integer oindent = nodeIndents.get(next.getNode());
@@ -1330,12 +1230,11 @@ public class BlueJSyntaxView
                             indent = cboundsX.orElse(PARAGRAPH_MARGIN);
                             updateNodeIndent(next, indent - PARAGRAPH_MARGIN, oindent, dmgRange);
                         }
-                    }
-                    else {
+                    } else {
                         // Node isn't on this line.
                         continue;
                     }
-                    
+
                     // Inner nodes are skipped during indent calculation
                     if (next.getNode().isInner()) {
                         break;
@@ -1378,37 +1277,37 @@ public class BlueJSyntaxView
                 }
                 lineEl = map.getElement(i);
             }
-            
+
             return dmgRange;
-        } finally {}
+        } finally {
+        }
         //catch (BadLocationException ble) {
         //    throw new RuntimeException(ble);
         //}
     }
 
-    private int[] reassessIndentsRemove(int dmgPoint, boolean multiLine)
-    {
+    private int[] reassessIndentsRemove(int dmgPoint, boolean multiLine) {
         MoeSyntaxDocument doc = document;
         ParsedCUNode pcuNode = doc.getParsedNode();
-        
-        int [] dmgRange = new int[2];
+
+        int[] dmgRange = new int[2];
         dmgRange[0] = dmgPoint;
         dmgRange[1] = dmgPoint;
-        
+
         if (pcuNode == null) {
             return dmgRange;
         }
-        
+
         Element map = doc.getDefaultRootElement();
         int ls = map.getElementIndex(dmgPoint);
         Element lineEl = map.getElement(ls);
 
         NodeAndPosition<ParsedNode> top =
-            pcuNode.findNodeAtOrAfter(lineEl.getStartOffset(), 0);
+                pcuNode.findNodeAtOrAfter(lineEl.getStartOffset(), 0);
         while (top != null && top.getEnd() == lineEl.getStartOffset()) {
             top = top.nextSibling();
         }
-        
+
         if (top == null) {
             // No nodes at all.
             return dmgRange;
@@ -1418,14 +1317,14 @@ public class BlueJSyntaxView
             // The first node we found is on the next line.
             return dmgRange;
         }
-        
+
         try {
             // At this point lineEl/segment are the line containing the deletion point. Some lines beyond
             // this point may have been removed (if multiLine true).
             Segment segment = new Segment();
             doc.getText(lineEl.getStartOffset(),
                     lineEl.getEndOffset() - lineEl.getStartOffset(), segment);
-            
+
             // All nodes for this line with a cached indent greater than or equal to the damage point
             // indent should have their indents re-assessed: If the indent of the node on this line is
             // lower than (or the same as) the cached indent, it becomes the new cached indent; otherwise
@@ -1442,12 +1341,12 @@ public class BlueJSyntaxView
             OptionalInt cboundsX = getLeftEdge(dmgPoint);
             int dpI = cboundsX.orElse(PARAGRAPH_MARGIN) - PARAGRAPH_MARGIN; // damage point indent
 
-            while (doContinue && ! rscopeStack.isEmpty()) {
+            while (doContinue && !rscopeStack.isEmpty()) {
                 NodeAndPosition<ParsedNode> rtop = rscopeStack.remove(rscopeStack.size() - 1);
                 while (rtop != null && rtop.getPosition() < lineEl.getEndOffset()) {
                     if (rtop.getPosition() <= dmgPoint && rtop.getEnd() >= lineEl.getEndOffset()) {
                         // Content of inner nodes can't affect containing nodes:
-                        doContinue &= ! rtop.getNode().isInner();
+                        doContinue &= !rtop.getNode().isInner();
                     }
 
                     Integer cachedIndent = nodeIndents.get(rtop.getNode());
@@ -1495,8 +1394,7 @@ public class BlueJSyntaxView
                         nodeIndents.put(rtop.getNode(), newIndent);
                         dmgRange[0] = Math.min(dmgRange[0], rtop.getPosition());
                         dmgRange[1] = Math.max(dmgRange[1], rtop.getEnd());
-                    }
-                    else if (newIndent > cachedIndent) {
+                    } else if (newIndent > cachedIndent) {
                         if (rtop.getPosition() <= dmgPoint) {
                             nodeIndents.remove(rtop.getNode());
                             dmgRange[0] = Math.min(dmgRange[0], rtop.getPosition());
@@ -1507,34 +1405,34 @@ public class BlueJSyntaxView
                     rtop = rtop.nextSibling();
                 }
             }
-            
+
             return dmgRange;
-        } finally {}
+        } finally {
+        }
         //catch (BadLocationException ble) {
         //    throw new RuntimeException(ble);
         //}
     }
-    
+
     /**
      * Update an existing indent, in the case where we have found a line where the indent
      * may now be smaller due to an edit.
-     * @param nap    The node whose cached indent value is to be updated
+     *
+     * @param nap      The node whose cached indent value is to be updated
      * @param indent   The indent, on some line
      * @param oindent  The old indent value (may be null)
-     * @param dmgRange  The range of positions which must be repainted. This is updated by
-     *                  if necessary.
+     * @param dmgRange The range of positions which must be repainted. This is updated by
+     *                 if necessary.
      */
-    private void updateNodeIndent(NodeAndPosition<ParsedNode> nap, int indent, Integer oindent, int [] dmgRange)
-    {
+    private void updateNodeIndent(NodeAndPosition<ParsedNode> nap, int indent, Integer oindent, int[] dmgRange) {
         int dmgStart = dmgRange[0];
         int dmgEnd = dmgRange[1];
-        
+
         if (oindent != null) {
             int noindent = oindent;
             if (indent < noindent) {
                 nodeIndents.put(nap.getNode(), indent);
-            }
-            else if (indent != noindent) {
+            } else if (indent != noindent) {
                 nodeIndents.remove(nap.getNode());
             }
             if (indent != noindent) {
@@ -1545,19 +1443,18 @@ public class BlueJSyntaxView
             }
         }
     }
-    
+
     /**
      * Get a stack of ParsedNodes which overlap or follow a particular document position. The stack shall
      * contain the outermost node (at the bottom of the stack) through to the innermost node which overlaps
      * (but does not end at) or which is the node first following the specified position.
-     * 
+     *
      * @param root     The root node
      * @param rootPos  The position of the root node
      * @param position The position for which to build the scope stack
      * @param list     The list into which to store the stack. Items are added to the end of the list.
      */
-    private void getScopeStackAfter(ParsedNode root, int rootPos, int position, List<NodeAndPosition<ParsedNode>> list)
-    {
+    private void getScopeStackAfter(ParsedNode root, int rootPos, int position, List<NodeAndPosition<ParsedNode>> list) {
         // Note we add 1 to the given position to skip nodes which actually end at the position,
         // or which are zero size.
         list.add(new NodeAndPosition<ParsedNode>(root, 0, root.getSize()));
@@ -1574,8 +1471,7 @@ public class BlueJSyntaxView
      * Search for a non-whitespace character, starting from the given offset
      * (0 = start of the segment). Returns -1 if no such character can be found.
      */
-    private int findNonWhitespace(Segment segment, int startPos)
-    {
+    private int findNonWhitespace(Segment segment, int startPos) {
         int endpos = segment.offset + segment.count;
         for (int i = segment.offset + startPos; i < endpos; i++) {
             char c = segment.array[i];
@@ -1590,20 +1486,18 @@ public class BlueJSyntaxView
      * Search for a non-whitespace character, starting from the given offset in the segment; treat
      * single-line comments as whitespace. Returns -1 if the line consists only of whitespace.
      */
-    private int findNonWhitespaceComment(NodeAndPosition<ParsedNode> nap, Element lineEl, Segment segment, int startPos)
-    {
+    private int findNonWhitespaceComment(NodeAndPosition<ParsedNode> nap, Element lineEl, Segment segment, int startPos) {
         int nws = findNonWhitespace(segment, startPos);
         if (nws != -1) {
             int pos = nws + lineEl.getStartOffset();
-            
+
             if (nap.getEnd() > pos) {
                 NodeAndPosition<ParsedNode> inNap = nap.getNode().findNodeAt(pos, nap.getPosition());
                 if (inNap != null && inNap.getNode().getNodeType() == ParsedNode.NODETYPE_COMMENT
                         && inNap.getPosition() == pos && inNap.getEnd() == lineEl.getEndOffset() - 1) {
                     return -1;
                 }
-            }
-            else {
+            } else {
                 NodeAndPosition<ParsedNode> nnap = nap.nextSibling();
                 if (nnap != null && nnap.getNode().getNodeType() == ParsedNode.NODETYPE_COMMENT
                         && nnap.getPosition() == pos && nnap.getEnd() == lineEl.getEndOffset() - 1) {
@@ -1613,13 +1507,12 @@ public class BlueJSyntaxView
         }
         return nws;
     }
-    
+
     /**
      * Search backwards for a non-whitespace character. If no such character
      * is found, returns (endPos - 1).
      */
-    private int findNonWhitespaceBwards(Segment segment, int startPos, int endPos)
-    {
+    private int findNonWhitespaceBwards(Segment segment, int startPos, int endPos) {
         int lastP = segment.offset + endPos;
         int i;
         for (i = segment.offset + startPos; i > lastP; i--) {
@@ -1635,8 +1528,7 @@ public class BlueJSyntaxView
      * Need to override this method to handle node updates. If a node indentation changes,
      * the whole node needs to be repainted.
      */
-    protected void updateDamage(MoeSyntaxEvent changes)
-    {
+    protected void updateDamage(MoeSyntaxEvent changes) {
         if (changes == null) {
             // Width has changed, so do it all:
             nodeIndents.clear();
@@ -1655,7 +1547,7 @@ public class BlueJSyntaxView
             damageEnd = Math.max(damageEnd, node.getEnd());
             NodeAndPosition<ParsedNode> nap = node;
 
-            int [] r = clearNap(nap, document, damageStart, damageEnd);
+            int[] r = clearNap(nap, document, damageStart, damageEnd);
             damageStart = r[0];
             damageEnd = r[1];
         }
@@ -1666,9 +1558,9 @@ public class BlueJSyntaxView
             damageStart = Math.min(damageStart, nap.getPosition());
             damageStart = Math.min(damageStart, record.originalPos);
             damageEnd = Math.max(damageEnd, nap.getEnd());
-            damageEnd = Math.max(damageEnd,record.originalPos + record.originalSize);
+            damageEnd = Math.max(damageEnd, record.originalPos + record.originalSize);
 
-            int [] r = clearNap(nap, document, damageStart, damageEnd);
+            int[] r = clearNap(nap, document, damageStart, damageEnd);
             damageStart = r[0];
             damageEnd = r[1];
         }
@@ -1678,17 +1570,16 @@ public class BlueJSyntaxView
         if (changes.isInsert()) {
             damageStart = Math.min(damageStart, changes.getOffset());
             damageEnd = Math.max(damageEnd, changes.getOffset() + changes.getLength());
-            int [] r = reassessIndentsAdd(damageStart, damageEnd);
+            int[] r = reassessIndentsAdd(damageStart, damageEnd);
             damageStart = r[0];
             damageEnd = r[1];
-        }
-        else if (changes.isRemove()) {
+        } else if (changes.isRemove()) {
             damageStart = Math.min(damageStart, changes.getOffset());
-            int [] r = reassessIndentsRemove(damageStart, true); //TODO we shouldn't always pass multiLine as true
+            int[] r = reassessIndentsRemove(damageStart, true); //TODO we shouldn't always pass multiLine as true
             damageStart = r[0];
             damageEnd = r[1];
         }
-        
+
         if (damageStart < damageEnd) {
             int line = map.getElementIndex(damageStart);
             int lastline = map.getElementIndex(damageEnd - 1);
@@ -1701,8 +1592,7 @@ public class BlueJSyntaxView
      * also clears parent nodes as appropriate.
      */
     private int[] clearNap(NodeAndPosition<ParsedNode> nap, MoeSyntaxDocument document,
-            int damageStart, int damageEnd)
-    {
+                           int damageStart, int damageEnd) {
         if (nap.getNode().isInner()) {
 
             List<NodeAndPosition<ParsedNode>> list = new LinkedList<NodeAndPosition<ParsedNode>>();
@@ -1716,34 +1606,30 @@ public class BlueJSyntaxView
                 top = top.getNode().findNodeAt(nap.getEnd(), top.getPosition());
             }
 
-            for (NodeAndPosition<ParsedNode> cnap : list)
-            {
+            for (NodeAndPosition<ParsedNode> cnap : list) {
                 damageStart = Math.min(damageStart, cnap.getPosition());
                 damageEnd = Math.max(damageEnd, cnap.getEnd());
                 nodeIndents.remove(cnap.getNode());
             }
         }
-        
-        return new int[] {damageStart, damageEnd};
+
+        return new int[]{damageStart, damageEnd};
     }
-    
-    private void nodeRemoved(ParsedNode node)
-    {
+
+    private void nodeRemoved(ParsedNode node) {
         nodeIndents.remove(node);
     }
 
     @OnThread(Tag.FXPlatform)
-    public Node getParagraphicGraphic(int lineNumber)
-    {
+    public Node getParagraphicGraphic(int lineNumber) {
         // RichTextFX since version 0.9.0 started to generate -1 as a line number, when
         // constructing new lines before making them visible. Apparently this is not
         // considered a bug. Since there is no point doing anything in this case, we
         // just return immediately:
-        if (lineNumber < 0)
-        {
+        if (lineNumber < 0) {
             return null;
         }
-        
+
         // RichTextFX numbers from 0, but javac numbers from 1:
         lineNumber += 1;
         Label label = new Label("" + lineNumber);
@@ -1766,13 +1652,11 @@ public class BlueJSyntaxView
         });
         int lineNumberFinal = lineNumber;
         label.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 1 && e.getButton() == MouseButton.PRIMARY)
-            {
+            if (e.getClickCount() == 1 && e.getButton() == MouseButton.PRIMARY) {
                 MoeEditor editor = editorPane.getEditor();
                 // Shouldn't be null because that's only for off-screen copies
                 // and we are in a click handler, but in case of future change:
-                if (editor != null)
-                {
+                if (editor != null) {
                     editor.toggleBreakpoint(editorPane.getDocument().getAbsolutePosition(lineNumberFinal - 1, 0));
                 }
             }
@@ -1780,22 +1664,18 @@ public class BlueJSyntaxView
         });
 
         EnumSet<ParagraphAttribute> attr = getParagraphAttributes(lineNumber);
-        for (ParagraphAttribute possibleAttribute : ParagraphAttribute.values())
-        {
+        for (ParagraphAttribute possibleAttribute : ParagraphAttribute.values()) {
             JavaFXUtil.setPseudoclass(possibleAttribute.getPseudoclass(), attr.contains(possibleAttribute), label);
         }
         stepMarkIcon.setVisible(attr.contains(ParagraphAttribute.STEP_MARK));
         breakpointIcon.setVisible(attr.contains(ParagraphAttribute.BREAKPOINT));
         if (stepMarkIcon.isVisible() || breakpointIcon.isVisible() ||
-                (editorPane != null && !editorPane.isShowLineNumbers()))
-        {
+                (editorPane != null && !editorPane.isShowLineNumbers())) {
             label.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        }
-        else
-        {
+        } else {
             label.setContentDisplay(ContentDisplay.TEXT_ONLY);
         }
-        
+
         AnchorPane.setLeftAnchor(label, 0.0);
         AnchorPane.setRightAnchor(label, 3.0);
         AnchorPane.setTopAnchor(label, 0.0);
@@ -1805,15 +1685,13 @@ public class BlueJSyntaxView
 
     // Red octagon with white STOP on it.  By doing it as a shape rather than
     // image file, we get it looking good on all HiDPI displays.
-    private static Node makeBreakpointIcon()
-    {
+    private static Node makeBreakpointIcon() {
         Node icon = Config.makeStopIcon(false);
         JavaFXUtil.addStyleClass(icon, "moe-breakpoint-icon");
         return icon;
     }
 
-    private Node makeStepMarkIcon()
-    {
+    private Node makeStepMarkIcon() {
         Shape arrow = Config.makeArrowShape(false);
         JavaFXUtil.addStyleClass(arrow, "moe-step-mark-icon");
         return arrow;
@@ -1825,11 +1703,9 @@ public class BlueJSyntaxView
      * @param alterAttr Anything mapped to true will be added to all lines, anything mapped to false will be removed from all lines
      * @return The list of all line numbers where the attributes were changed
      */
-    public Map<Integer, EnumSet<ParagraphAttribute>> setParagraphAttributes(Map<ParagraphAttribute, Boolean> alterAttr)
-    {
+    public Map<Integer, EnumSet<ParagraphAttribute>> setParagraphAttributes(Map<ParagraphAttribute, Boolean> alterAttr) {
         Map<Integer, EnumSet<ParagraphAttribute>> changed = new HashMap<>();
-        for (int line = 1; line <= document.getDocument().getParagraphs().size(); line++)
-        {
+        for (int line = 1; line <= document.getDocument().getParagraphs().size(); line++) {
             changed.putAll(setParagraphAttributes(line, alterAttr));
         }
         return changed;
@@ -1840,39 +1716,31 @@ public class BlueJSyntaxView
      * Sets attributes for a particular line number.
      *
      * @param lineNumber the line number for which to change the attributes (first line is 1)
-     * @param alterAttr the attributes to set the value for (other attributes will be unaffected)
+     * @param alterAttr  the attributes to set the value for (other attributes will be unaffected)
      * @return The list of all line numbers where the attributes were changed
      */
-    public Map<Integer, EnumSet<ParagraphAttribute>> setParagraphAttributes(int lineNumber, Map<ParagraphAttribute, Boolean> alterAttr)
-    {
+    public Map<Integer, EnumSet<ParagraphAttribute>> setParagraphAttributes(int lineNumber, Map<ParagraphAttribute, Boolean> alterAttr) {
         ScopeInfo paraStyle = editorPane.getParagraph(lineNumber - 1).getParagraphStyle();
         if (paraStyle == null) {
             paraStyle = new ScopeInfo(EnumSet.noneOf(ParagraphAttribute.class));
         }
-        
+
         EnumSet<ParagraphAttribute> attr = EnumSet.copyOf(paraStyle.getAttributes());
         boolean changed = false;
-        for (Entry<ParagraphAttribute, Boolean> alter : alterAttr.entrySet())
-        {
-            if (alter.getValue())
-            {
+        for (Entry<ParagraphAttribute, Boolean> alter : alterAttr.entrySet()) {
+            if (alter.getValue()) {
                 // Order matters; want to add/remove regardless of changed value:
                 changed = attr.add(alter.getKey()) || changed;
-            }
-            else
-            {
+            } else {
                 // Order matters; want to add/remove regardless of changed value:
                 changed = attr.remove(alter.getKey()) || changed;
             }
         }
-        
-        if (changed)
-        {
+
+        if (changed) {
             editorPane.setParagraphStyle(lineNumber - 1, paraStyle.withAttributes(attr));
             return Collections.singletonMap(lineNumber, EnumSet.copyOf(attr));
-        }
-        else
-        {
+        } else {
             return Collections.emptyMap();
         }
     }
@@ -1881,27 +1749,22 @@ public class BlueJSyntaxView
      * Gets the paragraph attributes for a particular line.  If none found, returns the empty set.
      * The set returned should not be modified directly.
      *
-     * @param lineNumber  The line number to retrieve attributes for (the first line is one rather than zero).
+     * @param lineNumber The line number to retrieve attributes for (the first line is one rather than zero).
      */
-    EnumSet<ParagraphAttribute> getParagraphAttributes(int lineNumber)
-    {
+    EnumSet<ParagraphAttribute> getParagraphAttributes(int lineNumber) {
         ScopeInfo scopeInfo = editorPane.getParagraph(lineNumber - 1).getParagraphStyle();
-        if (scopeInfo == null)
-        {
+        if (scopeInfo == null) {
             return EnumSet.noneOf(ParagraphAttribute.class);
-        }
-        else
-        {
+        } else {
             return scopeInfo.getAttributes();
         }
     }
 
     /**
-     * Sets up the colors based on the strength value 
+     * Sets up the colors based on the strength value
      * (from strongest (20) to white (0)
      */
-    void resetColors()
-    {
+    void resetColors() {
         BK = scopeColors.scopeBackgroundColorProperty().get();
         C1 = getReducedColor(scopeColors.scopeClassOuterColorProperty());
         C2 = getReducedColor(scopeColors.scopeClassColorProperty());
@@ -1914,39 +1777,33 @@ public class BlueJSyntaxView
         I2 = getReducedColor(scopeColors.scopeIterationColorProperty());
     }
 
-    private Color getReducedColor(ObjectExpression<Color> c)
-    {
+    private Color getReducedColor(ObjectExpression<Color> c) {
         return scopeColors.getReducedColor(c, PrefMgr.getScopeHighlightStrength()).getValue();
     }
 
-    private static class Middle
-    {
+    private static class Middle {
         private final Color bodyColor;
         private final int lhs;
         private final int rhs;
         private Color topColor; // null if no top
         private Color bottomColor; // null if no bottom
 
-        public Middle(Color bodyColor, int lhs, int rhs)
-        {
+        public Middle(Color bodyColor, int lhs, int rhs) {
             this.bodyColor = bodyColor;
             this.lhs = Math.max(0, lhs);
             this.rhs = rhs;
         }
 
-        public void drawTop(Color topColor)
-        {
+        public void drawTop(Color topColor) {
             this.topColor = topColor;
         }
 
-        public void drawBottom(Color bottomColor)
-        {
+        public void drawBottom(Color bottomColor) {
             this.bottomColor = bottomColor;
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -1960,8 +1817,7 @@ public class BlueJSyntaxView
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             int result = bodyColor.hashCode();
             result = 31 * result + lhs;
             result = 31 * result + rhs;
@@ -1977,11 +1833,9 @@ public class BlueJSyntaxView
      * is the outermost and last is innermost, so we render them in list order.
      */
     @OnThread(Tag.FX)
-    public static class ScopeInfo
-    {
+    public static class ScopeInfo {
         // For display purposes.  Step overrides breakpoint.
-        public enum Special
-        {
+        public enum Special {
             NONE, BREAKPOINT, STEP
         }
 
@@ -1990,39 +1844,33 @@ public class BlueJSyntaxView
         // If a scope needs repainting later, we mark as incomplete:
         private boolean incomplete = false;
 
-        public ScopeInfo(EnumSet<ParagraphAttribute> attributes)
-        {
+        public ScopeInfo(EnumSet<ParagraphAttribute> attributes) {
             this.attributes = EnumSet.copyOf(attributes);
         }
 
-        public EnumSet<ParagraphAttribute> getAttributes()
-        {
+        public EnumSet<ParagraphAttribute> getAttributes() {
             return attributes;
         }
 
-        public ScopeInfo withAttributes(EnumSet<ParagraphAttribute> attributes)
-        {
+        public ScopeInfo withAttributes(EnumSet<ParagraphAttribute> attributes) {
             ScopeInfo scopeInfo = new ScopeInfo(attributes);
             scopeInfo.nestedScopes.addAll(nestedScopes);
             scopeInfo.incomplete = incomplete;
             return scopeInfo;
         }
 
-        public boolean isIncomplete()
-        {
+        public boolean isIncomplete() {
             return incomplete;
         }
 
 
-        private static class SingleNestedScope
-        {
+        private static class SingleNestedScope {
             private final LeftRight leftRight;
             private final Middle middle;
             // Both are immutable once passed, so we can cache the hashCode:
             private final int hashCode;
 
-            public SingleNestedScope(LeftRight leftRight, Middle middle)
-            {
+            public SingleNestedScope(LeftRight leftRight, Middle middle) {
                 this.leftRight = leftRight;
                 this.middle = middle;
 
@@ -2030,8 +1878,7 @@ public class BlueJSyntaxView
             }
 
             @Override
-            public boolean equals(Object o)
-            {
+            public boolean equals(Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
 
@@ -2044,15 +1891,13 @@ public class BlueJSyntaxView
             }
 
             @Override
-            public int hashCode()
-            {
+            public int hashCode() {
                 return hashCode;
             }
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -2064,8 +1909,7 @@ public class BlueJSyntaxView
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             int result = nestedScopes.hashCode();
             result = 31 * result + attributes.hashCode();
             result += isIncomplete() ? 1 : 0;
@@ -2074,8 +1918,7 @@ public class BlueJSyntaxView
 
         // Mainly for debugging
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "ScopeInfo{" +
                     "nestedScopes=" + nestedScopes +
                     ", attributes=" + attributes +
@@ -2084,8 +1927,7 @@ public class BlueJSyntaxView
         }
     }
 
-    private class LeftRight
-    {
+    private class LeftRight {
         private final int lhs;
         private final int rhs;
         private final boolean starts;
@@ -2093,8 +1935,7 @@ public class BlueJSyntaxView
         private final Color fillColor;
         private final Color edgeColor;
 
-        public LeftRight(int lhs, int rhs, boolean starts, boolean ends, Color fillColor, Color edgeColor)
-        {
+        public LeftRight(int lhs, int rhs, boolean starts, boolean ends, Color fillColor, Color edgeColor) {
             this.lhs = Math.max(0, lhs);
             this.rhs = rhs;
             this.starts = starts;
@@ -2104,8 +1945,7 @@ public class BlueJSyntaxView
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -2120,8 +1960,7 @@ public class BlueJSyntaxView
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             int result = lhs;
             result = 31 * result + rhs;
             result = 31 * result + (starts ? 1 : 0);

@@ -22,28 +22,27 @@
 package bluej.debugmgr;
 
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
 import bluej.views.TypeParamView;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-/** 
- * Manages an invocation history of arguments used in a package when objects 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Manages an invocation history of arguments used in a package when objects
  * created on the ObjectBench
  *
  * @author Bruce Quig
  */
 @OnThread(Tag.FXPlatform)
-public class CallHistory
-{
-    private Map<String,List<String>> objectTypes = null;
+public class CallHistory {
+    private Map<String, List<String>> objectTypes = null;
     private List<Class<?>> objectClasses = null;
     private List<String> objectParams = null;
-    private Map<String,List<String>> typeParams = null;
+    private Map<String, List<String>> typeParams = null;
 
     private final int historyLength;
 
@@ -55,47 +54,43 @@ public class CallHistory
     static final String FLOAT_NAME = "float";
     static final String DOUBLE_NAME = "double";
     static final String SHORT_NAME = "short";
-    static final String STRING_NAME = "java.lang.String"; 
+    static final String STRING_NAME = "java.lang.String";
 
-    public CallHistory()
-    {
+    public CallHistory() {
         this(DEFAULT_LENGTH);
     }
 
-    public CallHistory(int length)
-    {
+    public CallHistory(int length) {
         historyLength = length;
-        objectTypes = new HashMap<String,List<String>>(8);
+        objectTypes = new HashMap<String, List<String>>(8);
         objectTypes.put(INT_NAME, new ArrayList<String>(length));
         objectTypes.put(LONG_NAME, new ArrayList<String>(length));
-        objectTypes.put(BOOLEAN_NAME, new ArrayList<String>(length)); 
+        objectTypes.put(BOOLEAN_NAME, new ArrayList<String>(length));
         objectTypes.put(FLOAT_NAME, new ArrayList<String>(length));
         objectTypes.put(DOUBLE_NAME, new ArrayList<String>(length));
         objectTypes.put(SHORT_NAME, new ArrayList<String>(length));
         objectTypes.put(STRING_NAME, new ArrayList<String>(length));
         objectClasses = new ArrayList<Class<?>>();
         objectParams = new ArrayList<String>();
-        typeParams = new HashMap<String,List<String>>();
+        typeParams = new HashMap<String, List<String>>();
     }
 
     /**
      * Gets the appropriate history for the specified data type.
-     * 
-     * @param objectClass
-     *            the name of the object's class
+     *
+     * @param objectClass the name of the object's class
      * @return the List containing the appropriate history of invocations
      */
-    public List<String> getHistory(Class<?> objectClass)
-    {
+    public List<String> getHistory(Class<?> objectClass) {
         List<String> history = null;
         // if listed in hashtable ie primitive or String
-        if( objectTypes.containsKey(objectClass.getName())) {
+        if (objectTypes.containsKey(objectClass.getName())) {
             history = objectTypes.get(objectClass.getName());
         }
         // otherwise get general object history
         else {
             history = new ArrayList<String>();
-            for(int i = 0; i < objectClasses.size(); i++) {
+            for (int i = 0; i < objectClasses.size(); i++) {
                 // if object parameter can be assigned from element in Class 
                 // vector add to history
                 if (objectClass.isAssignableFrom(objectClasses.get(i))) {
@@ -108,64 +103,58 @@ public class CallHistory
 
     /**
      * Gets the appropriate history for the type param
-     * 
-     * @param typeParam
-     *            the type parameter
+     *
+     * @param typeParam the type parameter
      * @return the List containing the appropriate history of invocations
      */
-    public List<String> getHistory(TypeParamView typeParam)
-    {
+    public List<String> getHistory(TypeParamView typeParam) {
         return typeParams.get(typeParam.toString());
     }
 
-    public void addCall(TypeParamView typeParam, String parameter)
-    {
+    public void addCall(TypeParamView typeParam, String parameter) {
         List<String> history = typeParams.get(typeParam.toString());
-        if(history == null) {
+        if (history == null) {
             history = new ArrayList<String>();
             typeParams.put(typeParam.toString(), history);
         }
-        history.add(parameter);        
+        history.add(parameter);
     }
 
     /**
      * Adds a call to the history of a particular datatype
-     * 
-     * @param objectType
-     *            the object's class
-     * @param argument
-     *            the parameter
+     *
+     * @param objectType the object's class
+     * @param argument   the parameter
      */
-    public void addCall(Class<?> objectType, String argument)
-    {
-        if(argument != null) {
+    public void addCall(Class<?> objectType, String argument) {
+        if (argument != null) {
             // if a primitive or String
-            if(objectTypes.containsKey(objectType.getName())) {
+            if (objectTypes.containsKey(objectType.getName())) {
 
                 List<String> history = getHistory(objectType);
                 int index = history.indexOf(argument);
-    
+
                 // if first no change
                 if (index != 0) {
                     // if already there remove
-                    if(index > 0) {
+                    if (index > 0) {
                         history.remove(index);
                     }
                     history.add(0, argument);
                 }
                 // trim to size if necessary
-                if(history.size() > historyLength) {
+                if (history.size() > historyLength) {
                     history.remove(historyLength);
                 }
             }
             //else add to other object's class and param vectors
             else {
                 int index = objectParams.indexOf(argument);
-        
+
                 // if first no change
-                if( index != 0) {
+                if (index != 0) {
                     // if already there remove
-                    if(index > 0) {
+                    if (index > 0) {
                         objectParams.remove(index);
                         objectClasses.remove(index);
                     }

@@ -31,36 +31,28 @@ import javafx.stage.Window;
 
 /**
  * Action to show dialog for updating out-of-date files.
- * 
+ *
  * @author Davin McCall
  */
-public class UpdateDialogAction extends TeamAction
-{
+public class UpdateDialogAction extends TeamAction {
     private Project project;
-    
-    public UpdateDialogAction()
-    {
+
+    public UpdateDialogAction() {
         super("team.update", true);
         shortDescription = Config.getString("tooltip.update");
     }
 
     @Override
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+    public void actionPerformed(PkgMgrFrame pmf) {
         project = pmf.getProject();
-        if (project != null && project.getTeamSettingsController().initRepository())
-        {
+        if (project != null && project.getTeamSettingsController().initRepository()) {
             UpdateFilesFrame updateFrame = project.getUpdateDialog();
-            if (updateFrame.isShowing())
-            {
+            if (updateFrame.isShowing()) {
                 Window window = updateFrame.asWindow();
-                if (window instanceof Stage)
-                {
+                if (window instanceof Stage) {
                     ((Stage) window).toFront();
                 }
-            }
-            else
-            {
+            } else {
                 updateFrame.setLocationRelativeTo(pmf.getFXWindow());
                 updateFrame.setVisible(true);
             }

@@ -21,50 +21,43 @@
  */
 package bluej.stride.generic;
 
-import java.util.List;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 
-public abstract class DocumentedMultiCanvasFrame extends MultiCanvasFrame
-{
+import java.util.List;
+
+public abstract class DocumentedMultiCanvasFrame extends MultiCanvasFrame {
     protected DocumentationTextArea documentationPane;
 
-    protected DocumentedMultiCanvasFrame(InteractionManager editor, String caption, String stylePrefix)
-    {
+    protected DocumentedMultiCanvasFrame(InteractionManager editor, String caption, String stylePrefix) {
         super(editor, caption, stylePrefix);
         documentationPane = new DocumentationTextArea(editor, this, this, stylePrefix);
     }
 
-    public String getDocumentation()
-    {
+    public String getDocumentation() {
         return documentationPane.getText();
     }
-    
-    public void setDocumentation(String s)
-    {
+
+    public void setDocumentation(String s) {
         documentationPane.setText(s);
     }
 
-    public StringProperty documentationPromptTextProperty()
-    {
+    public StringProperty documentationPromptTextProperty() {
         return documentationPane.promptTextProperty();
     }
 
     @Override
-    public void pullUpContents()
-    {
+    public void pullUpContents() {
         // This kind of frames can't be removed keeping their contents.
     }
 
     @Override
-    protected void modifyChildren(List<FrameContentItem> updatedChildren)
-    {
+    protected void modifyChildren(List<FrameContentItem> updatedChildren) {
         updatedChildren.add(updatedChildren.indexOf(getHeaderRow()), documentationPane);
     }
 
     @Override
-    protected double getRightMarginFor(Node n)
-    {
+    protected double getRightMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 6.0;
         else
@@ -72,8 +65,7 @@ public abstract class DocumentedMultiCanvasFrame extends MultiCanvasFrame
     }
 
     @Override
-    protected double getLeftMarginFor(Node n)
-    {
+    protected double getLeftMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 6.0;
         else
@@ -81,8 +73,7 @@ public abstract class DocumentedMultiCanvasFrame extends MultiCanvasFrame
     }
 
     @Override
-    protected double getBottomMarginFor(Node n)
-    {
+    protected double getBottomMarginFor(Node n) {
         if (n == documentationPane.getNode())
             return 4.0;
         else

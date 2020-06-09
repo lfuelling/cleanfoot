@@ -23,17 +23,14 @@ package bluej.parser;
 
 /**
  * An exception to throw when a parse failure occurs.
- * 
+ *
  * @author Davin McCall
  */
-public class ParseFailure extends RuntimeException
-{
-    public ParseFailure()
-    {
+public class ParseFailure extends RuntimeException {
+    public ParseFailure() {
     }
-    
-    public ParseFailure(String message)
-    {
+
+    public ParseFailure(String message) {
         super(message);
     }
 }

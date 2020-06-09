@@ -22,89 +22,93 @@
 package bluej.stride.framedjava.elements;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import bluej.debugger.gentype.ConstructorReflective;
-import bluej.editor.moe.ScopeColors;
+import bluej.debugger.gentype.*;
+import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.parser.AssistContent.CompletionKind;
 import bluej.parser.AssistContent.ParamInfo;
-import bluej.parser.entity.PackageResolver;
-import bluej.stride.framedjava.ast.Parser;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Attribute;
-import nu.xom.Element;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.MethodReflective;
-import bluej.debugger.gentype.Reflective;
-import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.parser.ExpressionTypeInfo;
 import bluej.parser.entity.EntityResolver;
 import bluej.parser.entity.ParsedReflective;
 import bluej.parser.nodes.JavaParentNode;
 import bluej.parser.nodes.ParsedNode;
 import bluej.parser.nodes.ParsedTypeNode;
-import bluej.stride.framedjava.ast.FrameFragment;
-import bluej.stride.framedjava.ast.JavaFragment;
+import bluej.stride.framedjava.ast.*;
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.JavadocUnit;
-import bluej.stride.framedjava.ast.NameDefSlotFragment;
-import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
 import bluej.stride.framedjava.frames.ClassFrame;
 import bluej.stride.framedjava.frames.ConstructorFrame;
 import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.AssistContentThreadSafe;
 import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
 import bluej.utility.Utility;
+import nu.xom.Attribute;
+import nu.xom.Element;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A code element corresponding to a top-level class.
  */
-public class ClassElement extends DocumentContainerCodeElement implements TopLevelCodeElement
-{
+public class ClassElement extends DocumentContainerCodeElement implements TopLevelCodeElement {
     public static final String ELEMENT = "class";
-    /** The name of this class */
+    /**
+     * The name of this class
+     */
     private final NameDefSlotFragment className;
-    /** The type we extend (null if none) */
+    /**
+     * The type we extend (null if none)
+     */
     private final TypeSlotFragment extendsName;
-    /** The list of types we implement (empty if none) */
+    /**
+     * The list of types we implement (empty if none)
+     */
     private final List<TypeSlotFragment> implementsList;
-    /** The package name (will not be null, but package name within may be blank */
+    /**
+     * The package name (will not be null, but package name within may be blank
+     */
     private final String packageName;
-    /** The list of imports in this class */
+    /**
+     * The list of imports in this class
+     */
     private final List<ImportElement> imports;
-    /** The list of fields in this class */
+    /**
+     * The list of fields in this class
+     */
     private final List<CodeElement> fields;
-    /** The list of constructors for this class */
+    /**
+     * The list of constructors for this class
+     */
     private final List<CodeElement> constructors;
-    /** The list of methods in this class */
+    /**
+     * The list of methods in this class
+     */
     private final List<CodeElement> methods;
-    /** The resolver used by the project this class lives in (cached for convenience) */
+    /**
+     * The resolver used by the project this class lives in (cached for convenience)
+     */
     private final EntityResolver projectResolver;
-    /** Is this class abstract (true) or not (false)? */
+    /**
+     * Is this class abstract (true) or not (false)?
+     */
     private boolean abstractModifier = false;
-    /** The documentation for this class */
+    /**
+     * The documentation for this class
+     */
     private JavadocUnit documentation;
-    /** The frame corresponding to this code element (may be null) */
+    /**
+     * The frame corresponding to this code element (may be null)
+     */
     private ClassFrame frame;
-    /** The curly brackets and class keyword in the generated code (saved for mapping positions) */
+    /**
+     * The curly brackets and class keyword in the generated code (saved for mapping positions)
+     */
     private final FrameFragment openingCurly;
     private final FrameFragment closingCurly;
     private JavaFragment classKeyword;
@@ -121,7 +125,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
      * that we use the correct document for the given content, even when we are hopping
      * across threads and potentially generating several documents in a short space
      * of time, concurrent with looking up information in them.
-     *
+     * <p>
      * This cache does not have a size limit, but that shouldn't matter as it is per-instance
      * so the only potential differences in source code are down to which slot is being completed,
      * giving a limit on the number of documents we could generate for a given source version
@@ -136,8 +140,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
     public ClassElement(ClassFrame frame, EntityResolver projectResolver, boolean abstractModifier, NameDefSlotFragment className,
                         TypeSlotFragment extendsName, List<TypeSlotFragment> implementsList, List<? extends CodeElement> fields,
                         List<? extends CodeElement> constructors, List<? extends CodeElement> methods, JavadocUnit documentation,
-                        String packageName, List<ImportElement> imports, boolean enabled)
-    {
+                        String packageName, List<ImportElement> imports, boolean enabled) {
         this.frame = frame;
         this.openingCurly = new FrameFragment(this.frame, this, "{");
         this.closingCurly = new FrameFragment(this.frame, this, "}");
@@ -147,15 +150,15 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         this.documentation = documentation;
         this.packageName = (packageName == null) ? "" : packageName;
         this.imports = new LinkedList<>(imports);
-        
+
         this.implementsList = new ArrayList<>(implementsList);
-        
+
         this.fields = new ArrayList<>(fields);
         this.fields.forEach(field -> field.setParent(this));
-        
+
         this.constructors = new ArrayList<>(constructors);
         this.constructors.forEach(constructor -> constructor.setParent(this));
-        
+
         this.methods = new ArrayList<>(methods);
         this.methods.forEach(method -> method.setParent(this));
 
@@ -171,11 +174,10 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
      * Creates a class element from the given XML element, used when loading code
      * from disk or from the clipboard.
      */
-    public ClassElement(Element el, EntityResolver projectResolver, String packageName)
-    {
+    public ClassElement(Element el, EntityResolver projectResolver, String packageName) {
         Attribute abstractAttribute = el.getAttribute("abstract");
         abstractModifier = (abstractAttribute == null) ? false : Boolean.valueOf(abstractAttribute.getValue());
-        
+
         className = new NameDefSlotFragment(el.getAttributeValue("name"));
         final String extendsAttribute = el.getAttributeValue("extends");
         extendsName = (extendsAttribute != null) ? new TypeSlotFragment(extendsAttribute, el.getAttributeValue("extends-java")) : null;
@@ -190,11 +192,11 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
             documentation = new JavadocUnit("");
         }
         implementsList = TopLevelCodeElement.xmlToTypeList(el, "implements", "implementstype", "type");
-        imports = Utility.mapList(TopLevelCodeElement.fillChildrenElements(this, el, "imports"), e -> (ImportElement)e);
+        imports = Utility.mapList(TopLevelCodeElement.fillChildrenElements(this, el, "imports"), e -> (ImportElement) e);
         fields = TopLevelCodeElement.fillChildrenElements(this, el, "fields");
         constructors = TopLevelCodeElement.fillChildrenElements(this, el, "constructors");
         methods = TopLevelCodeElement.fillChildrenElements(this, el, "methods");
-       
+
         enable = Boolean.valueOf(el.getAttributeValue("enable"));
         this.projectResolver = projectResolver;
         this.openingCurly = new FrameFragment(null, this, "{");
@@ -205,23 +207,20 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
      * Creates a class element with minimum information (when creating new class from template name)
      */
     public ClassElement(EntityResolver entityResolver, boolean abstractModifier, String className, String packageName,
-                        List<? extends CodeElement> constructors)
-    {
+                        List<? extends CodeElement> constructors) {
         this(null, entityResolver, abstractModifier, new NameDefSlotFragment(className), null,
                 Collections.emptyList(), Collections.emptyList(), constructors, Collections.emptyList(),
                 null, packageName, Collections.emptyList(), true);
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public JavaSource toJavaSource()
-    {
+    public JavaSource toJavaSource() {
         return getDAP(null).java;
     }
 
     @OnThread(Tag.FXPlatform)
-    private JavaSource generateJavaSource()
-    {
+    private JavaSource generateJavaSource() {
         List<JavaFragment> header = new ArrayList<>();
         header.add(new FrameFragment(frame, this, "public "));
         if (abstractModifier) {
@@ -229,12 +228,11 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         }
         classKeyword = new FrameFragment(frame, this, "class ");
         Collections.addAll(header, classKeyword, className);
-        
+
         if (extendsName != null && !extendsName.isEmpty()) {
             Collections.addAll(header, space(), f(frame, "extends"), space(), extendsName);
         }
-        if (!implementsList.isEmpty())
-        {
+        if (!implementsList.isEmpty()) {
             header.addAll(Arrays.asList(space(), f(frame, "implements"), space()));
             header.addAll(implementsList.stream().collect(Utility.intersperse(() -> f(null, ", "))));
         }
@@ -265,10 +263,9 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         java.appendLine(Arrays.asList(closingCurly), null);
         return java;
     }
-    
+
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement classEl = new LocatableElement(this, ELEMENT);
         if (abstractModifier) {
             classEl.addAttribute(new Attribute("abstract", String.valueOf(abstractModifier)));
@@ -278,14 +275,14 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
             classEl.addAttributeStructured("extends", extendsName);
         }
         addEnableAttribute(classEl);
-        
+
         if (documentation != null) {
             classEl.appendChild(documentation.toXML());
         }
 
         appendCollection(classEl, imports, "imports");
         classEl.appendChild(TopLevelCodeElement.typeListToXML(implementsList, "implements", "implementstype", "type"));
-        
+
         appendCollection(classEl, fields, "fields");
         appendCollection(classEl, constructors, "constructors");
         appendCollection(classEl, methods, "methods");
@@ -295,37 +292,32 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         return classEl;
     }
 
-    private void appendCollection(Element topEl, List<? extends CodeElement> collection, String name)
-    {
+    private void appendCollection(Element topEl, List<? extends CodeElement> collection, String name) {
         Element collectionEl = new Element(name);
         collection.forEach(element -> collectionEl.appendChild(element.toXML()));
         topEl.appendChild(collectionEl);
     }
 
     @Override
-    public ClassFrame createFrame(InteractionManager editor)
-    {
+    public ClassFrame createFrame(InteractionManager editor) {
         frame = new ClassFrame(editor, projectResolver, packageName, imports, documentation, abstractModifier, className, extendsName, implementsList, isEnable());
         fields.forEach(member -> frame.getfieldsCanvas().insertBlockAfter(member.createFrame(editor), null));
         constructors.forEach(member -> frame.getConstructorsCanvas().insertBlockAfter(member.createFrame(editor), null));
         methods.forEach(member -> frame.getMethodsCanvas().insertBlockAfter(member.createFrame(editor), null));
         return frame;
     }
-    
+
     @Override
-    public ClassFrame createTopLevelFrame(InteractionManager editor)
-    {
+    public ClassFrame createTopLevelFrame(InteractionManager editor) {
         return createFrame(editor);
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return className.getContent();
     }
 
     @Override
-    public List<CodeElement> childrenUpTo(CodeElement c)
-    {
+    public List<CodeElement> childrenUpTo(CodeElement c) {
         List<CodeElement> joined = new ArrayList<>();
         joined.addAll(fields);
         joined.addAll(constructors);
@@ -333,12 +325,10 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         return joined.subList(0, joined.indexOf(c));
     }
 
-    public JavaFragment getNameElement(ConstructorFrame frame)
-    {
+    public JavaFragment getNameElement(ConstructorFrame frame) {
         return new JavaFragment() {
             @Override
-            protected String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator)
-            {
+            protected String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator) {
                 return getName();
             }
 
@@ -348,115 +338,96 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
             }
 
             @Override
-            protected JavaFragment getCompileErrorRedirect()
-            {
+            protected JavaFragment getCompileErrorRedirect() {
                 return null;
             }
 
             @Override
-            public Stream<SyntaxCodeError> findEarlyErrors()
-            {
+            public Stream<SyntaxCodeError> findEarlyErrors() {
                 return Stream.empty();
             }
 
             @Override
-            public void addError(CodeError codeError)
-            {
+            public void addError(CodeError codeError) {
                 frame.addError(codeError);
             }
         };
     }
 
     @Override
-    public ClassElement getTopLevelElement()
-    {
+    public ClassElement getTopLevelElement() {
         return this;
     }
 
-    public ClassFrame getFrame()
-    {
+    public ClassFrame getFrame() {
         return frame;
     }
-    
-    public PosInSourceDoc getPosInsideClass()
-    {
+
+    public PosInSourceDoc getPosInsideClass() {
         return openingCurly.getPosInSourceDoc(+1);
     }
-    
+
     @Override
-    public List<ImportElement> getImports()
-    {
+    public List<ImportElement> getImports() {
         return Collections.unmodifiableList(imports);
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public ExpressionTypeInfo getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing)
-    {
+    public ExpressionTypeInfo getCodeSuggestions(PosInSourceDoc pos, ExpressionSlot<?> completing) {
         // Must get document before getting position:
         MoeSyntaxDocument doc = getSourceDocument(completing);
         Optional<Integer> resolvedPos = resolvePos(doc, pos);
         return resolvedPos.map(rpos -> doc.getParser().getExpressionType(rpos, getSourceDocument(completing)))
-                          .orElse(null);
+                .orElse(null);
     }
-    
+
     @OnThread(Tag.FXPlatform)
-    private Optional<Integer> resolvePos(MoeSyntaxDocument doc, PosInSourceDoc pos)
-    {
+    private Optional<Integer> resolvePos(MoeSyntaxDocument doc, PosInSourceDoc pos) {
         DocAndPositions docAndPositions = documentCache.get(doc.getText(0, doc.getLength()));
         Optional<Integer> resolvedPos = Optional.ofNullable(docAndPositions.fragmentPositions.get(pos.getFragment()));
         return resolvedPos.map(p -> p + pos.offset);
     }
 
     @Override
-    public String getStylePrefix()
-    {
+    public String getStylePrefix() {
         return "class-";
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public EntityResolver getResolver()
-    {
+    public EntityResolver getResolver() {
         return getSourceDocument(null).getParser();
     }
 
     @Override
-    public InteractionManager getEditor()
-    {
+    public InteractionManager getEditor() {
         return getFrame().getEditor();
     }
 
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
 
     @OnThread(Tag.FXPlatform)
-    private MoeSyntaxDocument getSourceDocument(ExpressionSlot completing)
-    {
+    private MoeSyntaxDocument getSourceDocument(ExpressionSlot completing) {
         return getDAP(completing).getDocument(projectResolver);
     }
-    
+
     @OnThread(Tag.FXPlatform)
-    private synchronized DocAndPositions getDAP(ExpressionSlot completing)
-    {
-        if (sourceDocument == null || sourceDocumentCompleting != completing)
-        {
+    private synchronized DocAndPositions getDAP(ExpressionSlot completing) {
+        if (sourceDocument == null || sourceDocumentCompleting != completing) {
             IdentityHashMap<JavaFragment, Integer> positions = new IdentityHashMap<>();
             sourceDocumentCompleting = completing;
             JavaSource java = generateJavaSource();
             String src = java.toMemoryJavaCodeString(positions, completing);
-            if (documentCache.containsKey(src))
-            {
+            if (documentCache.containsKey(src)) {
                 // No need to generate and parse it again, just use existing one, but
                 // add in our positions in case they used different fragments:
                 sourceDocument = documentCache.get(src);
                 sourceDocument.fragmentPositions.putAll(positions);
-            }
-            else
-            {
+            } else {
                 sourceDocument = new DocAndPositions(src, java, positions);
                 documentCache.put(src, sourceDocument);
             }
@@ -465,59 +436,51 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
     }
 
     @Override
-    public Stream<CodeElement> streamContained()
-    {
+    public Stream<CodeElement> streamContained() {
         Stream<CodeElement> result = streamContained(fields);
         result = Stream.concat(result, streamContained(constructors));
         return Stream.concat(result, streamContained(methods));
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         return Stream.<SlotFragment>of(className, extendsName).filter(s -> s != null);
     }
-    
-    public Stream<CodeElement> streamMethods()
-    {
+
+    public Stream<CodeElement> streamMethods() {
         return methods.stream();
     }
 
     @OnThread(Tag.FXPlatform)
-    public Reflective qualifyType(String name, PosInSourceDoc pos)
-    {
+    public Reflective qualifyType(String name, PosInSourceDoc pos) {
         final MoeSyntaxDocument doc = getSourceDocument(null);
         final Optional<Integer> rpos = resolvePos(doc, pos);
         if (!rpos.isPresent())
             return null;
         ParsedNode node = doc.getParser().findNodeAtOrAfter(rpos.get(), 0).getNode();
-        if (node instanceof JavaParentNode)
-        {
-            JavaParentNode jNode = (JavaParentNode)node;
+        if (node instanceof JavaParentNode) {
+            JavaParentNode jNode = (JavaParentNode) node;
             JavaType t = jNode.resolvePackageOrClass(name, getClassNode()).getType();
             if (t instanceof GenTypeClass)
-                return ((GenTypeClass)t).getReflective();
+                return ((GenTypeClass) t).getReflective();
         }
         return null;
     }
 
     @OnThread(Tag.FXPlatform)
-    private Reflective getClassNode()
-    {
+    private Reflective getClassNode() {
         // Must get document before getting position:
         MoeSyntaxDocument doc = getSourceDocument(null);
         ParsedNode node = doc.getParser().findNodeAtOrAfter(resolvePos(doc, classKeyword.getPosInSourceDoc()).get(), 0).getNode();
-        if (node instanceof ParsedTypeNode)
-        {
-            return new ParsedReflective((ParsedTypeNode)node);
+        if (node instanceof ParsedTypeNode) {
+            return new ParsedReflective((ParsedTypeNode) node);
         }
         return null;
     }
 
     // Returns name of uppermost class with this method:
     @OnThread(Tag.FXPlatform)
-    public Reflective findSuperMethod(String name, List<String> qualParamTypes)
-    {
+    public Reflective findSuperMethod(String name, List<String> qualParamTypes) {
         if (classKeyword == null)
             return null;
 
@@ -528,17 +491,16 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         else
             superClass = extendsName.getContent();
 
-                // Make sure source document has been created:
+        // Make sure source document has been created:
         getSourceDocument(null);
-        
+
         Reflective qualSuper = qualifyType(superClass, classKeyword.getPosInSourceDoc());
-        while (qualSuper != null)
-        {
+        while (qualSuper != null) {
             Set<MethodReflective> overloads = qualSuper.getDeclaredMethods().get(name);
-                    
+
             if (overloads != null && overloads.stream().anyMatch(m -> qualParamTypes.equals(Utility.mapList(m.getParamTypes(), t -> t.toString(false)))))
                 return qualSuper;
-        
+
             qualSuper = qualSuper.getSuperTypesR().stream().filter(r -> !r.isInterface()).findFirst().orElse(null);
         }
         return null;
@@ -546,47 +508,38 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void updateSourcePositions()
-    {
+    public void updateSourcePositions() {
         getSourceDocument(null);
     }
 
-    public boolean isAbstract()
-    {
+    public boolean isAbstract() {
         return abstractModifier;
     }
 
-    public String getExtends()
-    {
+    public String getExtends() {
         return extendsName != null ? extendsName.getContent() : null;
     }
 
-    public List<String> getImplements()
-    {
+    public List<String> getImplements() {
         return Utility.mapList(implementsList, TypeSlotFragment::getContent);
     }
 
-    public List<? extends CodeElement> getMethods()
-    {
+    public List<? extends CodeElement> getMethods() {
         return methods;
     }
 
-    public List<? extends CodeElement> getFields()
-    {
+    public List<? extends CodeElement> getFields() {
         return fields;
     }
 
-    public List<? extends CodeElement> getConstructors()
-    {
+    public List<? extends CodeElement> getConstructors() {
         return constructors;
     }
 
     @OnThread(Tag.FXPlatform)
     @Override
-    public List<ConstructorReflective> getSuperConstructors()
-    {
-        if (extendsName == null || extendsName.getContent().isEmpty() || classKeyword == null)
-        {
+    public List<ConstructorReflective> getSuperConstructors() {
+        if (extendsName == null || extendsName.getContent().isEmpty() || classKeyword == null) {
             return Collections.emptyList();
         }
 
@@ -594,45 +547,39 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
         getSourceDocument(null);
 
         Reflective qualSuper = qualifyType(extendsName.getContent(), classKeyword.getPosInSourceDoc());
-        if (qualSuper != null)
-        {
+        if (qualSuper != null) {
             return qualSuper.getDeclaredConstructors();
         }
         return Collections.emptyList();
     }
 
     @Override
-    public List<AssistContentThreadSafe> getThisConstructors()
-    {
+    public List<AssistContentThreadSafe> getThisConstructors() {
         return constructors.stream()
-            .filter(c -> c instanceof ConstructorElement)
-            .map(c -> (ConstructorElement)c)
-            .map(c -> {
-                List<ParamInfo> paramInfo = Utility.mapList(c.getParams(), p -> new ParamInfo(p.getParamType().getContent(), p.getParamName().getContent(), "", () -> ""));
-                return new AssistContentThreadSafe(c.getAccessPermission().asAccess(), getName(), c.getDocumentation(), CompletionKind.CONSTRUCTOR, getName(), null, paramInfo, null, null, null);
-            })
-            .collect(Collectors.toList());
+                .filter(c -> c instanceof ConstructorElement)
+                .map(c -> (ConstructorElement) c)
+                .map(c -> {
+                    List<ParamInfo> paramInfo = Utility.mapList(c.getParams(), p -> new ParamInfo(p.getParamType().getContent(), p.getParamName().getContent(), "", () -> ""));
+                    return new AssistContentThreadSafe(c.getAccessPermission().asAccess(), getName(), c.getDocumentation(), CompletionKind.CONSTRUCTOR, getName(), null, paramInfo, null, null, null);
+                })
+                .collect(Collectors.toList());
     }
 
-    private static class DocAndPositions
-    {
+    private static class DocAndPositions {
         public final JavaSource java;
         public final IdentityHashMap<JavaFragment, Integer> fragmentPositions;
         private final String src;
         private MoeSyntaxDocument document;
 
-        public DocAndPositions(String src, JavaSource java, IdentityHashMap<JavaFragment, Integer> fragmentPositions)
-        {
+        public DocAndPositions(String src, JavaSource java, IdentityHashMap<JavaFragment, Integer> fragmentPositions) {
             this.src = src;
             this.java = java;
             this.fragmentPositions = fragmentPositions;
         }
-        
+
         @OnThread(Tag.FXPlatform)
-        public MoeSyntaxDocument getDocument(EntityResolver projectResolver)
-        {
-            if (document == null)
-            {
+        public MoeSyntaxDocument getDocument(EntityResolver projectResolver) {
+            if (document == null) {
                 document = new MoeSyntaxDocument(projectResolver);
                 document.insertString(0, src);
                 document.enableParser(true);
@@ -643,8 +590,7 @@ public class ClassElement extends DocumentContainerCodeElement implements TopLev
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public Stream<SyntaxCodeError> findEarlyErrors()
-    {
+    public Stream<SyntaxCodeError> findEarlyErrors() {
         return findEarlyErrors(toXML().buildLocationMap());
     }
 }

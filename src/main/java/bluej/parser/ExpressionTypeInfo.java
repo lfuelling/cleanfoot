@@ -32,65 +32,59 @@ import bluej.parser.lexer.LocatableToken;
  * This can handle document locations that are part-way through an expression. The "suggestion
  * type" is the type of the expression appearing before the most recent dot, if any (or the type
  * from which unqualified members are resolved).
- * 
+ *
  * @author Davin McCall
  */
-public class ExpressionTypeInfo
-{
+public class ExpressionTypeInfo {
     private final JavaType suggestionType;
     private final GenTypeClass accessType;
     private final LocatableToken suggestionToken;
     private final boolean staticRestricted;   //restrict suggestions to only static methods e.g for a class
     private final boolean plain;
-    
+
     /**
      * Construct a new set of CodeSuggestions.
+     *
      * @param suggestionType  The type to suggest members from
      * @param accessType      The type which is doing the access (for access control purposes).
      *                        May be null.
      * @param suggestionToken The token representing the suggestion prefix, i.e. the portion of the
      *                        member name already typed by the user
-     * @param staticOnly    Indicates if true that non-static members should not be included
-     *                      in the returned results                
-     * @param plain         If true, means that there is no compound expression on which we are
-     *                      completing.  Essentially, if plain is true then the user could be referring
-     *                      to a local variable. 
+     * @param staticOnly      Indicates if true that non-static members should not be included
+     *                        in the returned results
+     * @param plain           If true, means that there is no compound expression on which we are
+     *                        completing.  Essentially, if plain is true then the user could be referring
+     *                        to a local variable.
      */
-    public ExpressionTypeInfo(JavaType suggestionType, GenTypeClass accessType, LocatableToken suggestionToken, boolean staticOnly, boolean plain)
-    {
+    public ExpressionTypeInfo(JavaType suggestionType, GenTypeClass accessType, LocatableToken suggestionToken, boolean staticOnly, boolean plain) {
         this.suggestionToken = suggestionToken;
         this.suggestionType = suggestionType;
         this.accessType = accessType;
         this.staticRestricted = staticOnly;
         this.plain = plain;
     }
-    
-    public LocatableToken getSuggestionToken()
-    {
+
+    public LocatableToken getSuggestionToken() {
         return suggestionToken;
     }
-    
-    public JavaType getSuggestionType()
-    {
+
+    public JavaType getSuggestionType() {
         return suggestionType;
     }
-    
+
     /**
      * Get the type in which the expression occurs (the "access type").
      * This might return null.
      */
-    public GenTypeClass getAccessType()
-    {
+    public GenTypeClass getAccessType() {
         return accessType;
     }
 
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         return staticRestricted;
     }
-    
-    public boolean isPlain()
-    {
+
+    public boolean isPlain() {
         return plain;
     }
 }

@@ -22,18 +22,8 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import bluej.editor.stride.FrameCatalogue;
 import bluej.parser.AssistContent.Access;
-import javafx.application.Platform;
-import javafx.beans.binding.StringExpression;
-import javafx.scene.control.TextField;
-import javafx.util.Pair;
-
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
 import bluej.stride.framedjava.ast.links.PossibleLink;
 import bluej.stride.framedjava.ast.links.PossibleTypeLink;
@@ -45,49 +35,51 @@ import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.RecallableFocus;
 import bluej.stride.generic.SingleLineFrame;
-import bluej.stride.slots.TextSlot;
-import bluej.stride.slots.HeaderItem;
-import bluej.stride.slots.SlotTraversalChars;
-import bluej.stride.slots.CompletionCalculator;
-import bluej.stride.slots.SuggestionList;
+import bluej.stride.slots.*;
 import bluej.stride.slots.SuggestionList.SuggestionListListener;
-
-import bluej.editor.stride.FrameCatalogue;
 import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformConsumer;
+import javafx.application.Platform;
+import javafx.beans.binding.StringExpression;
+import javafx.scene.control.TextField;
+import javafx.util.Pair;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * A statement for import packages/classes
+ *
  * @author Amjad Altadmri
  */
-public class ImportFrame extends SingleLineFrame implements CodeFrame<ImportElement>
-{    
+public class ImportFrame extends SingleLineFrame implements CodeFrame<ImportElement> {
     private static final String IMPORT_STYLE_PREFIX = "import-";
     private static final List<FrameCatalogue.Hint> HINTS = Arrays.asList(
-        new FrameCatalogue.Hint("greenfoot.*", "Greenfoot classes"),
-        new FrameCatalogue.Hint("java.util.*", "Java utility classes")
+            new FrameCatalogue.Hint("greenfoot.*", "Greenfoot classes"),
+            new FrameCatalogue.Hint("java.util.*", "Java utility classes")
     );
     private final TextSlot<ImportFragment> importField;
     private ImportElement element;
-    
+
     /**
      * Default constructor.
      */
-    private ImportFrame(InteractionManager editor)
-    {
+    private ImportFrame(InteractionManager editor) {
         super(editor, "import ", IMPORT_STYLE_PREFIX);
-        
+
         CompletionCalculator calc = new CompletionCalculator() {
             private List<Pair<SuggestionList.SuggestionShown, String>> imports;
-            
+
             @Override
             @OnThread(Tag.FXPlatform)
             public void withCalculatedSuggestionList(PosInSourceDoc pos, CodeElement codeEl,
                                                      SuggestionListListener clickListener,
-                                                     FXPlatformConsumer<SuggestionList> handler)
-            {
+                                                     FXPlatformConsumer<SuggestionList> handler) {
                 Utility.runBackground(() -> {
                     imports = editor.getImportSuggestions().entrySet().stream().flatMap(e ->
                             e.getValue().stream().filter(ac ->
@@ -105,133 +97,113 @@ public class ImportFrame extends SingleLineFrame implements CodeFrame<ImportElem
                     });
                 });
             }
-            
+
             @Override
             @OnThread(Tag.FXPlatform)
-            public boolean execute(TextField field, int highlighted, int startOfCurWord)
-            {
-                if (highlighted >= 0)
-                {
+            public boolean execute(TextField field, int highlighted, int startOfCurWord) {
+                if (highlighted >= 0) {
                     field.setText(imports.get(highlighted).getValue());
                     return true;
                 }
                 return false;
             }
         };
-        
+
         importField = new TextSlot<ImportFragment>(editor, this, this, getHeaderRow(), calc, IMPORT_STYLE_PREFIX + "slot-", HINTS) {
 
             @Override
-            protected ImportFragment createFragment(String content)
-            {
+            protected ImportFragment createFragment(String content) {
                 return new ImportFragment(content, this);
             }
 
             @Override
-            public void valueChangedLostFocus(String oldValue, String newValue)
-            {
+            public void valueChangedLostFocus(String oldValue, String newValue) {
                 // Nothing to do
             }
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void addError(CodeError err)
-            {
+            public void addError(CodeError err) {
                 editor.ensureImportsVisible();
                 super.addError(err);
             }
 
             @Override
-            public List<? extends PossibleLink> findLinks()
-            {
-                if (!getText().endsWith(".*"))
-                {
+            public List<? extends PossibleLink> findLinks() {
+                if (!getText().endsWith(".*")) {
                     return Collections.singletonList(new PossibleTypeLink(getText(), 0, getText().length(), this));
                 }
                 return Collections.emptyList();
             }
 
             @Override
-            public int getStartOfCurWord()
-            {
+            public int getStartOfCurWord() {
                 // Start of word is always start of slot; don't let the dots in package/class names break the word:
                 return 0;
             }
         };
         importField.setPromptText("package or class");
-        importField.addValueListener(new SlotTraversalChars()
-        {
+        importField.addValueListener(new SlotTraversalChars() {
             @Override
             @OnThread(Tag.FXPlatform)
-            public void backSpacePressedAtStart(HeaderItem slot)
-            {
+            public void backSpacePressedAtStart(HeaderItem slot) {
                 backspaceAtStart(getHeaderRow(), slot);
             }
         });
         setHeaderRow(importField, previewSemi);
     }
-    
+
     /**
      * Creates an import statement with a specific class/package.
      */
-    public ImportFrame(InteractionManager editor, ImportElement element, boolean enabled)
-    {
+    public ImportFrame(InteractionManager editor, ImportElement element, boolean enabled) {
         this(editor);
         this.element = element;
         this.importField.setText(element.getImport());
         frameEnabledProperty.set(enabled);
     }
-    
+
     // Constructor for adding new imports in response to an error-fix:
-    public ImportFrame(InteractionManager editor, String src)
-    {
+    public ImportFrame(InteractionManager editor, String src) {
         this(editor);
         importField.setText(src);
         this.element = new ImportElement(src, importField, frameEnabledProperty.get());
     }
-    
-    public static FrameFactory<ImportFrame> getFactory()
-    {
+
+    public static FrameFactory<ImportFrame> getFactory() {
         return new FrameFactory<ImportFrame>() {
-            
+
             @Override
-            public ImportFrame createBlock(InteractionManager editor)
-            {
+            public ImportFrame createBlock(InteractionManager editor) {
                 return new ImportFrame(editor);
             }
-            
-            @Override 
-            public Class<ImportFrame> getBlockClass()
-            { 
+
+            @Override
+            public Class<ImportFrame> getBlockClass() {
                 return ImportFrame.class;
             }
         };
     }
 
-    public String getImport()
-    {
+    public String getImport() {
         return importField.getText();
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         element = new ImportElement(importField.getText(), importField, frameEnabledProperty.get());
     }
 
     @Override
-    public ImportElement getCode()
-    {
+    public ImportElement getCode() {
         return element;
     }
 
-    public RecallableFocus getFocusable()
-    {
+    public RecallableFocus getFocusable() {
         return importField;
     }
-    
-    public StringExpression importProperty()
-    {
+
+    public StringExpression importProperty() {
         return importField.textProperty();
     }
 }

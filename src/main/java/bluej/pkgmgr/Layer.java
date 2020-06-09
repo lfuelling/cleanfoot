@@ -8,7 +8,6 @@ import bluej.extensions.painter.ExtensionClassTargetPainter;
  *
  * @author Simon Gerlach
  */
-public enum Layer
-{
+public enum Layer {
     BACKGROUND, FOREGROUND
 }

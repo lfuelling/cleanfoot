@@ -23,10 +23,8 @@ package bluej.stride.framedjava.ast;
 
 import bluej.stride.slots.TextSlot;
 
-public abstract class TextSlotFragment extends StringSlotFragment
-{
-    public TextSlotFragment(String content)
-    {
+public abstract class TextSlotFragment extends StringSlotFragment {
+    public TextSlotFragment(String content) {
         super(content);
     }
 

@@ -26,41 +26,37 @@ import java.util.LinkedList;
 /**
  * A thread to process certain sound commands, which for some reason
  * must be processed in a separate thread.
- * 
+ *
  * @author Davin McCall
  */
-public class ClipProcessThread implements Runnable
-{
+public class ClipProcessThread implements Runnable {
     private Thread thread;
-    
+
     private final LinkedList<SoundClip> queue = new LinkedList<SoundClip>();
-    
-    public ClipProcessThread()
-    {
+
+    public ClipProcessThread() {
         thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
     }
-    
-    public void addToQueue(SoundClip clip)
-    {
+
+    public void addToQueue(SoundClip clip) {
         synchronized (queue) {
             queue.add(clip);
             queue.notify();
-            
+
             // When running online, threads can be terminated willy-nilly, but
             // static state is kept. We need to check for this:
-            if (! thread.isAlive()) {
+            if (!thread.isAlive()) {
                 thread = new Thread(this);
                 thread.setDaemon(true);
                 thread.start();
             }
         }
     }
-    
+
     @Override
-    public void run()
-    {
+    public void run() {
         try {
             SoundClip item;
             while (true) {
@@ -73,7 +69,7 @@ public class ClipProcessThread implements Runnable
 
                 item.processState();
             }
+        } catch (InterruptedException ie) {
         }
-        catch (InterruptedException ie) { }
     }
 }

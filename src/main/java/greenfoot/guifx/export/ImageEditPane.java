@@ -23,7 +23,6 @@ package greenfoot.guifx.export;
 
 import bluej.Config;
 import bluej.utility.javafx.JavaFXUtil;
-
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.control.Slider;
@@ -40,80 +39,94 @@ import javafx.scene.layout.Pane;
 /**
  * Panel that lets you manipulate an image by zooming (with slider or
  * mouse wheel) and moving (by dragging with the mouse).
- * 
+ *
  * @author Poul Henriksen
  * @author Amjad Altadmri
  */
-public class ImageEditPane extends HBox
-{
-    /** Canvas for the image we are controlling. */
+public class ImageEditPane extends HBox {
+    /**
+     * Canvas for the image we are controlling.
+     */
     private ImageEditCanvas imageCanvas;
-    /** Last position where mouse was dragged. */
+    /**
+     * Last position where mouse was dragged.
+     */
     private double lastX;
-    /** Last position where mouse was dragged. */
+    /**
+     * Last position where mouse was dragged.
+     */
     private double lastY;
 
-    /** Slider for zooming*/
+    /**
+     * Slider for zooming
+     */
     private Slider zoomSlider;
 
-    /** Width of the image view */
+    /**
+     * Width of the image view
+     */
     private final int width;
-    /** Height of the image view */
+    /**
+     * Height of the image view
+     */
     private final int height;
-    
-    /** Label used for the slider. */
+
+    /**
+     * Label used for the slider.
+     */
     private ImageView bigLabel;
-    /** Label used for the slider. */
+    /**
+     * Label used for the slider.
+     */
     private ImageView smallLabel;
-    
-    /** Whether to enable dragging / zooming, when we have an image */
+
+    /**
+     * Whether to enable dragging / zooming, when we have an image
+     */
     private boolean enableImageControls = true;
-    /** Whether we actually have an image in the edit canvas */
+    /**
+     * Whether we actually have an image in the edit canvas
+     */
     private boolean haveImage;
-    
+
     /**
      * Construct a new image edit panel for an image with the specified height and width.
      *
-     * @param width The width of the image pane.
+     * @param width  The width of the image pane.
      * @param height The height of the image pane.
      */
-    public ImageEditPane(int width, int height)
-    {
+    public ImageEditPane(int width, int height) {
         this.width = width;
         this.height = height;
         setPrefSize(width + 2, height + 2);
         getStyleClass().add("image-edit-pane");
         buildUI();
     }
-    
+
     /**
      * Set the image to be manipulated.
      *
      * @param snapShot The image to be edited. It could be null.
      */
-    public void setImage(Image snapShot)
-    {
+    public void setImage(Image snapShot) {
         double oldMinScale = imageCanvas.getMinimumScale();
-        imageCanvas.setImage(snapShot); 
-        double newMinScale = imageCanvas.getMinimumScale();            
-        if (!haveImage || Math.abs(newMinScale - oldMinScale) > .0000001)
-        {
+        imageCanvas.setImage(snapShot);
+        double newMinScale = imageCanvas.getMinimumScale();
+        if (!haveImage || Math.abs(newMinScale - oldMinScale) > .0000001) {
             // Only re-fit scaling if there was a change in size.
             imageCanvas.fit();
             zoomSlider.setValue(imageCanvas.getScale());
         }
-        if (!haveImage)
-        {
+        if (!haveImage) {
             haveImage = true;
             enableImageEditPanel(enableImageControls);
         }
     }
-    
+
     /**
      * Compose the user interface components.
      */
-    private void buildUI()
-    {
+    private void buildUI() {
         imageCanvas = new ImageEditCanvas(width, height, null);
         imageCanvas.setCursor(Cursor.HAND);
         imageCanvas.setOnMouseDragged(this::mouseDragged);
@@ -140,8 +153,7 @@ public class ImageEditPane extends HBox
      *
      * @return A pane containing the slider and its icons.
      */
-    private Pane createSliderPane()
-    {
+    private Pane createSliderPane() {
         zoomSlider = new Slider();
         zoomSlider.setOrientation(Orientation.VERTICAL);
         zoomSlider.setPrefHeight(imageCanvas.getHeight());
@@ -160,7 +172,7 @@ public class ImageEditPane extends HBox
         smallLabel.setScaleX(.8);
         smallLabel.setScaleY(.8);
 
-        AnchorPane anchorPane  = new AnchorPane(zoomSlider, bigLabel, smallLabel);
+        AnchorPane anchorPane = new AnchorPane(zoomSlider, bigLabel, smallLabel);
         AnchorPane.setLeftAnchor(zoomSlider, 0.0);
         AnchorPane.setTopAnchor(bigLabel, 0.0);
         AnchorPane.setLeftAnchor(bigLabel, 20.0);
@@ -175,14 +187,11 @@ public class ImageEditPane extends HBox
      *
      * @param e The mouse event information
      */
-    public void mouseDragged(MouseEvent e)
-    {
-        if (imageCanvas.isDisabled())
-        {
+    public void mouseDragged(MouseEvent e) {
+        if (imageCanvas.isDisabled()) {
             return;
         }
-        if (e.getButton().equals(MouseButton.PRIMARY))
-        {
+        if (e.getButton().equals(MouseButton.PRIMARY)) {
             imageCanvas.setCursor(Cursor.MOVE);
             double dx = e.getX() - lastX;
             double dy = e.getY() - lastY;
@@ -198,14 +207,11 @@ public class ImageEditPane extends HBox
      *
      * @param e The mouse event information
      */
-    public void mousePressed(MouseEvent e)
-    {
-        if (imageCanvas.isDisabled())
-        {
+    public void mousePressed(MouseEvent e) {
+        if (imageCanvas.isDisabled()) {
             return;
         }
-        if (e.getButton().equals(MouseButton.PRIMARY))
-        {
+        if (e.getButton().equals(MouseButton.PRIMARY)) {
             lastX = e.getX();
             lastY = e.getY();
         }
@@ -217,14 +223,11 @@ public class ImageEditPane extends HBox
      *
      * @param e The mouse event information
      */
-    public void mouseReleased(MouseEvent e)
-    {
-        if (imageCanvas.isDisabled())
-        {
+    public void mouseReleased(MouseEvent e) {
+        if (imageCanvas.isDisabled()) {
             return;
         }
-        if (e.getButton().equals(MouseButton.PRIMARY))
-        {
+        if (e.getButton().equals(MouseButton.PRIMARY)) {
             imageCanvas.setCursor(Cursor.HAND);
         }
     }
@@ -234,10 +237,8 @@ public class ImageEditPane extends HBox
      *
      * @param e The scroll event information
      */
-    public void mouseScroll(ScrollEvent e)
-    {
-        if (imageCanvas.isDisabled())
-        {
+    public void mouseScroll(ScrollEvent e) {
+        if (imageCanvas.isDisabled()) {
             return;
         }
         double scroll = e.getDeltaY() / 100;
@@ -247,26 +248,22 @@ public class ImageEditPane extends HBox
     /**
      * Get the image created by this image panel or null if none exists.
      */
-    public Image getImage()
-    {
-        if (!haveImage)
-        {
+    public Image getImage() {
+        if (!haveImage) {
             return null;
         }
         return JavaFXUtil.createImage(width, height, graphicsContext -> imageCanvas.paintImage(graphicsContext));
     }
-    
+
     /**
      * Sets the slider and the image canvas to be enabled/disabled
      *
      * @param enabled If true, the controls, the zoom slider and image's canvas
      *                will be enabled. Otherwise, they will be disabled.
      */
-    public void enableImageEditPanel(boolean enabled)
-    {
+    public void enableImageEditPanel(boolean enabled) {
         enableImageControls = enabled;
-        if (!enabled || haveImage)
-        {
+        if (!enabled || haveImage) {
             zoomSlider.setDisable(!enabled);
             imageCanvas.setDisable(!enabled);
         }

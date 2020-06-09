@@ -21,20 +21,19 @@
  */
 package bluej.editor.moe;
 
-import java.util.Properties;
-
 import bluej.editor.EditorWatcher;
 import bluej.parser.entity.EntityResolver;
 import bluej.pkgmgr.JavadocResolver;
 import bluej.utility.javafx.FXPlatformRunnable;
 
+import java.util.Properties;
+
 /**
  * Parameters for the Moe editor.
- * 
+ *
  * @author Davin McCall
  */
-public class MoeEditorParameters
-{
+public class MoeEditorParameters {
     private String title;
     private boolean isCode;
     private boolean isCompiled;
@@ -48,8 +47,7 @@ public class MoeEditorParameters
 
     public MoeEditorParameters(String title, EditorWatcher watcher,
                                Properties resources, EntityResolver projectResolver,
-                               JavadocResolver javadocResolver)
-    {
+                               JavadocResolver javadocResolver) {
         this.title = title;
         this.watcher = watcher;
         this.resources = resources;
@@ -57,103 +55,83 @@ public class MoeEditorParameters
         this.javadocResolver = javadocResolver;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title)
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public boolean isCode()
-    {
+    public boolean isCode() {
         return isCode;
     }
 
-    public void setCode(boolean isCode)
-    {
+    public void setCode(boolean isCode) {
         this.isCode = isCode;
     }
 
-    public EditorWatcher getWatcher()
-    {
+    public EditorWatcher getWatcher() {
         return watcher;
     }
 
-    public void setWatcher(EditorWatcher watcher)
-    {
+    public void setWatcher(EditorWatcher watcher) {
         this.watcher = watcher;
     }
 
-    public boolean isShowToolbar()
-    {
+    public boolean isShowToolbar() {
         return showToolbar;
     }
 
-    public void setShowToolbar(boolean showToolbar)
-    {
+    public void setShowToolbar(boolean showToolbar) {
         this.showToolbar = showToolbar;
     }
 
-    public boolean isShowLineNum()
-    {
+    public boolean isShowLineNum() {
         return showLineNum;
     }
 
-    public void setShowLineNum(boolean showLineNum)
-    {
+    public void setShowLineNum(boolean showLineNum) {
         this.showLineNum = showLineNum;
     }
 
-    public Properties getResources()
-    {
+    public Properties getResources() {
         return resources;
     }
 
-    public void setResources(Properties resources)
-    {
+    public void setResources(Properties resources) {
         this.resources = resources;
     }
 
-    public EntityResolver getProjectResolver()
-    {
+    public EntityResolver getProjectResolver() {
         return projectResolver;
     }
 
-    public void setProjectResolver(EntityResolver projectResolver)
-    {
+    public void setProjectResolver(EntityResolver projectResolver) {
         this.projectResolver = projectResolver;
     }
-    
-    public JavadocResolver getJavadocResolver()
-    {
+
+    public JavadocResolver getJavadocResolver() {
         return javadocResolver;
     }
-    
-    public void setJavadocResolver(JavadocResolver javadocResolver)
-    {
+
+    public void setJavadocResolver(JavadocResolver javadocResolver) {
         this.javadocResolver = javadocResolver;
     }
 
-    public FXPlatformRunnable getCallbackOnOpen()
-    {
+    public FXPlatformRunnable getCallbackOnOpen() {
         return callbackOnOpen;
     }
 
-    public void setCallbackOnOpen(FXPlatformRunnable callbackOnOpen)
-    {
+    public void setCallbackOnOpen(FXPlatformRunnable callbackOnOpen) {
         this.callbackOnOpen = callbackOnOpen;
     }
 
-    public boolean isCompiled()
-    {
+    public boolean isCompiled() {
         return isCompiled;
     }
 
-    public void setCompiled(boolean compiled)
-    {
+    public void setCompiled(boolean compiled) {
         isCompiled = compiled;
     }
 }

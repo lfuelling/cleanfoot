@@ -21,18 +21,14 @@
  */
 package bluej.pkgmgr.print;
 
-import bluej.Config;
-import bluej.editor.Editor;
 import bluej.editor.moe.PrintDialog.PrintChoices;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.pkgmgr.target.ReadmeTarget;
 import bluej.utility.Debug;
-import bluej.utility.DialogManager;
 import bluej.utility.javafx.FXRunnable;
 import javafx.print.PrinterJob;
-import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -45,23 +41,21 @@ import java.util.stream.Collectors;
  * Manages the printing of package assets eg. Class Diagram, Readme and Source
  * files.  All source files are printed as one large batch.  Individual
  * printing occurs through the source code editor
- * 
+ *
  * @author Bruce Quig
  */
-public class PackagePrintManager extends Thread
-{
+public class PackagePrintManager extends Thread {
     private final List<FXRunnable> printActions = new ArrayList<>();
     private final PrinterJob job;
 
     /**
      * Constructor for PackagePrinter.
-     * 
-     * @param pkg package to be printed
+     *
+     * @param pkg          package to be printed
      * @param printChoices the print options chosen by the user
      */
     @OnThread(Tag.FXPlatform)
-    public PackagePrintManager(PrinterJob job, PkgMgrFrame pkgMgrFrame, PrintChoices printChoices)
-    {
+    public PackagePrintManager(PrinterJob job, PkgMgrFrame pkgMgrFrame, PrintChoices printChoices) {
         this.job = job;
 
         if (printChoices.printDiagram) {
@@ -69,24 +63,20 @@ public class PackagePrintManager extends Thread
         }
 
         Package pkg = pkgMgrFrame.getPackage();
-        
+
         // We need to pull out the editors in this method, because printTo needs
         // to run on the FXPlatform thread:
-        if (printChoices.printSource)
-        {
+        if (printChoices.printSource) {
             printActions.addAll(pkg.getAllClassnamesWithSource().stream()
                     .map(className -> ((ClassTarget) pkg.getTarget(className)).getEditor())
                     .map(ed -> ed.printTo(job, printChoices.printSize, printChoices.printLineNumbers, printChoices.printHighlighting))
                     .collect(Collectors.toList()));
         }
-        if (printChoices.printReadme)
-        {
+        if (printChoices.printReadme) {
             ReadmeTarget readmeTgt = pkg.getReadmeTarget();
-            if (readmeTgt != null)
-            {
-                if (readmeTgt.getEditor() != null)
-                {
-                    printActions.add(readmeTgt.getEditor().printTo(job, printChoices.printSize, 
+            if (readmeTgt != null) {
+                if (readmeTgt.getEditor() != null) {
+                    printActions.add(readmeTgt.getEditor().printTo(job, printChoices.printSize,
                             printChoices.printLineNumbers, printChoices.printHighlighting));
                 }
             }
@@ -98,17 +88,12 @@ public class PackagePrintManager extends Thread
      * background operation via a thread with lower priority.
      */
     @OnThread(value = Tag.FX, ignoreParent = true)
-    public void run()
-    {
-        try
-        {
-            for (FXRunnable printAction : printActions)
-            {
+    public void run() {
+        try {
+            for (FXRunnable printAction : printActions) {
                 printAction.run();
             }
-        }
-        catch (Throwable t)
-        {
+        } catch (Throwable t) {
             Debug.reportError(t);
         }
         job.endJob();
@@ -116,12 +101,11 @@ public class PackagePrintManager extends Thread
 
     /**
      * Prints the graphical representation of classes in the package.
-     * 
+     *
      * @param printJob the printer job to print the diagram to.
      */
     @OnThread(Tag.FX)
-    public void printClassDiagram(PrinterJob printJob, PkgMgrFrame pkgMgrFrame)
-    {
+    public void printClassDiagram(PrinterJob printJob, PkgMgrFrame pkgMgrFrame) {
         pkgMgrFrame.printDiagram(printJob);
     }
 

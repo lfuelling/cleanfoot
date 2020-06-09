@@ -25,29 +25,13 @@ import bluej.Config;
 import bluej.debugger.gentype.Reflective;
 import bluej.parser.AssistContent.CompletionKind;
 import bluej.parser.AssistContent.ParamInfo;
-import bluej.stride.framedjava.ast.ASTUtility;
-import bluej.stride.framedjava.ast.AccessPermission;
-import bluej.stride.framedjava.ast.AccessPermissionFragment;
+import bluej.stride.framedjava.ast.*;
 import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
-import bluej.stride.framedjava.ast.JavadocUnit;
-import bluej.stride.framedjava.ast.NameDefSlotFragment;
-import bluej.stride.framedjava.ast.ParamFragment;
-import bluej.stride.framedjava.elements.ClassElement;
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.elements.ConstructorElement;
-import bluej.stride.framedjava.elements.MethodProtoElement;
-import bluej.stride.framedjava.elements.NormalMethodElement;
+import bluej.stride.framedjava.elements.*;
 import bluej.stride.framedjava.slots.ExpressionCompletionCalculator;
 import bluej.stride.framedjava.slots.TypeSlot;
-import bluej.stride.generic.AssistContentThreadSafe;
-import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameContentRow;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
 import bluej.stride.operations.CustomFrameOperation;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.operations.ToggleBooleanProperty;
@@ -64,7 +48,6 @@ import javafx.beans.binding.StringExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TextField;
 import threadchecker.OnThread;
 import threadchecker.Tag;
@@ -89,14 +72,10 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     private final BooleanProperty finalModifier = new SimpleBooleanProperty(false);
     private final WrappableSlotLabel overrideLabel = new WrappableSlotLabel("") {
         @Override
-        public void setView(View oldView, View newView, SharedTransition animate)
-        {
-            if (oldView == View.NORMAL && newView == View.JAVA_PREVIEW)
-            {
+        public void setView(View oldView, View newView, SharedTransition animate) {
+            if (oldView == View.NORMAL && newView == View.JAVA_PREVIEW) {
                 fadeOut(animate, true);
-            }
-            else
-            {
+            } else {
                 fadeIn(animate);
             }
         }
@@ -106,9 +85,8 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     private final TypeSlot returnType;
     private final TextSlot<NameDefSlotFragment> methodName;
     private NormalMethodElement element;
-    
-    private NormalMethodFrame(InteractionManager editor)
-    {
+
+    private NormalMethodFrame(InteractionManager editor) {
         super(editor);
         setDocumentationPromptText(Config.getString("frame.class.method.doc.prompt"));
 
@@ -121,13 +99,13 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
                 paramsPane.deleteFirstParam();
             }
         });
-        
+
         returnType = new TypeSlot(editor, this, this, getHeaderRow(), TypeSlot.Role.RETURN, "method-return-type-");
         returnType.addClosingChar(' ');
         returnType.markReturnType();
-        
+
         paramsPane = new FormalParameters(editor, this, this, getHeaderRow(), "method-param-");
-        
+
         returnType.setSimplePromptText("type");
         methodName.setPromptText("name");
 
@@ -139,7 +117,7 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
 
         overrideLabel.addStyleClass("method-override-label");
         overrideLabel.setAlignment(HangingFlowPane.FlowAlignment.RIGHT);
-        
+
         getHeaderRow().bindContentsConcat(FXCollections.observableArrayList(
                 FXCollections.observableArrayList(access),
                 JavaFXUtil.listBool(staticModifier, staticLabel),
@@ -154,10 +132,9 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
         JavaFXUtil.addChangeListener(staticModifier, b -> editor.modifiedFrame(this, false));
         JavaFXUtil.addChangeListener(finalModifier, b -> editor.modifiedFrame(this, false));
     }
-    
+
     public NormalMethodFrame(InteractionManager editor, AccessPermissionFragment access, boolean staticModifier,
-            boolean finalModifier, String returnType, String name, String documentation, boolean enabled)
-    {
+                             boolean finalModifier, String returnType, String name, String documentation, boolean enabled) {
         this(editor);
         this.access.setValue(access.getValue());
         access.registerSlot(this.access);
@@ -170,52 +147,44 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     }
 
     @Override
-    public boolean focusWhenJustAdded()
-    {
+    public boolean focusWhenJustAdded() {
         returnType.requestFocus();
         return true;
     }
-    
-    public static FrameFactory<NormalMethodFrame> getFactory()
-    {
+
+    public static FrameFactory<NormalMethodFrame> getFactory() {
         return new FrameFactory<NormalMethodFrame>() {
             @Override
-            public NormalMethodFrame createBlock(InteractionManager editor)
-            {
+            public NormalMethodFrame createBlock(InteractionManager editor) {
                 return new NormalMethodFrame(editor);
             }
-                        
-            @Override 
-            public Class<NormalMethodFrame> getBlockClass()
-            { 
+
+            @Override
+            public Class<NormalMethodFrame> getBlockClass() {
                 return NormalMethodFrame.class;
             }
         };
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         List<ParamFragment> params = generateParams();
-        
+
         element = new NormalMethodElement(this, new AccessPermissionFragment(this, access), staticModifier.get(),
-                finalModifier.get(), returnType.getSlotElement(), methodName.getSlotElement(), 
+                finalModifier.get(), returnType.getSlotElement(), methodName.getSlotElement(),
                 params, throwsPane.getTypes(), getContents(), new JavadocUnit(getDocumentation()), frameEnabledProperty.get());
     }
 
     @Override
-    public NormalMethodElement getCode()
-    {
+    public NormalMethodElement getCode() {
         return element;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return methodName.getText();
     }
-    
-    private class MethodOverrideCompletionCalculator implements CompletionCalculator
-    {
+
+    private class MethodOverrideCompletionCalculator implements CompletionCalculator {
         private List<AssistContentThreadSafe> inheritedMethods;
         private SuggestionList suggestionDisplay;
 
@@ -223,66 +192,64 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
         @OnThread(Tag.FXPlatform)
         public void withCalculatedSuggestionList(PosInSourceDoc pos, CodeElement codeEl,
                                                  SuggestionListListener listener, FXPlatformConsumer<SuggestionList> handler) {
-            
-            ClassFrame classFrame = (ClassFrame)ASTUtility.getTopLevelElement(codeEl).getFrame();
-            
+
+            ClassFrame classFrame = (ClassFrame) ASTUtility.getTopLevelElement(codeEl).getFrame();
+
             classFrame.withInheritedItems(Collections.singleton(CompletionKind.METHOD), inheritedMethodsByDeclarer ->
             {
-                
+
                 inheritedMethods = inheritedMethodsByDeclarer.values().stream().flatMap(List::stream).collect(Collectors.toList());
-                
+
                 // TODO rule out final methods
                 // TODO rule out any methods already implemented in this class
-                
+
                 suggestionDisplay = new SuggestionList(getEditor(),
                         Utility.mapList(inheritedMethods, ac -> new SuggestionDetailsWithHTMLDoc(
-                                ac.getName(), 
+                                ac.getName(),
                                 ExpressionCompletionCalculator.getParamsCompletionDisplay(ac),
                                 ac.getType(),
                                 SuggestionList.SuggestionShown.COMMON,
                                 ac.getDocHTML())),
                         null, SuggestionList.SuggestionShown.RARE, null, listener);
-            
+
                 handler.accept(suggestionDisplay);
             });
         }
 
         @Override
-        public boolean execute(TextField field, int selected, int startOfCurWord)
-        {
+        public boolean execute(TextField field, int selected, int startOfCurWord) {
             if (selected == -1) {
                 return false;
             }
-            
+
             AssistContentThreadSafe a = inheritedMethods.get(selected);
             methodName.setText(a.getName());
             returnType.setText(a.getType());
-            
+
             // TODO check that we store access in AssistContent
             // access.setValue(AccessPermission.PUBLIC);
             access.setValue(AccessPermission.fromAccess(a.getAccessPermission()));
-            
+
             paramsPane.setParams(a.getParams(), ParamInfo::getUnqualifiedType, ParamInfo::getFormalName);
-            
+
             return true;
         }
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public List<FrameOperation> getContextOperations()
-    {
+    public List<FrameOperation> getContextOperations() {
         List<FrameOperation> operations = new ArrayList<>(super.getContextOperations());
-        
+
         InteractionManager editor = getEditor();
-        
+
         operations.add(new CustomFrameOperation(editor, "method->constructor",
                 Arrays.asList(Config.getString("frame.operation.change"), Config.getString("frame.operation.change.to.constructor")),
                 MenuItemOrder.TRANSFORM, this,
                 () -> {
                     Frame parent = getParentCanvas().getParent().getFrame();
                     if (parent instanceof ClassFrame) {
-                        FrameCanvas p = ((ClassFrame)parent).getConstructorsCanvas();
+                        FrameCanvas p = ((ClassFrame) parent).getConstructorsCanvas();
                         FrameCursor c = p.getLastCursor();
                         ConstructorElement el = new ConstructorElement(null, new AccessPermissionFragment(this, access), generateParams(),
                                 throwsPane.getTypes(), null, null, getContents(), new JavadocUnit(getDocumentation()), frameEnabledProperty.get());
@@ -291,14 +258,14 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
                     }
                 }
         ));
-        
+
         operations.add(new CustomFrameOperation(editor, "concrete->abstract",
                 Arrays.asList(Config.getString("frame.operation.change"), Config.getString("frame.operation.change.to.abstract")),
                 MenuItemOrder.TRANSFORM, this,
                 () -> {
                     FrameCursor c = getCursorBefore();
                     MethodProtoElement el = new MethodProtoElement(null, returnType.getSlotElement(), methodName.getSlotElement(),
-                        generateParams(), throwsPane.getTypes(), new JavadocUnit(getDocumentation()), frameEnabledProperty.get());
+                            generateParams(), throwsPane.getTypes(), new JavadocUnit(getDocumentation()), frameEnabledProperty.get());
                     c.insertBlockAfter(el.createFrame(getEditor()));
                     c.getParentCanvas().removeBlock(this);
                 }
@@ -310,16 +277,14 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     }
 
     @Override
-    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas innerCanvas, FrameCursor cursorInCanvas)
-    {
+    public List<ExtensionDescription> getAvailableExtensions(FrameCanvas innerCanvas, FrameCursor cursorInCanvas) {
         final List<ExtensionDescription> extensions = new ArrayList<>(super.getAvailableExtensions(innerCanvas, cursorInCanvas));
         getStaticFinalOperations().stream().forEach(op -> extensions.add(new ExtensionDescription(op, this, true,
                 ExtensionSource.BEFORE, ExtensionSource.AFTER, ExtensionSource.MODIFIER, ExtensionSource.SELECTION)));
         return extensions;
     }
 
-    private List<ToggleBooleanProperty> getStaticFinalOperations()
-    {
+    private List<ToggleBooleanProperty> getStaticFinalOperations() {
         List<ToggleBooleanProperty> operations = new ArrayList<>();
         operations.add(new ToggleBooleanProperty(getEditor(), TOGGLE_FINAL_METHOD, FINAL_NAME, 'n'));
         operations.add(new ToggleBooleanProperty(getEditor(), TOGGLE_STATIC_METHOD, STATIC_NAME, 's'));
@@ -327,39 +292,32 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     }
 
     // Used by ReturnFrame
-    public StringExpression returnTypeProperty()
-    {
+    public StringExpression returnTypeProperty() {
         return returnType.javaProperty();
     }
 
     @OnThread(Tag.FXPlatform)
-    public void updateOverrideDisplay(ClassElement topLevel)
-    {
+    public void updateOverrideDisplay(ClassElement topLevel) {
         if (element == null)
             return;
 
         final NormalMethodElement cachedElement = element;
-        
+
         // Now need to look through super-types for method with our name and right signature:
 
         List<String> qualParamTypes = cachedElement.getQualifiedParamTypes(topLevel);
         Reflective overriddenFrom = topLevel.findSuperMethod(cachedElement.getName(), qualParamTypes);
-        if (overriddenFrom != null)
-        {
+        if (overriddenFrom != null) {
             String name = overriddenFrom.getSimpleName();
             if (name.indexOf('.') != -1)
                 name = name.substring(name.lastIndexOf('.') + 1);
             final String nameFinal = name;
-            if (curOverrideSource == null || !curOverrideSource.equals(nameFinal))
-            {
+            if (curOverrideSource == null || !curOverrideSource.equals(nameFinal)) {
                 curOverrideSource = nameFinal;
                 overrideLabel.setText(Config.getString("frame.class.overrides.from").replace("$", nameFinal));
             }
-        }
-        else
-        {
-            if (curOverrideSource != null)
-            {
+        } else {
+            if (curOverrideSource != null) {
                 curOverrideSource = null;
                 overrideLabel.setText("");
             }
@@ -367,43 +325,35 @@ public class NormalMethodFrame extends MethodFrameWithBody<NormalMethodElement> 
     }
 
     @Override
-    public EditableSlot getErrorShowRedirect()
-    {
+    public EditableSlot getErrorShowRedirect() {
         return methodName;
     }
 
     @Override
-    public void focusName()
-    {
+    public void focusName() {
         methodName.requestFocus(Focus.LEFT);
     }
 
     @Override
-    protected FrameContentRow makeHeader(String stylePrefix)
-    {
-        return new MethodHeaderRow(this, stylePrefix)
-        {
+    protected FrameContentRow makeHeader(String stylePrefix) {
+        return new MethodHeaderRow(this, stylePrefix) {
             @Override
-            protected EditableSlot getSlotAfterParams()
-            {
+            protected EditableSlot getSlotAfterParams() {
                 return throwsPane.getTypeSlots().findFirst().orElse(null);
             }
 
             @Override
-            protected EditableSlot getSlotBeforeParams()
-            {
+            protected EditableSlot getSlotBeforeParams() {
                 return methodName;
             }
         };
     }
 
     @Override
-    public boolean tryRestoreTo(CodeElement codeElement)
-    {
+    public boolean tryRestoreTo(CodeElement codeElement) {
         // instanceof bit hacky, but easiest way to do it:
-        if (codeElement instanceof NormalMethodElement)
-        {
-            NormalMethodElement nme = (NormalMethodElement)codeElement;
+        if (codeElement instanceof NormalMethodElement) {
+            NormalMethodElement nme = (NormalMethodElement) codeElement;
             staticModifier.set(nme.isStatic());
             finalModifier.set(nme.isFinal());
             returnType.setText(nme.getType());

@@ -25,76 +25,65 @@ import java.util.Map;
 
 /**
  * Represents the capture of a type parameter.
- * 
+ *
  * <p>See capture conversion in the Java Language Specification, section 5.1.12. Instances
- * of this class represent the "fresh type variable" mentioned there. 
- * 
+ * of this class represent the "fresh type variable" mentioned there.
+ *
  * @author Davin McCall
  */
-public class GenTypeCapture extends GenTypeTpar
-{
+public class GenTypeCapture extends GenTypeTpar {
     private final GenTypeWildcard wildcard;
-    
-    public GenTypeCapture(GenTypeWildcard wildcard)
-    {
+
+    public GenTypeCapture(GenTypeWildcard wildcard) {
         super("?capture?");
         this.wildcard = wildcard;
     }
-    
-    public String toString(boolean stripPrefix)
-    {
+
+    public String toString(boolean stripPrefix) {
         return wildcard.toString(stripPrefix);
     }
-    
-    public String toString(NameTransform nt)
-    {
+
+    public String toString(NameTransform nt) {
         return wildcard.toString(nt);
     }
-    
-    public String toTypeArgString(NameTransform nt)
-    {
+
+    public String toTypeArgString(NameTransform nt) {
         return wildcard.toTypeArgString(nt);
     }
-    
+
     @Override
-    public GenTypeSolid mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams)
-    {
+    public GenTypeSolid mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams) {
         // This doesn't make sense; a capture is a capture. Mapping to a 'different' capture
         // breaks things.
         throw new UnsupportedOperationException("You don't want this.");
     }
 
     @Override
-    public String arrayComponentName()
-    {
+    public String arrayComponentName() {
         return null;
     }
 
     @Override
-    public JavaType getErasedType()
-    {
+    public JavaType getErasedType() {
         if (wildcard.getUpperBound() != null) {
             // Ideally the upper bound should always be specifed (as java.lang.Object if nothing else)
             return wildcard.getUpperBound().getErasedType();
-        }
-        else {
+        } else {
             GenTypeClass[] rsts = wildcard.getLowerBound().getReferenceSupertypes();
             Reflective objRef = rsts[0].getReflective().getRelativeClass("java.lang.Object");
             return new GenTypeClass(objRef);
         }
     }
-    
+
     @Override
-    public GenTypeClass[] getReferenceSupertypes()
-    {
+    public GenTypeClass[] getReferenceSupertypes() {
         if (wildcard.getUpperBound() != null) {
             // Ideally the upper bound should always be specifed (as java.lang.Object if nothing else)
             return wildcard.getUpperBound().getReferenceSupertypes();
-        }
-        else {
+        } else {
             GenTypeClass[] rsts = wildcard.getLowerBound().getReferenceSupertypes();
             Reflective objRef = rsts[0].getReflective().getRelativeClass("java.lang.Object");
-            return new GenTypeClass[] {new GenTypeClass(objRef)};
+            return new GenTypeClass[]{new GenTypeClass(objRef)};
         }
     }
 

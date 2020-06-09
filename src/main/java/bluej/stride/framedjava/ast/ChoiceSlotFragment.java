@@ -30,30 +30,26 @@ import threadchecker.Tag;
 
 /**
  * A fragment of program code which is stored in a choice slot.
- * 
+ * <p>
  * Needs to be overridden by subclasses to actually store the value in question,
  * but provides an implementation of a lot of methods from SlotFragment, suitable for
  * items which were stored in a choice slot.
  */
-public abstract class ChoiceSlotFragment extends SlotFragment
-{
+public abstract class ChoiceSlotFragment extends SlotFragment {
     private final Frame frame;
 
-    protected ChoiceSlotFragment(Frame f)
-    {
+    protected ChoiceSlotFragment(Frame f) {
         this.frame = f;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void addError(CodeError codeError)
-    {
+    public void addError(CodeError codeError) {
         frame.addError(codeError);
     }
 
     @Override
-    public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn)
-    {
+    public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn) {
         if (frame == null)
             return ErrorRelation.CANNOT_SHOW;
         else
@@ -62,8 +58,7 @@ public abstract class ChoiceSlotFragment extends SlotFragment
 
     @Override
     @OnThread(Tag.FX)
-    protected JavaFragment getCompileErrorRedirect()
-    {
+    protected JavaFragment getCompileErrorRedirect() {
         EditableSlot slot = frame.getErrorShowRedirect();
         if (slot != null)
             return slot.getSlotElement();
@@ -73,8 +68,7 @@ public abstract class ChoiceSlotFragment extends SlotFragment
 
     @Override
     @OnThread(Tag.FX)
-    public ErrorShower getErrorShower()
-    {
+    public ErrorShower getErrorShower() {
         EditableSlot slot = frame.getErrorShowRedirect();
         if (slot != null)
             return slot;

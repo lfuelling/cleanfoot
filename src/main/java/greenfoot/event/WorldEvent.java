@@ -25,27 +25,25 @@ import greenfoot.World;
 
 /**
  * A world event, fired when a world is created or removed.
- * 
+ *
  * @author Poul Henriksen
  */
-public class WorldEvent
-{
+public class WorldEvent {
     private final World world;
 
     /**
      * Construct a world event for the given world.
-     * @param world  The world which was created or removed (non-null).
+     *
+     * @param world The world which was created or removed (non-null).
      */
-    public WorldEvent(World world)
-    {
+    public WorldEvent(World world) {
         this.world = world;
     }
-    
+
     /**
      * Get the world associated with this event.
      */
-    public World getWorld()
-    {
+    public World getWorld() {
         return world;
     }
 }

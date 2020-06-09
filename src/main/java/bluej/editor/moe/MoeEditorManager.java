@@ -38,12 +38,11 @@ import java.util.Properties;
 
 /**
  * Implementation of EditorManager for the Moe editor.
- * 
+ *
  * @author Michael Kolling
  */
 
-public final class MoeEditorManager extends bluej.editor.EditorManager
-{
+public final class MoeEditorManager extends bluej.editor.EditorManager {
     private final Properties resources;
     private final List<MoeEditor> editors; // open editors
 
@@ -54,10 +53,9 @@ public final class MoeEditorManager extends bluej.editor.EditorManager
 
     // =========================== PUBLIC METHODS ===========================
 
-    public MoeEditorManager()
-    {
+    public MoeEditorManager() {
         editors = new ArrayList<MoeEditor>(4);
-               
+
         showToolBar = true;
         showLineNum = false;
 
@@ -66,7 +64,7 @@ public final class MoeEditorManager extends bluej.editor.EditorManager
 
 
     // ------------------------------------------------------------------------
-    
+
     /*
      * Open an editor to display a class. The filename may be "null"
      * to open an empty editor (e.g. for displaying a view). The editor
@@ -74,32 +72,31 @@ public final class MoeEditorManager extends bluej.editor.EditorManager
      * is visible after opening it.
      *
      * @param filename     name of the source file to open (may be null)
-     * @param docFilename  name of the corresponding javadoc file 
+     * @param docFilename  name of the corresponding javadoc file
      * @param windowTitle  title of window (usually class name)
      * @param watcher      an watcher to be notified of edit events
      * @param compiled     true, if the class has been compiled
      * @param projectResolver   A resolver for external symbols
-     * 
+     *
      * @return          the new editor, or null if there was a problem
      */
     @Override
-    public Editor openClass(String filename, 
-                String docFilename,
-                Charset charset,
-                String windowTitle,
-                FXSupplier<FXTabbedEditor> fxTabbedEditor,
-                EditorWatcher watcher, 
-                boolean compiled,
-                EntityResolver projectResolver,
-                JavadocResolver javadocResolver,
-                FXPlatformRunnable callbackOnOpen)
-    {
-        return openEditor (filename, docFilename, charset, true, windowTitle, fxTabbedEditor, watcher, compiled,
-                           projectResolver, javadocResolver, callbackOnOpen);
+    public Editor openClass(String filename,
+                            String docFilename,
+                            Charset charset,
+                            String windowTitle,
+                            FXSupplier<FXTabbedEditor> fxTabbedEditor,
+                            EditorWatcher watcher,
+                            boolean compiled,
+                            EntityResolver projectResolver,
+                            JavadocResolver javadocResolver,
+                            FXPlatformRunnable callbackOnOpen) {
+        return openEditor(filename, docFilename, charset, true, windowTitle, fxTabbedEditor, watcher, compiled,
+                projectResolver, javadocResolver, callbackOnOpen);
     }
 
     // ------------------------------------------------------------------------
-    
+
     /*
      * Open an editor to display a text document. The difference to
      * "openClass" is that code specific functions (such as compile,
@@ -113,34 +110,31 @@ public final class MoeEditorManager extends bluej.editor.EditorManager
      * @returns                 the new editor, or null if there was a problem
      */
     @Override
-    public Editor openText(String filename, Charset charset, String windowTitle, FXSupplier<FXTabbedEditor> fxTabbedEditor)
-    {
+    public Editor openText(String filename, Charset charset, String windowTitle, FXSupplier<FXTabbedEditor> fxTabbedEditor) {
         return openEditor(filename, null, charset, false, windowTitle, fxTabbedEditor, null, false, null, null, null);
     }
 
     @Override
-    public void refreshAll()
-    {
+    public void refreshAll() {
         Iterator<MoeEditor> e = editors.iterator();
 
-        while(e.hasNext()) {
+        while (e.hasNext()) {
             Editor ed = e.next();
-            
-            if(ed.isOpen()) {
+
+            if (ed.isOpen()) {
                 ed.refresh();
             }
-       }
+        }
     }
 
     // ------------------------------------------------------------------------
-    
+
     /**
      * Discard the given editor and leave it to be collected by the garbage
      * collector.
      */
     @Override
-    public void discardEditor(Editor ed)
-    {
+    public void discardEditor(Editor ed) {
         ed.close();
         editors.remove(ed);
     }
@@ -149,37 +143,36 @@ public final class MoeEditorManager extends bluej.editor.EditorManager
 
 
     // ------------------------------------------------------------------------
- 
-    
+
+
     // ========================== PRIVATE METHODS ===========================
 
     // ------------------------------------------------------------------------
-    
+
     /**
      * Open an editor to display a class. The filename may be "null"
      * to open an empty editor (e.g. for displaying a view). The editor
      * is initially hidden. A call to "Editor::show" is needed to make
      * is visible after opening it.
      *
-     * @param filename     name of the source file to open (may be null)
-     * @param docFilename  name of the documentation based on filename
-     * @param charset      the character set of the file contents
-     * @param isCode       true if the file represents code, or false if it is plain text
-     * @param windowTitle  title of window (usually class name)
-     * @param watcher      an object interested in editing events
-     * @param compiled     true, if the class has been compiled
-     * @param projectResolver   a resolver for external symbols
-     * @returns       the new editor, or null if there was a problem
+     * @param filename        name of the source file to open (may be null)
+     * @param docFilename     name of the documentation based on filename
+     * @param charset         the character set of the file contents
+     * @param isCode          true if the file represents code, or false if it is plain text
+     * @param windowTitle     title of window (usually class name)
+     * @param watcher         an object interested in editing events
+     * @param compiled        true, if the class has been compiled
+     * @param projectResolver a resolver for external symbols
+     * @returns the new editor, or null if there was a problem
      */
     private Editor openEditor(String filename, String docFilename,
-            Charset charset,
-            boolean isCode, String windowTitle,
-            FXSupplier<FXTabbedEditor> fxTabbedEditor,
-            EditorWatcher watcher, boolean compiled,
-            EntityResolver projectResolver,
-            JavadocResolver javadocResolver,
-            FXPlatformRunnable callbackOnOpen)
-    {
+                              Charset charset,
+                              boolean isCode, String windowTitle,
+                              FXSupplier<FXTabbedEditor> fxTabbedEditor,
+                              EditorWatcher watcher, boolean compiled,
+                              EntityResolver projectResolver,
+                              JavadocResolver javadocResolver,
+                              FXPlatformRunnable callbackOnOpen) {
         MoeEditor editor;
 
         MoeEditorParameters mep = new MoeEditorParameters(windowTitle, watcher,
@@ -191,8 +184,7 @@ public final class MoeEditorManager extends bluej.editor.EditorManager
         mep.setCompiled(compiled);
         editor = new MoeEditor(mep, fxTabbedEditor);
         editors.add(editor);
-        if (editor.showFile(filename, charset, compiled, docFilename))
-        {
+        if (editor.showFile(filename, charset, compiled, docFilename)) {
             return editor;
         }
         editor.doClose();           // editor will remove itself

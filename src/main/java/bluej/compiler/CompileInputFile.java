@@ -27,18 +27,15 @@ import java.io.Serializable;
 /**
  * Information about a file to be fed to the compiler as input.
  */
-public class CompileInputFile implements Serializable
-{
+public class CompileInputFile implements Serializable {
     private final File actualJavaFileForCompiler;
     private final File sourceFileToRecord;
 
     /**
-     *
      * @param actualJavaFileForCompiler The .java file that the compiler will see, even if the original was Stride
-     * @param sourceFileToRecord The Stride file for Stride (or Java for Java; in this case, both parameters will be identical).
+     * @param sourceFileToRecord        The Stride file for Stride (or Java for Java; in this case, both parameters will be identical).
      */
-    public CompileInputFile(File actualJavaFileForCompiler, File sourceFileToRecord)
-    {
+    public CompileInputFile(File actualJavaFileForCompiler, File sourceFileToRecord) {
         this.actualJavaFileForCompiler = actualJavaFileForCompiler;
         this.sourceFileToRecord = sourceFileToRecord;
     }
@@ -46,16 +43,14 @@ public class CompileInputFile implements Serializable
     /**
      * The .java source file that gets fed to the compiler (even for Stride classes)
      */
-    public File getJavaCompileInputFile()
-    {
+    public File getJavaCompileInputFile() {
         return actualJavaFileForCompiler;
     }
 
     /**
      * The original source file as the user sees it, i.e. the Stride file for Stride classes.
      */
-    public File getUserSourceFile()
-    {
+    public File getUserSourceFile() {
         return sourceFileToRecord;
     }
 }

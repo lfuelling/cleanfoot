@@ -21,18 +21,17 @@
  */
 package bluej.parser;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import bluej.pkgmgr.JavadocResolver;
 import bluej.stride.generic.InteractionManager.Kind;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class ImportedTypeCompletion extends AssistContent
-{
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class ImportedTypeCompletion extends AssistContent {
     private final String type;
     private final String canonicalName;
     private final String packageName;
@@ -44,9 +43,8 @@ public class ImportedTypeCompletion extends AssistContent
     private final boolean extractedJavadoc = false;
     private String javadoc = null; // Can be null, even after extraction
     private final JavadocResolver resolver;
-    
-    public ImportedTypeCompletion(Class<?> cls, JavadocResolver resolver)
-    {
+
+    public ImportedTypeCompletion(Class<?> cls, JavadocResolver resolver) {
         // It's important that we take what we need from cls and don't keep a reference,
         // to allow the Class instance to be garbage collected after imports are scanned. 
         this.type = cls.getSimpleName();
@@ -56,59 +54,47 @@ public class ImportedTypeCompletion extends AssistContent
         this.moduleName = cls.getModule() != null ? cls.getModule().getName() : null;
 
         this.enclosingClasses = new ArrayList<>();
-        for (Class<?> i  = cls.getEnclosingClass(); i != null; i = i.getEnclosingClass())
+        for (Class<?> i = cls.getEnclosingClass(); i != null; i = i.getEnclosingClass())
             enclosingClasses.add(0, i.getSimpleName());
 
         this.superTypes = new ArrayList<>();
         for (Class<?> i : cls.getInterfaces())
             superTypes.add(i.getName());
-        for (Class<?> c = cls.getSuperclass(); c != null; c = c.getSuperclass())
-        {
+        for (Class<?> c = cls.getSuperclass(); c != null; c = c.getSuperclass()) {
             superTypes.add(c.getName());
         }
         this.resolver = resolver;
-        if (cls.isInterface())
-        {
+        if (cls.isInterface()) {
             this.typeKind = Kind.INTERFACE;
-        }
-        else if (cls.isEnum())
-        {
+        } else if (cls.isEnum()) {
             this.typeKind = Kind.ENUM;
-        }
-        else if (cls.isPrimitive())
-        {
+        } else if (cls.isPrimitive()) {
             // Shouldn't happen with an import anyway:
             this.typeKind = Kind.PRIMITIVE;
-        }
-        else
-        {
-            this.typeKind = ((cls.getModifiers() & Modifier.FINAL) != 0) ?  Kind.CLASS_FINAL : Kind.CLASS_NON_FINAL;
+        } else {
+            this.typeKind = ((cls.getModifiers() & Modifier.FINAL) != 0) ? Kind.CLASS_FINAL : Kind.CLASS_NON_FINAL;
         }
         //Debug.message("Type " + canonicalName + " is " + typeKind);
     }
 
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return type;
     }
 
     @Override
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         return null;
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return null;
     }
 
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         if (enclosingClasses.isEmpty())
             return null;
         else
@@ -116,45 +102,38 @@ public class ImportedTypeCompletion extends AssistContent
     }
 
     @Override
-    public CompletionKind getKind()
-    {
+    public CompletionKind getKind() {
         return CompletionKind.TYPE;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public String getJavadoc()
-    {
-        if (!extractedJavadoc)
-        {
+    public String getJavadoc() {
+        if (!extractedJavadoc) {
             javadoc = resolver.getJavadoc(moduleName, canonicalName);
         }
         return javadoc;
     }
-    
+
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         return fromModifiers(modifiers);
     }
 
     @Override
-    public String getPackage()
-    {
+    public String getPackage() {
         return packageName;
     }
-    
+
     @Override
-    public List<String> getSuperTypes()
-    {
+    public List<String> getSuperTypes() {
         return superTypes;
     }
 
     @Override
-    public Kind getTypeKind()
-    {
+    public Kind getTypeKind() {
         return typeKind;
     }
- 
-    
+
+
 }

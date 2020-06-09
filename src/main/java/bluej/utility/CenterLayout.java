@@ -21,11 +21,7 @@
  */
 package bluej.utility;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager;
+import java.awt.*;
 
 /**
  * This is a layout class for a container that has exactly one child component.
@@ -34,15 +30,12 @@ import java.awt.LayoutManager;
  * @author mik
  * @version 0.2
  */
-public class CenterLayout implements LayoutManager
-{
-    public CenterLayout()
-    {
+public class CenterLayout implements LayoutManager {
+    public CenterLayout() {
     }
-    
+
     @Override
-    public void layoutContainer(Container target)
-    {
+    public void layoutContainer(Container target) {
         synchronized (target.getTreeLock()) {
             Insets insets = target.getInsets();
             int maxwidth = target.getWidth() - (insets.left + insets.right);
@@ -65,27 +58,23 @@ public class CenterLayout implements LayoutManager
             }
         }
     }
-    
+
     @Override
-    public void addLayoutComponent(String name, Component comp)
-    {
+    public void addLayoutComponent(String name, Component comp) {
     }
 
     @Override
-    public void removeLayoutComponent(Component comp)
-    {
+    public void removeLayoutComponent(Component comp) {
     }
 
     @Override
-    public Dimension preferredLayoutSize(Container parent)
-    {
+    public Dimension preferredLayoutSize(Container parent) {
         Dimension d;
         if (parent.getComponentCount() > 0) {
             Component m = parent.getComponent(0);
             d = m.getPreferredSize();
-        }
-        else {
-            d = new Dimension(0,0);
+        } else {
+            d = new Dimension(0, 0);
         }
         Insets insets = parent.getInsets();
         d.height += insets.top + insets.bottom;
@@ -94,15 +83,13 @@ public class CenterLayout implements LayoutManager
     }
 
     @Override
-    public Dimension minimumLayoutSize(Container parent)
-    {
+    public Dimension minimumLayoutSize(Container parent) {
         Dimension d;
         if (parent.getComponentCount() > 0) {
             Component m = parent.getComponent(0);
             d = m.getMinimumSize();
-        }
-        else {
-            d = new Dimension(0,0);
+        } else {
+            d = new Dimension(0, 0);
         }
         Insets insets = parent.getInsets();
         d.height += insets.top + insets.bottom;

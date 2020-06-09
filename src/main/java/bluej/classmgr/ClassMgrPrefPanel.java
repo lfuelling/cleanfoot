@@ -21,17 +21,15 @@
  */
 package bluej.classmgr;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.StringTokenizer;
-import java.util.stream.Collectors;
-
+import bluej.Config;
+import bluej.pkgmgr.Project;
+import bluej.prefmgr.PrefMgrDialog;
+import bluej.prefmgr.PrefPanelListener;
+import bluej.utility.DialogManager;
+import bluej.utility.FileUtility;
+import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.NoMultipleSelectionModel;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -43,40 +41,35 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
-
-import bluej.prefmgr.PrefMgrDialog;
-import bluej.utility.Utility;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.NoMultipleSelectionModel;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.Config;
-import bluej.pkgmgr.Project;
-import bluej.prefmgr.PrefPanelListener;
-import bluej.utility.DialogManager;
-import bluej.utility.FileUtility;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A PrefPanel subclass to allow the user to interactively add a new library
  * to the browser.  The new library can be specified as a file (ZIP or JAR
  * archive) with an associated description.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
 @OnThread(Tag.FXPlatform)
 public class ClassMgrPrefPanel extends VBox
-implements PrefPanelListener
-{
+        implements PrefPanelListener {
     private static final String userlibPrefix = "bluej.userlibrary";
 
     /**
      * The user libraries are referenced cross-project, so someone needs to a hold
      * a static reference to keep track of them.  This class seems as good a place
-     * as any.  
+     * as any.
      */
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private static List<ClassPathEntry> savedUserLibraries = null;
-    
+
     private ListView<ClassPathEntry> userLibrariesListView = null;
     private final ObservableList<ClassPathEntry> editingUserLibraries;
     private boolean classPathModified = false;
@@ -84,8 +77,7 @@ implements PrefPanelListener
     /**
      * Setup the UI for the dialog and event handlers for the dialog's buttons.
      */
-    public ClassMgrPrefPanel()
-    {
+    public ClassMgrPrefPanel() {
         JavaFXUtil.addStyleClass(this, "prefmgr-pref-panel", "prefmgr-library-panel");
         loadSavedUserLibraries();
 
@@ -99,10 +91,16 @@ implements PrefPanelListener
         // It may have more meaning to show what is the project classloader, that would include all
         // libraries, and paths, including +libs 
         List<ClassPathEntry> userlibExtLibrariesList =
-            Project.getUserlibContent().stream()
-                .map(url -> { try {return new ClassPathEntry(new File(url.toURI()), "");} catch (URISyntaxException e){ return null;}})
-                .filter(f -> f != null)
-                .distinct().collect(Collectors.toList());
+                Project.getUserlibContent().stream()
+                        .map(url -> {
+                            try {
+                                return new ClassPathEntry(new File(url.toURI()), "");
+                            } catch (URISyntaxException e) {
+                                return null;
+                            }
+                        })
+                        .filter(f -> f != null)
+                        .distinct().collect(Collectors.toList());
 
         // Construct a user editable table of user libraries and add/remove buttons
 
@@ -110,7 +108,7 @@ implements PrefPanelListener
         BorderPane userLibPane = new BorderPane();
         {
             JavaFXUtil.addStyleClass(userLibPane, "prefmgr-library-userlib-hbox");
-            
+
             editingUserLibraries = FXCollections.observableArrayList();
             editingUserLibraries.setAll(savedUserLibraries);
             // list of user library classpath entries
@@ -141,8 +139,8 @@ implements PrefPanelListener
         // Don't need selection in bottom table:
         userlibExtLibrariesListView.setSelectionModel(new NoMultipleSelectionModel());
         userlibExtLibrariesListView.setFocusTraversable(false);
-        
-        String userlibLocation = Config.getString("classmgr.userliblibraries") 
+
+        String userlibLocation = Config.getString("classmgr.userliblibraries")
                 + " " + Config.getBlueJLibDir() + File.separator + "userlib";
 
         getChildren().add(PrefMgrDialog.headedVBox("classmgr.userlibraries", Arrays.asList(userLibPane)));
@@ -150,10 +148,8 @@ implements PrefPanelListener
     }
 
     @OnThread(Tag.Any)
-    private static synchronized void loadSavedUserLibraries()
-    {
-        if (savedUserLibraries == null)
-        {
+    private static synchronized void loadSavedUserLibraries() {
+        if (savedUserLibraries == null) {
             // Get the list of user libraries from the configuration.
             // This list os the one that is saved into the config file.
             savedUserLibraries = new ArrayList<>();
@@ -161,22 +157,18 @@ implements PrefPanelListener
         }
     }
 
-    private ListView makeClassPathEntryListView(ObservableList<ClassPathEntry> userlibExtLibrariesList)
-    {
+    private ListView makeClassPathEntryListView(ObservableList<ClassPathEntry> userlibExtLibrariesList) {
         ListView userlibExtLibrariesListView = new ListView<>(userlibExtLibrariesList);
         JavaFXUtil.addStyleClass(userlibExtLibrariesListView, "prefmgr-library-listview");
         userlibExtLibrariesListView.setCellFactory(lv -> {
-            return new TextFieldListCell<>(new StringConverter<ClassPathEntry>()
-            {
+            return new TextFieldListCell<>(new StringConverter<ClassPathEntry>() {
                 @Override
-                public ClassPathEntry fromString(String string)
-                {
+                public ClassPathEntry fromString(String string) {
                     return null;
                 }
 
                 @Override
-                public String toString(ClassPathEntry cpe)
-                {
+                public String toString(ClassPathEntry cpe) {
                     return cpe.getCanonicalPathNoException() + " (" + cpe.getStatusString() + ")";
                 }
             });
@@ -186,13 +178,13 @@ implements PrefPanelListener
     }
 
     /**
-     * Returns an ArrayList of URLS holding jars that the user wish to be added to 
+     * Returns an ArrayList of URLS holding jars that the user wish to be added to
      * the Project classloader.
+     *
      * @return a non null but possibly empty arrayList of URL.
      */
     @OnThread(Tag.Any)
-    public synchronized static List<URL> getUserConfigContent()
-    {
+    public synchronized static List<URL> getUserConfigContent() {
         loadSavedUserLibraries();
         return Utility.mapList(savedUserLibraries, ClassPathEntry::safeGetURL);
     }
@@ -203,11 +195,10 @@ implements PrefPanelListener
      * entries. The entries to retrieve start with prefix and have 1.location,
      * 2.location etc appended to them until an entry is not found.
      *
-     * @param   prefix    the prefix of the property names to look up
+     * @param prefix the prefix of the property names to look up
      */
     @OnThread(Tag.Any)
-    private static void addConfigEntries(List<ClassPathEntry> cp, String prefix)
-    {
+    private static void addConfigEntries(List<ClassPathEntry> cp, String prefix) {
         int resourceID = 1;
         try {
             while (true) {
@@ -219,15 +210,14 @@ implements PrefPanelListener
                 try {
                     StringTokenizer st = new StringTokenizer(location, File.pathSeparator);
 
-                    while(st.hasMoreTokens()) {
+                    while (st.hasMoreTokens()) {
                         String entry = st.nextToken();
                         ClassPathEntry cpentry = new ClassPathEntry(entry, "");
 
-                        if(!cp.contains(cpentry))
+                        if (!cp.contains(cpentry))
                             cp.add(cpentry);
                     }
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -240,18 +230,15 @@ implements PrefPanelListener
     }
 
     @Override
-    public void beginEditing(Project project)
-    {
+    public void beginEditing(Project project) {
     }
 
-    public synchronized void revertEditing(Project project)
-    {
+    public synchronized void revertEditing(Project project) {
         editingUserLibraries.setAll(savedUserLibraries);
     }
 
     @Override
-    public void commitEditing(Project project)
-    {
+    public void commitEditing(Project project) {
         if (classPathModified) {
             DialogManager.showMessageFX(null, "classmgr-changes-no-effect");
             classPathModified = false;
@@ -266,18 +253,17 @@ implements PrefPanelListener
      * The entries stored start with prefix and have 1.location,
      * 2.location etc appended to them.
      */
-    private synchronized void saveUserLibraries()
-    {
+    private synchronized void saveUserLibraries() {
         savedUserLibraries.clear();
         savedUserLibraries.addAll(editingUserLibraries);
-        
+
         String r1;
         int resourceID = 1;
 
-        while(true) {
+        while (true) {
             r1 = Config.removeProperty(userlibPrefix + resourceID + ".location");
 
-            if(r1 == null)
+            if (r1 == null)
                 break;
 
             resourceID++;
@@ -295,19 +281,16 @@ implements PrefPanelListener
     }
 
 
-
     /**
      * Pop up a dialog to allow the user to add a library
      * to their user library classpath.
      **/
-    private void addUserLibraryFile()
-    {
+    private void addUserLibraryFile() {
         List<File> files = FileUtility.getOpenFilesFX(getScene().getWindow(), Config.getString("prefmgr.misc.addLibTitle"),
                 Arrays.asList(new FileChooser.ExtensionFilter(Config.getString("prefmgr.misc.libFileFilter"), "*.zip", "*.jar")), false);
 
         if (files != null) {
-            for (File file : files)
-            {
+            for (File file : files) {
                 editingUserLibraries.add(new ClassPathEntry(file.getAbsolutePath(), "", true));
             }
             classPathModified = true;
@@ -319,11 +302,10 @@ implements PrefPanelListener
      * of the user library table from the user library
      * classpath.
      */
-    private void deleteUserLibrary()
-    {
+    private void deleteUserLibrary() {
         int which = userLibrariesListView.getSelectionModel().getSelectedIndex();
 
-        if(which != -1) {
+        if (which != -1) {
             classPathModified = true;
             editingUserLibraries.remove(which);
         }

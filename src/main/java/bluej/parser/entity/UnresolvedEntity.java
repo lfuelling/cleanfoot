@@ -21,86 +21,77 @@
  */
 package bluej.parser.entity;
 
-import java.util.List;
-
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.List;
+
 /**
  * Represents a java entity whose nature (value or type) is not yet known,
  * and provides a static method (getEntity) to obtain instances.
- * 
+ *
  * @author Davin McCall
  */
-public class UnresolvedEntity extends JavaEntity
-{
+public class UnresolvedEntity extends JavaEntity {
     private final EntityResolver resolver;
     private final String name;
     private final List<TypeArgumentEntity> typeArguments;
     private final Reflective querySource;
-    
+
     /**
      * Get an entity whose type (value or class) is not yet known. The returned entity
      * can later be resolved to either a value or type.
      */
-    public static JavaEntity getEntity(EntityResolver resolver, String name, Reflective querySource)
-    {
+    public static JavaEntity getEntity(EntityResolver resolver, String name, Reflective querySource) {
         return new UnresolvedEntity(resolver, name, querySource, null);
     }
-    
+
     protected UnresolvedEntity(EntityResolver resolver, String name, Reflective querySource,
-            List<TypeArgumentEntity> typeArgs)
-    {
+                               List<TypeArgumentEntity> typeArgs) {
         this.resolver = resolver;
         this.name = name;
         this.querySource = querySource;
         this.typeArguments = typeArgs;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return new UnresolvedSubEntity(this, name, accessSource);
     }
 
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return null;
     }
-    
+
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return new UnresolvedEntity(resolver, name, querySource, tparams);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public ValueEntity resolveAsValue()
-    {
+    public ValueEntity resolveAsValue() {
         if (typeArguments != null) {
             return null;
         }
-        
+
         JavaEntity entity = resolver.getValueEntity(name, querySource);
         if (entity != null) {
             return entity.resolveAsValue();
         }
         return null;
     }
-    
+
     @Override
-    public TypeEntity resolveAsType()
-    {
+    public TypeEntity resolveAsType() {
         PackageOrClass entity = resolver.resolvePackageOrClass(name, querySource);
         if (entity != null) {
             TypeEntity tentity = entity.resolveAsType();
@@ -113,10 +104,9 @@ public class UnresolvedEntity extends JavaEntity
         }
         return null;
     }
-    
+
     @Override
-    public PackageOrClass resolveAsPackageOrClass()
-    {
+    public PackageOrClass resolveAsPackageOrClass() {
         PackageOrClass ent = resolver.resolvePackageOrClass(name, querySource);
         if (typeArguments != null) {
             TypeEntity tent = ent.resolveAsType();

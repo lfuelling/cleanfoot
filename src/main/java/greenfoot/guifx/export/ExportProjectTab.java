@@ -21,16 +21,15 @@
  */
 package greenfoot.guifx.export;
 
-import static greenfoot.export.Exporter.ExportFunction;
-
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
-
-import java.io.File;
 import javafx.stage.Window;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
+
+import static greenfoot.export.Exporter.ExportFunction;
 
 /**
  * Export dialog's tab for exporting to a gfar project.
@@ -38,38 +37,33 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class ExportProjectTab extends ExportLocalTab
-{
+public class ExportProjectTab extends ExportLocalTab {
     /**
      * Creates a new instance of ExportProjectTab
      *
-     * @param parent            The window which will host this tab.
-     * @param scenarioInfo      The scenario info needed for different export functions.
-     * @param scenarioName      The name of the scenario to be shared.
-     * @param defaultExportDir  The default directory to select from.
+     * @param parent           The window which will host this tab.
+     * @param scenarioInfo     The scenario info needed for different export functions.
+     * @param scenarioName     The name of the scenario to be shared.
+     * @param defaultExportDir The default directory to select from.
      */
-    public ExportProjectTab(Window parent, ScenarioInfo scenarioInfo, String scenarioName, File defaultExportDir)
-    {
+    public ExportProjectTab(Window parent, ScenarioInfo scenarioInfo, String scenarioName, File defaultExportDir) {
         super(parent, scenarioInfo, scenarioName, defaultExportDir, "project", ".gfar");
     }
 
     @Override
-    public ExportFunction getFunction()
-    {
+    public ExportFunction getFunction() {
         return ExportFunction.PROJECT;
     }
-    
+
     @Override
-    protected void updateInfoFromFields()
-    {
+    protected void updateInfoFromFields() {
         super.updateInfoFromFields();
         scenarioInfo.setLocked(isLockScenario());
         scenarioInfo.setHideControls(isHideControls());
     }
 
     @Override
-    protected ExportInfo getExportInfo()
-    {
+    protected ExportInfo getExportInfo() {
         ExportInfo info = super.getExportInfo();
         info.setLocked(isLockScenario());
         info.setHideControls(isHideControls());

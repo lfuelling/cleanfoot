@@ -32,29 +32,35 @@ import bluej.pkgmgr.target.DependentTarget;
 /**
  * This class encapsulates events which occur on dependencies of the class
  * diagram.
- * 
+ *
  * @author Simon Gerlach
  */
-public class DependencyEvent implements ExtensionEvent
-{
+public class DependencyEvent implements ExtensionEvent {
     /**
      * This enumeration contains constants which describe the different types of
      * "dependency changed" events.
-     * 
+     *
      * @author Simon Gerlach
      */
-    public enum Type
-    {
-        /** This event occurs when a dependency was added to the package. */
+    public enum Type {
+        /**
+         * This event occurs when a dependency was added to the package.
+         */
         DEPENDENCY_ADDED,
 
-        /** This event occurs when a dependency was set to invisible. */
+        /**
+         * This event occurs when a dependency was set to invisible.
+         */
         DEPENDENCY_HIDDEN,
 
-        /** This event occurs when a dependency was set to visible. */
+        /**
+         * This event occurs when a dependency was set to visible.
+         */
         DEPENDENCY_SHOWN,
 
-        /** This event occurs when a dependency was removed from the package. */
+        /**
+         * This event occurs when a dependency was removed from the package.
+         */
         DEPENDENCY_REMOVED
     }
 
@@ -65,31 +71,23 @@ public class DependencyEvent implements ExtensionEvent
     /**
      * Constructor. Creates a new {@link DependencyEvent}. The type of the event
      * is determined by the given visibility.
-     * 
-     * @param dependency
-     *            The dependency which caused this event.
-     * @param bluejPackage
-     *            The package to which the dependency belongs.
-     * @param visible
-     *            The new visibility of the dependency.
+     *
+     * @param dependency   The dependency which caused this event.
+     * @param bluejPackage The package to which the dependency belongs.
+     * @param visible      The new visibility of the dependency.
      */
-    public DependencyEvent(Dependency dependency, Package bluejPackage, boolean visible)
-    {
+    public DependencyEvent(Dependency dependency, Package bluejPackage, boolean visible) {
         this(dependency, bluejPackage, (visible ? Type.DEPENDENCY_SHOWN : Type.DEPENDENCY_HIDDEN));
     }
 
     /**
      * Constructor. Creates a new {@link DependencyEvent} with the given values.
-     * 
-     * @param dependency
-     *            The dependency which caused this event.
-     * @param bluejPackage
-     *            The package to which the dependency belongs.
-     * @param eventType
-     *            The type of this event.
+     *
+     * @param dependency   The dependency which caused this event.
+     * @param bluejPackage The package to which the dependency belongs.
+     * @param eventType    The type of this event.
      */
-    public DependencyEvent(Dependency dependency, Package bluejPackage, Type eventType)
-    {
+    public DependencyEvent(Dependency dependency, Package bluejPackage, Type eventType) {
         this.dependency = dependency;
         this.bluejPackage = bluejPackage;
         this.eventType = eventType;
@@ -97,55 +95,50 @@ public class DependencyEvent implements ExtensionEvent
 
     /**
      * Returns the type of this event.
-     * 
+     *
      * @return The type of this event.
      */
-    public Type getEventType()
-    {
+    public Type getEventType() {
         return eventType;
     }
-    
+
     /**
      * Returns the type of the dependency which caused this event.
-     * 
+     *
      * @return The type of the dependency which caused this event.
      */
-    public BDependency.Type getDependencyType()
-    {
+    public BDependency.Type getDependencyType() {
         return dependency.getType();
     }
 
     /**
      * Returns the origin of the dependency which caused this event.
-     * 
+     *
      * @return The origin of the dependency which caused this event.
      */
-    public BClassTarget getOrigin()
-    {
+    public BClassTarget getOrigin() {
         DependentTarget origin = dependency.getFrom();
         return ((ClassTarget) origin).getBClassTarget();
     }
 
     /**
      * Returns the target of the dependency which caused this event.
-     * 
+     *
      * @return The target of the dependency which caused this event.
      */
-    public BClassTarget getTarget()
-    {
+    public BClassTarget getTarget() {
         DependentTarget target = dependency.getTo();
         return ((ClassTarget) target).getBClassTarget();
     }
-    
+
     /**
      * Returns the package to which the dependency belongs that caused this
      * event.
-     * 
+     *
      * @return The package to which the dependency belongs that caused this
-     *         event.
+     * event.
      */
-    public BPackage getPackage()
-    {
+    public BPackage getPackage() {
         return bluejPackage.getBPackage();
     }
 
@@ -153,8 +146,7 @@ public class DependencyEvent implements ExtensionEvent
      * Returns a {@link String} representation of this event.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "DependencyEvent: " + eventType + " (" + dependency + ")";
     }
 }

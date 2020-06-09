@@ -31,21 +31,20 @@ import java.util.Set;
 /**
  * Represents a set of update results from an update, and provides a method to decide
  * conflict resolution in the case of binary file conflicts.
- * 
+ *
  * @author Davin McCall
  */
-public interface UpdateResults
-{
+public interface UpdateResults {
     /**
      * Check whether a merge commit is needed to complete the merge.
      */
     boolean mergeCommitNeeded();
-    
+
     /**
-     * Get a list of File objects that represents conflicts. 
+     * Get a list of File objects that represents conflicts.
      */
     List<File> getConflicts();
-    
+
     /**
      * Get the set of files which had binary conflicts. These are files which
      * have been modified both locally and in the repository. A decision needs to
@@ -53,15 +52,15 @@ public interface UpdateResults
      * the overrideFiles() method to finalise this decision.
      */
     Set<File> getBinaryConflicts();
-    
+
     /**
      * Once the initial update has finished and the binary conflicts are known,
      * this method must be called to select whether to keep the local or use the
      * remove version of the conflicting files.
-     *  
-     * @param files  A set of files to fetch from the repository, overwriting the
-     *               local version. (For any file not in the set, the local version
-     *               is retained). 
+     *
+     * @param files A set of files to fetch from the repository, overwriting the
+     *              local version. (For any file not in the set, the local version
+     *              is retained).
      */
     @OnThread(Tag.FXPlatform) void overrideFiles(Set<File> files);
 

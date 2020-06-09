@@ -34,14 +34,13 @@ import java.nio.charset.CodingErrorAction;
 /**
  * An output stream which decodes its input using a character set encoding,
  * and writes the resulting characters to a Writer.
- * 
+ *
  * @author Davin McCall
  */
-public class WriterOutputStream extends OutputStream
-{
+public class WriterOutputStream extends OutputStream {
     private final Charset cs = Charset.forName(System.getProperty("file.encoding"));
     private final CharsetDecoder decoder = cs.newDecoder();
-    
+
     /*
      * We use two buffers, one is a byte buffer and the other is a character buffer.
      * Bytes written to the output stream are stored in the byte buffer. When the
@@ -49,17 +48,16 @@ public class WriterOutputStream extends OutputStream
      * writes to the character buffer. When the character buffer is full, the
      * characters are written to the underlying writer.
      */
-    
+
     ByteBuffer inBuffer;
     CharBuffer outBuffer;
-    
+
     private Writer writer;
 
     /**
      * Create a new WriterOutputStream which writes to the given writer.
      */
-    public WriterOutputStream(Writer writer)
-    {
+    public WriterOutputStream(Writer writer) {
         this.writer = writer;
         decoder.reset();
         decoder.onMalformedInput(CodingErrorAction.REPLACE);
@@ -69,28 +67,26 @@ public class WriterOutputStream extends OutputStream
         outBuffer = CharBuffer.allocate(4096);
         outBuffer.clear();
     }
-    
+
     public void write(int b)
-        throws IOException
-    {
-        write(new byte[] {(byte) b}, 0, 1);
+            throws IOException {
+        write(new byte[]{(byte) b}, 0, 1);
     }
 
     public void write(byte[] b, int off, int len)
-        throws IOException
-    {
+            throws IOException {
         int remaining = inBuffer.remaining();
         while (len > 0) {
             int toWrite = remaining;
-            
+
             if (toWrite > len) {
                 toWrite = len;
             }
-            
+
             inBuffer.put(b, off, toWrite);
             off += toWrite;
             len -= toWrite;
-            
+
             remaining -= toWrite;
             if (remaining == 0) {
                 flush();
@@ -98,64 +94,59 @@ public class WriterOutputStream extends OutputStream
             }
         }
     }
-    
+
     /**
      * Flush the input buffer (byte buffer), as much as possible. This may
      * leave a few undecoded bytes in the buffer.
-     * 
-     * @param endOfInput  true if there is no more input available
+     *
+     * @param endOfInput true if there is no more input available
      * @throws IOException
      */
-    private void flushInBuffer(boolean endOfInput) throws IOException
-    {
+    private void flushInBuffer(boolean endOfInput) throws IOException {
         // Prepare to read from the input buffer
         inBuffer.flip();
-        
+
         CoderResult result = decoder.decode(inBuffer, outBuffer, endOfInput);
         while (result.isOverflow()) {
             flushOutBuffer();
             result = decoder.decode(inBuffer, outBuffer, endOfInput);
         }
-        
+
         // Remove processed input from the input buffer, and position for writing
         inBuffer.compact();
     }
-    
+
     /**
      * Flush the output buffer (character buffer). All characters which have
      * been decoded so far will be written to the underlying writer.
-     * 
+     *
      * @throws IOException
      */
-    private void flushOutBuffer() throws IOException
-    {
+    private void flushOutBuffer() throws IOException {
         outBuffer.flip();
         writer.write(outBuffer.toString());
         outBuffer.clear();
     }
-    
+
     /**
      * Decode as much input as possible, write all decoded input to the
      * underlying writer, and flush the writer.
-     * 
-     * @param endOfInput  true if there is no more input available
+     *
+     * @param endOfInput true if there is no more input available
      * @throws IOException
      */
     private void flush(boolean endOfInput)
-        throws IOException
-    {
+            throws IOException {
         flushInBuffer(endOfInput);
         flushOutBuffer();
         writer.flush();
     }
-    
-    public void flush() throws IOException
-    {
+
+    public void flush() throws IOException {
         flush(false);
     }
-    
-    public void close() throws IOException
-    {
+
+    public void close() throws IOException {
         if (writer != null) {
             flush(true);
             writer = null;

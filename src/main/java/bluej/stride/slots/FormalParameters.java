@@ -21,18 +21,6 @@
  */
 package bluej.stride.slots;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javafx.application.Platform;
-import javafx.beans.binding.BooleanExpression;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Cursor;
 import bluej.stride.framedjava.ast.NameDefSlotFragment;
 import bluej.stride.framedjava.ast.ParamFragment;
 import bluej.stride.framedjava.ast.TextSlotFragment;
@@ -51,9 +39,20 @@ import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
 import bluej.utility.javafx.binding.ConcatMapListBinding;
 import bluej.utility.javafx.binding.DeepListBinding;
+import javafx.application.Platform;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Cursor;
 
-public class FormalParameters
-{
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+public class FormalParameters {
     protected final InteractionManager editor;
     protected final ObservableList<FormalParameter> params;
     protected final Frame parentFrame;
@@ -67,8 +66,7 @@ public class FormalParameters
     private FXRunnable updateSlots;
 
     public FormalParameters(InteractionManager editor, Frame parentFrame, CodeFrame<? extends CodeElement> codeParentFrame,
-                            FrameContentRow row, String stylePrefix)
-    {
+                            FrameContentRow row, String stylePrefix) {
         this.editor = editor;
         this.parentFrame = parentFrame;
         this.codeParentFrame = codeParentFrame;
@@ -84,32 +82,27 @@ public class FormalParameters
         spacer.setOpacity(0.0);
         spacer.setCursor(Cursor.TEXT);
         spacer.setOnMouseClicked(e -> {
-                if (normalView)
-                {
-                    addNewAfter(null).requestFocus(Focus.LEFT);
-                    e.consume();
-                }
+            if (normalView) {
+                addNewAfter(null).requestFocus(Focus.LEFT);
+                e.consume();
+            }
         });
         close.getStyleClass().add("bracket-label");
     }
 
-    public FormalParameter findFormal(HeaderItem slot)
-    {
-        return params.stream().filter(p -> p.getType() == slot || p .getName() == slot).findFirst().orElse(null);
+    public FormalParameter findFormal(HeaderItem slot) {
+        return params.stream().filter(p -> p.getType() == slot || p.getName() == slot).findFirst().orElse(null);
     }
-    
-    private FormalParameter createFormal(TypeSlotFragment type, NameDefSlotFragment name)
-    {
+
+    private FormalParameter createFormal(TypeSlotFragment type, NameDefSlotFragment name) {
         BooleanProperty freshProperty = new SimpleBooleanProperty(true);
         Runnable checkStillFocused = () -> {
             // Once it turns false, it can never go back to true:
             freshProperty.set(freshProperty.get() && params.stream().anyMatch(p -> p.isFocused()));
         };
-        final TypeSlot typeSlot = new TypeSlot(editor, parentFrame, codeParentFrame, row, TypeSlot.Role.DECLARATION, stylePrefix)
-        {
+        final TypeSlot typeSlot = new TypeSlot(editor, parentFrame, codeParentFrame, row, TypeSlot.Role.DECLARATION, stylePrefix) {
             @Override
-            protected BooleanExpression getFreshExtra(CodeError err)
-            {
+            protected BooleanExpression getFreshExtra(CodeError err) {
                 if (err instanceof EmptyError)
                     return freshProperty;
                 else
@@ -117,8 +110,7 @@ public class FormalParameters
             }
 
             @Override
-            public void lostFocus()
-            {
+            public void lostFocus() {
                 super.lostFocus();
                 // Wait until it's all settled
                 // then see if anyone is still focused, and if not, cancel fresh property:
@@ -126,11 +118,9 @@ public class FormalParameters
                     Platform.runLater(checkStillFocused);
             }
         };
-        final VariableNameDefTextSlot nameSlot = new VariableNameDefTextSlot(editor, parentFrame, codeParentFrame, row, stylePrefix)
-        {
+        final VariableNameDefTextSlot nameSlot = new VariableNameDefTextSlot(editor, parentFrame, codeParentFrame, row, stylePrefix) {
             @Override
-            protected BooleanExpression getFreshExtra(CodeError err)
-            {
+            protected BooleanExpression getFreshExtra(CodeError err) {
                 if (err instanceof EmptyError)
                     return freshProperty;
                 else
@@ -138,8 +128,7 @@ public class FormalParameters
             }
 
             @Override
-            public void lostFocus()
-            {
+            public void lostFocus() {
                 super.lostFocus();
                 // Wait until it's all settled
                 // then see if anyone is still focused, and if not, cancel fresh property:
@@ -163,17 +152,16 @@ public class FormalParameters
                 JavaFXUtil.runNowOrLater(() -> paramType.requestFocus(Focus.LEFT));
         });
         TextSlot<NameDefSlotFragment> paramName = initialiseTextSlot("paramName", name, nameSlot);
-        
+
         return new FormalParameter(paramType, paramName);
     }
-    private <F extends TextSlotFragment> TextSlot<F> initialiseTextSlot(String promptText, F value, TextSlot<F> textSlot)
-    {
+
+    private <F extends TextSlotFragment> TextSlot<F> initialiseTextSlot(String promptText, F value, TextSlot<F> textSlot) {
         textSlot.setPromptText(promptText);
         textSlot.setText(value);
 
         textSlot.addValueListener(new SlotValueListener() {
-            public boolean valueChanged(HeaderItem slot, String oldValue, String newValue, FocusParent<HeaderItem> parent)
-            {
+            public boolean valueChanged(HeaderItem slot, String oldValue, String newValue, FocusParent<HeaderItem> parent) {
                 if (newValue.contains(",")) {
                     FormalParameter newFormal = addNewAfter(findFormal(slot));
                     if (Platform.isFxApplicationThread())
@@ -192,14 +180,12 @@ public class FormalParameters
             }
 
             @Override
-            public void backSpacePressedAtStart(HeaderItem slot)
-            {
+            public void backSpacePressedAtStart(HeaderItem slot) {
                 FormalParameters.this.backSpacePressedAtStart(slot);
             }
 
             @Override
-            public void deletePressedAtEnd(HeaderItem slot)
-            {
+            public void deletePressedAtEnd(HeaderItem slot) {
                 FormalParameters.this.deletePressedAtEnd(slot);
             }
         });
@@ -208,31 +194,26 @@ public class FormalParameters
         textSlot.addValueListener(SlotTraversalChars.IDENTIFIER);
         return textSlot;
     }
-    
-    public void addFormal(TypeSlotFragment type, NameDefSlotFragment name)
-    {
+
+    public void addFormal(TypeSlotFragment type, NameDefSlotFragment name) {
         params.add(createFormal(type, name));
     }
 
-    private FormalParameter addNewBefore(FormalParameter before)
-    {
+    private FormalParameter addNewBefore(FormalParameter before) {
         return insertBefore(before, createFormal(new TypeSlotFragment("", ""), new NameDefSlotFragment("")));
     }
-    
-    private FormalParameter addNewAfter(FormalParameter after)
-    {
+
+    private FormalParameter addNewAfter(FormalParameter after) {
         return insertAfter(after, createFormal(new TypeSlotFragment("", ""), new NameDefSlotFragment("")));
     }
 
-    private FormalParameter insertBefore(FormalParameter before, FormalParameter slot)
-    {
+    private FormalParameter insertBefore(FormalParameter before, FormalParameter slot) {
         params.add(before == null ? 0 : params.indexOf(before), slot);
         editor.modifiedFrame(parentFrame, false);
         return slot;
     }
-    
-    private FormalParameter insertAfter(FormalParameter after, FormalParameter slot)
-    {
+
+    private FormalParameter insertAfter(FormalParameter after, FormalParameter slot) {
         params.add(after == null ? 0 : params.indexOf(after) + 1, slot);
         editor.modifiedFrame(parentFrame, false);
         return slot;
@@ -240,17 +221,14 @@ public class FormalParameters
 
     /**
      * Ensures that there is at least one parameter in the parameters list.
+     *
      * @return true if we had to add a new parameter, false if there already was at least one
      */
-    public boolean ensureAtLeastOneParameter()
-    {
-        if (params.isEmpty())
-        {
+    public boolean ensureAtLeastOneParameter() {
+        if (params.isEmpty()) {
             addNewAfter(null);
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -339,58 +317,48 @@ public class FormalParameters
 
     /**
      * Here's the outcome of an updated design decision discussion.  Given params:
-     *
+     * <p>
      * void foo(int a, String b)
-     *
+     * <p>
      * Here are some numbered cursor positions of interest:
-     *
+     * <p>
      * void foo|(|int| |a|, |String b|)
-     *         0 1   2 3 4  5        6
-     *
+     * 0 1   2 3 4  5        6
+     * <p>
      * You can press backspace at 1, 3, 5 without character directly before.  For those:
-     *
+     * <p>
      * 1 [start of type of first param]:
-     *   Move cursor left to end of method name, don't delete anything
+     * Move cursor left to end of method name, don't delete anything
      * 3 [start of name of any param]:
-     *   Move cursor left to end of type name, don't delete anything
+     * Move cursor left to end of type name, don't delete anything
      * 5 [start of type of non-first param]:
-     *   If current parameter is totally blank, delete it and move left.
-     *   Otherwise, delete parameter beforehand.
-     *   (Note: if both are blank, it doesn't matter which we delete)
+     * If current parameter is totally blank, delete it and move left.
+     * Otherwise, delete parameter beforehand.
+     * (Note: if both are blank, it doesn't matter which we delete)
      */
-    private boolean backSpacePressedAtStart(HeaderItem slot)
-    {
+    private boolean backSpacePressedAtStart(HeaderItem slot) {
         FormalParameter formal = findFormal(slot);
-        if (formal.getType() == slot)
-        {
+        if (formal.getType() == slot) {
             // (1, 5) Backspace at beginning of type.
             int index = params.indexOf(formal);
             // Are we first?
-            if (index == 0)
-            {
+            if (index == 0) {
                 // (1) We are first parameter, just move left from us into method name:
                 row.focusLeft(formal.getType());
                 return true;
-            }
-            else
-            {
+            } else {
                 // (5) We are not first.  Are we blank?
-                if (formal.getName().isAlmostBlank() && formal.getType().isAlmostBlank())
-                {
+                if (formal.getName().isAlmostBlank() && formal.getType().isAlmostBlank()) {
                     // We are; delete us and focus the right hand end of parameter before us:
                     deleteFormal(formal);
                     params.get(index - 1).getName().requestFocus(Focus.RIGHT);
                     return true;
-                }
-                else
-                {
+                } else {
                     // We're not blank; delete the one before us:
                     deleteFormal(params.get(index - 1));
                 }
             }
-        }
-        else
-        {
+        } else {
             // (3) Backspace at beginning of name.
             // Just move left, to end of type slot:
             formal.getType().requestFocus(Focus.RIGHT);
@@ -401,56 +369,47 @@ public class FormalParameters
 
     /**
      * Here's the outcome of an updated design decision discussion.  Given params:
-     *
+     * <p>
      * void foo(int a, String b)
-     *
+     * <p>
      * Here are some numbered cursor positions of interest:
-     *
+     * <p>
      * void foo|(|int| |a|, |String b|)
-     *         0 1   2 3 4  5        6
-     *
+     * 0 1   2 3 4  5        6
+     * <p>
      * You can press delete at 0, 2, 4, 6 without character directly after.  For those:
-     *
+     * <p>
      * 0 [end of method name]:
-     *   Delete first parameter
+     * Delete first parameter
      * 2 [end of type of any param]:
-     *   Do nothing
+     * Do nothing
      * 4 [end of name of non-last param]:
-     *   If the current parameter is empty, delete it.
-     *   Otherwise, delete the parameter to the right.
-     *   (Note: if both are blank, it doesn't matter which we delete)
+     * If the current parameter is empty, delete it.
+     * Otherwise, delete the parameter to the right.
+     * (Note: if both are blank, it doesn't matter which we delete)
      * 6 [end of name of last param]:
-     *   Do nothing
+     * Do nothing
      */
-    private boolean deletePressedAtEnd(HeaderItem slot)
-    {
+    private boolean deletePressedAtEnd(HeaderItem slot) {
         FormalParameter formal = findFormal(slot);
-        if (formal.getType() == slot)
-        {
+        if (formal.getType() == slot) {
             // (2) End of type, do nothing
-        }
-        else
-        {
+        } else {
             // (4 or 6) Delete at the end of name.
             int index = params.indexOf(formal);
             // Are we last?
-            if (index == params.size() - 1)
-            {
+            if (index == params.size() - 1) {
                 // (6) we are last do nothing
-            }
-            else
-            {
+            } else {
                 // (4) We're not the last parameter. Are we blank?
-                if (formal.getName().isAlmostBlank() && formal.getType().isAlmostBlank())
-                {
+                if (formal.getName().isAlmostBlank() && formal.getType().isAlmostBlank()) {
                     // We are; delete us and focus the left hand end of parameter after us:
                     deleteFormal(formal);
                     // index is used and not index + 1 as the one after us took our index
                     // in the params list.
                     params.get(index).getType().requestFocus(Focus.LEFT);
                     return true;
-                }
-                else {
+                } else {
                     // We're not blank; delete the one after us:
                     deleteFormal(params.get(index + 1));
                 }
@@ -458,31 +417,27 @@ public class FormalParameters
         }
         return false;
     }
-    
-    private void deleteFormal(FormalParameter param)
-    {
+
+    private void deleteFormal(FormalParameter param) {
         // Remove the formal:
         param.cleanup();
         params.remove(param);
         editor.modifiedFrame(parentFrame, false);
     }
-    
-    public void checkForEmptySlot()
-    {
-        if ( params.size() == 1 && params.get(0).isEmpty() && !params.get(0).isFocused() ) {
+
+    public void checkForEmptySlot() {
+        if (params.size() == 1 && params.get(0).isEmpty() && !params.get(0).isFocused()) {
             deleteFormal(params.get(0));
         }
     }
 
     private ObservableList<HeaderItem> boundSlots;
-    
-    public ObservableList<HeaderItem> getSlots()
-    {
-        if (boundSlots == null)
-        {
+
+    public ObservableList<HeaderItem> getSlots() {
+        if (boundSlots == null) {
             boundSlots = FXCollections.observableArrayList();
             ConcatMapListBinding.bind(boundSlots, params, FormalParameter::getSlots);
-            
+
             DeepListBinding<HeaderItem> binding = new DeepListBinding<HeaderItem>(boundSlots) {
 
                 {
@@ -490,24 +445,21 @@ public class FormalParameters
                 }
 
                 @Override
-                protected Stream<ObservableList<?>> getListenTargets()
-                {
+                protected Stream<ObservableList<?>> getListenTargets() {
                     return Stream.concat(Stream.of(params), params.stream().map(FormalParameter::getSlots));
                 }
 
                 @Override
-                protected Stream<HeaderItem> calculateValues()
-                {
+                protected Stream<HeaderItem> calculateValues() {
                     ArrayList<ObservableList<HeaderItem>> commas = new ArrayList<>();
-                    for (int i = 0; i < params.size() - 1; i++)
-                    {
+                    for (int i = 0; i < params.size() - 1; i++) {
                         SlotLabel comma = new SlotLabel(", ");
                         JavaFXUtil.addStyleClass(comma, "formal-comma");
                         commas.add(FXCollections.observableArrayList(comma));
                     }
 
                     Stream<HeaderItem> start = (params.size() == 0) ? Stream.of(open, spacer) : Stream.of(open);
-                    
+
                     // Important that we filter the null operators out after interleaving, to preserve ordering:
                     return Utility.concat(start, Utility.interleave(params.stream().map(FormalParameter::getSlots), commas.stream()).flatMap(List::stream), Stream.of(close));
                 }
@@ -518,31 +470,26 @@ public class FormalParameters
         return boundSlots;
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return params.isEmpty();
     }
 
-    public void escape(HeaderItem src)
-    {
+    public void escape(HeaderItem src) {
         if (params.size() == 1 && params.get(0).isEmpty()) {
             row.focusDown(src);
         }
     }
 
-    public void focusBeginning()
-    {
+    public void focusBeginning() {
         if (!params.isEmpty())
             params.get(0).requestFocus(Focus.LEFT);
     }
 
-    private class FormalParameter
-    {
+    private class FormalParameter {
         private final TypeSlot type;
         private final TextSlot<NameDefSlotFragment> name;
 
-        protected FormalParameter(TypeSlot type, TextSlot<NameDefSlotFragment> name)
-        {
+        protected FormalParameter(TypeSlot type, TextSlot<NameDefSlotFragment> name) {
             this.type = type;
             this.name = name;
         }
@@ -557,20 +504,17 @@ public class FormalParameters
             name.positionCaret(position);
         }
         */
-        
-        public void cleanup()
-        {
+
+        public void cleanup() {
             type.cleanup();
             name.cleanup();
         }
 
-        public TypeSlot getType()
-        {
+        public TypeSlot getType() {
             return type;
         }
-        
-        public TextSlot<NameDefSlotFragment> getName()
-        {
+
+        public TextSlot<NameDefSlotFragment> getName() {
             return name;
         }
 /*
@@ -587,8 +531,7 @@ public class FormalParameters
         }
         */
 
-        public ParamFragment getSlotElement()
-        {
+        public ParamFragment getSlotElement() {
             return new ParamFragment(type.getSlotElement(), name.getSlotElement());
         }
 
@@ -599,62 +542,50 @@ public class FormalParameters
             f.accept(name);
         }
          */
-        public boolean isEmpty()
-        {
+        public boolean isEmpty() {
             return type.isEmpty() && name.isEmpty();
         }
-        
-        public boolean isFocused()
-        {
+
+        public boolean isFocused() {
             return getType().isFocused() || getName().isFocused();
         }
-        
-        public void requestFocus(Focus on)
-        {
+
+        public void requestFocus(Focus on) {
             if (on == Focus.LEFT) {
                 type.requestFocus(on);
-            }
-            else if (on == Focus.RIGHT) {
+            } else if (on == Focus.RIGHT) {
                 name.requestFocus(on);
-            }
-            else if (on == Focus.SELECT_ALL) {
+            } else if (on == Focus.SELECT_ALL) {
                 bluej.utility.Debug.message("Focus.SELECT_ALL in PairParameterSlot::requestFocus is not implemented");
             }
         }
 
-        public ObservableList<HeaderItem> getSlots()
-        {
+        public ObservableList<HeaderItem> getSlots() {
             return FXCollections.observableArrayList(type, name);
         }
     }
 
-    public List<ParamFragment> getSlotElement()
-    {
+    public List<ParamFragment> getSlotElement() {
         return Utility.mapList(params, FormalParameter::getSlotElement);
     }
 
-    public void deleteFirstParam()
-    {
+    public void deleteFirstParam() {
         if (params.size() > 0)
             params.remove(0);
     }
 
-    public <T> void setParams(List<T> src, Function<T, String> getType, Function<T, String> getName)
-    {
+    public <T> void setParams(List<T> src, Function<T, String> getType, Function<T, String> getName) {
         params.setAll(Utility.mapList(src, x -> createFormal(new TypeSlotFragment(getType.apply(x), getType.apply(x)), new NameDefSlotFragment(getName.apply(x)))));
     }
-    
-    public Stream<String> getVars()
-    {
+
+    public Stream<String> getVars() {
         return params.stream().map(FormalParameter::getName).map(TextSlot::getText);
     }
 
 
-    public void setView(Frame.View view, SharedTransition animate)
-    {
+    public void setView(Frame.View view, SharedTransition animate) {
         normalView = view == Frame.View.NORMAL;
-        if (updateSlots != null)
-        {
+        if (updateSlots != null) {
             updateSlots.run();
         }
     }

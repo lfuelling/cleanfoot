@@ -32,27 +32,23 @@ import threadchecker.Tag;
 
 /**
  * Status label for the Moe editor.
- * 
+ *
  * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public final class StatusLabel extends VBox
-{
-    public enum Status
-    {
+public final class StatusLabel extends VBox {
+    public enum Status {
         READONLY("editor.state.readOnly"),
         SAVED("editor.state.saved"),
         CHANGED("editor.state.changed");
 
         private final String displayText;
 
-        Status(String displayKey)
-        {
+        Status(String displayKey) {
             this.displayText = Config.getString(displayKey);
         }
 
-        public String getDisplayText()
-        {
+        public String getDisplayText() {
             return displayText;
         }
     }
@@ -62,8 +58,7 @@ public final class StatusLabel extends VBox
     private Status state;
     private int errorCount = 0;
 
-    public StatusLabel(Status initialState, MoeEditor editor, MoeErrorManager errorManager)
-    {
+    public StatusLabel(Status initialState, MoeEditor editor, MoeErrorManager errorManager) {
         JavaFXUtil.addStyleClass(this, "moe-status-label-wrapper");
         styleProperty().bind(PrefMgr.getEditorFontCSS(false));
         state = initialState;
@@ -78,11 +73,9 @@ public final class StatusLabel extends VBox
         });
         // Click on either of the labels, or background will work:
         setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY)
-            {
+            if (e.getButton() == MouseButton.PRIMARY) {
                 // We don't mean for this to function as a compile button when there are no errors:
-                if (errorCount > 0)
-                {
+                if (errorCount > 0) {
                     editor.compileOrShowNextError();
                 }
                 e.consume();
@@ -92,36 +85,28 @@ public final class StatusLabel extends VBox
 
     // ------------- PUBLIC METHODS ---------------
 
-    public boolean isSaved() 
-    {
+    public boolean isSaved() {
         return (state != Status.CHANGED);
     }
 
-    public boolean isChanged() 
-    {
+    public boolean isChanged() {
         return (state == Status.CHANGED);
     }
 
-    public boolean isReadOnly() 
-    {
+    public boolean isReadOnly() {
         return (state == Status.READONLY);
     }
 
-    public void setState(Status newState)
-    {
+    public void setState(Status newState) {
         state = newState;
         updateLabel();
     }
 
-    private void updateLabel()
-    {
+    private void updateLabel() {
         statusLabel.setText(state.getDisplayText().replace("\n", ""));
-        if (errorCount > 0)
-        {
+        if (errorCount > 0) {
             errorLabel.setText("Errors: " + errorCount);
-        }
-        else
-        {
+        } else {
             errorLabel.setText("");
         }
         JavaFXUtil.setPseudoclass("bj-status-error", errorCount > 0, this);

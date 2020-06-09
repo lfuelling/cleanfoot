@@ -22,14 +22,12 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import javafx.animation.ScaleTransition;
+import bluej.stride.framedjava.ast.HighlightedBreakpoint;
+import bluej.stride.generic.CanvasParent;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCanvas;
+import bluej.stride.generic.FrameCursor;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -44,56 +42,41 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.util.Duration;
-
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.generic.CanvasParent;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameCursor;
-import bluej.utility.javafx.FXPlatformSupplier;
-import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class DebugInfo
-{
+import java.util.*;
+import java.util.Map.Entry;
+
+public class DebugInfo {
     private final IdentityHashMap<FrameCursor, Display> displays = new IdentityHashMap<>();
     @OnThread(value = Tag.Any, requireSynchronized = true)
-    private Map<String,DebugVarInfo> prevState, state;
+    private Map<String, DebugVarInfo> prevState, state;
     private final SimpleBooleanProperty showVars = new SimpleBooleanProperty(false);
     private int stateIndex;
 
     @OnThread(Tag.Any)
-    public DebugInfo()
-    {
-        
+    public DebugInfo() {
+
     }
-    
+
     @OnThread(Tag.Any)
-    public synchronized void addVarState(Map<String,DebugVarInfo> state, int index)
-    {
+    public synchronized void addVarState(Map<String, DebugVarInfo> state, int index) {
         this.prevState = this.state;
         this.state = state;
         this.stateIndex = index;
     }
-    
+
     @OnThread(Tag.FXPlatform)
-    public synchronized Display getInfoDisplay(FrameCursor f, Node frameNode, String stylePrefix, boolean isBeforeBreakpointFrame)
-    {
-        if (displays.containsKey(f))
-        {
+    public synchronized Display getInfoDisplay(FrameCursor f, Node frameNode, String stylePrefix, boolean isBeforeBreakpointFrame) {
+        if (displays.containsKey(f)) {
             displays.get(f).addState(prevState, state, stateIndex);
             return displays.get(f);
-        }
-        else
-        {
+        } else {
             Display d = new Display(prevState, state, stateIndex, frameNode, stylePrefix, isBeforeBreakpointFrame);
             // Notify any parents:
             Frame frame = f.getFrameAfter();
-            while (frame != null)
-            {
+            while (frame != null) {
                 frame = Optional.ofNullable(frame.getParentCanvas()).map(FrameCanvas::getParent).map(CanvasParent::getFrame).orElse(null);
                 if (frame != null && frame instanceof WhileFrame) // TODO: generalise to other loops
                 {
@@ -106,34 +89,28 @@ public class DebugInfo
             return d;
         }
     }
-    
-    public void removeAllDisplays(List<Node> disps)
-    {
+
+    public void removeAllDisplays(List<Node> disps) {
         Iterator<Entry<FrameCursor, Display>> it = displays.entrySet().iterator();
-        while (it.hasNext())
-        {
-            if (disps.contains(it.next().getValue()))
-            {
+        while (it.hasNext()) {
+            if (disps.contains(it.next().getValue())) {
                 it.remove();
             }
         }
     }
 
-    public void hideAllDisplays()
-    {
+    public void hideAllDisplays() {
         displays.forEach((cursor, display) -> {
             cursor.getParentCanvas().getSpecialBefore(cursor).getChildren().remove(display);
         });
         displays.clear();
     }
 
-    public void bindVarVisible(ObservableBooleanValue showVars)
-    {
+    public void bindVarVisible(ObservableBooleanValue showVars) {
         this.showVars.bind(showVars);
     }
 
-    public class Display extends AnchorPane implements HighlightedBreakpoint
-    {
+    public class Display extends AnchorPane implements HighlightedBreakpoint {
         private final ObservableList<Pane> varDisplay = FXCollections.observableArrayList();
         private final ArrayList<Integer> varIndexes = new ArrayList<>();
         private final Node frameNode;
@@ -145,8 +122,7 @@ public class DebugInfo
         private Display parent = null;
 
         @OnThread(Tag.FXPlatform)
-        public Display(Map<String, DebugVarInfo> prevVars, Map<String, DebugVarInfo> vars, int varIndex, Node frameNode, String stylePrefix, boolean isBreakpointFrame)
-        {
+        public Display(Map<String, DebugVarInfo> prevVars, Map<String, DebugVarInfo> vars, int varIndex, Node frameNode, String stylePrefix, boolean isBreakpointFrame) {
             this.isBreakpointFrame = isBreakpointFrame;
             this.frameNode = frameNode;
             HBox controls = new HBox();
@@ -157,8 +133,14 @@ public class DebugInfo
             JavaFXUtil.addStyleClass(curCounter, "debug-info-number");
             JavaFXUtil.addStyleClass(leftArrow, "debug-info-arrow");
             JavaFXUtil.addStyleClass(rightArrow, "debug-info-arrow");
-            leftArrow.setOnMouseClicked(e -> {left(); e.consume();});
-            rightArrow.setOnMouseClicked(e -> {right(); e.consume();});
+            leftArrow.setOnMouseClicked(e -> {
+                left();
+                e.consume();
+            });
+            rightArrow.setOnMouseClicked(e -> {
+                right();
+                e.consume();
+            });
             controls.getChildren().addAll(leftArrow, curCounter, rightArrow);
             AnchorPane.setTopAnchor(controls, 2.0);
             AnchorPane.setRightAnchor(controls, 5.0);
@@ -169,7 +151,7 @@ public class DebugInfo
             JavaFXUtil.addStyleClass(this, "debug-info-surround");
             if (stylePrefix != null && !stylePrefix.isEmpty())
                 JavaFXUtil.setPseudoclass("bj-" + stylePrefix + "debug", true, this);
-            
+
             curDisplay.addListener((prop, prev, now) -> {
                 if (prev.intValue() >= 0 && prev.intValue() < varDisplay.size())
                     getChildren().remove(varDisplay.get(prev.intValue()));
@@ -177,13 +159,13 @@ public class DebugInfo
                     getChildren().add(0, varDisplay.get(now.intValue()));
                 updateChildren();
             });
-            varDisplay.addListener((ListChangeListener<? super Pane>)c -> {
+            varDisplay.addListener((ListChangeListener<? super Pane>) c -> {
                 // Currently only additions happen, so we just check if 
                 // we trying to display one past the end:
                 if (parent == null && curDisplay.get() == varDisplay.size() - 1)
                     getChildren().add(0, varDisplay.get(curDisplay.get()));
             });
-            
+
             addState(prevVars, vars, varIndex);
         }
 
@@ -194,8 +176,7 @@ public class DebugInfo
             disp.setHgap(20);
             JavaFXUtil.addStyleClass(disp, "debug-info-rows");
             int index = 0;
-            for (Map.Entry<String, DebugVarInfo> var : vars.entrySet())
-            {
+            for (Map.Entry<String, DebugVarInfo> var : vars.entrySet()) {
                 DebugVarInfo prev = prevVars == null ? null : prevVars.get(var.getKey());
                 HBox row = new HBox();
                 Label k = new Label(var.getKey() + ": ");
@@ -211,10 +192,9 @@ public class DebugInfo
             }
             return disp;
         }
-        
+
         @OnThread(Tag.FXPlatform)
-        public void addState(Map<String, DebugVarInfo> prevVars, Map<String, DebugVarInfo> vars, int varIndex)
-        {
+        public void addState(Map<String, DebugVarInfo> prevVars, Map<String, DebugVarInfo> vars, int varIndex) {
             Pane disp = makeDisplay(prevVars, vars);
             varIndexes.add(varIndex);
             varDisplay.add(disp);
@@ -228,25 +208,20 @@ public class DebugInfo
             JavaFXUtil.setPseudoclass("bj-highlight", true, this);
             pulse();
         }
-        
-        private void left()
-        {
-            if (curDisplay.get() > 0)
-            {
+
+        private void left() {
+            if (curDisplay.get() > 0) {
                 curDisplay.set(curDisplay.get() - 1);
             }
         }
-        
-        private void right()
-        {
-            if (curDisplay.get() < varDisplay.size() - 1)
-            {
+
+        private void right() {
+            if (curDisplay.get() < varDisplay.size() - 1) {
                 curDisplay.set(curDisplay.get() + 1);
             }
         }
 
-        private void pulse()
-        {
+        private void pulse() {
             /*
             ScaleTransition st = new ScaleTransition(Duration.millis(200), this);
             st.setByX(0.3);
@@ -258,50 +233,41 @@ public class DebugInfo
         }
 
         @Override
-        public void removeHighlight()
-        {
+        public void removeHighlight() {
             //JavaFXUtil.removeStyleClass(this, "debug-info-highlight");
             //JavaFXUtil.addStyleClass(this, "debug-info");
         }
 
         @Override
-        public Node getNode()
-        {
+        public Node getNode() {
             return this;
         }
 
         @Override
-        public @OnThread(Tag.FXPlatform) double getYOffset()
-        {
+        public @OnThread(Tag.FXPlatform) double getYOffset() {
             return 5;
         }
 
         @Override
-        public @OnThread(Tag.FXPlatform) double getYOffsetOfTurnBack()
-        {
+        public @OnThread(Tag.FXPlatform) double getYOffsetOfTurnBack() {
             return frameNode.localToScene(frameNode.getBoundsInLocal()).getMaxY() - 5 - localToScene(getBoundsInLocal()).getMinY();
         }
 
         @Override
-        public @OnThread(Tag.FXPlatform) boolean isBreakpointFrame()
-        {
+        public @OnThread(Tag.FXPlatform) boolean isBreakpointFrame() {
             return isBreakpointFrame;
         }
 
-        public void addChild(Display child)
-        {
-            if (!children.contains(child))
-            {
+        public void addChild(Display child) {
+            if (!children.contains(child)) {
                 children.add(child);
                 child.parent = this;
-                child.varDisplay.addListener((ListChangeListener<? super Pane>)c -> updateChildren());
+                child.varDisplay.addListener((ListChangeListener<? super Pane>) c -> updateChildren());
             }
         }
-        
-        private void updateChildren()
-        {
-            for (Display child : children)
-            {
+
+        private void updateChildren() {
+            for (Display child : children) {
                 int lowerBound = curDisplay.get() >= 0 ? (isLatest() && curDisplay.get() >= 1 ? varIndexes.get(curDisplay.get() - 1) : varIndexes.get(curDisplay.get())) : -1;
                 int upperBound = curDisplay.get() + 1 < varIndexes.size() ? varIndexes.get(curDisplay.get() + 1) : Integer.MAX_VALUE;
 
@@ -311,12 +277,10 @@ public class DebugInfo
         }
 
         @Override
-        public @OnThread(Tag.FXPlatform) boolean showExec(int index)
-        {
+        public @OnThread(Tag.FXPlatform) boolean showExec(int index) {
             if (curDisplay.get() < 0)
                 return false; // Not reached here yet
-            if (curDisplay.get() < varDisplay.size())
-            {
+            if (curDisplay.get() < varDisplay.size()) {
                 // Trying to show an arrow arriving at the first display and we are a parent:
                 if (!varIndexes.isEmpty() && varIndexes.get(0) == index && !children.isEmpty())
                     return true;
@@ -339,10 +303,10 @@ public class DebugInfo
 
         /**
          * Is the latest index on this later than all children?
+         *
          * @return
          */
-        private boolean isLatest()
-        {
+        private boolean isLatest() {
             return varIndexes.get(curDisplay.get()) >= children.stream().mapToInt(c -> c.varIndexes.isEmpty() ? -1 : c.varIndexes.get(c.varIndexes.size() - 1)).max().orElse(-1);
         }
     }

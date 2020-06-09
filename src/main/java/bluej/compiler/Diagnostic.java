@@ -25,23 +25,20 @@ import java.io.Serializable;
 
 /**
  * A compiler diagostic (error, warning, or other note)
- * 
+ *
  * @author Davin McCall
  */
-public class Diagnostic implements Serializable
-{
+public class Diagnostic implements Serializable {
     public static int ERROR = 0;
     public static int WARNING = 1;
     public static int NOTE = 2;
 
-    public enum DiagnosticOrigin
-    {
+    public enum DiagnosticOrigin {
         JAVAC("javac"), STRIDE_EARLY("stride_early"), STRIDE_LATE("stride_late"), UNKNOWN("unknown");
 
         private final String serverOrigin;
 
-        DiagnosticOrigin(String serverOrigin)
-        {
+        DiagnosticOrigin(String serverOrigin) {
             this.serverOrigin = serverOrigin;
         }
     }
@@ -72,36 +69,34 @@ public class Diagnostic implements Serializable
     // May be -1 if it wasn't a compiler error with specific location
     private final int diagnosticIdentifier;
 
-    
+
     /**
-     * Constructor for Diagnostic objects representing notes. 
+     * Constructor for Diagnostic objects representing notes.
      */
-    public Diagnostic(int type, String message)
-    {
+    public Diagnostic(int type, String message) {
         this(type, message, null, -1, -1, -1, -1, DiagnosticOrigin.UNKNOWN, -1);
     }
-    
+
     /**
      * Constructor for error and warning diagnostics associated with
      * a particular position in the source code.
-     * 
-     * @param type  ERROR, WARNING or NOTE.
-     * @param message  The diagnostic message
-     * @param fileName The file associated with the diagnostic (might be null).
-     * @param startLine  The line where the error/problem begins (less than 1 == unknown)
+     *
+     * @param type        ERROR, WARNING or NOTE.
+     * @param message     The diagnostic message
+     * @param fileName    The file associated with the diagnostic (might be null).
+     * @param startLine   The line where the error/problem begins (less than 1 == unknown)
      * @param startColumn The column where the error/problem begins; must be valid if
      *                    {@code startLine} is greater than 0. Tab stops are every 8 spaces.
-     * @param endLine    The line where the error/problem ends; must be valid if
+     * @param endLine     The line where the error/problem ends; must be valid if
      *                    {@code startLine} is greater than 0
-     * @param endColumn  The column where the error/problem ends; must be valid if
+     * @param endColumn   The column where the error/problem ends; must be valid if
      *                    {@code startLine} is greater than 0. Tab stops are every 8 spaces.
-     * @param origin     The origin of the error message, e.g. "javac" or "stride_late".
-     * @param identifier The identifier of the diagnostic.  Used to match up with later events
-     *                   about the same diagnostic, such as shown_error_message events.
+     * @param origin      The origin of the error message, e.g. "javac" or "stride_late".
+     * @param identifier  The identifier of the diagnostic.  Used to match up with later events
+     *                    about the same diagnostic, such as shown_error_message events.
      */
     public Diagnostic(int type, String message, String fileName,
-            long startLine, long startColumn, long endLine, long endColumn, DiagnosticOrigin origin, int identifier)
-    {
+                      long startLine, long startColumn, long endLine, long endColumn, DiagnosticOrigin origin, int identifier) {
         this.type = type;
         this.message = message;
         this.fileName = fileName;
@@ -112,115 +107,101 @@ public class Diagnostic implements Serializable
         this.origin = origin;
         this.diagnosticIdentifier = identifier;
     }
-    
+
     /**
      * Get the type of the diagnostic - ERROR, WARNING or NOTE.
      */
-    public int getType()
-    {
+    public int getType() {
         return type;
     }
-    
+
     /**
      * Get the end column of the error. Return is valid only if {@code getStartLine()} returns
      * a valid line number (greater than 0). Caller should be prepared for this value to be slightly
      * inaccurate (it might extend past the actual end of the line). Tab stops are every
      * 8 spaces.
      */
-    public long getEndColumn()
-    {
+    public long getEndColumn() {
         return endColumn;
     }
-    
+
     /**
      * Get the end line of the error. Return is valid only if {@code getStartLine()} returns
      * a valid line number (greater than 0).
      */
-    public long getEndLine()
-    {
+    public long getEndLine() {
         return endLine;
     }
-    
+
     /**
      * Set the diagnostic message (the message to be presented to the end user).
      * This can change because we try to make the message more helpful to the user,
      * e.g. by suggesting likely mis-spellings.
      */
-    public void setMessage(String message)
-    {
+    public void setMessage(String message) {
         this.message = message;
     }
-    
+
     /**
      * Get the diagnostic message which can be presented to the end user.
      */
-    public String getMessage()
-    {
+    public String getMessage() {
         return message;
     }
-    
+
     /**
      * Get the starting column of the error/problem. Return is only valid if
      * {@code getStartLine()} returns a valid line (greater than 0). Tab stops
      * are every 8 spaces.
      */
-    public long getStartColumn()
-    {
+    public long getStartColumn() {
         return startColumn;
     }
-    
+
     /**
      * Get the starting line of the error/problem, if known. Return is valid if
      * it is greater than 0.
      */
-    public long getStartLine()
-    {
+    public long getStartLine() {
         return startLine;
     }
-    
+
     /**
      * Get the filename associated with the error/problem. May be null.
      */
-    public String getFileName()
-    {
+    public String getFileName() {
         return fileName;
     }
 
     /**
      * Gets the internal identifier of the diagnostic (unique during this session)
      */
-    public int getIdentifier()
-    {
+    public int getIdentifier() {
         return diagnosticIdentifier;
     }
 
-    public String getXPath()
-    {
+    public String getXPath() {
         return xpath;
     }
 
     /**
      * Sets the XPath, and start and end indexes within the item.
      */
-    public void setXPath(String XPath, int xmlStart, int xmlEnd)
-    {
+    public void setXPath(String XPath, int xmlStart, int xmlEnd) {
         this.xpath = XPath;
         this.xmlStart = xmlStart;
         this.xmlEnd = xmlEnd;
     }
 
-    public int getXmlStart()
-    {
+    public int getXmlStart() {
         return xmlStart;
     }
 
-    public int getXmlEnd()
-    {
+    public int getXmlEnd() {
         return xmlEnd;
     }
 
-    public String getOrigin()
-    {
+    public String getOrigin() {
         return origin.serverOrigin;
     }
 }

@@ -21,21 +21,6 @@
  */
 package bluej.groupwork.ui;
 
-import bluej.utility.javafx.JavaFXUtil;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
-
 import bluej.Config;
 import bluej.groupwork.Repository;
 import bluej.groupwork.TeamUtils;
@@ -45,7 +30,15 @@ import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.FXPlatformSupplier;
-
+import bluej.utility.javafx.JavaFXUtil;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -56,8 +49,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class ModuleSelectDialog extends FXCustomizedDialog<String>
-{
+public class ModuleSelectDialog extends FXCustomizedDialog<String> {
     private final Repository repository;
     private ModuleListerWorker worker;
 
@@ -67,8 +59,7 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
     // Modules list
     private final ListView<String> moduleList = new ListView<>();
 
-    public ModuleSelectDialog(FXPlatformSupplier<Window> owner, Repository repository)
-    {
+    public ModuleSelectDialog(FXPlatformSupplier<Window> owner, Repository repository) {
         super(owner.get(), "team.moduleselect.title", "team-module-select");
         this.repository = repository;
         getDialogPane().setContent(makeMainPane());
@@ -76,8 +67,7 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
         DialogManager.centreDialog(this);
     }
 
-    private Pane makeMainPane()
-    {
+    private Pane makeMainPane() {
         moduleField.setPrefColumnCount(20);
         HBox moduleBox = new HBox();
         moduleBox.getChildren().addAll(new Label(Config.getString("team.moduleselect.label")), moduleField);
@@ -85,13 +75,11 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
         JavaFXUtil.addChangeListenerPlatform(moduleList.getSelectionModel().selectedItemProperty(), sel -> {
             moduleField.setText(sel);
         });
-        
+
         moduleList.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2)
-            {
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
                 String selectedItem = moduleList.getSelectionModel().getSelectedItem();
-                if (selectedItem != null)
-                {
+                if (selectedItem != null) {
                     setResult(selectedItem);
                     close();
                 }
@@ -114,15 +102,14 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
         // Main pane
         VBox mainPane = new VBox();
         mainPane.getChildren().addAll(moduleBox, new Label(Config.getString("team.moduleselect.available")),
-                                      moduleListBox, progressBar);
+                moduleListBox, progressBar);
         return mainPane;
     }
 
     /**
      * Set up the buttons panel to contain ok and cancel buttons, and associate their actions.
      */
-    private void prepareButtonPane()
-    {
+    private void prepareButtonPane() {
         // Set the button types.
         getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
 
@@ -144,21 +131,18 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
     /**
      * Start the progress bar. Safe to call from any thread.
      */
-    private void startProgressBar()
-    {
+    private void startProgressBar() {
         progressBar.setRunning(true);
     }
 
     /**
      * Stop the progress bar. Safe to call from any thread.
      */
-    private void stopProgressBar()
-    {
+    private void stopProgressBar() {
         progressBar.setRunning(false);
     }
 
-    private void setModuleList(ObservableList<String> modules)
-    {
+    private void setModuleList(ObservableList<String> modules) {
         moduleList.setItems(modules);
     }
 
@@ -167,40 +151,34 @@ public class ModuleSelectDialog extends FXCustomizedDialog<String>
      *
      * @author Davin McCall
      */
-    private class ModuleListerWorker extends FXWorker
-    {
+    private class ModuleListerWorker extends FXWorker {
         private TeamworkCommand command;
         private TeamworkCommandResult result;
         private final ObservableList<String> modules;
 
-        public ModuleListerWorker()
-        {
+        public ModuleListerWorker() {
             modules = FXCollections.observableArrayList();
             command = repository.getModules(modules);
         }
 
         @OnThread(Tag.Worker)
-        public Object construct()
-        {
+        public Object construct() {
             result = command.getResult();
             return result;
         }
 
-        public void finished()
-        {
+        public void finished() {
             stopProgressBar();
             if (command != null) {
-                if (result != null && ! result.isError()) {
+                if (result != null && !result.isError()) {
                     setModuleList(modules);
-                }
-                else {
+                } else {
                     TeamUtils.handleServerResponseFX(result, ModuleSelectDialog.this.asWindow());
                 }
             }
         }
 
-        public void abort()
-        {
+        public void abort() {
             if (command != null) {
                 command.cancel();
                 command = null;

@@ -30,11 +30,10 @@ package bluej.extensions.event;
  * the visibility of a class target has changed to the opposite of the previous
  * state.
  * </p>
- * 
+ *
  * @author Simon Gerlach
  */
-public interface ClassTargetListener
-{
+public interface ClassTargetListener {
     /**
      * <p>
      * The visibility of a class target has changed. This means that the class
@@ -47,9 +46,8 @@ public interface ClassTargetListener
      * <em>changed</em>. It is not fired if a class target is set to a
      * visibility in which it already is.
      * </p>
-     * 
-     * @param event
-     *            A {@code ClassTargetEvent} object which describes the event.
+     *
+     * @param event A {@code ClassTargetEvent} object which describes the event.
      */
     void classTargetVisibilityChanged(ClassTargetEvent event);
 }

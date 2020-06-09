@@ -21,25 +21,22 @@
  */
 package bluej.views;
 
-import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.GenTypeDeclTpar;
+import bluej.debugger.gentype.JavaType;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A "callable" is the generalisation of a Constructor and a Method. This class
  * contains aspects common to both of those.
- * 
+ *
  * @author Michael Kolling
- *  
  */
-public abstract class CallableView extends MemberView
-{
+public abstract class CallableView extends MemberView {
     /**
      * Constructor.
      */
-    public CallableView(View view)
-    {
+    public CallableView(View view) {
         super(view);
     }
 
@@ -47,7 +44,7 @@ public abstract class CallableView extends MemberView
      * @returns a boolean indicating whether this method has parameters
      */
     public abstract boolean hasParameters();
-    
+
     /**
      * @returns a boolean indicating whether this method uses var args
      */
@@ -62,29 +59,30 @@ public abstract class CallableView extends MemberView
      * Indicates whether the callable view represents a constructor.
      */
     public abstract boolean isConstructor();
-    
+
     /**
      * Count of parameters
+     *
      * @returns the number of parameters
      */
-    public int getParameterCount()
-    {
+    public int getParameterCount() {
         return getParameters().length;
     }
 
     /**
      * Get an array of Class objects representing parameter classes
-     * @return  array of Class objects
+     *
+     * @return array of Class objects
      */
     public abstract Class<?>[] getParameters();
-    
+
     /**
      * Get an array of GenType objects representing the parameter types of the
      * callable. For a varargs callable, the last parameter type will be an
      * array (and {@link #isVarArgs()} will return true).
-     * 
-     * @param raw  whether to return raw versions of the parameter types
-     * @return  the parameter types
+     *
+     * @param raw whether to return raw versions of the parameter types
+     * @return the parameter types
      */
     public abstract JavaType[] getParamTypes(boolean raw);
 
@@ -92,43 +90,41 @@ public abstract class CallableView extends MemberView
      * Get the type parameters for this callable as an array of GenTypeDeclTpar
      */
     public abstract GenTypeDeclTpar[] getTypeParams() throws ClassNotFoundException;
-    
+
     /**
      * Gets an array of strings with the names of the parameters
+     *
      * @return
      */
-    public String[] getParamNames()
-    {
+    public String[] getParamNames() {
         Comment c = getComment();
-        if( c == null )
+        if (c == null)
             return null;
         return c.getParamNames();
     }
-    
+
     /**
-     * Gets an array of nicely formatted strings with the types of the parameters 
+     * Gets an array of nicely formatted strings with the types of the parameters
      */
     public abstract String[] getParamTypeStrings();
-    
+
     /**
      * Print the method to a formatting print writer.
      */
     @OnThread(Tag.FXPlatform)
-    public void print(FormattedPrintWriter out)
-    {
+    public void print(FormattedPrintWriter out) {
         print(out, 0);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void print(FormattedPrintWriter out, int indents)
-    {
+    public void print(FormattedPrintWriter out, int indents) {
         Comment comment = getComment();
-        if(comment != null)
+        if (comment != null)
             comment.print(out, indents);
 
         out.setItalic(false);
         out.setBold(true);
-        for(int i=0; i<indents; i++)
+        for (int i = 0; i < indents; i++)
             out.indentLine();
         out.println(getLongDesc());
     }

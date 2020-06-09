@@ -23,13 +23,11 @@ package greenfoot.guifx.export;
 
 /**
  * An exception to throw when an export is not possible.
- * 
+ *
  * @author Amjad Altadmri
  */
-public class ExportException extends RuntimeException
-{
-    public ExportException(String message)
-    {
+public class ExportException extends RuntimeException {
+    public ExportException(String message) {
         super(message);
     }
 }

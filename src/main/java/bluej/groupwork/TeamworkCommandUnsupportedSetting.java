@@ -28,25 +28,21 @@ import threadchecker.Tag;
  * A result indicating that an UnsupportedSettingException was thrown.
  */
 @OnThread(Tag.Any)
-public class TeamworkCommandUnsupportedSetting extends TeamworkCommandResult
-{
+public class TeamworkCommandUnsupportedSetting extends TeamworkCommandResult {
     private final String message;
 
-    public TeamworkCommandUnsupportedSetting(String message)
-    {
+    public TeamworkCommandUnsupportedSetting(String message) {
         this.message = message;
     }
 
     @Override
-    public String getErrorMessage()
-    {
+    public String getErrorMessage() {
         return message;
     }
 
     @Override
-    public boolean isError()
-    {
+    public boolean isError() {
         return true;
     }
-    
+
 }

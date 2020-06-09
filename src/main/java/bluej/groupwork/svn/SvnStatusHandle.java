@@ -21,50 +21,42 @@
  */
 package bluej.groupwork.svn;
 
+import bluej.groupwork.*;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusHandle;
-import bluej.groupwork.TeamStatusInfo;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.UpdateListener;
-
 /**
  * Implementation of StatusHandle for Subversion.
- * 
+ *
  * @author davmac
  */
-public class SvnStatusHandle implements StatusHandle
-{
+public class SvnStatusHandle implements StatusHandle {
     private final SvnRepository repository;
     private final long version;
-    
-    public SvnStatusHandle(SvnRepository repository, long version)
-    {
+
+    public SvnStatusHandle(SvnRepository repository, long version) {
         this.repository = repository;
         this.version = version;
     }
-    
+
     /* (non-Javadoc)
      * @see bluej.groupwork.StatusHandle#commitAll(java.util.Set, java.util.Set, java.util.Set, java.util.Set, java.util.Set, java.lang.String)
      */
     public TeamworkCommand commitAll(Set<File> newFiles,
-            Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files,
-            Set<TeamStatusInfo> forceFiles, String commitComment)
-    {
+                                     Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files,
+                                     Set<TeamStatusInfo> forceFiles, String commitComment) {
         Set<File> forceFileSet = new HashSet<File>();
         for (Iterator<TeamStatusInfo> i = forceFiles.iterator(); i.hasNext(); ) {
             forceFileSet.add(i.next().getFile());
         }
-        
+
         if (version != -1) {
             return new SvnCommitCommand(repository, newFiles, binaryNewFiles, deletedFiles,
                     files, forceFileSet, version, commitComment);
-        }
-        else {
+        } else {
             // The working copy is up-to-date
             return new SvnCommitAllCommand(repository, newFiles, binaryNewFiles,
                     deletedFiles, files, commitComment);
@@ -75,15 +67,13 @@ public class SvnStatusHandle implements StatusHandle
      * @see bluej.groupwork.StatusHandle#updateTo(bluej.groupwork.UpdateListener, java.util.Set, java.util.Set)
      */
     public TeamworkCommand updateTo(UpdateListener listener, Set<File> files,
-            Set<File> forceFiles)
-    {
+                                    Set<File> forceFiles) {
         return new SvnUpdateToCommand(repository, listener,
                 version, files, forceFiles);
     }
 
     @Override
-    public Repository getRepository()
-    {
+    public Repository getRepository() {
         return repository;
     }
 }

@@ -34,14 +34,13 @@ package bluej.extensions.event;
  *
  * @version $Id: CompileListener.java 6215 2009-03-30 13:28:25Z polle $
  */
-public interface CompileListener
-{
+public interface CompileListener {
     /**
      * This method will be called when a compilation starts.
      * If a long operation must be performed you should start a Thread.
      */
     void compileStarted(CompileEvent event);
-    
+
     /**
      * This method will be called when there is a report of a compile error.
      * If a long operation must be performed you should start a Thread.

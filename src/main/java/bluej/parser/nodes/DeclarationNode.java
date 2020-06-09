@@ -25,16 +25,13 @@ package bluej.parser.nodes;
  * Filler node for declarations where we don't yet know what is being declared (method,
  * constructor, field/variable, type)
  */
-public class DeclarationNode extends JavaParentNode
-{
-    public DeclarationNode(JavaParentNode parent)
-    {
+public class DeclarationNode extends JavaParentNode {
+    public DeclarationNode(JavaParentNode parent) {
         super(parent);
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return false;
     }
 }

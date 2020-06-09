@@ -22,15 +22,13 @@
 package bluej.groupwork.git;
 
 /**
- * Base class for the different Exceptions generated when dealing with 
+ * Base class for the different Exceptions generated when dealing with
  * Git tree structures.
  *
  * @author Fabio Heday
  */
-public class GitTreeException extends Exception 
-{
-    GitTreeException ( String reason )
-    {
-        super (reason);
+public class GitTreeException extends Exception {
+    GitTreeException(String reason) {
+        super(reason);
     }
 }

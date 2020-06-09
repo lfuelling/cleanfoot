@@ -24,7 +24,6 @@ package bluej.stride.generic;
 import bluej.stride.operations.ToggleBooleanProperty;
 import bluej.utility.Debug;
 import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.FXRunnable;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -32,10 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ExtensionDescription
-{
-    public enum ExtensionSource
-    {
+public class ExtensionDescription {
+    public enum ExtensionSource {
         BEFORE, AFTER, INSIDE_FIRST, INSIDE_LATER, MODIFIER, SELECTION
     }
 
@@ -49,21 +46,18 @@ public class ExtensionDescription
     private ToggleBooleanProperty operation;
     private Frame frame;
 
-    public ExtensionDescription(char shortcut, String description, FXPlatformRunnable action, boolean showInCatalogue, ExtensionSource firstSrc, ExtensionSource... restSrc)
-    {
+    public ExtensionDescription(char shortcut, String description, FXPlatformRunnable action, boolean showInCatalogue, ExtensionSource firstSrc, ExtensionSource... restSrc) {
         this(shortcut, description, showInCatalogue, firstSrc, restSrc);
         this.action = action;
     }
 
-    public ExtensionDescription(ToggleBooleanProperty operation, Frame frame, boolean showInCatalogue, ExtensionSource firstSrc, ExtensionSource... restSrc)
-    {
+    public ExtensionDescription(ToggleBooleanProperty operation, Frame frame, boolean showInCatalogue, ExtensionSource firstSrc, ExtensionSource... restSrc) {
         this(operation.getKey(), operation.getLabel(), showInCatalogue, firstSrc, restSrc);
         this.operation = operation;
         this.frame = frame;
     }
 
-    private ExtensionDescription(char shortcut, String description, boolean showInCatalogue, ExtensionSource firstSrc, ExtensionSource... restSrc)
-    {
+    private ExtensionDescription(char shortcut, String description, boolean showInCatalogue, ExtensionSource firstSrc, ExtensionSource... restSrc) {
         this.shortcut = shortcut;
         this.description = description;
         this.showInCatalogue = showInCatalogue;
@@ -72,45 +66,39 @@ public class ExtensionDescription
         validSources.addAll(Arrays.asList(restSrc));
     }
 
-    public char getShortcutKey()
-    {
+    public char getShortcutKey() {
         return shortcut;
     }
-    
-    public String getDescription()
-    {
+
+    public String getDescription() {
         return description;
     }
 
     @OnThread(Tag.FXPlatform)
-    public void activate()
-    {
+    public void activate() {
         if (action != null) {
             action.run();
-        }
-        else if(operation != null) {
+        } else if (operation != null) {
             operation.activate(frame);
-        }
-        else {
+        } else {
             Debug.reportError("Action and Operation shouldn't be both null in ExtensionDescription:: " + description);
         }
     }
 
     @OnThread(Tag.FXPlatform)
-    public void activate(List<Frame> frames)
-    {
-        if(operation != null) {
+    public void activate(List<Frame> frames) {
+        if (operation != null) {
             operation.activate(frames);
-        }
-        else {
+        } else {
             Debug.reportError("Operation shouldn't be null when calling activate(frames) in ExtensionDescription:: " + description);
         }
     }
 
-    public boolean showInCatalogue() { return showInCatalogue; }
+    public boolean showInCatalogue() {
+        return showInCatalogue;
+    }
 
-    public boolean validFor(ExtensionSource extensionSource)
-    {
+    public boolean validFor(ExtensionSource extensionSource) {
         return validSources.contains(extensionSource);
     }
 }

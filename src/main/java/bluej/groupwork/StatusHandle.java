@@ -28,28 +28,27 @@ import java.io.File;
 import java.util.Set;
 
 @OnThread(Tag.FXPlatform)
-public interface StatusHandle
-{
+public interface StatusHandle {
     /**
      * Commits the files and directories in the project. Some files can be forced,
      * which means that the existing local file (regardless of its revision) replaces
      * the repository version (with the specified version number), only failing if
-     * an intermediate commit has occurred. 
+     * an intermediate commit has occurred.
      *
-     * @param newFiles Files to be committed which are not presently in the repository
-     *                 (text files only). If the version management system versions
-     *                 directories, this should also contain directories, and must be
-     *                 an ordered set such that any directories precede files which
-     *                 they contain.
+     * @param newFiles       Files to be committed which are not presently in the repository
+     *                       (text files only). If the version management system versions
+     *                       directories, this should also contain directories, and must be
+     *                       an ordered set such that any directories precede files which
+     *                       they contain.
      * @param binaryNewFiles Files to be committed which are not presently in the
      *                       repository and which are to be treated as binary
-     * @param deletedFiles Files which have been deleted locally but which exist
-     *                     in the latest version in the repository 
-     * @param files  All files to be committed (including all in newFiles, binaryNewFiles,
-     *               and deletedFiles, as well as any other files to be committed)
-     * @param forceFiles  Those files for which the commit should be forced, overriding
-     *               the existing file in the repository.
-     *               specified. (The commit can still fail if the file is committed
+     * @param deletedFiles   Files which have been deleted locally but which exist
+     *                       in the latest version in the repository
+     * @param files          All files to be committed (including all in newFiles, binaryNewFiles,
+     *                       and deletedFiles, as well as any other files to be committed)
+     * @param forceFiles     Those files for which the commit should be forced, overriding
+     *                       the existing file in the repository.
+     *                       specified. (The commit can still fail if the file is committed
      * @param commitComment  The comment for this commit
      */
     TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles,
@@ -58,51 +57,53 @@ public interface StatusHandle
 
     /**
      * After a status command, get a command which can be used to
-     * update the working copy to the same revision(s) as was 
+     * update the working copy to the same revision(s) as was
      * shown in the status.
-     * 
+     * <p>
      * For CVS, this doesn't work exactly - it just does an update to
      * latest revision, which might have changed since the status
      * was performed.
      */
     TeamworkCommand updateTo(UpdateListener listener, Set<File> files, Set<File> forceFiles);
-    
+
     /**
      * Gets the repository.  Used for data collection.
+     *
      * @return
      */
     Repository getRepository();
-    
+
     /**
      * Push changes into remote repository. Shall not be used on Subversion or cvs.
+     *
      * @param filesToPush set of files to be pushed into the remote repository
      * @return TeamworkCommand if a VCS, null otherwise.
      */
-    default TeamworkCommand pushAll(Set<File> filesToPush){
+    default TeamworkCommand pushAll(Set<File> filesToPush) {
         return null;
     }
-    
+
     /**
      * checks if, usually after a merge commit, the current repository state must
-     * be pushed into the remote repository. This must be implemented by DCVS 
+     * be pushed into the remote repository. This must be implemented by DCVS
      * systems such as GIT.
-     * @return 
+     *
+     * @return
      */
     @OnThread(Tag.Worker)
-    default boolean pushNeeded()
-    {
+    default boolean pushNeeded() {
         return true;
     }
-    
+
     /**
-     * checks if, the current repository state must be pulled from the remote 
-     * repository. This must be implemented by DCVS 
+     * checks if, the current repository state must be pulled from the remote
+     * repository. This must be implemented by DCVS
      * systems such as GIT.
-     * @return 
+     *
+     * @return
      */
     @OnThread(Tag.Worker)
-    default boolean pullNeeded()
-    {
+    default boolean pullNeeded() {
         return false;
     }
 }

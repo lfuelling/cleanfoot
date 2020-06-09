@@ -21,39 +21,32 @@
  */
 package bluej.utility;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A general cache, which caches a fixed number of key/value combinations, and which
  * uses a recently-used strategy to determine which entries to keep.
- * 
+ *
  * @author Davin McCall
  */
-public class GeneralCache<K,V>
-{
-    private final Map<K,V> cacheMap = new HashMap<K,V>();
+public class GeneralCache<K, V> {
+    private final Map<K, V> cacheMap = new HashMap<K, V>();
     private final List<K> cachedKeys = new LinkedList<K>();
     private final int cacheSize;
-    
+
     /**
      * Construct a cache to cache the given number of items.
      */
-    public GeneralCache(int cacheSize)
-    {
+    public GeneralCache(int cacheSize) {
         this.cacheSize = cacheSize;
     }
-    
+
     /**
      * Retrieve an entry from the cache. If no value for the given key is cached,
      * the return is null. To determine if a null return was due to a null value
      * or to the cache not containing a value, use containsKey().
      */
-    public V get(K key)
-    {
+    public V get(K key) {
         V rval = cacheMap.get(key);
         if (rval != null) {
             // Mark the retrieved key as recently used
@@ -68,34 +61,31 @@ public class GeneralCache<K,V>
         }
         return rval;
     }
-    
+
     /**
      * Check whether a value for the given key is currently cached.
      */
-    public boolean containsKey(K key)
-    {
+    public boolean containsKey(K key) {
         return cacheMap.containsKey(key);
     }
-    
+
     /**
      * Put an item in the cache. The given key must not already have a cached value.
      */
-    public void put(K key, V value)
-    {
+    public void put(K key, V value) {
         if (cachedKeys.size() >= cacheSize) {
             K toRemove = cachedKeys.remove(0);
             cacheMap.remove(toRemove);
         }
-        
+
         cacheMap.put(key, value);
         cachedKeys.add(key);
     }
-    
+
     /**
      * Remove all cache entries.
      */
-    public void clear()
-    {
+    public void clear() {
         cacheMap.clear();
         cachedKeys.clear();
     }

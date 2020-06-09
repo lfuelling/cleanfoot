@@ -21,9 +21,6 @@
  */
 package bluej.extensions.event;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import bluej.extensions.BClassTarget;
 import bluej.extensions.BDependency;
 import bluej.extensions.BPackage;
@@ -32,26 +29,31 @@ import bluej.pkgmgr.dependency.Dependency;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.pkgmgr.target.DependentTarget;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class encapsulates events which occur on class targets of the class
  * diagram.
- * 
+ *
  * @author Simon Gerlach
  */
-public class ClassTargetEvent implements ExtensionEvent
-{
+public class ClassTargetEvent implements ExtensionEvent {
     /**
      * This enumeration contains constants which describe the different types of
      * "class target changed" events.
-     * 
+     *
      * @author Simon Gerlach
      */
-    public enum Type
-    {
-        /** This event occurs when a class target was set to invisible. */
+    public enum Type {
+        /**
+         * This event occurs when a class target was set to invisible.
+         */
         CLASS_TARGET_HIDDEN,
 
-        /** This event occurs when a class target was set to visible. */
+        /**
+         * This event occurs when a class target was set to visible.
+         */
         CLASS_TARGET_SHOWN
     }
 
@@ -61,13 +63,10 @@ public class ClassTargetEvent implements ExtensionEvent
 
     /**
      * Constructor. Creates a new {@link ClassTargetEvent}.
-     * 
-     * @param classTarget
-     *            The class target which caused this event.
-     * @param bluejPackage
-     *            The package to which the class target belongs.
-     * @param visible
-     *            The new visibility of the class target.
+     *
+     * @param classTarget  The class target which caused this event.
+     * @param bluejPackage The package to which the class target belongs.
+     * @param visible      The new visibility of the class target.
      */
     public ClassTargetEvent(ClassTarget classTarget, Package bluejPackage, boolean visible) {
         this.classTarget = classTarget;
@@ -82,37 +81,34 @@ public class ClassTargetEvent implements ExtensionEvent
 
     /**
      * Returns the type of this event.
-     * 
+     *
      * @return The type of this event.
      */
-    public Type getEventType()
-    {
+    public Type getEventType() {
         return eventType;
     }
 
     /**
      * Returns the class target which caused this event.
-     * 
+     *
      * @return The class target which caused this event.
      */
-    public BClassTarget getClassTarget()
-    {
+    public BClassTarget getClassTarget() {
         return classTarget.getBClassTarget();
     }
-    
+
     /**
      * Returns the associated target of the class target which caused this event
      * or <code>null</code> if there is no associated target. For example, this
      * can be the the class target of the corresponding test class of the class
      * whose class target caused this event.
-     * 
+     *
      * @return The associated target of the class target which caused this event
-     *         or <code>null</code> if there is no associated target.
+     * or <code>null</code> if there is no associated target.
      */
-    public BClassTarget getAssociation()
-    {
+    public BClassTarget getAssociation() {
         DependentTarget association = classTarget.getAssociation();
-        
+
         if (association instanceof ClassTarget) {
             return ((ClassTarget) association).getBClassTarget();
         }
@@ -123,40 +119,36 @@ public class ClassTargetEvent implements ExtensionEvent
     /**
      * Returns a {@link List} containing all dependencies which are related to
      * super classes and implemented interfaces.
-     * 
+     *
      * @return A {@link List} containing all dependencies which are related to
-     *         super classes and implemented interfaces. This may be a view
-     *         (i.e. it may be updated automatically) and should not be modified.
+     * super classes and implemented interfaces. This may be a view
+     * (i.e. it may be updated automatically) and should not be modified.
      */
-    public List<BDependency> getParentDependencies()
-    {
+    public List<BDependency> getParentDependencies() {
         return getBDependencies(classTarget.getParents());
     }
 
     /**
      * Returns a {@link List} containing all dependencies which are related to
      * sub classes and implementors.
-     * 
+     *
      * @return A {@link List} containing all dependencies which are related to
-     *         sub classes and implementors. Thi smay be a view (i.e. it may be
-     *         updated automatically) and should not be modified.
+     * sub classes and implementors. Thi smay be a view (i.e. it may be
+     * updated automatically) and should not be modified.
      */
-    public List<BDependency> getChildDependencies()
-    {
+    public List<BDependency> getChildDependencies() {
         return getBDependencies(classTarget.getChildrenDependencies());
     }
 
     /**
      * Takes a {@link List} of dependencies and returns a {@link List}
      * containing the corresponding {@link BDependency} objects.
-     * 
-     * @param dependencies
-     *            The {@link List} of dependencies.
+     *
+     * @param dependencies The {@link List} of dependencies.
      * @return A {@link List} containing the corresponding {@link BDependency}
-     *         objects.
+     * objects.
      */
-    private List<BDependency> getBDependencies(List<Dependency> dependencies)
-    {
+    private List<BDependency> getBDependencies(List<Dependency> dependencies) {
         List<BDependency> result = new ArrayList<BDependency>();
 
         for (Dependency dependency : dependencies) {
@@ -169,12 +161,11 @@ public class ClassTargetEvent implements ExtensionEvent
     /**
      * Returns the package to which the class target belongs that caused this
      * event.
-     * 
+     *
      * @return The package to which the class target belongs that caused this
-     *         event.
+     * event.
      */
-    public BPackage getPackage()
-    {
+    public BPackage getPackage() {
         return bluejPackage.getBPackage();
     }
 
@@ -182,8 +173,7 @@ public class ClassTargetEvent implements ExtensionEvent
      * Returns a {@link String} representation of this event.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "ClassTargetEvent: " + eventType + " (" + classTarget + ")";
     }
 }

@@ -21,8 +21,6 @@
  */
 package bluej.extmgr;
 
-import javax.swing.JMenuItem;
-
 import bluej.extensions.BClass;
 import bluej.extensions.ExtensionBridge;
 import bluej.extensions.MenuGenerator;
@@ -30,38 +28,35 @@ import bluej.pkgmgr.target.ClassTarget;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.*;
+
 /**
  * Implementation of the {@link ExtensionMenu} interface for the Class
  * menu.
- * 
+ *
  * @author Simon Gerlach
  */
-public class ClassExtensionMenu implements ExtensionMenu
-{
+public class ClassExtensionMenu implements ExtensionMenu {
     private final ClassTarget classTarget;
 
     /**
      * Constructor. Creates a new {@link ClassExtensionMenu}.
-     * 
-     * @param classTarget
-     *            The class target which was selected by the user.
+     *
+     * @param classTarget The class target which was selected by the user.
      */
     @OnThread(Tag.Any)
-    public ClassExtensionMenu(ClassTarget classTarget)
-    {
+    public ClassExtensionMenu(ClassTarget classTarget) {
         this.classTarget = classTarget;
     }
 
     @Override
-    public JMenuItem getMenuItem(MenuGenerator menuGenerator)
-    {
+    public JMenuItem getMenuItem(MenuGenerator menuGenerator) {
         BClass bClass = ExtensionBridge.newBClass(classTarget);
         return menuGenerator.getClassMenuItem(bClass);
     }
 
     @Override
-    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem)
-    {
+    public void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem) {
         BClass bClass = ExtensionBridge.newBClass(classTarget);
         menuGenerator.notifyPostClassMenu(bClass, onThisItem);
     }

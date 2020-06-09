@@ -25,29 +25,37 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * An invoker record for "get" operations on array elements.
- * 
+ *
  * @author Davin McCall
  */
-public class ArrayElementGetRecord extends InvokerRecord
-{
-    /** The invoker record for the inspector where the Get button was pressed, that resulted in the creation of this GetInvokerRecord. */
+public class ArrayElementGetRecord extends InvokerRecord {
+    /**
+     * The invoker record for the inspector where the Get button was pressed, that resulted in the creation of this GetInvokerRecord.
+     */
     private final InvokerRecord parentIr;
-    
-    /** Index of the element to get */
+
+    /**
+     * Index of the element to get
+     */
     private final int elementIndex;
-    
-    /** Type of the element */
+
+    /**
+     * Type of the element
+     */
     private final String elementType;
-    
-    /** Name of the object as it appears on the object bench */
+
+    /**
+     * Name of the object as it appears on the object bench
+     */
     private String objName;
-    
-    /** Type of the object (on the bench) */
+
+    /**
+     * Type of the object (on the bench)
+     */
     private String objType;
 
 
-    public ArrayElementGetRecord(String elementType, int elementIndex, InvokerRecord parentIr)
-    {
+    public ArrayElementGetRecord(String elementType, int elementIndex, InvokerRecord parentIr) {
         this.parentIr = parentIr;
         this.elementType = elementType;
         this.elementIndex = elementIndex;
@@ -55,20 +63,18 @@ public class ArrayElementGetRecord extends InvokerRecord
     }
 
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
     }
-    
+
     /**
      * Give this method invoker record a name on the object bench.
-     * 
+     *
      * @param name Name of the object a it appears on the object bench.
      * @param type The type that the object is on the actual bench.
      */
     @Override
-    public void setBenchName(String name, String type)
-    {
+    public void setBenchName(String name, String type) {
         objName = name;
         objType = type;
     }
@@ -76,48 +82,43 @@ public class ArrayElementGetRecord extends InvokerRecord
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return a String representing the object declaration
-     *         src or null if there is none.
-     */    
+     * src or null if there is none.
+     */
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
-        return firstIndent + fieldDeclarationStart + objType + " " + objName + statementEnd;    
+    public String toFixtureDeclaration(String firstIndent) {
+        return firstIndent + fieldDeclarationStart + objType + " " + objName + statementEnd;
     }
 
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String representing the object initialisation
-     *         src or null if there is none. 
-     */    
+     * src or null if there is none.
+     */
     @Override
-    public String toFixtureSetup(String secondIndent)
-    {
-        return secondIndent + objName + " = " + toExpression() + statementEnd;          
+    public String toFixtureSetup(String secondIndent) {
+        return secondIndent + objName + " = " + toExpression() + statementEnd;
     }
 
     /**
      * Construct a portion of a test method for this
      * invoker record.
-     * 
+     *
      * @return a String representing the test method src
      */
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         return secondIndent + objType + " " + objName + " = " + toExpression() + statementEnd;
     }
-    
+
     @Override
-    public String toExpression()
-    {
-        if(! objType.equals(elementType)) {
+    public String toExpression() {
+        if (!objType.equals(elementType)) {
             return "((" + objType + ") " + parentIr.toExpression() + "[" + elementIndex + "])";
-        }
-        else {
+        } else {
             return parentIr.toExpression() + "[" + elementIndex + "]";
         }
     }

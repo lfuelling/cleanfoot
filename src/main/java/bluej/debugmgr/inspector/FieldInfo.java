@@ -25,43 +25,39 @@ import java.util.Objects;
 
 /**
  * Plain old data type for field/value pairs.
- * 
+ *
  * @author Davin McCall
  */
-public class FieldInfo
-{
+public class FieldInfo {
     private final String description;
     private final String value;
-    
+
     /**
      * Construct a FieldInfo object with the given field description (modifiers, type, name) and value.
      */
-    public FieldInfo(String description, String value)
-    {
+    public FieldInfo(String description, String value) {
         this.description = description;
         this.value = value;
     }
-    
+
     /**
      * Get the field description (modifiers, type, name).
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
-    
+
     /**
      * Get the field value representation.
+     *
      * @return
      */
-    public String getValue()
-    {
+    public String getValue() {
         return value;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FieldInfo fieldInfo = (FieldInfo) o;
@@ -70,8 +66,7 @@ public class FieldInfo
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(description, value);
     }
 }

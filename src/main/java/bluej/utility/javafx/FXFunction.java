@@ -28,8 +28,7 @@ import threadchecker.Tag;
  * Equivalent to Supplier, but clearer (including to plugin) that it runs on FX thread
  */
 @FunctionalInterface
-public interface FXFunction<FROM, TO>
-{
+public interface FXFunction<FROM, TO> {
     @OnThread(Tag.FX)
     TO apply(FROM x);
 }

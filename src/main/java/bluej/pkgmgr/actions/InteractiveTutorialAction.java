@@ -9,19 +9,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class InteractiveTutorialAction extends PkgMgrAction
-{
-    public InteractiveTutorialAction(PkgMgrFrame pmf)
-    {
+public class InteractiveTutorialAction extends PkgMgrAction {
+    public InteractiveTutorialAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.tutorial");
     }
 
     @Override
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
-        try
-        {
+        try {
             // We need to make a new temporary dir, copy the tutorial contents there
             // and open it as a project:
             File dir = Files.createTempDirectory("tutorial").toFile();
@@ -32,8 +28,7 @@ public class InteractiveTutorialAction extends PkgMgrAction
 
             int result = FileUtility.copyDirectory(new File(Config.getBlueJLibDir(), "tutorial"), dir);
 
-            switch (result)
-            {
+            switch (result) {
                 case FileUtility.NO_ERROR:
                     // It worked, use this as the new project:
                     PkgMgrFrame.doOpen(dir, pmf);
@@ -53,9 +48,7 @@ public class InteractiveTutorialAction extends PkgMgrAction
                     break;
             }
 
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             DialogManager.showErrorTextFX(pmf.getFXWindow(), e.getLocalizedMessage());
         }
     }

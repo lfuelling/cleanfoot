@@ -22,7 +22,6 @@
 package bluej.utility.javafx;
 
 import bluej.Config;
-
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Dialog;
@@ -39,10 +38,8 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class FXCustomizedDialog<R> extends Dialog<R>
-{
-    protected FXCustomizedDialog(Window owner, String title, String style)
-    {
+public class FXCustomizedDialog<R> extends Dialog<R> {
+    protected FXCustomizedDialog(Window owner, String title, String style) {
         initOwner(owner);
         initModality(Modality.WINDOW_MODAL);
         setTitle(Config.getString(title));
@@ -50,8 +47,7 @@ public class FXCustomizedDialog<R> extends Dialog<R>
         setDialogPane(new DialogPane() {
             @Override
             @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-            protected Node createButtonBar()
-            {
+            protected Node createButtonBar() {
                 return wrapButtonBar(super.createButtonBar());
             }
         });
@@ -60,23 +56,19 @@ public class FXCustomizedDialog<R> extends Dialog<R>
     }
 
     // For overriding by subclasses: lets you put other elements to left of button bar
-    protected Node wrapButtonBar(Node original)
-    {
+    protected Node wrapButtonBar(Node original) {
         return original;
     }
 
-    protected void setModal(boolean makeModal)
-    {
+    protected void setModal(boolean makeModal) {
         initModality(makeModal ? Modality.APPLICATION_MODAL : Modality.NONE);
     }
 
-    protected void setContentPane(Node content)
-    {
+    protected void setContentPane(Node content) {
         getDialogPane().setContent(content);
     }
 
-    public Window asWindow()
-    {
+    public Window asWindow() {
         Scene scene = getDialogPane().getScene();
         if (scene == null)
             return null;
@@ -88,23 +80,21 @@ public class FXCustomizedDialog<R> extends Dialog<R>
      * (The positioning takes effect once the dialog becomes visible. This method is designed
      * to only be called on not visible windows, and only once before the window is made visible).
      */
-    public void setLocationRelativeTo(Window window)
-    {
+    public void setLocationRelativeTo(Window window) {
         // We rely on the width and height being adjusted when the dialog becomes visible.
-        
+
         JavaFXUtil.addSelfRemovingListener(widthProperty(), (newval) -> {
             double xpos = window.getX() + (window.getWidth() - newval.doubleValue()) / 2;
             setX(xpos);
         });
-        
+
         JavaFXUtil.addSelfRemovingListener(heightProperty(), (newval) -> {
             double xpos = window.getY() + (window.getHeight() - newval.doubleValue()) / 2;
             setY(xpos);
         });
     }
 
-    protected void dialogThenHide(FXPlatformRunnable action)
-    {
+    protected void dialogThenHide(FXPlatformRunnable action) {
         action.run();
         hide();
     }

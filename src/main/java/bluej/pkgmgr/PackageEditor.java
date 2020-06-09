@@ -21,25 +21,27 @@
  */
 package bluej.pkgmgr;
 
-import java.awt.Rectangle;
-import java.awt.geom.Area;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.swing.SwingUtilities;
-
 import bluej.Config;
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
+import bluej.debugger.DebuggerObject;
+import bluej.debugger.gentype.GenTypeClass;
+import bluej.extensions.BDependency;
+import bluej.extmgr.ExtensionsManager;
 import bluej.extmgr.FXMenuManager;
+import bluej.extmgr.PackageExtensionMenu;
+import bluej.graph.SelectionController;
+import bluej.pkgmgr.dependency.Dependency;
+import bluej.pkgmgr.dependency.UsesDependency;
 import bluej.pkgmgr.target.ClassTarget;
+import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.target.Target;
+import bluej.testmgr.record.InvokerRecord;
 import bluej.utility.DialogManager;
 import bluej.utility.Utility;
+import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.ResizableCanvas;
+import bluej.views.CallableView;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
@@ -59,28 +61,19 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
-import bluej.debugger.DebuggerObject;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.extensions.BDependency;
-import bluej.extmgr.ExtensionsManager;
-import bluej.extmgr.PackageExtensionMenu;
-import bluej.graph.SelectionController;
-import bluej.pkgmgr.dependency.Dependency;
-import bluej.pkgmgr.dependency.UsesDependency;
-import bluej.pkgmgr.target.DependentTarget;
-import bluej.pkgmgr.target.Target;
-import bluej.testmgr.record.InvokerRecord;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ResizableCanvas;
-import bluej.views.CallableView;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Area;
+import java.util.List;
+import java.util.*;
 
 /**
  * The main class diagram in the BlueJ package manager frame, supporting
  * dragging/resizing of classes (incl multi-select), and drawing/creation of relations.
- *
+ * <p>
  * The PackageEditor is a StackPane with five child panes.  The back one is a Canvas,
  * on which we draw the arrows (this way, the arrows always appear behind the classes).
  * The second is a layer which contains classes which appear underneath other classes:
@@ -91,14 +84,15 @@ import threadchecker.Tag;
  */
 @OnThread(Tag.FXPlatform)
 public final class PackageEditor extends StackPane
-    implements MouseTrackingOverlayPane.MousePositionListener, PkgMgrFrame.PkgMgrPane, PackageListener,
-        PackageUI
-{
+        implements MouseTrackingOverlayPane.MousePositionListener, PkgMgrFrame.PkgMgrPane, PackageListener,
+        PackageUI {
     private static final int RIGHT_PLACEMENT_MIN = 300;
     private static final int WHITESPACE_SIZE = 10;
-    /**  The grid resolution for graph layout. */
+    /**
+     * The grid resolution for graph layout.
+     */
     public static final int GRID_SIZE = 10;
-    
+
     private final PkgMgrFrame pmf;
     private final Package pkg;
     private final SelectionController selectionController;
@@ -122,7 +116,7 @@ public final class PackageEditor extends StackPane
     // The ContextMenu that is currently being shown on screen (null if not visible)
     @OnThread(Tag.FXPlatform)
     private ContextMenu showingContextMenu;
-    
+
     // For showing info about the arrow-drawing in progress; the overlay pane:
     @OnThread(Tag.FXPlatform)
     private final MouseTrackingOverlayPane overlay;
@@ -151,8 +145,7 @@ public final class PackageEditor extends StackPane
      * Construct a package editor for the given package.
      */
     @OnThread(Tag.FXPlatform)
-    public PackageEditor(PkgMgrFrame pmf, Package pkg, BooleanProperty showUses, BooleanProperty showInherits, MouseTrackingOverlayPane overlay)
-    {
+    public PackageEditor(PkgMgrFrame pmf, Package pkg, BooleanProperty showUses, BooleanProperty showInherits, MouseTrackingOverlayPane overlay) {
         this.pmf = pmf;
         this.pkg = pkg;
         this.selectionController = new SelectionController(this);
@@ -192,77 +185,68 @@ public final class PackageEditor extends StackPane
                 stopNewInherits();
             // Don't consume either way
         });
-        
+
         setPrefHeight(400.0);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void benchToFixture(ClassTarget t)
-    {
+    public void benchToFixture(ClassTarget t) {
         // put objects on object bench into fixtures
         pmf.objectBenchToTestFixture(t);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void fixtureToBench(ClassTarget t)
-    {
+    public void fixtureToBench(ClassTarget t) {
         // put objects on object bench into fixtures
         pmf.testFixtureToObjectBench(t);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void makeTestCase(ClassTarget t)
-    {
+    public void makeTestCase(ClassTarget t) {
         // start recording a new test case
         pmf.makeTestCase(t);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void runTest(ClassTarget ct, String name)
-    {
+    public void runTest(ClassTarget ct, String name) {
         // user has initiated a run operation
         ct.getRole().run(pmf, ct, name);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void openPackage(String packageName)
-    {
+    public void openPackage(String packageName) {
         // user has initiated a package open operation
         pmf.openPackageTarget(packageName);
     }
 
     /**
      * Raise an event to notify that an object should be placed on the oject bench.
-     * @param src  The source of the event
-     * @param obj    The object to be put on the event
-     * @param iType  The "interface" type of the object (declared type, used as a
- *               fallback if the runtime type is not accessible)
-     * @param ir   The invoker record for the invocation used to create this object
+     *
+     * @param src                   The source of the event
+     * @param obj                   The object to be put on the event
+     * @param iType                 The "interface" type of the object (declared type, used as a
+     *                              fallback if the runtime type is not accessible)
+     * @param ir                    The invoker record for the invocation used to create this object
      * @param animateFromScenePoint
      */
     @OnThread(Tag.FXPlatform)
-    public void raisePutOnBenchEvent(Window src, DebuggerObject obj, GenTypeClass iType, InvokerRecord ir, boolean askForName, Optional<Point2D> animateFromScenePoint)
-    {
+    public void raisePutOnBenchEvent(Window src, DebuggerObject obj, GenTypeClass iType, InvokerRecord ir, boolean askForName, Optional<Point2D> animateFromScenePoint) {
         pmf.putObjectOnBench(src, obj, iType, ir, askForName, animateFromScenePoint);
     }
-    
+
     /**
      * Notify of some interaction.
      */
     @OnThread(Tag.FXPlatform)
-    public void recordInteraction(InvokerRecord ir)
-    {
+    public void recordInteraction(InvokerRecord ir) {
         pmf.recordInteraction(ir);
     }
-    
-    private boolean popupMenu(double screenX, double screenY)
-    {
+
+    private boolean popupMenu(double screenX, double screenY) {
         ContextMenu menu = new ContextMenu();
         Point2D graphLoc = screenToLocal(screenX, screenY);
-        for (Dependency d : getVisibleEdges())
-        {
-            if (d.isRemovable() && d.contains((int)graphLoc.getX(), (int)graphLoc.getY()))
-            {
+        for (Dependency d : getVisibleEdges()) {
+            if (d.isRemovable() && d.contains((int) graphLoc.getX(), (int) graphLoc.getY())) {
                 // Show a remove menu
                 MenuItem removeEdge = new MenuItem(Config.getString("menu.edit.remove"));
                 removeEdge.setOnAction(e -> {
@@ -294,7 +278,7 @@ public final class PackageEditor extends StackPane
             pmf.doCreateNewPackage(graphLoc.getX(), graphLoc.getY());
         });
         JavaFXUtil.addStyleClass(newPackage, "class-action-inbuilt");
-        
+
         MenuItem newCSS = new MenuItem(Config.getString("menu.edit.newCSS"));
         newCSS.setOnAction(e -> {
             pmf.menuCall();
@@ -334,10 +318,8 @@ public final class PackageEditor extends StackPane
 
     // Record that we are showing this new context menu.
     // If a context menu was already showing, dismiss it.
-    private void showingMenu(ContextMenu menu)
-    {
-        if (showingContextMenu != null)
-        {
+    private void showingMenu(ContextMenu menu) {
+        if (showingContextMenu != null) {
             showingContextMenu.hide();
         }
         showingContextMenu = menu;
@@ -345,8 +327,7 @@ public final class PackageEditor extends StackPane
 
     // Gets the FX window in which this package editor lies.
     @OnThread(Tag.FXPlatform)
-    public Window getFXWindow()
-    {
+    public Window getFXWindow() {
         return pmf.getFXWindow();
     }
 
@@ -355,15 +336,12 @@ public final class PackageEditor extends StackPane
      * will be placed somewhere near the top where it does not overlap with
      * existing vertices.
      *
-     * @param t
-     *            The vertex to place.
+     * @param t The vertex to place.
      */
-    public void findSpaceForVertex(Target t)
-    {
+    public void findSpaceForVertex(Target t) {
         Area a = new Area();
 
-        for (Target vertex : pkg.getVertices())
-        {
+        for (Target vertex : pkg.getVertices()) {
             // lets discount the vertex we are adding from the space
             // calculations
             if (vertex != t) {
@@ -371,7 +349,7 @@ public final class PackageEditor extends StackPane
                 a.add(new Area(vr));
             }
         }
-        
+
         double minWidth = 300;
         double minHeight = 200;
 
@@ -390,31 +368,26 @@ public final class PackageEditor extends StackPane
             }
         }
 
-        t.setPos(10, (int)minHeight + 10);
+        t.setPos(10, (int) minHeight + 10);
     }
 
     @Override
     @OnThread(value = Tag.FXPlatform)
-    public void graphChanged()
-    {
+    public void graphChanged() {
         HashMap<Node, Boolean> keep = new HashMap<>();
 
         // We assume all components currently in the graph belong to vertices.
         // We first mark all of them as no longer needed:
-        for (Node c : frontClassLayer.getChildren())
-        {
+        for (Node c : frontClassLayer.getChildren()) {
             keep.put(c, false);
         }
-        for (Node c : backClassLayer.getChildren())
-        {
+        for (Node c : backClassLayer.getChildren()) {
             keep.put(c, false);
         }
 
         // Add what needs to be added:
-        for (Target v : pkg.getVertices())
-        {
-            if (!keep.containsKey(v.getNode()))
-            {
+        for (Target v : pkg.getVertices()) {
+            if (!keep.containsKey(v.getNode())) {
                 (v.isFront() ? frontClassLayer : backClassLayer).getChildren().add(v.getNode());
                 //v.getComponent().addFocusListener(focusListener);
                 //v.getComponent().addFocusListener(selectionController);
@@ -427,10 +400,8 @@ public final class PackageEditor extends StackPane
             keep.put(v.getNode(), true);
         }
         // Remove what needs to be removed (i.e. what we didn't see in the vertices):
-        for (Map.Entry<Node, Boolean> e : keep.entrySet())
-        {
-            if (e.getValue().booleanValue() == false)
-            {
+        for (Map.Entry<Node, Boolean> e : keep.entrySet()) {
+            if (e.getValue().booleanValue() == false) {
                 frontClassLayer.getChildren().remove(e.getKey());
                 backClassLayer.getChildren().remove(e.getKey());
                 //e.getKey().removeFocusListener(focusListener);
@@ -440,15 +411,14 @@ public final class PackageEditor extends StackPane
         }
 
         pmf.graphChanged();
-        
+
         //TODO make sure removed items aren't still in the selection
 
         repaint();
     }
-    
-    public void graphClosed()
-    {
-        
+
+    public void graphClosed() {
+
     }
 
     private static final int ARROW_SIZE = 18; // pixels
@@ -461,25 +431,25 @@ public final class PackageEditor extends StackPane
      * e.g. we have a listener on X and Y or width and height, and both change
      * in one go; we want to redraw once, not twice.
      */
-    public void repaint()
-    {
-        if (!aboutToRepaint)
-        {
+    public void repaint() {
+        if (!aboutToRepaint) {
             aboutToRepaint = true;
             JavaFXUtil.runAfterCurrent(this::actualRepaint);
         }
     }
 
-    /** Records that the mouse is now hovering over the given target */
-    public void setMouseIn(Target target)
-    {
+    /**
+     * Records that the mouse is now hovering over the given target
+     */
+    public void setMouseIn(Target target) {
         if (creatingExtends && extendsSubClass != null && target instanceof ClassTarget)
-            extendsSuperClassHover = (ClassTarget)target;
+            extendsSuperClassHover = (ClassTarget) target;
     }
 
-    /** Records that the mouse has stopped hovering over the given target. */
-    public void setMouseLeft(Target target)
-    {
+    /**
+     * Records that the mouse has stopped hovering over the given target.
+     */
+    public void setMouseLeft(Target target) {
         if (extendsSuperClassHover == target)
             extendsSuperClassHover = null;
     }
@@ -488,15 +458,13 @@ public final class PackageEditor extends StackPane
      * Check whether the focus is still on one of the vertices in the graph.
      * If not, clears the selection.
      */
-    public void checkForLossOfFocus()
-    {
+    public void checkForLossOfFocus() {
         // If none of our children have focus any more
         // after processing has completed, select none:
         JavaFXUtil.runAfterCurrent(() -> {
             // We want to cancel selection if codepad gets focus (for example) but not
             // if the reason for our loss of focus is that the whole window has lost focus:
-            if (!targetHasFocus() && getFXWindow().isFocused())
-            {
+            if (!targetHasFocus() && getFXWindow().isFocused()) {
                 selectionController.clearSelection();
             }
         });
@@ -504,10 +472,10 @@ public final class PackageEditor extends StackPane
 
     /**
      * Does one of the targets in the class diagram have focus?
+     *
      * @return
      */
-    public boolean targetHasFocus()
-    {
+    public boolean targetHasFocus() {
         return pkg.getVertices().stream().anyMatch(Target::isFocused);
     }
 
@@ -515,29 +483,24 @@ public final class PackageEditor extends StackPane
      * Tries to focus a target in the class diagram.  If there is
      * already a selection, we focus one of the selected items.
      * If not, we select an arbitrart target.
+     *
      * @return true if we found something to focus, false if there was nothing to focus.
      */
-    public boolean focusSelectedOrArbitrary()
-    {
-        if (selectionController.getSelection().isEmpty())
-        {
+    public boolean focusSelectedOrArbitrary() {
+        if (selectionController.getSelection().isEmpty()) {
             if (pkg.getVertices().isEmpty())
                 return false;
-            else
-            {
+            else {
                 pkg.getVertices().get(0).requestFocus();
                 return true;
             }
-        }
-        else
-        {
+        } else {
             selectionController.getSelection().get(0).requestFocus();
             return true;
         }
     }
 
-    public boolean isCreatingExtends()
-    {
+    public boolean isCreatingExtends() {
         return creatingExtends;
     }
 
@@ -546,25 +509,22 @@ public final class PackageEditor extends StackPane
      * which could be either real and finished, or in-progress of being created.
      */
     @OnThread(Tag.FXPlatform)
-    private static class ExtendsDepInfo
-    {
+    private static class ExtendsDepInfo {
         private final Dependency.Line line;
         private final boolean selected;
         private final boolean creating;
         private BDependency.Type type;
 
-        public ExtendsDepInfo(Dependency d)
-        {
+        public ExtendsDepInfo(Dependency d) {
             this.line = d.computeLine();
             this.selected = d.isSelected();
             this.creating = false;
-            this.type=d.getType();
+            this.type = d.getType();
         }
 
         // When we have a firm from, but the to point is not currently
         // over any target
-        public ExtendsDepInfo(DependentTarget from, double toX, double toY)
-        {
+        public ExtendsDepInfo(DependentTarget from, double toX, double toY) {
             // Compute centre points of source and dest target
             Point2D pFrom = new Point2D(from.getX() + from.getWidth() / 2, from.getY() + from.getHeight() / 2);
             Point2D pTo = new Point2D(toX, toY);
@@ -582,8 +542,7 @@ public final class PackageEditor extends StackPane
 
         // When we have a firm from, and the mouse is hovering over an
         // actual target for a to.
-        public ExtendsDepInfo(DependentTarget from, DependentTarget to)
-        {
+        public ExtendsDepInfo(DependentTarget from, DependentTarget to) {
             // Compute centre points of source and dest target
             Point2D pFrom = new Point2D(from.getX() + from.getWidth() / 2, from.getY() + from.getHeight() / 2);
             Point2D pTo = new Point2D(to.getX() + to.getWidth() / 2, to.getY() + to.getHeight() / 2);
@@ -605,32 +564,26 @@ public final class PackageEditor extends StackPane
      * Does the actual repaint of the arrowLayer (do not call directly;
      * see repaint method).
      */
-    private void actualRepaint()
-    {
+    private void actualRepaint() {
         aboutToRepaint = false;
         List<Dependency> extendsDeps = isShowExtends() ? new ArrayList<>(pkg.getExtendsArrows()) : Collections.emptyList();
         List<UsesDependency> usesDeps = isShowUses() ? new ArrayList<>(pkg.getUsesArrows()) : Collections.emptyList();
 
         List<ExtendsDepInfo> extendsLines = new ArrayList<>(Utility.mapList(extendsDeps, ExtendsDepInfo::new));
-        if (extendsSubClass != null)
-        {
-            if (extendsSuperClassHover != null)
-            {
+        if (extendsSubClass != null) {
+            if (extendsSuperClassHover != null) {
                 extendsLines.add(new ExtendsDepInfo(extendsSubClass, extendsSuperClassHover));
-            }
-            else
-            {
+            } else {
                 Point2D p = arrowLayer.sceneToLocal(newExtendsDestX, newExtendsDestY);
                 extendsLines.add(new ExtendsDepInfo(extendsSubClass, p.getX(), p.getY()));
             }
         }
-        
-        
+
+
         GraphicsContext g = arrowLayer.getGraphicsContext2D();
         g.clearRect(0, 0, arrowLayer.getWidth(), arrowLayer.getHeight());
 
-        for (ExtendsDepInfo d : extendsLines)
-        {
+        for (ExtendsDepInfo d : extendsLines) {
             g.setStroke(d.creating ? Color.BLUE : Color.BLACK);
             g.setLineWidth(d.selected ? 3.0 : 1.0);
             Dependency.Line line = d.line;
@@ -652,19 +605,15 @@ public final class PackageEditor extends StackPane
                     toY - (ARROW_SIZE * Math.sin(angle - ARROW_ANGLE))};
             g.setLineDashes();
             g.strokePolygon(xPoints, yPoints, 3);
-            if (d.type==BDependency.Type.IMPLEMENTS)
-            {
+            if (d.type == BDependency.Type.IMPLEMENTS) {
                 g.setLineDashes(DASHES);
-            }
-            else
-            {
+            } else {
                 g.setLineDashes();
             }
             g.strokeLine(fromX, fromY, arrowJoinX, arrowJoinY);
         }
 
-        for (UsesDependency d : usesDeps)
-        {
+        for (UsesDependency d : usesDeps) {
             g.setLineWidth(1.0);
             g.setLineDashes(DASHES);
             // These should all be rounded to the nearest integer+0.5 value:
@@ -717,26 +666,24 @@ public final class PackageEditor extends StackPane
     /**
      * Clear the set of selected classes. (Nothing will be selected after this.)
      */
-    public void clearSelection()
-    {
+    public void clearSelection() {
         selectionController.clearSelection();
     }
 
 
     /**
      * Add to the current selection
+     *
      * @param element the element to add
      */
-    public void addToSelection(Target element)
-    {
+    public void addToSelection(Target element) {
         selectionController.addToSelection(element);
     }
 
     /**
      * Toggles whether the given element is selected or not.
      */
-    public void toggleSelection(Target element)
-    {
+    public void toggleSelection(Target element) {
         if (!element.isSelected())
             selectionController.addToSelection(element);
         else
@@ -744,19 +691,17 @@ public final class PackageEditor extends StackPane
     }
 
     @OnThread(Tag.Any)
-    public Package getPackage()
-    {
+    public Package getPackage() {
         return pkg;
     }
 
     /**
-     * Start our mouse listener. This is not done in the constructor, because we want 
+     * Start our mouse listener. This is not done in the constructor, because we want
      * to give others (the PkgMgrFrame) the chance to listen first.
-     * 
+     * <p>
      * NB: I'm not sure this is true now that we are in JavaFX.
      */
-    public void startMouseListening()
-    {
+    public void startMouseListening() {
         // Needs to be filter because we want to dismiss the menu when
         // child nodes are clicked on:
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> showingMenu(null));
@@ -771,8 +716,7 @@ public final class PackageEditor extends StackPane
      * Gets all the currently visible edges (depending on showUses/showExtends settings).
      */
     @OnThread(Tag.FXPlatform)
-    public synchronized Collection<Dependency> getVisibleEdges()
-    {
+    public synchronized Collection<Dependency> getVisibleEdges() {
         List<Dependency> deps = new ArrayList<>();
 
         if (isShowUses())
@@ -788,32 +732,28 @@ public final class PackageEditor extends StackPane
      * <code>target</code> and <code>type</code> or <code>null</code> if there
      * is no such dependency.
      *
-     * @param origin
-     *            The origin of the dependency.
-     * @param target
-     *            The target of the dependency.
-     * @param type
-     *            The type of the dependency (there may be more than one
-     *            dependencies with the same origin and target but different
-     *            types).
+     * @param origin The origin of the dependency.
+     * @param target The target of the dependency.
+     * @param type   The type of the dependency (there may be more than one
+     *               dependencies with the same origin and target but different
+     *               types).
      * @return The {@link Dependency} with the specified <code>origin</code>,
-     *         <code>target</code> and <code>type</code> or <code>null</code> if
-     *         there is no such dependency.
+     * <code>target</code> and <code>type</code> or <code>null</code> if
+     * there is no such dependency.
      */
     @OnThread(Tag.SwingIsFX)
-    public synchronized Dependency getDependency(DependentTarget origin, DependentTarget target, BDependency.Type type)
-    {
+    public synchronized Dependency getDependency(DependentTarget origin, DependentTarget target, BDependency.Type type) {
         List<? extends Dependency> dependencies;
 
         switch (type) {
-            case USES :
+            case USES:
                 dependencies = pkg.getUsesArrows();
                 break;
-            case IMPLEMENTS :
-            case EXTENDS :
+            case IMPLEMENTS:
+            case EXTENDS:
                 dependencies = pkg.getExtendsArrows();
                 break;
-            default :
+            default:
                 // If the type of the dependency is UNKNOWN, the requested
                 // dependency does not exist anymore. In this case the method
                 // returns null.
@@ -832,31 +772,26 @@ public final class PackageEditor extends StackPane
         return null;
     }
 
-    public void setShowUses(boolean state)
-    {
+    public void setShowUses(boolean state) {
         showUses.set(state);
     }
 
-    public void setShowExtends(boolean state)
-    {
+    public void setShowExtends(boolean state) {
         showExtends.set(state);
     }
 
-    public boolean isShowUses()
-    {
+    public boolean isShowUses() {
         return showUses.get();
     }
 
-    public boolean isShowExtends()
-    {
+    public boolean isShowExtends() {
         return showExtends.get();
     }
 
     /**
      * Clears the state: stops creating a new extends arrow.
      */
-    public void clearState()
-    {
+    public void clearState() {
         if (creatingExtends)
             stopNewInherits();
     }
@@ -864,8 +799,7 @@ public final class PackageEditor extends StackPane
     /**
      * Called to start creating a new inherits arrow.
      */
-    public void doNewInherits()
-    {
+    public void doNewInherits() {
         if (!creatingExtends) {
             arrowCreationTip = new Label(Config.getString("pkgmgr.chooseInhFrom"));
             JavaFXUtil.addStyleClass(arrowCreationTip, "pmf-create-extends-tip");
@@ -883,8 +817,7 @@ public final class PackageEditor extends StackPane
     /**
      * Stops creating a new inherits arrow.
      */
-    private void stopNewInherits()
-    {
+    private void stopNewInherits() {
         overlay.removeMouseListener(this);
         overlay.remove(arrowCreationTip);
         arrowCreationTip = null;
@@ -897,16 +830,14 @@ public final class PackageEditor extends StackPane
         repaint();
     }
 
-    public boolean doRemoveDependency()
-    {
+    public boolean doRemoveDependency() {
         return false;
     }
 
     /**
      * Selects the given single target, and no others.
      */
-    public void selectOnly(Target target)
-    {
+    public void selectOnly(Target target) {
         selectionController.selectOnly(target);
     }
 
@@ -914,12 +845,11 @@ public final class PackageEditor extends StackPane
     /**
      * Modify the given point to be one of the defined grid points.
      *
-     * @param x  The original point's x coordinate.
-     * @return      The x coordinate of a point close to the original which is on the grid.
+     * @param x The original point's x coordinate.
+     * @return The x coordinate of a point close to the original which is on the grid.
      */
-    public int snapToGrid(int x)
-    {
-        int steps = (int)Math.round((double)x / PackageEditor.GRID_SIZE);
+    public int snapToGrid(int x) {
+        int steps = (int) Math.round((double) x / PackageEditor.GRID_SIZE);
         int new_x = steps * PackageEditor.GRID_SIZE;//new x-coor w/ respect to
         // grid
         return new_x;
@@ -928,10 +858,8 @@ public final class PackageEditor extends StackPane
     /**
      * Started a move operation on the selection
      */
-    public void startedMove()
-    {
-        for (Target element : selectionController.getSelection())
-        {
+    public void startedMove() {
+        for (Target element : selectionController.getSelection()) {
             if (element.isMoveable())
                 element.savePreMovePosition();
         }
@@ -941,10 +869,8 @@ public final class PackageEditor extends StackPane
      * Performing a move operation: move by the given amounts
      * from the last time we called startedMove
      */
-    public void moveBy(int deltaX, int deltaY)
-    {
-        for (Target element : selectionController.getSelection())
-        {
+    public void moveBy(int deltaX, int deltaY) {
+        for (Target element : selectionController.getSelection()) {
             if (element.isMoveable())
                 element.setPos(Math.max(0, element.getPreMoveX() + deltaX), Math.max(0, element.getPreMoveY() + deltaY));
         }
@@ -954,12 +880,9 @@ public final class PackageEditor extends StackPane
     /**
      * Started a move operation on the selection
      */
-    public void startedResize()
-    {
-        for (Target element : selectionController.getSelection())
-        {
-            if (element.isResizable())
-            {
+    public void startedResize() {
+        for (Target element : selectionController.getSelection()) {
+            if (element.isResizable()) {
                 element.savePreResize();
                 JavaFXUtil.setPseudoclass("bj-resizing", true, element.getNode());
             }
@@ -970,10 +893,8 @@ public final class PackageEditor extends StackPane
      * Performing a resize operation: resize by the given amounts
      * from the last time we called startedResize
      */
-    public void resizeBy(int deltaWidth, int deltaHeight)
-    {
-        for (Target element : selectionController.getSelection())
-        {
+    public void resizeBy(int deltaWidth, int deltaHeight) {
+        for (Target element : selectionController.getSelection()) {
             if (element.isResizable())
                 element.setSize(Math.max(40, element.getPreResizeWidth() + deltaWidth), Math.max(20, element.getPreResizeHeight() + deltaHeight));
         }
@@ -982,10 +903,8 @@ public final class PackageEditor extends StackPane
     /**
      * Finishes a resize operation.
      */
-    public void endResize()
-    {
-        for (Target element : selectionController.getSelection())
-        {
+    public void endResize() {
+        for (Target element : selectionController.getSelection()) {
             if (element.isResizable())
                 JavaFXUtil.setPseudoclass("bj-resizing", false, element.getNode());
         }
@@ -994,16 +913,14 @@ public final class PackageEditor extends StackPane
     /**
      * Navigates the diagram according to the given key press.
      */
-    public void navigate(KeyEvent event)
-    {
+    public void navigate(KeyEvent event) {
         selectionController.navigate(event);
     }
 
     /**
      * Select everything in the diagram.
      */
-    public void selectAll()
-    {
+    public void selectAll() {
         selectionController.selectAll();
     }
 
@@ -1012,47 +929,38 @@ public final class PackageEditor extends StackPane
      * arrow then select this target and return true.  If we are not creating
      * a new extends arrow, return false.
      */
-    public boolean clickForExtends(Target target, double sceneX, double sceneY)
-    {
-        if (creatingExtends && target instanceof ClassTarget)
-        {
-            if (extendsSubClass == null)
-            {
-                extendsSubClass = (ClassTarget)target;
+    public boolean clickForExtends(Target target, double sceneX, double sceneY) {
+        if (creatingExtends && target instanceof ClassTarget) {
+            if (extendsSubClass == null) {
+                extendsSubClass = (ClassTarget) target;
                 arrowCreationTip.setText(Config.getString("pkgmgr.chooseInhTo"));
-                overlay.addMouseListener(this); 
+                overlay.addMouseListener(this);
                 newExtendsDestX = sceneX;
                 newExtendsDestY = sceneY;
                 repaint();
-            }
-            else
-            {
+            } else {
                 // Finished; we can actually add the dependency
                 // Take a copy because we're going to null it:
                 ClassTarget subClassFinal = this.extendsSubClass;
-                if (!subClassFinal.hasSourceCode())
-                {
+                if (!subClassFinal.hasSourceCode()) {
                     DialogManager.showErrorFX(pmf.getFXWindow(),
                             "no-extends-arrow-from-no-source-class");
                     clearState();
                     return false;
                 }
-                ClassTarget superClass = (ClassTarget)target;
-                if (subClassFinal.isInterface())
-                {
+                ClassTarget superClass = (ClassTarget) target;
+                if (subClassFinal.isInterface()) {
                     if (superClass.isInterface())
                         pkg.userAddExtendsInterfaceDependency(subClassFinal, superClass);
                     // TODO else give an error about why this won't work?
-                }
-                else
-                {
+                } else {
                     if (superClass.isInterface())
                         pkg.userAddImplementsClassDependency(subClassFinal, superClass);
                     else
                         pkg.userAddExtendsClassDependency(subClassFinal, superClass);
                 }
                 pkg.compile(subClassFinal, CompileReason.MODIFIED_EXTENDS, CompileType.INDIRECT_USER_COMPILE);
-                
+
                 stopNewInherits();
             }
         }
@@ -1060,28 +968,24 @@ public final class PackageEditor extends StackPane
     }
 
     @Override
-    public void mouseMoved(double localX, double localY)
-    {
+    public void mouseMoved(double localX, double localY) {
         newExtendsDestX = localX;
         newExtendsDestY = localY;
         repaint();
     }
-    
+
     @Override
-    public Stage getStage()
-    {
+    public Stage getStage() {
         return pmf.getFXWindow();
     }
-    
+
     @Override
-    public void callStaticMethodOrConstructor(CallableView view)
-    {
+    public void callStaticMethodOrConstructor(CallableView view) {
         pmf.callStaticMethodOrConstructor(view);
     }
 
     @Override
-    public void highlightObject(DebuggerObject currentObject)
-    {
+    public void highlightObject(DebuggerObject currentObject) {
         pmf.getObjectBench().highlightObject(currentObject);
     }
 
@@ -1091,31 +995,26 @@ public final class PackageEditor extends StackPane
      * and add the spacing to the parent's return value.
      */
     @OnThread(Tag.FX)
-    private static class AnchorPaneExtraSpacing extends AnchorPane
-    {
+    private static class AnchorPaneExtraSpacing extends AnchorPane {
         public static final double EXTRA_SPACE = 20.0;
 
         @Override
-        protected double computePrefWidth(double height)
-        {
+        protected double computePrefWidth(double height) {
             return super.computePrefWidth(height) + EXTRA_SPACE;
         }
 
         @Override
-        protected double computePrefHeight(double width)
-        {
+        protected double computePrefHeight(double width) {
             return super.computePrefHeight(width) + EXTRA_SPACE;
         }
 
         @Override
-        protected double computeMinHeight(double width)
-        {
+        protected double computeMinHeight(double width) {
             return super.computeMinHeight(width) + EXTRA_SPACE;
         }
 
         @Override
-        protected double computeMinWidth(double height)
-        {
+        protected double computeMinWidth(double height) {
             return super.computeMinWidth(height) + EXTRA_SPACE;
         }
     }

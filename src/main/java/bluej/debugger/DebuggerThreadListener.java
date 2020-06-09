@@ -28,11 +28,11 @@ import threadchecker.Tag;
  * Created by neil on 15/05/2017.
  */
 @OnThread(Tag.VMEventHandler)
-public interface DebuggerThreadListener
-{
+public interface DebuggerThreadListener {
     /**
      * Called when a thread has changed state.
-     * @param thread The thread whose state has changed
+     *
+     * @param thread        The thread whose state has changed
      * @param shouldDisplay If true, change the debugger to display this thread.
      *                      If false, leave display as-is.
      */

@@ -7,12 +7,10 @@ import javafx.scene.canvas.Canvas;
  * to be resized.  You can also specify an action to be run on resize
  * (typically, a redraw action).
  */
-public class ResizableCanvas extends Canvas
-{
+public class ResizableCanvas extends Canvas {
     protected FXRunnable onResize;
 
-    public ResizableCanvas()
-    {
+    public ResizableCanvas() {
         this(null);
     }
 
@@ -21,20 +19,17 @@ public class ResizableCanvas extends Canvas
      *
      * @param onResize If not null, will be runs whenever the canvas is resized.
      */
-    public ResizableCanvas(FXRunnable onResize)
-    {
+    public ResizableCanvas(FXRunnable onResize) {
         this.onResize = onResize;
     }
 
     @Override
-    public boolean isResizable()
-    {
+    public boolean isResizable() {
         return true;
     }
 
     @Override
-    public void resize(double width, double height)
-    {
+    public void resize(double width, double height) {
         setWidth(width);
         setHeight(height);
         if (onResize != null)
@@ -42,38 +37,32 @@ public class ResizableCanvas extends Canvas
     }
 
     @Override
-    public double minWidth(double height)
-    {
+    public double minWidth(double height) {
         return 0;
     }
 
     @Override
-    public double minHeight(double width)
-    {
+    public double minHeight(double width) {
         return 0;
     }
 
     @Override
-    public double prefWidth(double height)
-    {
+    public double prefWidth(double height) {
         return 0;
     }
 
     @Override
-    public double prefHeight(double width)
-    {
+    public double prefHeight(double width) {
         return 0;
     }
 
     @Override
-    public double maxWidth(double height)
-    {
+    public double maxWidth(double height) {
         return Double.MAX_VALUE;
     }
 
     @Override
-    public double maxHeight(double width)
-    {
+    public double maxHeight(double width) {
         return Double.MAX_VALUE;
     }
 }

@@ -24,50 +24,41 @@ package greenfoot.util;
 import greenfoot.Actor;
 import greenfoot.World;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
- * This class has some helper methods for the debugger in Greenfoot; 
+ * This class has some helper methods for the debugger in Greenfoot;
  * currently, this is information on what fields to hide/show
  * when looking at objects (via the inspector or debugger).
- * 
+ * <p>
  * This can be used to hide fields from Actor and World when looking at subclasses of them.
- *
  */
-public class DebugUtil
-{
-    public static Map<Class<?>, List<String>> restrictedClasses()
-    {
+public class DebugUtil {
+    public static Map<Class<?>, List<String>> restrictedClasses() {
         return restricted;
     }
-    
+
     /**
      * As restrictedClasses, but uses Strings (fully qualified class names)
      * as the keys rather than Class objects.
      */
-    public static Map<String, Set<String>> restrictedClassesAsNames()
-    {
+    public static Map<String, Set<String>> restrictedClassesAsNames() {
         return restrictedAsNames;
     }
-    
+
     private static final String[] actorIncludeFields = new String[]{"x", "y", "rotation", "image", "world"};
     private static final String[] worldIncludeFields = new String[]{"width", "height", "cellSize", "backgroundImage"};
-    
+
     // Make these static to avoid reallocating the map every time it is asked for:
     private static final HashMap<Class<?>, List<String>> restricted;
     private static final HashMap<String, Set<String>> restrictedAsNames;
-    static 
-    {
+
+    static {
         restricted = new HashMap<Class<?>, List<String>>();
         restricted.put(Actor.class, Arrays.asList(actorIncludeFields));
         restricted.put(World.class, Arrays.asList(worldIncludeFields));
-        
+
         restrictedAsNames = new HashMap<String, Set<String>>();
         for (Entry<Class<?>, List<String>> e : restricted.entrySet()) {
             HashSet<String> values = new HashSet<String>();

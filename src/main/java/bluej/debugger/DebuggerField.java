@@ -27,28 +27,27 @@ import threadchecker.Tag;
 
 /**
  * Representation of a class or object field, together with its value.
- * 
+ *
  * @author Davin McCall
  */
-public abstract class DebuggerField
-{
+public abstract class DebuggerField {
     /**
      * Get the field name
      */
     @OnThread(Tag.Any)
     public abstract String getName();
-    
+
     /**
      * Get the field type
      */
     @OnThread(Tag.FXPlatform)
     public abstract JavaType getType();
-    
+
     /**
      * Get the field modifiers. see {@link java.lang.reflect.Modifier}.
      */
     public abstract int getModifiers();
-    
+
     /**
      * Get a string representation of the value of the field.
      * For null, the string "null" will be returned.
@@ -58,18 +57,18 @@ public abstract class DebuggerField
      */
     @OnThread(Tag.Any)
     public abstract String getValueString();
-    
+
     /**
      * If the field value is an object (or null), return it as a DebuggerObject.
-     * 
-     * @param expectedType   the known type of the field, which may be more precise than the declared type.
-     *                       May be null.
+     *
+     * @param expectedType the known type of the field, which may be more precise than the declared type.
+     *                     May be null.
      */
     public abstract DebuggerObject getValueObject(JavaType expectedType);
 
     /**
      * If the field value is an object (or null), return it as a DebuggerObject.
-     * 
+     * <p>
      * JavaType is difficult to tag because its subclasses may use Parsed*Reflective
      * classes, which are only safe for use on the FX thread.  However, when null is
      * passed to the method it is thread-safe, so we make a delegate method here which
@@ -77,8 +76,7 @@ public abstract class DebuggerField
      */
     @OnThread(Tag.Any)
     @SuppressWarnings("threadchecker")
-    public DebuggerObject getValueObject()
-    {
+    public DebuggerObject getValueObject() {
         return getValueObject(null);
     }
 
@@ -86,34 +84,31 @@ public abstract class DebuggerField
      * Get the class which declares this field.
      */
     public abstract DebuggerClass getDeclaringClass();
-    
+
     /**
      * Get the qualified name of the class which declares this field.
      */
-    public String getDeclaringClassName()
-    {
+    public String getDeclaringClassName() {
         return getDeclaringClass().getName();
     }
-    
+
     /**
      * Check whether this field is hidden - redefined in a subclass or ambiguously multiply inherited
      */
     public abstract boolean isHidden();
-    
+
     /**
      * Check whether the field type is a reference type.
      */
     @OnThread(Tag.FXPlatform)
-    public boolean isReferenceType()
-    {
-        return ! getType().isPrimitive();
+    public boolean isReferenceType() {
+        return !getType().isPrimitive();
     }
-    
+
     /**
      * Check whether the field value is null.
      */
-    public boolean isNull()
-    {
+    public boolean isNull() {
         return getValueString().equals("null");
     }
 }

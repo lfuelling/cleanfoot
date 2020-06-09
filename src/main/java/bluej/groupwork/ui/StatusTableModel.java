@@ -21,26 +21,24 @@
  */
 package bluej.groupwork.ui;
 
-import java.util.List;
-import javafx.collections.ObservableList;
-
 import bluej.Config;
 import bluej.groupwork.TeamStatusInfo;
 import bluej.pkgmgr.Project;
+import javafx.collections.ObservableList;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.List;
 
 /**
  * Given a list of StatusEntry(s) returns a table model which allows them to
  * be edited in a JTable.
- * 
- * 
+ *
  * @author Bruce Quig
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public abstract class StatusTableModel
-{
+public abstract class StatusTableModel {
     protected final String resourceLabel = Config.getString("team.status.resource");
     protected final String remoteStatusLabel = Config.getString("team.status.remote");
     protected final String versionLabel = Config.getString("team.status.version");
@@ -53,8 +51,7 @@ public abstract class StatusTableModel
     /**
      *
      */
-    public StatusTableModel(Project project, int initialRows)
-    {
+    public StatusTableModel(Project project, int initialRows) {
         this.project = project;
 //        resources = FXCollections.observableArrayList();
 //        for(int i = 0; i < initialRows; i++) {
@@ -65,26 +62,22 @@ public abstract class StatusTableModel
     /**
      * Return the name of a particular column
      *
-     * @param col   the column we are naming
-     * @return      a string of the columns name
+     * @param col the column we are naming
+     * @return a string of the columns name
      */
-    public String getColumnName(int col)
-    {
+    public String getColumnName(int col) {
         try {
             return labelsList.get(col);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("bad column number in StatusTableModel::getColumnName()");
         }
     }
-    
-    public void setStatusData(ObservableList<TeamStatusInfo> statusResources)
-    {
+
+    public void setStatusData(ObservableList<TeamStatusInfo> statusResources) {
         resources = statusResources;
     }
 
-    public ObservableList<TeamStatusInfo> getResources()
-    {
+    public ObservableList<TeamStatusInfo> getResources() {
         return resources;
     }
 }

@@ -24,30 +24,25 @@ package lang.stride;
 import java.util.AbstractList;
 import java.util.List;
 
-public class Utility
-{
+public class Utility {
     /**
      * Fills an array with an inclusive range
-     * 
+     * <p>
      * If start < end, range uses step 1
      * If start == end, range is size 1
      * If start > end, array will be empty
      */
-    public static List<Integer> makeRange(int start, int end)
-    {
-        return new AbstractList<Integer>()
-        {
+    public static List<Integer> makeRange(int start, int end) {
+        return new AbstractList<Integer>() {
             private final boolean empty = start > end;
 
             @Override
-            public int size()
-            {
+            public int size() {
                 return empty ? 0 : end - start + 1;
             }
 
             @Override
-            public Integer get(int index)
-            {
+            public Integer get(int index) {
                 if (!empty && index >= 0 && start + index <= end)
                     return start + index;
                 else

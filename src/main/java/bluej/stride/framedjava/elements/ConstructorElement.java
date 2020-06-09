@@ -22,63 +22,47 @@
 package bluej.stride.framedjava.elements;
 
 
+import bluej.stride.framedjava.ast.*;
+import bluej.stride.framedjava.frames.ConstructorFrame;
+import bluej.stride.generic.Frame;
+import bluej.stride.generic.Frame.ShowReason;
+import bluej.stride.generic.InteractionManager;
+import nu.xom.Element;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import bluej.stride.framedjava.ast.AccessPermission;
-import bluej.stride.generic.InteractionManager;
-import nu.xom.Element;
-import bluej.stride.framedjava.ast.AccessPermissionFragment;
-import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.JavadocUnit;
-import bluej.stride.framedjava.ast.ParamFragment;
-import bluej.stride.framedjava.ast.SlotFragment;
-import bluej.stride.framedjava.ast.SuperThis;
-import bluej.stride.framedjava.ast.SuperThisFragment;
-import bluej.stride.framedjava.ast.SuperThisParamsExpressionFragment;
-import bluej.stride.framedjava.ast.ThrowsTypeFragment;
-import bluej.stride.framedjava.frames.ConstructorFrame;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.Frame.ShowReason;
-
-public class ConstructorElement extends MethodWithBodyElement
-{
+public class ConstructorElement extends MethodWithBodyElement {
     public static final String ELEMENT = "constructor";
     private final SuperThisFragment delegate;
     private final SuperThisParamsExpressionFragment delegateParams;
-    
+
     public ConstructorElement(ConstructorFrame frame, AccessPermissionFragment access, List<ParamFragment> params,
                               List<ThrowsTypeFragment> throwsTypes, SuperThisFragment delegate,
                               SuperThisParamsExpressionFragment delegateParams, List<CodeElement> contents,
-                              JavadocUnit documentation, boolean enabled)
-    {
+                              JavadocUnit documentation, boolean enabled) {
         super(frame, access, params, throwsTypes, contents, documentation, enabled);
         this.delegate = delegate;
         this.delegateParams = delegateParams;
     }
 
-    public ConstructorElement(String javaDoc)
-    {
+    public ConstructorElement(String javaDoc) {
         this(null, new AccessPermissionFragment(AccessPermission.PUBLIC), Collections.emptyList(), Collections.emptyList(),
                 null, null, Collections.emptyList(), new JavadocUnit(javaDoc), true);
     }
-    
-    public ConstructorElement(Element el)
-    {
+
+    public ConstructorElement(Element el) {
         super(el);
 
         SuperThisFragment loadedDelegate = null;
         SuperThisParamsExpressionFragment loadedDelegateParams = null;
         for (int i = 0; i < el.getChildElements().size(); i++) {
             final Element section = el.getChildElements().get(i);
-            if (section.getLocalName().equals("delegate"))
-            {
+            if (section.getLocalName().equals("delegate")) {
                 String target = section.getAttributeValue("target");
-                switch (target)
-                {
+                switch (target) {
                     case "super":
                     case "this":
                         loadedDelegate = new SuperThisFragment(SuperThis.fromString(target));
@@ -92,40 +76,38 @@ public class ConstructorElement extends MethodWithBodyElement
     }
 
     @Override
-    public JavaSource toJavaSource()
-    {   
+    public JavaSource toJavaSource() {
         List<JavaFragment> header = new ArrayList<>();
-        
-        Collections.addAll(header, access, space(), ((ClassElement)getParent()).getNameElement((ConstructorFrame)frame), f(frame, "("));
-                
+
+        Collections.addAll(header, access, space(), ((ClassElement) getParent()).getNameElement((ConstructorFrame) frame), f(frame, "("));
+
         ParamFragment.addParamsToHeader(frame, this, params, header);
         header.add(f(frame, ")"));
 
         header.addAll(throwsToJava());
-        
+
         List<JavaSource> effectiveContents = new ArrayList<>();
-        
+
         if (delegate != null) {
             effectiveContents.add(new JavaSource(this, delegate, f(frame, "("), delegateParams, f(frame, ");")));
         }
-        
+
         effectiveContents.addAll(CodeElement.toJavaCodes(contents));
-        
+
         return JavaSource.createMethod(frame, this, this, documentation, header, effectiveContents);
     }
 
     @Override
-    public LocatableElement toXML()
-    {
+    public LocatableElement toXML() {
         LocatableElement methodEl = new LocatableElement(this, ELEMENT);
         accessToXML(methodEl);
         addEnableAttribute(methodEl);
 
         methodEl.appendChild(documentation.toXML());
-        
+
         paramsToXML(methodEl);
         throwsToXML(methodEl);
-        
+
         LocatableElement delegateEl;
         if (delegate != null) {
             delegateEl = new LocatableElement(null, "delegate");
@@ -133,58 +115,50 @@ public class ConstructorElement extends MethodWithBodyElement
             delegateEl.addAttributeStructured("params", delegateParams);
             methodEl.appendChild(delegateEl);
         }
-        
+
         bodyToXML(methodEl);
         return methodEl;
     }
 
     @Override
-    public Frame createFrame(InteractionManager editor)
-    {
+    public Frame createFrame(InteractionManager editor) {
         frame = new ConstructorFrame(editor, access, documentation.toString(), delegate, delegateParams, isEnable());
         setupFrame(editor);
         return frame;
     }
-    
+
     @Override
-    public String getType()
-    {
+    public String getType() {
         // We have no (return) type:
         return null;
     }
-    
+
     @Override
-    public void show(ShowReason reason)
-    {
-        frame.show(reason);        
+    public void show(ShowReason reason) {
+        frame.show(reason);
     }
-    
+
     @Override
-    protected Stream<SlotFragment> getDirectSlotFragments()
-    {
+    protected Stream<SlotFragment> getDirectSlotFragments() {
         Stream<SlotFragment> s = params.stream().flatMap(p -> Stream.of(p.getParamType(), p.getParamName()));
         if (delegate != null)
             s = Stream.concat(s, Stream.of(delegateParams));
         return Stream.concat(s, throwsTypes.stream().map(ThrowsTypeFragment::getJavaSource));
     }
 
-    public boolean hasDelegate()
-    {
+    public boolean hasDelegate() {
         return delegate != null;
     }
 
-    public SuperThis getDelegate()
-    {
+    public SuperThis getDelegate() {
         return delegate == null ? null : delegate.getValue();
     }
 
-    public String getDelegateParams()
-    {
+    public String getDelegateParams() {
         return delegateParams == null ? null : delegateParams.getContent();
     }
 
-    public String getDelegateParamsJava()
-    {
+    public String getDelegateParamsJava() {
         return delegateParams == null ? null : delegateParams.getJavaCode();
     }
 }

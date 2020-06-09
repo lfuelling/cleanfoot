@@ -22,12 +22,10 @@
 package bluej.stride.framedjava.ast;
 
 import javafx.scene.Node;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public interface HighlightedBreakpoint
-{
+public interface HighlightedBreakpoint {
     @OnThread(Tag.FX) void removeHighlight();
 
     @OnThread(Tag.FXPlatform)

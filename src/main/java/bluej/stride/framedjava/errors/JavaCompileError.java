@@ -21,22 +21,20 @@
  */
 package bluej.stride.framedjava.errors;
 
+import bluej.stride.framedjava.ast.JavaFragment;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.util.Collections;
 import java.util.List;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.stride.framedjava.ast.JavaFragment;
-
-public class JavaCompileError extends CodeError
-{
+public class JavaCompileError extends CodeError {
     private final int startPos;
     private final int endPos;
     private final String message;
-    
+
     @OnThread(Tag.Any)
-    public JavaCompileError(JavaFragment slotElement, int startPos, int endPos, String message, int identifier)
-    {
+    public JavaCompileError(JavaFragment slotElement, int startPos, int endPos, String message, int identifier) {
         super(slotElement, identifier);
         this.startPos = startPos;
         this.endPos = endPos;
@@ -48,14 +46,12 @@ public class JavaCompileError extends CodeError
 
     @Override
     @OnThread(Tag.Any)
-    public String getMessage()
-    {
+    public String getMessage() {
         return message;
     }
 
     @Override
-    public List<FixSuggestion> getFixSuggestions()
-    {
+    public List<FixSuggestion> getFixSuggestions() {
         return Collections.emptyList();
     }
 
@@ -64,21 +60,19 @@ public class JavaCompileError extends CodeError
         return "JavaCompileError [startPos=" + startPos + ", endPos="
                 + endPos + ", message=" + message + "]";
     }
+
     @Override
-    public int getStartPosition()
-    {
+    public int getStartPosition() {
         return startPos;
     }
 
     @Override
-    public int getEndPosition()
-    {
+    public int getEndPosition() {
         return endPos;
     }
-    
+
     @Override
-    public boolean isJavaPos()
-    {
+    public boolean isJavaPos() {
         return true;
     }
 }

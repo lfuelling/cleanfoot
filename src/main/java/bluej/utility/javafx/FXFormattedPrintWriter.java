@@ -21,16 +21,10 @@
  */
 package bluej.utility.javafx;
 
-import java.io.OutputStream;
+import bluej.views.FormattedPrintWriter;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-
-import bluej.views.FormattedPrintWriter;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -38,14 +32,12 @@ import threadchecker.Tag;
  * Created by neil on 11/06/2016.
  */
 @OnThread(value = Tag.FX, ignoreParent = true)
-public class FXFormattedPrintWriter extends FormattedPrintWriter
-{
+public class FXFormattedPrintWriter extends FormattedPrintWriter {
     private final TextFlow flow = new TextFlow();
     private boolean bold = false;
     private boolean italic = false;
 
-    public FXFormattedPrintWriter()
-    {
+    public FXFormattedPrintWriter() {
         // PrintWriter needs to be passed a valid outputstream
         // even if we are going to not actually print to it.
         // We pass it the standard System output stream
@@ -54,26 +46,22 @@ public class FXFormattedPrintWriter extends FormattedPrintWriter
     }
 
     @Override
-    public void setBold(boolean bold)
-    {
+    public void setBold(boolean bold) {
         this.bold = bold;
     }
 
     @Override
-    public void setItalic(boolean italic)
-    {
+    public void setItalic(boolean italic) {
         this.italic = italic;
     }
 
     @Override
-    protected void indentLine()
-    {
+    protected void indentLine() {
         flow.getChildren().add(new Text("    "));
     }
 
     @Override
-    public void println(String line)
-    {
+    public void println(String line) {
         Text t = new Text((flow.getChildren().isEmpty() ? "" : "\n") + line);
         JavaFXUtil.addStyleClass(t, "formatted-print-line");
         JavaFXUtil.setPseudoclass("bj-bold", bold, t);
@@ -81,8 +69,7 @@ public class FXFormattedPrintWriter extends FormattedPrintWriter
         flow.getChildren().add(t);
     }
 
-    public Node getNode()
-    {
+    public Node getNode() {
         return flow;
     }
 }

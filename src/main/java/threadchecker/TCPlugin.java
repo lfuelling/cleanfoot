@@ -1,61 +1,48 @@
 package threadchecker;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 
-public class TCPlugin implements Plugin
-{
+import java.io.File;
+import java.util.Arrays;
+
+public class TCPlugin implements Plugin {
     private final File tagsDump = new File("found-tags.txt");
-    
-    public TCPlugin()
-    {
+
+    public TCPlugin() {
         if (tagsDump.exists())
             tagsDump.delete();
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return "threadchecker.TCPlugin";
     }
 
     @Override
-    public void init(JavacTask task, String... ignorePackages) 
-    {
+    public void init(JavacTask task, String... ignorePackages) {
         task.setTaskListener(new TCTaskListener(task, ignorePackages));
     }
-    
-    private class TCTaskListener implements TaskListener
-    {
+
+    private class TCTaskListener implements TaskListener {
         private TCScanner scanner = null;
         private final JavacTask task;
         private final String[] ignorePackages;
 
-        public TCTaskListener(JavacTask task, String[] ignorePackages)
-        {
+        public TCTaskListener(JavacTask task, String[] ignorePackages) {
             this.task = task;
             this.ignorePackages = ignorePackages;
         }
 
         @Override
-        public void finished(TaskEvent evt)
-        {
-            if (evt.getKind() == TaskEvent.Kind.ANALYZE)
-            {
-                if (scanner == null)
-                {
-                    try
-                    {
+        public void finished(TaskEvent evt) {
+            if (evt.getKind() == TaskEvent.Kind.ANALYZE) {
+                if (scanner == null) {
+                    try {
                         this.scanner = new TCScanner(task, Arrays.asList(ignorePackages));
-                    }
-                    catch (NoSuchMethodException e)
-                    {
+                    } catch (NoSuchMethodException e) {
                         e.printStackTrace();
                     }
                 }
@@ -76,8 +63,7 @@ public class TCPlugin implements Plugin
         }
 
         @Override
-        public void started(TaskEvent arg0)
-        {
+        public void started(TaskEvent arg0) {
 
         }
 

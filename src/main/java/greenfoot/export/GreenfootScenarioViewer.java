@@ -53,7 +53,6 @@ import threadchecker.Tag;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -64,27 +63,25 @@ import java.util.concurrent.CompletableFuture;
 /**
  * This class can view and run a Greenfoot scenario. It is not possible to
  * interact with the objects in any way.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.FXPlatform)
-public class GreenfootScenarioViewer extends BorderPane implements ControlPanelListener, SimulationListener
-{
+public class GreenfootScenarioViewer extends BorderPane implements ControlPanelListener, SimulationListener {
     private ExportedProjectProperties properties;
     private Simulation sim;
     private ControlPanel controls;
 
     @OnThread(Tag.Any)
     private Constructor<?> worldConstructor;
-    
+
     private final WorldDisplay worldDisplay = new WorldDisplay();
     private boolean updatingSliderFromSimulation = false;
 
     /**
      * Initialize the project properties.
      */
-    public static void initProperties()
-    {
+    public static void initProperties() {
         Properties p = new Properties();
         try {
             ClassLoader loader = GreenfootScenarioViewer.class.getClassLoader();
@@ -98,26 +95,21 @@ public class GreenfootScenarioViewer extends BorderPane implements ControlPanelL
             if (is != null) {
                 is.close();
             }
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    private void buildGUI(boolean hideControls)
-    {
+    private void buildGUI(boolean hideControls) {
         ScrollPane worldViewScroll = new UnfocusableScrollPane(new StackPane(worldDisplay));
         JavaFXUtil.expandScrollPaneContent(worldViewScroll);
-               
+
         setCenter(worldViewScroll);
-        if (!hideControls){
+        if (!hideControls) {
             //show controls.
             setBottom(controls);
-        } 
+        }
     }
 
     /**
@@ -125,11 +117,10 @@ public class GreenfootScenarioViewer extends BorderPane implements ControlPanelL
      * been loaded into the system. It is always called before the first time
      * that the start method is called.
      */
-    public GreenfootScenarioViewer()
-    {
+    public GreenfootScenarioViewer() {
         initProperties();
-        
-        final String worldClassName = Config.getPropString("main.class"); 
+
+        final String worldClassName = Config.getPropString("main.class");
         final boolean lockScenario = Config.getPropBoolean("scenario.lock");
         final boolean hideControls = Config.getPropBoolean("scenario.hideControls", false);
 
@@ -143,100 +134,80 @@ public class GreenfootScenarioViewer extends BorderPane implements ControlPanelL
             // We must construct the simulation before the world, as a call to
             // Greenfoot.setSpeed() requires a call to the simulation instance.
             Simulation.initialize();
-            
+
             guiSetup(lockScenario, worldClassName);
 
             WorldHandler worldHandler = WorldHandler.getInstance();
             Class<?> worldClass = Class.forName(worldClassName);
             worldConstructor = worldClass.getConstructor();
             World world = instantiateNewWorld();
-            if (! worldHandler.checkWorldSet()) {
+            if (!worldHandler.checkWorldSet()) {
                 worldHandler.setWorld(world, false);
             }
-            
+
             buildGUI(hideControls);
-            
+
             controls.updateState(State.PAUSED, false);
 
             JavaFXUtil.onceNotNull(sceneProperty(), scene -> scene.addEventFilter(KeyEvent.ANY, e -> {
-                if (e.getEventType() == KeyEvent.KEY_PRESSED)
-                {
+                if (e.getEventType() == KeyEvent.KEY_PRESSED) {
                     worldHandler.getKeyboardManager().keyPressed(e.getCode(), e.getText());
-                }
-                else if (e.getEventType() == KeyEvent.KEY_RELEASED)
-                {
+                } else if (e.getEventType() == KeyEvent.KEY_RELEASED) {
                     worldHandler.getKeyboardManager().keyReleased(e.getCode(), e.getText());
-                }
-                else if (e.getEventType() == KeyEvent.KEY_TYPED)
-                {
+                } else if (e.getEventType() == KeyEvent.KEY_TYPED) {
                     worldHandler.getKeyboardManager().keyTyped(e.getCode(), e.getText());
                 }
             }));
             worldDisplay.addEventFilter(MouseEvent.ANY, e -> {
                 MouseButton button = e.getButton();
-                if (Config.isMacOS() && button == MouseButton.PRIMARY && e.isControlDown())
-                {
+                if (Config.isMacOS() && button == MouseButton.PRIMARY && e.isControlDown()) {
                     button = MouseButton.SECONDARY;
                 }
-                
-                if (e.getEventType() == MouseEvent.MOUSE_CLICKED)
-                {
-                    worldHandler.getMouseManager().mouseClicked((int)e.getX(), (int)e.getY(), button, e.getClickCount());
-                }
-                else if (e.getEventType() == MouseEvent.MOUSE_MOVED)
-                {
-                    worldHandler.getMouseManager().mouseMoved((int)e.getX(), (int)e.getY());
-                }
-                else if (e.getEventType() == MouseEvent.MOUSE_DRAGGED)
-                {
-                    worldHandler.getMouseManager().mouseDragged((int)e.getX(), (int)e.getY(), button);
-                }
-                else if (e.getEventType() == MouseEvent.MOUSE_PRESSED)
-                {
-                    worldHandler.getMouseManager().mousePressed((int)e.getX(), (int)e.getY(), button);
-                }
-                else if (e.getEventType() == MouseEvent.MOUSE_RELEASED)
-                {
-                    worldHandler.getMouseManager().mouseReleased((int)e.getX(), (int)e.getY(), button);
-                }
-                else if (e.getEventType() == MouseEvent.MOUSE_EXITED)
-                {
+
+                if (e.getEventType() == MouseEvent.MOUSE_CLICKED) {
+                    worldHandler.getMouseManager().mouseClicked((int) e.getX(), (int) e.getY(), button, e.getClickCount());
+                } else if (e.getEventType() == MouseEvent.MOUSE_MOVED) {
+                    worldHandler.getMouseManager().mouseMoved((int) e.getX(), (int) e.getY());
+                } else if (e.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                    worldHandler.getMouseManager().mouseDragged((int) e.getX(), (int) e.getY(), button);
+                } else if (e.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                    worldHandler.getMouseManager().mousePressed((int) e.getX(), (int) e.getY(), button);
+                } else if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
+                    worldHandler.getMouseManager().mouseReleased((int) e.getX(), (int) e.getY(), button);
+                } else if (e.getEventType() == MouseEvent.MOUSE_EXITED) {
                     worldHandler.getMouseManager().mouseExited();
                 }
             });
-            
+
             // If we are hiding controls, auto-run:
-            if (hideControls)
-            {
+            if (hideControls) {
                 Simulation.getInstance().setPaused(false);
             }
-        }        
-        catch (SecurityException | IllegalArgumentException | ClassNotFoundException | NoSuchMethodException e) {
+        } catch (SecurityException | IllegalArgumentException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Perform gui setup; this needs to be done on the Event Dispatch Thread.
+     *
      * @param lockScenario   whether the scenario is "locked" (speed slider and actor dragging disabled)
-     * @param worldClassName  the name of the world class to instantiate
+     * @param worldClassName the name of the world class to instantiate
      */
-    private void guiSetup(boolean lockScenario, String worldClassName)
-    {
+    private void guiSetup(boolean lockScenario, String worldClassName) {
         WorldHandler.initialise(new WorldHandlerDelegateStandAlone(this, lockScenario));
         WorldHandler worldHandler = WorldHandler.getInstance();
         sim = Simulation.getInstance();
         sim.attachWorldHandler(worldHandler);
         controls = new ControlPanel(this, null);
-        if (lockScenario)
-        {
+        if (lockScenario) {
             controls.lockControls();
         }
 
         // Make sure the SoundCollection is initialized and listens for events
         sim.addSimulationListener(SoundFactory.getInstance().getSoundCollection());
         sim.addSimulationListener(this);
-        
+
         try {
             int initialSpeed = properties.getInt("simulation.speed");
             sim.setSpeed(initialSpeed);
@@ -244,99 +215,83 @@ public class GreenfootScenarioViewer extends BorderPane implements ControlPanelL
             // If there is no speed info in the properties we don't care...
         }
     }
-    
+
     /**
      * Creates a new instance of the world. And initialises with that world.
      */
     @OnThread(Tag.Any)
-    public World instantiateNewWorld() 
-    {
+    public World instantiateNewWorld() {
         try {
             World world = (World) worldConstructor.newInstance(new Object[]{});
             return world;
-        }
-        catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
+        } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
-        }
-        catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             e.getCause().printStackTrace();
         }
         return null;
     }
-    
+
     @OnThread(Tag.Simulation)
-    public String ask(final String prompt)
-    {
+    public String ask(final String prompt) {
         final CompletableFuture<String> answer = new CompletableFuture<>();
         Platform.runLater(() -> worldDisplay.ensureAsking(prompt, answer::complete));
-        
-        try
-        {
+
+        try {
             return answer.get();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
     @Override
-    public void act()
-    {
+    public void act() {
         Simulation.getInstance().runOnce();
     }
 
     @Override
-    public void doRunPause()
-    {
+    public void doRunPause() {
         Simulation.getInstance().togglePaused();
     }
 
     @Override
-    public void userReset()
-    {
+    public void userReset() {
         Simulation.getInstance().setEnabled(false);
         WorldHandler.getInstance().discardWorld();
         WorldHandler.getInstance().instantiateNewWorld(null);
     }
 
     @Override
-    public void setSpeedFromSlider(int speed)
-    {
-        if (!updatingSliderFromSimulation)
-        {
+    public void setSpeedFromSlider(int speed) {
+        if (!updatingSliderFromSimulation) {
             Simulation.getInstance().setSpeed(speed);
         }
     }
 
     /**
      * Sets the latest world image on the screen.
-     * 
+     *
      * @param worldImage A Swing BufferedImage which is copied before returning.
      */
-    public void setWorldImage(BufferedImage worldImage)
-    {
-        if (worldDisplay.setImage(bufferedImageToFX(worldImage)))
-        {
+    public void setWorldImage(BufferedImage worldImage) {
+        if (worldDisplay.setImage(bufferedImageToFX(worldImage))) {
             worldDisplay.getScene().getWindow().sizeToScene();
         }
     }
 
     /**
      * Directly copies a BufferedImage, which is assumed to have ARGB format, into a JavaFX image.
+     *
      * @param worldImage The BufferedImage to copy from.  Must be in ARGB format.
      * @return The JavaFX image with a copy of the BufferedImage
      */
-    private static Image bufferedImageToFX(BufferedImage worldImage)
-    {
+    private static Image bufferedImageToFX(BufferedImage worldImage) {
         WritableImage fxImage = new WritableImage(worldImage.getWidth(), worldImage.getHeight());
-        int [] raw = ((DataBufferInt) worldImage.getData().getDataBuffer()).getData();
+        int[] raw = ((DataBufferInt) worldImage.getData().getDataBuffer()).getData();
         int offset = 0;
-        for (int y = 0; y < worldImage.getHeight(); y++)
-        {
-            for (int x = 0; x < worldImage.getWidth(); x++)
-            {
+        for (int y = 0; y < worldImage.getHeight(); y++) {
+            for (int x = 0; x < worldImage.getWidth(); x++) {
                 fxImage.getPixelWriter().setArgb(x, y, raw[offset++]);
             }
         }
@@ -344,10 +299,8 @@ public class GreenfootScenarioViewer extends BorderPane implements ControlPanelL
     }
 
     @Override
-    public @OnThread(Tag.Simulation) void simulationChangedSync(SyncEvent eventType)
-    {
-        if (eventType == SyncEvent.STARTED)
-        {
+    public @OnThread(Tag.Simulation) void simulationChangedSync(SyncEvent eventType) {
+        if (eventType == SyncEvent.STARTED) {
             Platform.runLater(() -> {
                 controls.updateState(State.RUNNING, false);
             });
@@ -356,22 +309,16 @@ public class GreenfootScenarioViewer extends BorderPane implements ControlPanelL
 
     @Override
     @OnThread(Tag.Any)
-    public void simulationChangedAsync(AsyncEvent eventType)
-    {
-        if (eventType == AsyncEvent.STOPPED)
-        {
+    public void simulationChangedAsync(AsyncEvent eventType) {
+        if (eventType == AsyncEvent.STOPPED) {
             Platform.runLater(() -> {
                 controls.updateState(State.PAUSED, false);
             });
-        }
-        else if (eventType == AsyncEvent.DISABLED)
-        {
+        } else if (eventType == AsyncEvent.DISABLED) {
             Platform.runLater(() -> {
                 controls.updateState(State.NO_WORLD, false);
             });
-        }
-        else if (eventType == AsyncEvent.CHANGED_SPEED)
-        {
+        } else if (eventType == AsyncEvent.CHANGED_SPEED) {
             Platform.runLater(() -> {
                 updatingSliderFromSimulation = true;
                 controls.setSpeed(Simulation.getInstance().getSpeed());

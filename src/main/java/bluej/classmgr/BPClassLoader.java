@@ -21,13 +21,12 @@
  */
 package bluej.classmgr;
 
+import bluej.utility.Utility;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.List;
-
-import bluej.utility.Utility;
 
 /**
  * A BlueJ Project ClassLoader that can be used to load or obtain information about classes loadable in a bluej project.
@@ -39,14 +38,14 @@ import bluej.utility.Utility;
  * having a correct working version. This is the reason for this class being named BPClassLoader.
  * it will be renamed when the new classloading is refactored and tested.
  *
- * @author  Damiano Bolla
+ * @author Damiano Bolla
  */
-public final class BPClassLoader extends URLClassLoader
-{
+public final class BPClassLoader extends URLClassLoader {
     /**
      * Constructructor.
+     *
      * @param parent the parent loader that is searched first to resolve classes.
-     * @param urls the list of jars and directory that are searched next.
+     * @param urls   the list of jars and directory that are searched next.
      */
     public BPClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
@@ -82,10 +81,9 @@ public final class BPClassLoader extends URLClassLoader
      * Note that a classpath to be used to start another local JVM cannot refer to a URL but to a local file.
      * It is therefore advisable to move as much as possible from a Classpath oriented vew to a ClassLoader.
      *
-     * @return  The classpath as string.
+     * @return The classpath as string.
      */
-    public String getClassPathAsString()
-    {
+    public String getClassPathAsString() {
         return Utility.toClasspathString(getClassPathAsFiles());
     }
 
@@ -93,15 +91,14 @@ public final class BPClassLoader extends URLClassLoader
      * Return the class path as an array of files.
      * Note that there is no guarantee that all files are indeed local files althout this is true for the
      * current BlueJ.
+     *
      * @return a non null array of Files, may be empty if no library at all is defined.
      */
-    public final List<File> getClassPathAsFiles()
-    {
+    public final List<File> getClassPathAsFiles() {
         return Utility.urlsToFiles(getURLs());
     }
 
-    public String toString()
-    {
+    public String toString() {
         return "BPClassLoader path=" + getClassPathAsString();
     }
 

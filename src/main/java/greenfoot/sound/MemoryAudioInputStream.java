@@ -21,27 +21,24 @@
  */
 package greenfoot.sound;
 
-import java.io.IOException;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.IOException;
 
 /**
  * An implementation of GreenfootAudioInputStream that reads from a memory buffer
- * 
+ *
  * @author neil
  */
-public class MemoryAudioInputStream implements GreenfootAudioInputStream
-{
+public class MemoryAudioInputStream implements GreenfootAudioInputStream {
     private final byte[] sound;
     private final int startOffset;
     private final int endOffset;
     private final AudioFormat format;
     private int markIndex;
     private int curIndex;
-    
-    public MemoryAudioInputStream(byte[] sound, AudioFormat format)
-    {
+
+    public MemoryAudioInputStream(byte[] sound, AudioFormat format) {
         curIndex = 0;
         markIndex = 0;
         startOffset = 0;
@@ -49,9 +46,8 @@ public class MemoryAudioInputStream implements GreenfootAudioInputStream
         this.sound = sound;
         this.format = format;
     }
-    
-    public MemoryAudioInputStream(byte[] sound, int offset, int length, AudioFormat format)
-    {
+
+    public MemoryAudioInputStream(byte[] sound, int offset, int length, AudioFormat format) {
         curIndex = offset;
         markIndex = curIndex;
         startOffset = offset;
@@ -59,93 +55,79 @@ public class MemoryAudioInputStream implements GreenfootAudioInputStream
         this.sound = sound;
         this.format = format;
     }
-    
-    private int getFrameSize()
-    {
+
+    private int getFrameSize() {
         return format.getFrameSize();
     }
-    
-    public int available() throws IOException
-    {
+
+    public int available() throws IOException {
         return endOffset - curIndex;
     }
 
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
     }
 
-    public AudioFormat getFormat()
-    {
+    public AudioFormat getFormat() {
         return format;
     }
 
-    public String getSource()
-    {
+    public String getSource() {
         return "Internal buffer";
     }
 
-    public void mark(int readlimit)
-    {
+    public void mark(int readlimit) {
         markIndex = curIndex;
 
     }
 
-    public boolean markSupported()
-    {
+    public boolean markSupported() {
         return true;
     }
 
-    public void open() throws IOException, UnsupportedAudioFileException
-    {
+    public void open() throws IOException, UnsupportedAudioFileException {
         curIndex = startOffset;
     }
 
-    public int read() throws IOException
-    {
+    public int read() throws IOException {
         if (getFrameSize() != 1)
             throw new IOException("Attempted to read single byte but frame size is not 1");
-        
+
         if (curIndex < endOffset)
             return sound[curIndex++];
         else
             return -1;
     }
 
-    public int read(byte[] b) throws IOException
-    {
+    public int read(byte[] b) throws IOException {
         return read(b, 0, b.length);
     }
 
-    public int read(byte[] b, int off, int len) throws IOException
-    {
+    public int read(byte[] b, int off, int len) throws IOException {
         if (curIndex >= endOffset)
             return -1;
-        
+
         int maxRead = len - (len % getFrameSize());
-        
+
         if (curIndex + maxRead > endOffset) {
             int left = endOffset - curIndex;
             maxRead = left - (left % getFrameSize());
         }
-        
+
         System.arraycopy(sound, curIndex, b, off, maxRead);
         curIndex += maxRead;
-        
+
         return maxRead;
     }
 
-    public void reset() throws IOException
-    {
+    public void reset() throws IOException {
         curIndex = markIndex;
     }
 
-    public void restart() throws IOException, UnsupportedAudioFileException
-    {
+    public void restart() throws IOException, UnsupportedAudioFileException {
         curIndex = startOffset;
     }
 
-    public long skip(long n) throws IOException
-    {
+    public long skip(long n) throws IOException {
         if (curIndex + n <= endOffset) {
             curIndex += n;
             return n;

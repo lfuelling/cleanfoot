@@ -21,31 +21,30 @@
  */
 package bluej.compiler;
 
+import bluej.Config;
+import bluej.classmgr.BPClassLoader;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import bluej.Config;
-import bluej.classmgr.BPClassLoader;
 
 /**
  * A compiler "job". A list of filenames to compile + parameters.
  * Jobs are held in a queue by the CompilerThread, which compiles them
  * by running the job's "compile" method.
  *
- * @author  Michael Cahill
+ * @author Michael Cahill
  */
-class Job
-{
+class Job {
     Compiler compiler;  // The compiler for this job
     CompileObserver observer;
     File destDir;
     BPClassLoader bpClassLoader;
     CompileInputFile[] sources;
     boolean internal; // true for compiling shell files, 
-                      // or user files if we want to suppress 
-                      // "unchecked" warnings, false otherwise
+    // or user files if we want to suppress
+    // "unchecked" warnings, false otherwise
     private final List<String> userCompileOptions;
     private final Charset fileCharset;
     private final CompileType type;
@@ -57,14 +56,13 @@ class Job
      * 2 billion compilations in a single session, so integer is fine:
      */
     private static final AtomicInteger nextCompilationSequence = new AtomicInteger(1);
-    
+
     /**
      * Create a job with a set of sources.
      */
     public Job(CompileInputFile[] sourceFiles, Compiler compiler, CompileObserver observer,
-                        BPClassLoader bpClassLoader, File destDir, boolean internal,
-                        List<String> userCompileOptions, Charset fileCharset, CompileType type, CompileReason reason)
-    {
+               BPClassLoader bpClassLoader, File destDir, boolean internal,
+               List<String> userCompileOptions, Charset fileCharset, CompileType type, CompileReason reason) {
         this.sources = sourceFiles;
         this.compiler = compiler;
         this.observer = observer;
@@ -76,20 +74,19 @@ class Job
         this.type = type;
         this.reason = reason;
     }
-    
+
     /**
      * Compile this job
      */
-    public void compile()
-    {
+    public void compile() {
         int compilationSequence = nextCompilationSequence.getAndIncrement();
 
         try {
-            if(observer != null) {
+            if (observer != null) {
                 observer.startCompile(sources, reason, type, compilationSequence);
             }
 
-            if(destDir != null) {
+            if (destDir != null) {
                 compiler.setDestDir(destDir);
             }
 
@@ -106,10 +103,10 @@ class Job
 
             boolean successful = compiler.compile(actualSourceFiles, observer, internal, userCompileOptions, fileCharset, type);
 
-            if(observer != null) {
+            if (observer != null) {
                 observer.endCompile(sources, successful, type, compilationSequence);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.err.println(Config.getString("compileException") + ": " + e);
             e.printStackTrace();
             if (observer != null) {

@@ -21,39 +21,37 @@
  */
 package bluej.debugger.gentype;
 
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.List;
-
 import bluej.parser.ConstructorOrMethodReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Modifier;
+import java.util.List;
+
 /**
  * Represents a method from a reflective.
- * 
+ *
  * @author Davin McCall
  */
-public class MethodReflective extends ConstructorOrMethodReflective
-{
+public class MethodReflective extends ConstructorOrMethodReflective {
     @OnThread(Tag.Any)
     private final String name;
     private final JavaType returnType;
 
-    
+
     /**
      * Construct a MethodReflective object.
-     * @param name        The name of the method
-     * @param returnType  The return type of the method
-     * @param tparTypes   The type parameter definitions (for a generic method); may be null
-     * @param paramTypes  The types of the method parameters
-     * @param isVarArgs   Whether the method is a "varargs" method. If true, the last paramType is
-     *                    the component type, not the array type.
-     * @param isStatic    Whether the method is a static method
+     *
+     * @param name       The name of the method
+     * @param returnType The return type of the method
+     * @param tparTypes  The type parameter definitions (for a generic method); may be null
+     * @param paramTypes The types of the method parameters
+     * @param isVarArgs  Whether the method is a "varargs" method. If true, the last paramType is
+     *                   the component type, not the array type.
+     * @param isStatic   Whether the method is a static method
      */
     public MethodReflective(String name, JavaType returnType, List<GenTypeDeclTpar> tparTypes,
-            List<JavaType> paramTypes, Reflective declaringType, boolean isVarArgs, int modifiers)
-    {
+                            List<JavaType> paramTypes, Reflective declaringType, boolean isVarArgs, int modifiers) {
         this.name = name;
         this.returnType = returnType;
         this.tparTypes = tparTypes;
@@ -63,32 +61,28 @@ public class MethodReflective extends ConstructorOrMethodReflective
         this.modifiers = modifiers;
     }
 
-    
+
     /**
      * Get the method name.
      */
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
-    
+
     /**
      * Check whether the method is a static method.
      */
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         return Modifier.isStatic(modifiers);
     }
 
-    public boolean isAbstract()
-    {
+    public boolean isAbstract() {
         return false; // not yet implemented
     }
 
-    
-    public JavaType getReturnType()
-    {
+
+    public JavaType getReturnType() {
         return returnType;
     }
 

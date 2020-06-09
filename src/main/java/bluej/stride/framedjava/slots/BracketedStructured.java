@@ -21,62 +21,82 @@
  */
 package bluej.stride.framedjava.slots;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
 import bluej.stride.framedjava.slots.InfixStructured.CaretPosMap;
 import bluej.stride.framedjava.slots.InfixStructured.IntCounter;
-import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.Frame.View;
+import bluej.stride.generic.InteractionManager;
 import bluej.utility.Utility;
 import bluej.utility.javafx.HangingFlowPane;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
 import bluej.utility.javafx.binding.ConcatListBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * A bracketed subexpression in an expression slot.  This item will have matching
  * opening/closing brackets (round, square or curly) around an InfixStructured.
- * 
+ * <p>
  * Many of its methods simply delegate to the contained InfixStructured.
  */
 // Package-visible
-class BracketedStructured<INFIX extends InfixStructured<SLOT, INFIX>, SLOT extends StructuredSlot<?, INFIX, ?>> implements StructuredSlotComponent
-{
-    /** The parent expression this item lives in */
+class BracketedStructured<INFIX extends InfixStructured<SLOT, INFIX>, SLOT extends StructuredSlot<?, INFIX, ?>> implements StructuredSlotComponent {
+    /**
+     * The parent expression this item lives in
+     */
     private final INFIX parent;
-    /** The expression directly contained between the brackets */
+    /**
+     * The expression directly contained between the brackets
+     */
     private final INFIX content;
-    /** The list of GUI components (derived from the sub-expression) */
+    /**
+     * The list of GUI components (derived from the sub-expression)
+     */
     private final ObservableList<Node> components = FXCollections.observableArrayList();
-    /** The opening bracket character */ 
+    /**
+     * The opening bracket character
+     */
     private final char opening;
-    /** The closing bracket character (must be same bracket type as opening, but cached for convenience */
+    /**
+     * The closing bracket character (must be same bracket type as opening, but cached for convenience
+     */
     private final char closing;
-    /** The label which displays the opening bracket */
+    /**
+     * The label which displays the opening bracket
+     */
     private final Label openingLabel;
-    /** The label which displays the closing bracket */
+    /**
+     * The label which displays the closing bracket
+     */
     private final Label closingLabel;
-    
-    public BracketedStructured(InteractionManager editor, INFIX parent, SLOT slot, char opening, String initialContent, StructuredSlot.ModificationToken token)
-    {
+
+    public BracketedStructured(InteractionManager editor, INFIX parent, SLOT slot, char opening, String initialContent, StructuredSlot.ModificationToken token) {
         this.parent = parent;
         this.opening = opening;
-        switch (opening)
-        {
-        case '(': closing = ')'; break;
-        case '[': closing = ']'; break;
-        case '{': closing = '}'; break;
-        case '<': closing = '>'; break;
-        default: throw new IllegalArgumentException("Unrecognised bracket: " + opening);
+        switch (opening) {
+            case '(':
+                closing = ')';
+                break;
+            case '[':
+                closing = ']';
+                break;
+            case '{':
+                closing = '}';
+                break;
+            case '<':
+                closing = '>';
+                break;
+            default:
+                throw new IllegalArgumentException("Unrecognised bracket: " + opening);
         }
         content = parent.newInfix(editor, slot, initialContent, this, token, closing);
         openingLabel = StructuredSlot.makeBracket("" + opening, true, content);
@@ -86,39 +106,33 @@ class BracketedStructured<INFIX extends InfixStructured<SLOT, INFIX>, SLOT exten
     }
 
     @Override
-    public String getText()
-    {
+    public String getText() {
         return "" + opening + content.getCopyText(null, null) + closing;
     }
 
     @Override
-    public void focusAtStart()
-    {
+    public void focusAtStart() {
         content.focusAtStart();
     }
 
     @Override
-    public void focusAtEnd()
-    {
+    public void focusAtEnd() {
         content.focusAtEnd();
-        
+
     }
 
     @Override
-    public Node focusAtPos(CaretPos caretPos)
-    {
-        return content.positionCaret(caretPos);        
+    public Node focusAtPos(CaretPos caretPos) {
+        return content.positionCaret(caretPos);
     }
 
     @Override
-    public TextOverlayPosition calculateOverlayPos(CaretPos subPos)
-    {
+    public TextOverlayPosition calculateOverlayPos(CaretPos subPos) {
         return content.calculateOverlayPos(subPos);
     }
 
     @Override
-    public PosAndDist getNearest(double sceneX, double sceneY, boolean allowDescend, boolean anchorInItem)
-    {
+    public PosAndDist getNearest(double sceneX, double sceneY, boolean allowDescend, boolean anchorInItem) {
         if (allowDescend)
             return content.getNearest(sceneX, sceneY, true, Optional.empty());
         else
@@ -126,65 +140,57 @@ class BracketedStructured<INFIX extends InfixStructured<SLOT, INFIX>, SLOT exten
     }
 
     @Override
-    public CaretPos getSelectIntoPos(boolean atEnd)
-    {
+    public CaretPos getSelectIntoPos(boolean atEnd) {
         // Compound, so they can't select into us:
         return null;
     }
-    
+
     @Override
-    public CaretPos getStartPos()
-    {
+    public CaretPos getStartPos() {
         return content.getStartPos();
     }
-    
+
     @Override
-    public CaretPos getEndPos()
-    {
+    public CaretPos getEndPos() {
         return content.getEndPos();
     }
 
     @Override
-    public String getCopyText(CaretPos from, CaretPos to)
-    {
+    public String getCopyText(CaretPos from, CaretPos to) {
         // We only add start and end when from/to are null:
         StringBuilder b = new StringBuilder();
         if (from == null)
             b.append(opening);
-        b.append(content.getCopyText(from, to));        
+        b.append(content.getCopyText(from, to));
         if (to == null)
             b.append(closing);
-        
+
         return b.toString();
     }
-    
+
     @Override
-    public String getJavaCode()
-    {
+    public String getJavaCode() {
         StringBuilder b = new StringBuilder();
-        
+
         b.append(opening);
-        b.append(content.getJavaCode());        
+        b.append(content.getJavaCode());
         b.append(closing);
-        
+
         return b.toString();
     }
-    
+
     @Override
-    public CaretPos getCurrentPos()
-    {
+    public CaretPos getCurrentPos() {
         return content.getCurrentPos();
     }
 
     @Override
-    public ObservableList<Node> getComponents()
-    {
+    public ObservableList<Node> getComponents() {
         return components;
     }
 
     @Override
-    public List<CaretPosMap> mapCaretPosStringPos(IntCounter len, boolean javaString)
-    {
+    public List<CaretPosMap> mapCaretPosStringPos(IntCounter len, boolean javaString) {
         len.counter += 1;
         List<CaretPosMap> r = content.mapCaretPosStringPos(len, javaString);
         // Need to add one to each index for opening bracket, and one to length for closing brackets
@@ -193,161 +199,135 @@ class BracketedStructured<INFIX extends InfixStructured<SLOT, INFIX>, SLOT exten
     }
 
     @Override
-    public Region getNodeForPos(CaretPos pos)
-    {
+    public Region getNodeForPos(CaretPos pos) {
         return content.getNodeForPos(pos);
     }
 
     // Package-visible
-    INFIX getContent()
-    {
+    INFIX getContent() {
         return content;
     }
 
     @OnThread(Tag.FXPlatform)
-    public void insertAfter(String text)
-    {
+    public void insertAfter(String text) {
         parent.insertNext(this, text);
     }
 
     @Override
-    public String testingGetState(CaretPos pos)
-    {
+    public String testingGetState(CaretPos pos) {
         return "" + opening + content.testingGetState(pos) + closing;
     }
 
-    public INFIX testingContent()
-    {
+    public INFIX testingContent() {
         return content;
     }
 
     @OnThread(Tag.FXPlatform)
-    public CaretPos flatten(boolean atEnd, StructuredSlot.ModificationToken token)
-    {
+    public CaretPos flatten(boolean atEnd, StructuredSlot.ModificationToken token) {
         return parent.flattenCompound(this, atEnd, token);
     }
 
     @Override
-    public boolean isFocused()
-    {
+    public boolean isFocused() {
         return content.isFocused();
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void insertSuggestion(CaretPos p, String name, char opening, List<String> params, StructuredSlot.ModificationToken token)
-    {
+    public void insertSuggestion(CaretPos p, String name, char opening, List<String> params, StructuredSlot.ModificationToken token) {
         content.insertSuggestion(p, name, opening, params, token);
     }
 
     //package-visible
-    CaretPos absolutePos(CaretPos p)
-    {
+    CaretPos absolutePos(CaretPos p) {
         return parent.absolutePos(this, p);
     }
 
     //package-visible
-    char getOpening()
-    {
+    char getOpening() {
         return opening;
     }
 
-    public void focusBefore()
-    {
-        parent.backwardAtStart(this);        
+    public void focusBefore() {
+        parent.backwardAtStart(this);
     }
 
-    public void focusAfter()
-    {
-        parent.forwardAtEnd(this);        
+    public void focusAfter() {
+        parent.forwardAtEnd(this);
     }
 
     @Override
-    public Stream<TextOverlayPosition> getAllStartEndPositionsBetween(CaretPos start, CaretPos end)
-    {
+    public Stream<TextOverlayPosition> getAllStartEndPositionsBetween(CaretPos start, CaretPos end) {
         return content.getAllStartEndPositionsBetween(start, end);
     }
 
     @Override
-    public Stream<InfixStructured<?, ?>> getAllExpressions()
-    {
+    public Stream<InfixStructured<?, ?>> getAllExpressions() {
         return content.getAllExpressions();
     }
 
     // package-visible
-    void highlightBrackets(boolean on)
-    {
+    void highlightBrackets(boolean on) {
         JavaFXUtil.setPseudoclass("bj-bracket-highlight", on, openingLabel, closingLabel);
     }
 
     @Override
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         content.setView(oldView, newView, animate, Optional.empty());
         JavaFXUtil.setPseudoclass("bj-java-preview", newView == View.JAVA_PREVIEW, openingLabel, closingLabel);
     }
 
     @Override
-    public boolean isAlmostBlank()
-    {
+    public boolean isAlmostBlank() {
         return content.isAlmostBlank();
     }
 
     @Override
-    public void notifyLostFocus(StructuredSlotField except)
-    {
+    public void notifyLostFocus(StructuredSlotField except) {
         content.notifyLostFocus(except);
     }
 
     // package-visible
-    Node positionParentPos(CaretPos pos)
-    {
+    Node positionParentPos(CaretPos pos) {
         return parent.positionCaret(pos);
     }
 
-    boolean isInSelection()
-    {
+    boolean isInSelection() {
         return parent != null && parent.isInSelection();
     }
 
     @Override
-    public void setEditable(boolean editable)
-    {
+    public void setEditable(boolean editable) {
         content.setEditable(editable);
     }
 
     @Override
-    public boolean isNumericLiteral()
-    {
+    public boolean isNumericLiteral() {
         return content.isNumericLiteral();
     }
 
     // package-visible
-    void notifyIsMethodParams(boolean isMethodParams)
-    {
+    void notifyIsMethodParams(boolean isMethodParams) {
         // We don't allow breaks before opening bracket of method params:
         HangingFlowPane.setBreakBefore(openingLabel, !isMethodParams);
     }
 
     @Override
-    public int calculateEffort()
-    {
+    public int calculateEffort() {
         return content.calculateEffort();
     }
 
     //package-visible
-    INFIX getParent()
-    {
+    INFIX getParent() {
         return parent;
     }
 
     @Override
-    public Stream<Node> makeDisplayClone(InteractionManager editor)
-    {
+    public Stream<Node> makeDisplayClone(InteractionManager editor) {
         return Utility.concat(
-            Stream.of(JavaFXUtil.cloneLabel(openingLabel, editor.getFontCSS())),
-            content.makeDisplayClone(editor),
-            Stream.of(JavaFXUtil.cloneLabel(closingLabel, editor.getFontCSS()))
+                Stream.of(JavaFXUtil.cloneLabel(openingLabel, editor.getFontCSS())),
+                content.makeDisplayClone(editor),
+                Stream.of(JavaFXUtil.cloneLabel(closingLabel, editor.getFontCSS()))
         );
     }
 }

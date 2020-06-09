@@ -21,18 +21,9 @@
  */
 package greenfoot.guifx.classes;
 
-import bluej.Config;
-import bluej.utility.javafx.FXPlatformRunnable;
-import bluej.utility.javafx.FXRunnable;
 import greenfoot.guifx.GreenfootStage;
-import greenfoot.guifx.classes.GClassDiagram.GClassType;
-import javafx.beans.binding.ObjectExpression;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,29 +34,28 @@ import java.util.List;
  * Information about a class in the tree: its name, image (can be null),
  * its direct subclasses (may be empty), and the display items for it (once shown)
  */
-public abstract class GClassNode
-{
+public abstract class GClassNode {
     private final List<GClassNode> subClasses = new ArrayList<>();
     protected Image image;
 
     protected final ClassDisplaySelectionManager selectionManager;
     protected ContextMenu curContextMenu = null;
-    
+
     // If non-null, exists *and* is already a child of the enclosing ClassGroup
     protected ClassDisplay display;
-    
+
     // The arrow (which may have several offshoot arms from multiple subclasses).
     private InheritArrow arrowFromSub;
 
     /**
      * Create a GClassNode
-     * @param image The image to use (null if none)
-     * @param subClasses The list of subclasses to display beneath us
+     *
+     * @param image            The image to use (null if none)
+     * @param subClasses       The list of subclasses to display beneath us
      * @param selectionManager The central manager for class selection.
      */
     protected GClassNode(Image image,
-            List<GClassNode> subClasses, ClassDisplaySelectionManager selectionManager)
-    {
+                         List<GClassNode> subClasses, ClassDisplaySelectionManager selectionManager) {
         this.selectionManager = selectionManager;
         this.image = image;
         this.subClasses.addAll(subClasses);
@@ -81,8 +71,7 @@ public abstract class GClassNode
      * Adds a subclass to the list of subclasses.
      * Don't forget to call updateAfterAdd() on the enclosing ClassGroup.
      */
-    public void add(GClassNode classInfo)
-    {
+    public void add(GClassNode classInfo) {
         subClasses.add(classInfo);
         Collections.sort(this.subClasses, Comparator.comparing(ci -> ci.getDisplayName()));
     }
@@ -90,8 +79,7 @@ public abstract class GClassNode
     /**
      * Get the list of subclasses of this class.
      */
-    public List<GClassNode> getSubClasses()
-    {
+    public List<GClassNode> getSubClasses() {
         return Collections.unmodifiableList(subClasses);
     }
 
@@ -104,10 +92,8 @@ public abstract class GClassNode
      * Gets the ClassDisplay for this item.  Will always return the same ClassDisplay
      * for the lifetime of this GClassNode object, although internally it is lazily created.
      */
-    public ClassDisplay getDisplay(GreenfootStage greenfootStage)
-    {
-        if (display == null)
-        {
+    public ClassDisplay getDisplay(GreenfootStage greenfootStage) {
+        if (display == null) {
             display = new ClassDisplay(getDisplayName(), getQualifiedName(), image, selectionManager);
             setupClassDisplay(greenfootStage, display);
         }
@@ -124,10 +110,8 @@ public abstract class GClassNode
      * Gets the InheritArrow for this item.  Will always return the same InheritArrow
      * for the lifetime of this GClassNode object, although internally it is lazily created.
      */
-    public InheritArrow getArrowFromSub()
-    {
-        if (arrowFromSub == null)
-        {
+    public InheritArrow getArrowFromSub() {
+        if (arrowFromSub == null) {
             arrowFromSub = new InheritArrow();
         }
         return arrowFromSub;
@@ -139,36 +123,30 @@ public abstract class GClassNode
      * and any class which overrides this method must call super.tidyup()
      * in order for sub classes to also be tidied up.
      */
-    public void tidyup()
-    {
-        if (display != null)
-        {
+    public void tidyup() {
+        if (display != null) {
             selectionManager.removeClassDisplay(display);
         }
-        for (GClassNode subClass : subClasses)
-        {
+        for (GClassNode subClass : subClasses) {
             subClass.tidyup();
         }
     }
-    
+
     /**
      * Get the image filename for the image associated with this class. If not specifically set,
      * this will return null (i.e. it will not return the image associated with the superclass,
      * if any).
      */
-    public String getImageFilename()
-    {
+    public String getImageFilename() {
         return null;
     }
-    
+
     /**
      * Set the image for this class node.
      */
-    protected void setImage(Image newImage)
-    {
+    protected void setImage(Image newImage) {
         image = newImage;
-        if (display != null)
-        {
+        if (display != null) {
             display.setImage(newImage);
         }
     }

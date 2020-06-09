@@ -21,57 +21,49 @@
  */
 package bluej.parser.entity;
 
-import java.util.List;
-
 import bluej.debugger.gentype.JavaPrimitiveType;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 
+import java.util.List;
+
 /**
  * The "null" entity. This represents the "null" value (literal).
- * 
+ *
  * @author Davin McCall
  */
-public class NullEntity extends ValueEntity
-{
-    public NullEntity()
-    {
+public class NullEntity extends ValueEntity {
+    public NullEntity() {
         super(JavaPrimitiveType.getNull());
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return null;
     }
 
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return null;
     }
 
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         return JavaPrimitiveType.getNull();
     }
-    
+
     @Override
-    public boolean isNullEntity()
-    {
+    public boolean isNullEntity() {
         return true;
     }
-    
+
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
 
     @Override
-    public ValueEntity resolveAsValue()
-    {
+    public ValueEntity resolveAsValue() {
         return this;
     }
 }

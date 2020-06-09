@@ -21,8 +21,6 @@
  */
 package bluej.stride.framedjava.slots;
 
-import java.util.Optional;
-
 import bluej.stride.framedjava.frames.CodeFrame;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.Frame.View;
@@ -31,32 +29,30 @@ import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.VariableNameDefTextSlot;
 import bluej.utility.javafx.SharedTransition;
 
-public class EachExpressionSlot extends FilledExpressionSlot
-{
+import java.util.Optional;
+
+public class EachExpressionSlot extends FilledExpressionSlot {
     private final TypeSlot loopVarTypeSlot;
     private final VariableNameDefTextSlot loopVarNameSlot;
 
     public EachExpressionSlot(InteractionManager editor, Frame parentFrame,
-            CodeFrame<?> parentCodeFrame, FrameContentRow row, TypeSlot loopVarTypeSlot, VariableNameDefTextSlot loopVarNameSlot, String stylePrefix)
-    {
+                              CodeFrame<?> parentCodeFrame, FrameContentRow row, TypeSlot loopVarTypeSlot, VariableNameDefTextSlot loopVarNameSlot, String stylePrefix) {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, FilledExpressionSlot.EACH_HINTS);
         this.loopVarTypeSlot = loopVarTypeSlot;
         this.loopVarNameSlot = loopVarNameSlot;
-        
+
         // When the type is modified, we are effectively modified too, as we will generate
         // different code afterwards:
         loopVarTypeSlot.onTextPropertyChange(t -> modified());
     }
-    
+
     @Override
-    public String getCurlyLiteralPrefix()
-    {
+    public String getCurlyLiteralPrefix() {
         return "new " + loopVarTypeSlot.getText() + " []";
     }
 
     @Override
-    public void setView(View oldView, View newView, SharedTransition animate)
-    {
+    public void setView(View oldView, View newView, SharedTransition animate) {
         getTopLevel().setView(oldView, newView, animate, Optional.of(loopVarNameSlot.getText()));
     }
 }

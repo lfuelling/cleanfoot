@@ -32,28 +32,24 @@ import bluej.parser.nodes.NodeTree.NodeAndPosition;
 /**
  * A node representing a method or constructor inner body (the part between, but not
  * including, the '{' and '}').
- * 
+ *
  * @author Davin McCall
  */
-public class MethodBodyNode extends IncrementalParsingNode
-{    
-    public MethodBodyNode(JavaParentNode parent)
-    {
+public class MethodBodyNode extends IncrementalParsingNode {
+    public MethodBodyNode(JavaParentNode parent) {
         super(parent);
         complete = true;
         setInner(true);
     }
-    
+
     @Override
-    protected boolean isDelimitingNode(NodeAndPosition<ParsedNode> nap)
-    {
+    protected boolean isDelimitingNode(NodeAndPosition<ParsedNode> nap) {
         ParsedNode pn = nap.getNode();
         return pn.isContainer() || pn.getNodeType() == ParsedNode.NODETYPE_FIELD;
     }
-    
+
     @Override
-    protected int doPartialParse(ParseParams params, int state)
-    {
+    protected int doPartialParse(ParseParams params, int state) {
         last = params.tokenStream.nextToken();
 
         if (last.getType() == JavaTokenTypes.RCURLY) {
@@ -62,11 +58,11 @@ public class MethodBodyNode extends IncrementalParsingNode
         if (last.getType() == JavaTokenTypes.EOF) {
             return complete ? PP_OK : PP_INCOMPLETE;
         }
-        
+
         if (checkBoundary(params, last)) {
             return PP_PULL_UP_CHILD;
         }
-        
+
         last = params.parser.parseStatement(last, false);
         if (last == null) {
             last = params.tokenStream.LA(1);
@@ -76,34 +72,30 @@ public class MethodBodyNode extends IncrementalParsingNode
         }
         return PP_OK;
     }
-        
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return false;
     }
-    
+
     @Override
-    public boolean growsForward()
-    {
+    public boolean growsForward() {
         return true;
     }
-    
+
     @Override
-    public JavaEntity getValueEntity(String name, Reflective querySource, int fromPosition)
-    {
+    public JavaEntity getValueEntity(String name, Reflective querySource, int fromPosition) {
         return getPositionedValueEntity(name, querySource, fromPosition);
     }
-    
+
     @Override
     public PackageOrClass resolvePackageOrClass(String name,
-            Reflective querySource, int fromPosition)
-    {
+                                                Reflective querySource, int fromPosition) {
         ParsedNode cnode = classNodes.get(name);
         if (cnode != null && cnode.getOffsetFromParent() <= fromPosition) {
             return new TypeEntity(new ParsedReflective((ParsedTypeNode) cnode));
         }
-        
+
         PackageOrClass rval = null;
         if (parentNode != null) {
             rval = parentNode.resolvePackageOrClass(name, querySource);

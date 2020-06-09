@@ -21,43 +21,42 @@
  */
 package bluej.extensions.event;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.extensions.BClass;
 import bluej.extensions.BPackage;
 import bluej.pkgmgr.Package;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * This class encapsulates events which occur on BlueJ classes.<p>
- * 
+ * <p>
  * The following events can occur:<p>
- * 
+ * <p>
  * STATE_CHANGED: The compile state changed (either from uncompiled to compiled,
- *                or from compiled to uncompiled)<p>
+ * or from compiled to uncompiled)<p>
  * CHANGED_NAME:  The class has changed name.<p>
  * REMOVED:       The class has been removed.
- * 
+ * <p>
  * In the case of STATE_CHANGED there are three cases:<p>
- * 
+ * <p>
  * isClassCompiled() returns true: The class has been compiled successfully.  Editing
  * the class will switch to one of the next two states.<p>
  * isClassCompiled() returns false and hasError() returns true: The class
  * has been compiled and was found to have an error.  If the user edits the class,
  * it will either switch directly to the first state (if they fix it and the compile occurs quickly)
- * or the next state (if we are awaiting the compile). 
+ * or the next state (if we are awaiting the compile).
  * isClassCompiled() returns false, and hasError() returns false: The class
  * has been edited and is awaiting the next compile.  When the next compile occurs,
- * the state will be changed to one of the above two states.<p> 
- * 
+ * the state will be changed to one of the above two states.<p>
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class ClassEvent implements ExtensionEvent
-{
+public class ClassEvent implements ExtensionEvent {
     public static final int STATE_CHANGED = 0;
     public static final int CHANGED_NAME = 1;
     public static final int REMOVED = 2;
-    
+
     private final int eventId;
     private final Package bluejPackage;
     private final BClass bClass;
@@ -67,76 +66,72 @@ public class ClassEvent implements ExtensionEvent
 
     /**
      * Construct a new ClassEvent object for a STATE_CHANGED event.
+     *
      * @param eventId    The event identifier (STATE_CHANGED)
-     * @param isCompiled  Whether the class is compiled or not
+     * @param isCompiled Whether the class is compiled or not
      */
-    public ClassEvent(int eventId, Package bluejPackage, BClass bClass, boolean isCompiled)
-    {
+    public ClassEvent(int eventId, Package bluejPackage, BClass bClass, boolean isCompiled) {
         this(eventId, bluejPackage, bClass, isCompiled, isCompiled);
     }
 
 
     /**
      * Construct a new ClassEvent object for a STATE_CHANGED event.
+     *
      * @param eventId    The event identifier (STATE_CHANGED)
-     * @param isCompiled  Whether the class is compiled or not
-     * @param hasError True if the last compilation gave an error, and the class not has been edited since. 
+     * @param isCompiled Whether the class is compiled or not
+     * @param hasError   True if the last compilation gave an error, and the class not has been edited since.
      */
-    public ClassEvent(int eventId, Package bluejPackage, BClass bClass, boolean isCompiled, boolean hasError)
-    {
+    public ClassEvent(int eventId, Package bluejPackage, BClass bClass, boolean isCompiled, boolean hasError) {
         this.eventId = eventId;
         this.bluejPackage = bluejPackage;
         this.isCompiled = isCompiled;
         this.bClass = bClass;
         this.hasError = hasError;
     }
-    
+
     /**
      * Construct a new ClassEvent object for a CHANGED_NAME event.
-     * @param eventId  The event identifier (CHANGED_NAME)
-     * @param bClass   The class which was renamed (refers to the new name)
+     *
+     * @param eventId The event identifier (CHANGED_NAME)
+     * @param bClass  The class which was renamed (refers to the new name)
      */
-    public ClassEvent(int eventId, Package bluejPackage, BClass bClass, String oldName)
-    {
+    public ClassEvent(int eventId, Package bluejPackage, BClass bClass, String oldName) {
         this.eventId = eventId;
         this.bluejPackage = bluejPackage;
         this.bClass = bClass;
         this.oldName = oldName;
     }
-    
+
     /**
      * Get the event Id (one of STATE_CHANGED, CHANGED_NAME).
      */
-    public int getEventId()
-    {
+    public int getEventId() {
         return eventId;
     }
-    
+
     /**
      * Check whether the class for which the event occurred is compiled.
      * Valid for STATE_CHANGED event.
      */
-    public boolean isClassCompiled()
-    {
+    public boolean isClassCompiled() {
         return isCompiled;
     }
-    
+
     /**
      * Check whether the class for which the event occurred is compiled.
      * Valid for STATE_CHANGED event if isClassCompiled() returns false.
      */
-    public boolean hasError()
-    {
+    public boolean hasError() {
         return hasError;
     }
-    
+
     /**
      * Returns the package to which the class that caused this event belongs.
-     * 
+     *
      * @return The package to which the class that caused this event belongs.
      */
-    public BPackage getPackage()
-    {
+    public BPackage getPackage() {
         return bluejPackage.getBPackage();
     }
 
@@ -144,16 +139,14 @@ public class ClassEvent implements ExtensionEvent
      * Get the BClass object identifying the class on which the event
      * occurred.
      */
-    public BClass getBClass()
-    {
+    public BClass getBClass() {
         return bClass;
     }
-    
+
     /**
      * Get the new class name. Valid for CHANGED_NAME event.
      */
-    public String getOldName()
-    {
+    public String getOldName() {
         return oldName;
     }
 }

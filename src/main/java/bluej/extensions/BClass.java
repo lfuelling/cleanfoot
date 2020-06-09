@@ -21,11 +21,6 @@
  */
 package bluej.extensions;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.WeakHashMap;
-
 import bluej.compiler.CompileReason;
 import bluej.compiler.CompileType;
 import bluej.compiler.JobQueue;
@@ -42,18 +37,22 @@ import bluej.views.FieldView;
 import bluej.views.MethodView;
 import bluej.views.View;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 /**
  * A wrapper for a class. This is used to represent both classes which have a representation
  * within the BlueJ project, and those that don't.
- * 
+ *
  * <p>From an instance of this class you can create BlueJ objects and call their methods.
  * Behaviour is similar to the Java reflection API.
  *
  * @author Damiano Bolla, University of Kent at Canterbury, 2002,2003,2004
  */
-public class BClass
-{
-    private static final Map<Identifier,BClass> externalClasses = new WeakHashMap<Identifier,BClass>();
+public class BClass {
+    private static final Map<Identifier, BClass> externalClasses = new WeakHashMap<Identifier, BClass>();
 
     private Identifier classId;
 
@@ -61,17 +60,15 @@ public class BClass
      * Constructor for the BClass.
      * It is duty of the caller to guarantee that it is a reasonable classId
      */
-    BClass(Identifier thisClassId)
-    {
+    BClass(Identifier thisClassId) {
         classId = thisClassId;
     }
-    
+
     /**
      * Get a BClass for some class identifier. To be used for classes which don't have a
      * representation (ClassTarget) in BlueJ.
      */
-    synchronized static BClass getBClass(Identifier classId)
-    {
+    synchronized static BClass getBClass(Identifier classId) {
         BClass r = externalClasses.get(classId);
         if (r == null) {
             r = new BClass(classId);
@@ -79,44 +76,42 @@ public class BClass
         }
         return r;
     }
-    
+
 
     /**
      * Notification that the name of the class has changed.
-     * @param newName  The new class name, fully qualified.
+     *
+     * @param newName The new class name, fully qualified.
      */
-    void nameChanged(String newName)
-    {
+    void nameChanged(String newName) {
         try {
             Project proj = classId.getBluejProject();
             Package pkg = classId.getBluejPackage();
             classId = new Identifier(proj, pkg, newName);
+        } catch (ProjectNotOpenException pnoe) {
+        } catch (PackageNotFoundException pnfe) {
         }
-        catch (ProjectNotOpenException pnoe) { }
-        catch (PackageNotFoundException pnfe) { }
     }
 
     /**
      * Returns the name of this BClass.
-     * 
+     *
      * @return the fully qualified name of the wrapped BlueJ class.
      */
-    public final String getName()
-    {
+    public final String getName() {
         return classId.getClassName();
     }
 
     /**
      * Removes this class from BlueJ, including the underlying files.
      *
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
-     * @throws  ClassNotFoundException    if the class has been deleted by the user, or if the class does
-     *                                    not otherwise have a representation within the project.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
+     * @throws ClassNotFoundException   if the class has been deleted by the user, or if the class does
+     *                                  not otherwise have a representation within the project.
      */
     public void remove()
-             throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException {
         ClassTarget bluejClass = classId.getClassTarget();
         if (bluejClass == null) {
             throw new ClassNotFoundException("Can't find class: " + classId.getClassName());
@@ -132,8 +127,7 @@ public class BClass
      * @throws ClassNotFoundException
      */
     public void convertStrideToJava()
-            throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException {
         ClassTarget bluejClass = classId.getClassTarget();
         if (bluejClass == null) {
             throw new ClassNotFoundException("Can't find class: " + classId.getClassName());
@@ -142,8 +136,7 @@ public class BClass
     }
 
     public void convertJavaToStride()
-        throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException {
         ClassTarget bluejClass = classId.getClassTarget();
         if (bluejClass == null) {
             throw new ClassNotFoundException("Can't find class: " + classId.getClassName());
@@ -157,7 +150,7 @@ public class BClass
      * Returns the Java class being wrapped by this BClass.
      * Use this method when you need more information about the class than
      * is provided by the BClass interface. E.g.:
-     * 
+     *
      * <ul>
      * <li>What is the real class being hidden?
      * <li>Is it an array?
@@ -167,13 +160,12 @@ public class BClass
      * <p>Note that this is for information only. If you want to interact with BlueJ you must
      * use the methods provided in BClass.
      *
-     * @return                           The javaClass value
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @return The javaClass value
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public Class<?> getJavaClass()
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         return classId.getJavaClass();
     }
 
@@ -182,12 +174,11 @@ public class BClass
      * Returns the package this class belongs to.
      * Similar to reflection API.
      *
-     * @return                            The package value
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @return The package value
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      */
-    public BPackage getPackage() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public BPackage getPackage() throws ProjectNotOpenException, PackageNotFoundException {
         Package bluejPkg = classId.getBluejPackage();
         return bluejPkg.getBPackage();
     }
@@ -197,25 +188,23 @@ public class BClass
      * Returns a proxy object that provide an interface to the editor for this BClass.
      * If an editor already exists, a proxy for it is returned. Otherwise, an editor is created but not made visible.
      *
-     * @return                            The proxy editor object or null if it cannot be created
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @return The proxy editor object or null if it cannot be created
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      */
-    public Editor getEditor() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public Editor getEditor() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget == null) {
             return null;
         }
-        
+
         return EditorBridge.newEditor(aTarget);
     }
-    
+
     /**
      * Finds out whether this class has source code available, and whether it's Java or Stride
      */
-    public SourceType getSourceType() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public SourceType getSourceType() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget != null)
             return aTarget.getSourceType();
@@ -227,13 +216,12 @@ public class BClass
     /**
      * Checks to see if this class has been compiled.
      *
-     * @return                            true if it is compiled false othervise.
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @return true if it is compiled false othervise.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      */
     public boolean isCompiled()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         return aTarget == null || aTarget.isCompiled();
     }
@@ -241,42 +229,40 @@ public class BClass
 
     /**
      * Compile this class, and any dependents.
-     * 
+     *
      * <p>After the compilation has finished the method isCompiled() can be used to determined the class
      * status.
-     * 
+     *
      * <p>A single CompileEvent will be generated with all dependent files listed.
-     * 
+     *
      * <p>A call to this method is equivalent to: <code>compile(waitCompileEnd, false)</code>.
      *
-     * @param  waitCompileEnd                   <code>true</code> waits for the compilation to be finished.
-     * @throws  ProjectNotOpenException         if the project to which this class belongs has been closed.
-     * @throws  PackageNotFoundException        if the package to which this class belongs has been deleted.
-     * @throws  CompilationNotStartedException  if BlueJ is currently executing Java code.
+     * @param waitCompileEnd <code>true</code> waits for the compilation to be finished.
+     * @throws ProjectNotOpenException        if the project to which this class belongs has been closed.
+     * @throws PackageNotFoundException       if the package to which this class belongs has been deleted.
+     * @throws CompilationNotStartedException if BlueJ is currently executing Java code.
      */
     public void compile(boolean waitCompileEnd)
-             throws ProjectNotOpenException, PackageNotFoundException, CompilationNotStartedException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, CompilationNotStartedException {
         compile(waitCompileEnd, false);
     }
 
     /**
      * Compile this class, and any dependents, optionally without showing compilation errors to the user.
-     * 
+     *
      * <p>After the compilation has finished the method isCompiled() can be used to determined the class
      * status.
-     * 
+     *
      * <p>A single CompileEvent with all dependent files listed will be generated.
      *
-     * @param  waitCompileEnd                   <code>true</code> waits for the compilation to be finished.
-     * @param  forceQuiet                       if true, compilation errors will not be shown/highlighted to the user.
-     * @throws  ProjectNotOpenException         if the project to which this class belongs has been closed.
-     * @throws  PackageNotFoundException        if the package to which this class belongs has been deleted.
-     * @throws  CompilationNotStartedException  if BlueJ is currently executing Java code.
+     * @param waitCompileEnd <code>true</code> waits for the compilation to be finished.
+     * @param forceQuiet     if true, compilation errors will not be shown/highlighted to the user.
+     * @throws ProjectNotOpenException        if the project to which this class belongs has been closed.
+     * @throws PackageNotFoundException       if the package to which this class belongs has been deleted.
+     * @throws CompilationNotStartedException if BlueJ is currently executing Java code.
      */
     public void compile(boolean waitCompileEnd, boolean forceQuiet)
-             throws ProjectNotOpenException, PackageNotFoundException, CompilationNotStartedException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, CompilationNotStartedException {
         Package bluejPkg = classId.getBluejPackage();
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget == null) {
@@ -304,11 +290,10 @@ public class BClass
      * Utility. Finds the package name given a fully qualified name
      * If no package exist then an empty string is returned.
      *
-     * @param  fullyQualifiedName  Description of the Parameter
-     * @return                     Description of the Return Value
+     * @param fullyQualifiedName Description of the Parameter
+     * @return Description of the Return Value
      */
-    private String findPkgName(String fullyQualifiedName)
-    {
+    private String findPkgName(String fullyQualifiedName) {
         if (fullyQualifiedName == null) {
             return "";
         }
@@ -325,24 +310,23 @@ public class BClass
 
     /**
      * Returns the superclass of this class.
-     * 
+     *
      * <p>Similar to reflection API.
-     * 
+     *
      * <p>If this class represents either the Object class, an interface,
      * a primitive type, or void, then null is returned.
      *
-     * @return                            The superclass value
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
-     * @throws  ClassNotFoundException    if the class has been deleted by the user.
+     * @return The superclass value
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
+     * @throws ClassNotFoundException   if the class has been deleted by the user.
      */
     public BClass getSuperclass()
-             throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException, ClassNotFoundException {
         Project bluejPrj = classId.getBluejProject();
-        
+
         ClassTarget ct = classId.getClassTarget();
-        if (ct != null && ! ct.isCompiled()) {
+        if (ct != null && !ct.isCompiled()) {
             // Class is not compiled: we can still know the superclass!
             ClassInfo info = ct.getSourceInfo().getInfo(getJavaFile(), ct.getPackage());
             if (info != null) {
@@ -356,13 +340,13 @@ public class BClass
                         return ((ClassTarget) sct).getBClass();
                     }
                 }
-                
+
                 // Superclass isn't in the project?
                 Identifier sid = new Identifier(bluejPrj, null, superClass);
                 return BClass.getBClass(sid);
             }
-            
-            return null; 
+
+            return null;
         }
 
         View bluejView = classId.getBluejView();
@@ -387,7 +371,7 @@ public class BClass
         Package bluejPkg = bluejPrj.getPackage(classPkgName);
         if (bluejPkg != null) {
             // I need the Target for the class I want.
-            Target aTarget = bluejPkg.getTarget (superView.getBaseName());
+            Target aTarget = bluejPkg.getTarget(superView.getBaseName());
 
             if (aTarget instanceof ClassTarget) {
                 ClassTarget classTarget = (ClassTarget) aTarget;
@@ -404,13 +388,12 @@ public class BClass
      * Returns all the constructors of this class.
      * Similar to reflection API.
      *
-     * @return                           The constructors value
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @return The constructors value
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BConstructor[] getConstructors()
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
 
         ConstructorView[] constructorViews = bluejView.getConstructors();
@@ -427,15 +410,14 @@ public class BClass
      * Returns the constructor for this class which has the given signature.
      * Similar to reflection API.
      *
-     * @param  signature                 the signature of the required constructor.
-     * @return                           the requested constructor of this class, or null if
+     * @param signature the signature of the required constructor.
+     * @return the requested constructor of this class, or null if
      * the class has not been compiled or the constructor cannot be found.
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BConstructor getConstructor(Class<?>[] signature)
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
 
         ConstructorView[] constructorViews = bluejView.getConstructors();
@@ -453,13 +435,12 @@ public class BClass
      * Returns the declared methods of this class.
      * Similar to reflection API.
      *
-     * @return                           The declaredMethods value
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @return The declaredMethods value
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BMethod[] getDeclaredMethods()
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
 
         MethodView[] methodView = bluejView.getDeclaredMethods();
@@ -477,15 +458,14 @@ public class BClass
      * Returns the declared method of this class which has the given signature.
      * Similar to reflection API.
      *
-     * @param  methodName                The name of the method.
-     * @param  params                    The parameters of the method. Pass a zero length array if the method takes no arguments. 
-     * @return                           The declaredMethod value or <code>null</code> if the method is not found.
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @param methodName The name of the method.
+     * @param params     The parameters of the method. Pass a zero length array if the method takes no arguments.
+     * @return The declaredMethod value or <code>null</code> if the method is not found.
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BMethod getDeclaredMethod(String methodName, Class<?>[] params)
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
         MethodView[] methodView = bluejView.getDeclaredMethods();
 
@@ -499,20 +479,19 @@ public class BClass
         return null;
     }
 
-    
+
     /**
-     * Returns all methods of this class, those declared and those inherited from all ancestors. 
+     * Returns all methods of this class, those declared and those inherited from all ancestors.
      * Similar to reflection API, except that all methods, declared and inherited, are returned, and not only the public ones.
      * That is, it returns all public, private, protected, and package-access methods, inherited or declared.
      * The elements in the array returned are not sorted and are not in any particular order.
      *
-     * @return                           The Methods value
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @return The Methods value
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BMethod[] getMethods()
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
 
         MethodView[] methodView = bluejView.getAllMethods();
@@ -525,25 +504,24 @@ public class BClass
         return methods;
     }
 
-    
+
     /**
      * Returns the method of this class with the given signature.
      * Similar to reflection API, except that all methods, declared and inherited, are searched, and not only the public ones.
      * That is, it searches all public, private, protected, and package-access methods, declared or inherited from all ancestors.
      * If the searched method has been redefined, the returned method is chosen arbitrarily from the list of inherited and declared methods.
      *
-     * @param  methodName                The name of the method
-     * @param  params                    The parameters of the method. Pass a zero length array if the method takes no arguments. 
-     * @return                           The Method value or <code>null</code> if the method is not found.
-     * @throws  ProjectNotOpenException  If the project to which this class belongs has been closed by the user
-     * @throws  ClassNotFoundException   If the class has been deleted by the user
+     * @param methodName The name of the method
+     * @param params     The parameters of the method. Pass a zero length array if the method takes no arguments.
+     * @return The Method value or <code>null</code> if the method is not found.
+     * @throws ProjectNotOpenException If the project to which this class belongs has been closed by the user
+     * @throws ClassNotFoundException  If the class has been deleted by the user
      */
     public BMethod getMethod(String methodName, Class<?>[] params)
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
         MethodView[] methodView = bluejView.getAllMethods();
- 
+
         for (int index = 0; index < methodView.length; index++) {
             BMethod aResul = new BMethod(classId, methodView[index]);
             if (aResul.matches(methodName, params)) {
@@ -559,13 +537,12 @@ public class BClass
      * Returns all the fields of this class.
      * Similar to reflection API.
      *
-     * @return                           The fields value
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @return The fields value
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BField[] getFields()
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         View bluejView = classId.getBluejView();
 
         FieldView[] fieldView = bluejView.getAllFields();
@@ -582,14 +559,13 @@ public class BClass
      * Returns the field of this class which has the given name.
      * Similar to Reflection API.
      *
-     * @param  fieldName                 Description of the Parameter
-     * @return                           The field value
-     * @throws  ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
-     * @throws  ClassNotFoundException   if the class has been deleted by the user.
+     * @param fieldName Description of the Parameter
+     * @return The field value
+     * @throws ProjectNotOpenException if the project to which this class belongs has been closed by the user.
+     * @throws ClassNotFoundException  if the class has been deleted by the user.
      */
     public BField getField(String fieldName)
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         if (fieldName == null) {
             return null;
         }
@@ -611,18 +587,15 @@ public class BClass
     /**
      * Returns the class target of this class. May return <code>null</code> if
      * the class target is no longer valid.
-     * 
+     *
      * @return The class target of this class or <code>null</code> if there is
-     *         no such class target.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class belongs has been closed by
-     *             the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class belongs has been deleted
-     *             by the user.
+     * no such class target.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by
+     *                                  the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted
+     *                                  by the user.
      */
-    public BClassTarget getClassTarget() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public BClassTarget getClassTarget() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = classId.getClassTarget();
         return (classTarget != null) ? classTarget.getBClassTarget() : null;
     }
@@ -630,13 +603,12 @@ public class BClass
     /**
      * Returns this class's .class file (or null, if the class no longer exists in the project).
      *
-     * @return                            the class .class file.
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @return the class .class file.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      */
     public File getClassFile()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget == null) {
             return null;
@@ -650,24 +622,23 @@ public class BClass
      * Returns this class's .java file.
      * If the file is currently being edited, calling this method will cause it to be saved.
      *
-     * @return                            the class .java file.
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @return the class .java file.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      */
     public File getJavaFile()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget == null) {
             return null;
         }
-        if(aTarget.editorOpen()) {
+        if (aTarget.editorOpen()) {
             bluej.editor.Editor anEditor = aTarget.getEditor();
             if (anEditor != null) {
                 try {
                     anEditor.save();
+                } catch (IOException ioe) {
                 }
-                catch (IOException ioe) {}
             }
         }
 
@@ -680,14 +651,13 @@ public class BClass
      * The file containing the source for this class can be found using getJavaFile();
      * If the file is currently being edited it will be saved and the editor will be set read-only.
      *
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      * @deprecated As of BlueJ 2.0, replaced by {@link Editor#setReadOnly(boolean readOnly)}
      */
     @Deprecated
     public void beginChangeSource()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget == null) {
             return;
@@ -699,8 +669,8 @@ public class BClass
 
         try {
             anEditor.save();
+        } catch (IOException ioe) {
         }
-        catch (IOException ioe) {}
         anEditor.setReadOnly(true);
     }
 
@@ -709,14 +679,13 @@ public class BClass
      * Signal to BlueJ that an extension has finished changing the source file of this class.
      * If the file is currently being edited, this will cause it to be re-loaded and the editor to be set read/write.
      *
-     * @throws  ProjectNotOpenException   if the project to which this class belongs has been closed by the user.
-     * @throws  PackageNotFoundException  if the package to which this class belongs has been deleted by the user.
+     * @throws ProjectNotOpenException  if the project to which this class belongs has been closed by the user.
+     * @throws PackageNotFoundException if the package to which this class belongs has been deleted by the user.
      * @deprecated As of BlueJ 2.0, replaced by {@link Editor#setReadOnly(boolean readOnly)}
      */
     @Deprecated
     public void endChangeSource()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget aTarget = classId.getClassTarget();
         if (aTarget == null) {
             return;
@@ -731,19 +700,16 @@ public class BClass
     }
 
 
-
     /**
      * Returns a string representation of the Object
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
-    public String toString()
-    {
+    public String toString() {
         try {
             Class<?> javaClass = classId.getJavaClass();
             return "BClass: " + javaClass.getName();
-        }
-        catch (ExtensionException exc) {
+        } catch (ExtensionException exc) {
             return "BClass: INVALID";
         }
     }

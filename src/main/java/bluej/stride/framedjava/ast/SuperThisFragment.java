@@ -21,80 +21,68 @@
  */
 package bluej.stride.framedjava.ast;
 
+import bluej.stride.framedjava.elements.CodeElement;
+import bluej.stride.framedjava.errors.CodeError;
+import bluej.stride.framedjava.errors.ErrorShower;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.frames.ConstructorFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
+import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.ChoiceSlot;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import bluej.stride.framedjava.elements.CodeElement;
-import bluej.stride.framedjava.errors.ErrorShower;
-import bluej.stride.framedjava.frames.ConstructorFrame;
-import bluej.stride.generic.InteractionManager;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-import bluej.stride.framedjava.errors.CodeError;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.slots.ExpressionSlot;
-import bluej.stride.slots.ChoiceSlot;
-
-public class SuperThisFragment extends ChoiceSlotFragment
-{
+public class SuperThisFragment extends ChoiceSlotFragment {
     private final SuperThis value;
     private final ExpressionSlot paramsSlot;
     private ChoiceSlot<SuperThis> slot;
-    
-    public SuperThisFragment(SuperThis a)
-    {
+
+    public SuperThisFragment(SuperThis a) {
         super(null);
         this.value = a;
         this.paramsSlot = null;
     }
-    
+
     @OnThread(Tag.FX)
-    public SuperThisFragment(ConstructorFrame f, ChoiceSlot<SuperThis> s, ExpressionSlot superThisParamsSlot)
-    {
+    public SuperThisFragment(ConstructorFrame f, ChoiceSlot<SuperThis> s, ExpressionSlot superThisParamsSlot) {
         super(f);
         this.value = s.getValue(SuperThis.EMPTY);
         this.paramsSlot = superThisParamsSlot;
         this.slot = s;
     }
 
-    public SuperThis getValue()
-    {
+    public SuperThis getValue() {
         return value;
     }
 
     @Override
-    public String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator)
-    {
+    public String getJavaCode(Destination dest, ExpressionSlot<?> completing, Parser.DummyNameGenerator dummyNameGenerator) {
         return value.getJavaCode();
     }
 
-    public void registerSlot(ChoiceSlot<SuperThis> slot)
-    {
+    public void registerSlot(ChoiceSlot<SuperThis> slot) {
         this.slot = slot;
     }
 
     @Override
-    public Stream<SyntaxCodeError> findEarlyErrors()
-    {
-        if (value == null || value == SuperThis.EMPTY)
-        {
+    public Stream<SyntaxCodeError> findEarlyErrors() {
+        if (value == null || value == SuperThis.EMPTY) {
             return Stream.of(new SyntaxCodeError(this, "Cannot be empty; must be super or this"));
-        }
-        else
-        {
+        } else {
             return Stream.empty();
         }
     }
 
-    public Future<List<CodeError>> findLateErrors(InteractionManager editor, CodeElement parent)
-    {
+    public Future<List<CodeError>> findLateErrors(InteractionManager editor, CodeElement parent) {
         return null;
     }
 
     @Override
-    protected @OnThread(Tag.FX) JavaFragment getCompileErrorRedirect()
-    {
+    protected @OnThread(Tag.FX) JavaFragment getCompileErrorRedirect() {
         if (paramsSlot != null)
             return paramsSlot.getSlotElement();
         else
@@ -102,8 +90,7 @@ public class SuperThisFragment extends ChoiceSlotFragment
     }
 
     @Override
-    public @OnThread(Tag.FX) ErrorShower getErrorShower()
-    {
+    public @OnThread(Tag.FX) ErrorShower getErrorShower() {
         if (paramsSlot != null)
             return paramsSlot;
         else

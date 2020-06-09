@@ -23,44 +23,37 @@ package bluej.testmgr.record;
 
 import bluej.pkgmgr.PkgMgrFrame;
 
-public class ArrayElementInspectorRecord extends InvokerRecord
-{
+public class ArrayElementInspectorRecord extends InvokerRecord {
     private final InvokerRecord parentIr;
     private final int element;
-    
-    public ArrayElementInspectorRecord(InvokerRecord parentIr, int element)
-    {
+
+    public ArrayElementInspectorRecord(InvokerRecord parentIr, int element) {
         this.parentIr = parentIr;
         this.element = element;
     }
-    
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
-    }    
-    
+    }
+
     @Override
-    public String toExpression()
-    {
+    public String toExpression() {
         return parentIr.toExpression() + "[" + element + "]";
     }
 
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
+    public String toFixtureDeclaration(String firstIndent) {
         return null;
     }
 
     @Override
-    public String toFixtureSetup(String secondIndent)
-    {
+    public String toFixtureSetup(String secondIndent) {
         return null;
     }
 
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         return null;
     }
 }

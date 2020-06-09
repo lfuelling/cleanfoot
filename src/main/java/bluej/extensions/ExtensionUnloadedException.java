@@ -24,9 +24,9 @@ package bluej.extensions;
 /**
  * This exception will be thrown when an Extension that has been unloaded
  * from BlueJ still tries to access methods of the BlueJ class.
- * If the Extension terminates its activities when the Extension.terminate() 
+ * If the Extension terminates its activities when the Extension.terminate()
  * method is called then this exception will never be thrown.
- * 
+ *
  * @version $Id: ExtensionUnloadedException.java 6215 2009-03-30 13:28:25Z polle $
  */
 
@@ -34,6 +34,5 @@ package bluej.extensions;
  * Author: Damiano Bolla, University of kent at Canterbury, 2003
  */
 
-public class ExtensionUnloadedException extends RuntimeException 
-{
+public class ExtensionUnloadedException extends RuntimeException {
 }

@@ -23,38 +23,34 @@ package bluej.runtime;
 
 /**
  * Interface implemented by all "shell" classes.
- *
+ * <p>
  * The src for each "shell" class is constructed automatically,
  * compiled and executed. They are used for method invocation
  * and object creation.
  *
- * @author  Michael Cahill
- * @author  Michael Kolling
+ * @author Michael Cahill
+ * @author Michael Kolling
  */
-public abstract class Shell
-{
+public abstract class Shell {
     /**
      * A dummy method called by class loader to prepare the class
      * after loading.
      */
-    public static void prepare()
-    {
+    public static void prepare() {
     }
 
     /**
      * Provide the shell class with static access to the object
      * bench scopes.
      */
-    protected static BJMap<String,Object> getScope(String scopeId)
-    {
+    protected static BJMap<String, Object> getScope(String scopeId) {
         return ExecServer.getScope(scopeId);
     }
 
     /**
      * Put an object into the scope of one of the object benches.
      */
-    protected static void putObject(String scopeId, String instanceName, Object value)
-    {
+    protected static void putObject(String scopeId, String instanceName, Object value) {
         ExecServer.addObject(scopeId, instanceName, value);
     }
 
@@ -64,40 +60,35 @@ public abstract class Shell
      * properly; if we boxed them, the debugger wouldn't know if the result
      * was really primitive or not.
      */
-    public static Object makeObj(final Object o)
-    {
+    public static Object makeObj(final Object o) {
         return new Object() {
             @SuppressWarnings("unused")
             public final Object result = o;
         };
     }
 
-    protected static Object makeObj(final String s)
-    {
+    protected static Object makeObj(final String s) {
         return new Object() {
-           @SuppressWarnings("unused")
-           public final String result = s;
+            @SuppressWarnings("unused")
+            public final String result = s;
         };
     }
 
-    protected static Object makeObj(final boolean b)
-    {
+    protected static Object makeObj(final boolean b) {
         return new Object() {
             @SuppressWarnings("unused")
             public final boolean result = b;
         };
     }
 
-    protected static Object makeObj(final byte b)
-    {
+    protected static Object makeObj(final byte b) {
         return new Object() {
             @SuppressWarnings("unused")
             public final byte result = b;
         };
     }
 
-    protected static Object makeObj(final char c)
-    {
+    protected static Object makeObj(final char c) {
         return new Object() {
             @SuppressWarnings("unused")
             public final char result = c;
@@ -111,32 +102,28 @@ public abstract class Shell
         };
     }
 
-    protected static Object makeObj(final float f)
-    {
+    protected static Object makeObj(final float f) {
         return new Object() {
             @SuppressWarnings("unused")
             public final float result = f;
         };
     }
 
-    protected static Object makeObj(final int i)
-    {
+    protected static Object makeObj(final int i) {
         return new Object() {
             @SuppressWarnings("unused")
             public final int result = i;
         };
     }
 
-    protected static Object makeObj(final long l)
-    {
+    protected static Object makeObj(final long l) {
         return new Object() {
             @SuppressWarnings("unused")
             public final long result = l;
         };
     }
 
-    protected static Object makeObj(final short s)
-    {
+    protected static Object makeObj(final short s) {
         return new Object() {
             @SuppressWarnings("unused")
             public final short result = s;

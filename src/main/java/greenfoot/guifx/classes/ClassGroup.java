@@ -29,38 +29,32 @@ import javafx.scene.layout.Pane;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
  * A hierarchical tree display of classes.  There can be zero-to-unlimited root classes,
  * each of which can have zero-to-unlimited subclasses, and each of those can
  * have zero-unlimited subclasses, and so on, all the way down.
- * 
+ * <p>
  * Inheritance arrows are drawn for each subclass relation.  Classes are sorted
  * alphabetically at each level in the hierarchy.
  */
 @OnThread(Tag.FXPlatform)
-public class ClassGroup extends Pane implements ChangeListener<Number>
-{
+public class ClassGroup extends Pane implements ChangeListener<Number> {
     public static final int VERTICAL_SPACING = 8;
 
     // For Actor and World groups, just those base classes.  For other, can be many top-level:
     private final List<GClassNode> topLevel = new ArrayList<>();
     private final GreenfootStage greenfootStage;
 
-    public ClassGroup(GreenfootStage greenfootStage)
-    {
-        this.greenfootStage = greenfootStage; 
+    public ClassGroup(GreenfootStage greenfootStage) {
+        this.greenfootStage = greenfootStage;
         getStyleClass().add("class-group");
         // Set minimum to be preferred width/height:
         setMinHeight(USE_PREF_SIZE);
         setMinWidth(USE_PREF_SIZE);
-        
+
         setMaxWidth(Double.MAX_VALUE);
         setMaxHeight(Double.MAX_VALUE);
     }
@@ -68,22 +62,18 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
     /**
      * Sets the top-level classes for this class group.
      */
-    public void setClasses(List<GClassNode> topLevel)
-    {
+    public void setClasses(List<GClassNode> topLevel) {
         // Tidy up by removing height listeners on old ClassDisplays:
-        for (Node child : getChildren())
-        {
-            if (child instanceof ClassDisplay)
-            {
+        for (Node child : getChildren()) {
+            if (child instanceof ClassDisplay) {
                 ((ClassDisplay) child).widthProperty().removeListener(this);
                 ((ClassDisplay) child).heightProperty().removeListener(this);
             }
         }
         getChildren().clear();
-        for (GClassNode classInfo : this.topLevel)
-        {
+        for (GClassNode classInfo : this.topLevel) {
             classInfo.tidyup();
-        }        
+        }
         this.topLevel.clear();
         this.topLevel.addAll(topLevel);
         updateAfterAdd();
@@ -94,8 +84,7 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
      * removal.  If you add a class anywhere within, you should then call updateAfterAdd().
      * Note: only gets top-level classes, does not get subclasses.
      */
-    public List<GClassNode> getLiveTopLevelClasses()
-    {
+    public List<GClassNode> getLiveTopLevelClasses() {
         return topLevel;
     }
 
@@ -103,8 +92,7 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
      * Gets a stream containing all the classes in this group, both top-level
      * and subclasses.
      */
-    public Stream<GClassNode> streamAllClasses()
-    {
+    public Stream<GClassNode> streamAllClasses() {
         return topLevel.stream().flatMap(c -> streamInclSubclasses(c));
     }
 
@@ -112,25 +100,22 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
      * Helper method to get a stream containing the given class and all its subclasses
      * (all the way down to the bottom: subsubclasses, etc)
      */
-    private static Stream<GClassNode> streamInclSubclasses(GClassNode item)
-    {
+    private static Stream<GClassNode> streamInclSubclasses(GClassNode item) {
         return Stream.concat(Stream.of(item),
-            item.getSubClasses().stream().flatMap(c -> streamInclSubclasses(c)));
+                item.getSubClasses().stream().flatMap(c -> streamInclSubclasses(c)));
     }
 
     /**
      * Refreshes display after a class has been added to the diagram.
      */
-    public void updateAfterAdd()
-    {
+    public void updateAfterAdd() {
         // Sort in case they added at top-level:
         Collections.sort(this.topLevel, Comparator.comparing(GClassNode::getDisplayName));
         // Adjust positions:
         redisplay();
     }
 
-    private void redisplay()
-    {
+    private void redisplay() {
         // Left indent by same amount as top indent:
         int leftIndent = VERTICAL_SPACING;
         redisplay(null, topLevel, leftIndent, 0);
@@ -140,27 +125,24 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
     /**
      * Lay out the list of classes vertically, at the same indent.
      * Also lay out any subclasses.
-     * 
+     *
      * @param arrowToSuper Either null (no superclass) or a vertical inherit arrow to update
      *                     the position of, once we've laid out all classes in the stratum.
-     * @param stratum The list of classes to layout (in list order)
-     * @param x The current X position for all the classes
-     * @param y The Y position for the top class.
+     * @param stratum      The list of classes to layout (in list order)
+     * @param x            The current X position for all the classes
+     * @param y            The Y position for the top class.
      * @return The resulting Y position after doing the layout.
      */
-    private int redisplay(InheritArrow arrowToSuper, List<GClassNode> stratum, int x, int y)
-    { 
+    private int redisplay(InheritArrow arrowToSuper, List<GClassNode> stratum, int x, int y) {
         final int startY = y;
         List<Double> arrowArms = new ArrayList<>();
-        
-        for (GClassNode classInfo : stratum)
-        {
+
+        for (GClassNode classInfo : stratum) {
             y += VERTICAL_SPACING;
-            
+
             // Make sure display is in our children:
             ClassDisplay classDisplay = classInfo.getDisplay(greenfootStage);
-            if (!getChildren().contains(classDisplay))
-            {
+            if (!getChildren().contains(classDisplay)) {
                 getChildren().add(classDisplay);
                 // Often, the width or height is zero at this point, so we need to listen
                 // for when it gets set right in order to re-layout:
@@ -170,17 +152,15 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
             // The inherit arrow arm should point to the vertical midpoint of the class:
             double halfHeight = Math.floor(classDisplay.getHeight() / 2.0);
             arrowArms.add(y + halfHeight - startY);
-            
+
             classDisplay.setLayoutX(x);
             classDisplay.setLayoutY(y);
             // If height changes, we will layout again because of the listener added above:
             y += classDisplay.getHeight();
-            
-            if (!classInfo.getSubClasses().isEmpty())
-            {
+
+            if (!classInfo.getSubClasses().isEmpty()) {
                 // If no existing arrow, make one and add to children:
-                if (!getChildren().contains(classInfo.getArrowFromSub()))
-                {
+                if (!getChildren().contains(classInfo.getArrowFromSub())) {
                     getChildren().add(classInfo.getArrowFromSub());
                 }
                 // Update the position.  Using 0.5 makes the lines lie exactly on a pixel and avoid anti-aliasing:
@@ -189,26 +169,22 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
 
                 // Now do the sub-classes of this class, indented to right:
                 y = redisplay(classInfo.getArrowFromSub(), classInfo.getSubClasses(), x + 20, y);
-            }
-            else
-            {
+            } else {
                 // If no longer have any subclasses, clean up any previous arrow:
                 getChildren().remove(classInfo.getArrowFromSub());
             }
         }
-        
-        if (arrowToSuper != null)
-        {
+
+        if (arrowToSuper != null) {
             arrowToSuper.setArmLocations(15.0, arrowArms);
         }
-        
+
         return y;
     }
 
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected double computePrefHeight(double width)
-    {
+    protected double computePrefHeight(double width) {
         // The total height of class displays, plus that many vertical spacing items
         // (Note: we have spacing at the top as well, not just inbetween)
         // We don't just sum all children, because we don't want to include the height
@@ -221,8 +197,7 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
 
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    protected double computePrefWidth(double height)
-    {
+    protected double computePrefWidth(double height) {
         return getChildren().stream()
                 .filter(c -> c instanceof ClassDisplay)
                 .mapToDouble(c -> c.getLayoutX() + c.prefWidth(-1))
@@ -237,35 +212,30 @@ public class ClassGroup extends Pane implements ChangeListener<Number>
      */
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-    {
+    public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
         redisplay();
     }
-    
+
     /**
      * Save image selections to a properties file.
      */
-    public void saveImageSelections(Properties p)
-    {
-        for (GClassNode gcn : topLevel)
-        {
+    public void saveImageSelections(Properties p) {
+        for (GClassNode gcn : topLevel) {
             saveImageSelections(gcn, p);
         }
     }
-    
+
     /**
      * Save the image selections for a particular class node, and its subclasses, to a properties
      * file.
      */
-    private void saveImageSelections(GClassNode gcn, Properties p)
-    {
+    private void saveImageSelections(GClassNode gcn, Properties p) {
         String imageName = gcn.getImageFilename();
         if (imageName != null) {
             p.put("class." + gcn.getQualifiedName() + ".image", imageName);
         }
-        
-        for (GClassNode gcnSubclass : gcn.getSubClasses())
-        {
+
+        for (GClassNode gcnSubclass : gcn.getSubClasses()) {
             saveImageSelections(gcnSubclass, p);
         }
     }

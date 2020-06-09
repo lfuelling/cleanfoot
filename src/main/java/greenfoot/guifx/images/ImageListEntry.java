@@ -22,9 +22,9 @@
 package greenfoot.guifx.images;
 
 import bluej.utility.Debug;
-
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import java.io.File;
 import java.net.MalformedURLException;
 
@@ -33,8 +33,7 @@ import java.net.MalformedURLException;
  *
  * @author Amjad Altadmri
  */
-public class ImageListEntry
-{
+public class ImageListEntry {
     private final File imageFile;
     private final boolean inProjectList;
     private ImageView icon;
@@ -42,17 +41,14 @@ public class ImageListEntry
 
     /**
      * Construct an image list entry for a specific file.
-
+     *
      * @param file          The image file; could be null.
      * @param inProjectList {@code true} if the contained list is the project's image files one,
-     *                          {@code false} if it is a greenfoot library's list.
-     *
+     *                      {@code false} if it is a greenfoot library's list.
      */
-    public ImageListEntry(File file, boolean inProjectList)
-    {
+    public ImageListEntry(File file, boolean inProjectList) {
         this.imageFile = file;
-        if (imageFile != null)
-        {
+        if (imageFile != null) {
             lastModified = file.lastModified();
         }
         this.inProjectList = inProjectList;
@@ -63,8 +59,7 @@ public class ImageListEntry
      *
      * @return the image's file name.
      */
-    public String getImageName()
-    {
+    public String getImageName() {
         return imageFile.getName();
     }
 
@@ -74,10 +69,8 @@ public class ImageListEntry
      *
      * @return an Image view of the image file.
      */
-    public ImageView getIcon()
-    {
-        if (icon == null && imageFile != null)
-        {
+    public ImageView getIcon() {
+        if (icon == null && imageFile != null) {
             icon = getImageView();
         }
         return icon;
@@ -90,22 +83,17 @@ public class ImageListEntry
      *
      * @return an image view containing a thumbnail of the image.
      */
-    private ImageView getImageView()
-    {
-        try
-        {
+    private ImageView getImageView() {
+        try {
             Image image = new Image(imageFile.toURI().toURL().toExternalForm());
             ImageView view = new ImageView(image);
             int maxWidth = inProjectList ? 40 : 60;
-            if (image.getWidth() > maxWidth)
-            {
+            if (image.getWidth() > maxWidth) {
                 view.setFitWidth(maxWidth);
                 view.setPreserveRatio(true);
             }
             return view;
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             Debug.reportError(e);
         }
         return new ImageView();
@@ -116,8 +104,7 @@ public class ImageListEntry
      *
      * @return the image's file or null if it doesn't exist.
      */
-    public File getImageFile()
-    {
+    public File getImageFile() {
         return imageFile;
     }
 
@@ -125,10 +112,9 @@ public class ImageListEntry
      * Returns the value of the inProjectList filed.
      *
      * @return {@code true} if the contained list is the project's image files one,
-     *            {@code false} if it is a greenfoot library's list.
+     * {@code false} if it is a greenfoot library's list.
      */
-    public boolean isInProjectList()
-    {
+    public boolean isInProjectList() {
         return inProjectList;
     }
 
@@ -136,17 +122,15 @@ public class ImageListEntry
      * Indicates whether some other entry has the same image file and it has not changed,
      * or both entries has no image files.
      *
-     * @param other  the reference object with which to compare.
+     * @param other the reference object with which to compare.
      * @return {@code true} only in two cases:
-     *              - both entries have a null image file,
-     *              - both entries have the same image file and it has not been modified;
-     *         {@code false} otherwise.
+     * - both entries have a null image file,
+     * - both entries have the same image file and it has not been modified;
+     * {@code false} otherwise.
      */
     @Override
-    public boolean equals(Object other)
-    {
-        if( !(other instanceof ImageListEntry) )
-        {
+    public boolean equals(Object other) {
+        if (!(other instanceof ImageListEntry)) {
             return false;
         }
 
@@ -154,12 +138,9 @@ public class ImageListEntry
         ImageListEntry otherEntry = (ImageListEntry) other;
         File otherImageFile = otherEntry.imageFile;
 
-        if (otherImageFile == null && imageFile == null)
-        {
+        if (otherImageFile == null && imageFile == null) {
             return true;
-        }
-        else if (otherImageFile == null || imageFile == null)
-        {
+        } else if (otherImageFile == null || imageFile == null) {
             return false;
         }
 
@@ -173,8 +154,7 @@ public class ImageListEntry
      * @return a hash code value for this object.
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return imageFile.hashCode();
     }
 }

@@ -21,95 +21,74 @@
  */
 package bluej.parser.entity;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-
-import bluej.debugger.gentype.ConstructorReflective;
-import bluej.debugger.gentype.FieldReflective;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.GenTypeDeclTpar;
-import bluej.debugger.gentype.JavaPrimitiveType;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.MethodReflective;
-import bluej.debugger.gentype.Reflective;
+import bluej.debugger.gentype.*;
 import bluej.utility.JavaReflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Modifier;
+import java.util.*;
+
 /**
  * A Reflective implementation for arrays (which defers most functionality to the component reflective)
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class ParsedArrayReflective extends Reflective
-{
+public class ParsedArrayReflective extends Reflective {
     private final Reflective component;
     private final String className;
-    
+
     /**
      * Construct a new ParsedArrayReflective with the given component type.
-     * @param component   The component type
-     * @param componentName  The component binary name; for a class this must be 'L(class name);', eg 'Ljava.lang.Object;'.
+     *
+     * @param component     The component type
+     * @param componentName The component binary name; for a class this must be 'L(class name);', eg 'Ljava.lang.Object;'.
      */
-    public ParsedArrayReflective(Reflective component, String componentName)
-    {
+    public ParsedArrayReflective(Reflective component, String componentName) {
         this.component = component;
         className = "[" + componentName;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return className;
     }
-    
+
     @Override
-    public String getSimpleName()
-    {
+    public String getSimpleName() {
         return component.getSimpleName() + "[]";
     }
-    
+
     @Override
-    public Reflective getArrayOf()
-    {
+    public Reflective getArrayOf() {
         return new ParsedArrayReflective(this, className);
     }
-    
+
     // See JLS section 10.7: arrays have a "public final int length" field
     @Override
-    public Map<String,FieldReflective> getDeclaredFields()
-    {
-        return Collections.singletonMap("length", new FieldReflective("length", JavaPrimitiveType.getInt(), Modifier.PUBLIC | Modifier.FINAL, this)); 
+    public Map<String, FieldReflective> getDeclaredFields() {
+        return Collections.singletonMap("length", new FieldReflective("length", JavaPrimitiveType.getInt(), Modifier.PUBLIC | Modifier.FINAL, this));
     }
-    
+
     // See JLS section 10.7: arrays have a "public Object clone()" method
     @Override
-    public Map<String, Set<MethodReflective>> getDeclaredMethods()
-    {
+    public Map<String, Set<MethodReflective>> getDeclaredMethods() {
         return Collections.singletonMap("clone", Collections.singleton(new MethodReflective("clone", new GenTypeClass(new JavaReflective(Object.class)), new ArrayList<GenTypeDeclTpar>(), new ArrayList<JavaType>(), this, false, Modifier.PUBLIC)));
     }
 
     @Override
-    public List<ConstructorReflective> getDeclaredConstructors()
-    {
+    public List<ConstructorReflective> getDeclaredConstructors() {
         return Collections.emptyList();
     }
-    
+
     @Override
-    public Reflective getRelativeClass(String name)
-    {
+    public Reflective getRelativeClass(String name) {
         return component.getRelativeClass(name);
     }
-    
+
     @Override
-    public List<GenTypeClass> getSuperTypes()
-    {
+    public List<GenTypeClass> getSuperTypes() {
         List<GenTypeClass> componentSupers = component.getSuperTypes();
         for (ListIterator<GenTypeClass> i = componentSupers.listIterator(); i.hasNext(); ) {
             i.set(i.next().getArray());
@@ -117,60 +96,51 @@ public class ParsedArrayReflective extends Reflective
         componentSupers.add(new GenTypeClass(new JavaReflective(Object.class)));
         return componentSupers;
     }
-    
+
     @Override
-    public List<Reflective> getSuperTypesR()
-    {
+    public List<Reflective> getSuperTypesR() {
         Reflective obj = new JavaReflective(Object.class);
         return Collections.singletonList(obj);
     }
-    
+
     @Override
-    public List<GenTypeDeclTpar> getTypeParams()
-    {
+    public List<GenTypeDeclTpar> getTypeParams() {
         return Collections.emptyList();
     }
-    
+
     @Override
-    public boolean isAssignableFrom(Reflective r)
-    {
+    public boolean isAssignableFrom(Reflective r) {
         // TODO implement this
         return false;
     }
-    
+
     @Override
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return false;
     }
-    
+
     @Override
-    public boolean isPublic()
-    {
+    public boolean isPublic() {
         return component.isPublic();
     }
-    
+
     @Override
-    public boolean isStatic()
-    {
+    public boolean isStatic() {
         return component.isStatic();
     }
-    
+
     @Override
-    public boolean isFinal()
-    {
+    public boolean isFinal() {
         return component.isFinal();
     }
-    
+
     @Override
-    public Reflective getInnerClass(String name)
-    {
+    public Reflective getInnerClass(String name) {
         return null;
     }
 
     @Override
-    public String getModuleName()
-    {
+    public String getModuleName() {
         return component.getModuleName();
     }
 }

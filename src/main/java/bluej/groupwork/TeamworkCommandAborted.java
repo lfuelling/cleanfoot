@@ -26,19 +26,16 @@ import threadchecker.Tag;
 
 /**
  * A teamwork command result representing an aborted command.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.Any)
-public class TeamworkCommandAborted extends TeamworkCommandResult
-{
-    public boolean isError()
-    {
+public class TeamworkCommandAborted extends TeamworkCommandResult {
+    public boolean isError() {
         return true;
     }
-    
-    public boolean wasAborted()
-    {
+
+    public boolean wasAborted() {
         return true;
     }
 }

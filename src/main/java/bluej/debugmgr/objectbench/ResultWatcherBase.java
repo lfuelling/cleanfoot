@@ -36,8 +36,7 @@ import javafx.stage.Stage;
 /**
  * A result watcher which handles standard invocation of methods and constructors.
  */
-public abstract class ResultWatcherBase implements ResultWatcher
-{
+public abstract class ResultWatcherBase implements ResultWatcher {
     private final CallableView method;
     private DebuggerObject obj;  // can be null for static method calls
     private String objInstanceName;  // can be null
@@ -47,28 +46,28 @@ public abstract class ResultWatcherBase implements ResultWatcher
 
     /**
      * Construct a new ResultWatcherBase, for a constructor or static method call.
-     * @param pkg            The package in which the call is executed
-     * @param parentWindow   The parent window for display
-     * @param method         The method/constructor being called
+     *
+     * @param pkg          The package in which the call is executed
+     * @param parentWindow The parent window for display
+     * @param method       The method/constructor being called
      */
-    public ResultWatcherBase(Package pkg, Stage parentWindow, CallableView method)
-    {
+    public ResultWatcherBase(Package pkg, Stage parentWindow, CallableView method) {
         this.method = method;
         this.className = method.getClassName();
         this.pkg = pkg;
         this.parentWindow = parentWindow;
     }
-    
+
     /**
      * Construct a new ResultWatcherBase, for an instance method call.
-     * @param obj              The receiver of the call
-     * @param objInstanceName  The name of the receiver instance (as on the object bench)
-     * @param pkg              The package in which the call is executed
-     * @param parentWindow     The parent window for display
-     * @param method           The method being called
+     *
+     * @param obj             The receiver of the call
+     * @param objInstanceName The name of the receiver instance (as on the object bench)
+     * @param pkg             The package in which the call is executed
+     * @param parentWindow    The parent window for display
+     * @param method          The method being called
      */
-    public ResultWatcherBase(DebuggerObject obj, String objInstanceName, Package pkg, Stage parentWindow, CallableView method)
-    {
+    public ResultWatcherBase(DebuggerObject obj, String objInstanceName, Package pkg, Stage parentWindow, CallableView method) {
         this.method = method;
         this.obj = obj;
         this.objInstanceName = objInstanceName;
@@ -78,18 +77,15 @@ public abstract class ResultWatcherBase implements ResultWatcher
     }
 
     @Override
-    public void beginCompile()
-    {
+    public void beginCompile() {
     }
 
     @Override
-    public void beginExecution(InvokerRecord ir)
-    {
+    public void beginExecution(InvokerRecord ir) {
     }
 
     @Override
-    public void putResult(DebuggerObject result, String name, InvokerRecord ir)
-    {
+    public void putResult(DebuggerObject result, String name, InvokerRecord ir) {
         ExecutionEvent executionEvent = new ExecutionEvent(pkg, className, objInstanceName);
         if (method instanceof MethodView) {
             MethodView mv = (MethodView) method;
@@ -105,29 +101,26 @@ public abstract class ResultWatcherBase implements ResultWatcher
         addInteraction(ir);
 
         // a void result returns a name of null
-        if (result != null && ! result.isNullObject()) {
+        if (result != null && !result.isNullObject()) {
             nonNullResult(result, name, ir);
         }
     }
 
     /**
      * Handle a non-null object result.  By default, the result is inspected.
+     *
      * @param result The result object
-     * @param name The suggested name for use in the inspector
-     * @param ir Details of the invocation.
+     * @param name   The suggested name for use in the inspector
+     * @param ir     Details of the invocation.
      */
-    protected void nonNullResult(DebuggerObject result, String name, InvokerRecord ir)
-    {
+    protected void nonNullResult(DebuggerObject result, String name, InvokerRecord ir) {
         if (method instanceof MethodView) {
             MethodView mv = (MethodView) method;
             ExpressionInformation expressionInformation;
-            if (obj != null)
-            {
+            if (obj != null) {
                 expressionInformation = new ExpressionInformation(mv,
                         objInstanceName, obj.getGenType());
-            }
-            else
-            {
+            } else {
                 expressionInformation = new ExpressionInformation(mv, objInstanceName);
             }
             expressionInformation.setArgumentValues(ir.getArgumentValues());
@@ -143,13 +136,11 @@ public abstract class ResultWatcherBase implements ResultWatcher
     protected abstract void addInteraction(InvokerRecord ir);
 
     @Override
-    public void putError(String msg, InvokerRecord ir)
-    {
+    public void putError(String msg, InvokerRecord ir) {
     }
 
     @Override
-    public void putException(ExceptionDescription exception, InvokerRecord ir)
-    {
+    public void putException(ExceptionDescription exception, InvokerRecord ir) {
         ExecutionEvent executionEvent = new ExecutionEvent(pkg, className, objInstanceName);
         executionEvent.setParameters(method.getParamTypes(false), ir.getArgumentValues());
         executionEvent.setResult(ExecutionEvent.EXCEPTION_EXIT);
@@ -161,8 +152,7 @@ public abstract class ResultWatcherBase implements ResultWatcher
     }
 
     @Override
-    public void putVMTerminated(InvokerRecord ir)
-    {
+    public void putVMTerminated(InvokerRecord ir) {
         ExecutionEvent executionEvent = new ExecutionEvent(pkg, className, objInstanceName);
         executionEvent.setParameters(method.getParamTypes(false), ir.getArgumentValues());
         executionEvent.setResult(ExecutionEvent.TERMINATED_EXIT);

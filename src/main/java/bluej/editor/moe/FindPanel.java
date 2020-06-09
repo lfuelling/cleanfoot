@@ -29,7 +29,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -57,12 +56,11 @@ import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
  * It provides both the user interface panel and the high level implementation
  * of the find functionality.It also is a link to the replace panel.
  *
- * @author  Marion Zalk
- * @author  Michael Kölling
+ * @author Marion Zalk
+ * @author Michael Kölling
  */
 @OnThread(Tag.FXPlatform)
-public class FindPanel extends GridPane
-{
+public class FindPanel extends GridPane {
     private final TextField replaceField;
     private final MoeEditor editor;
     private final CheckBox matchCaseCheckBox;
@@ -76,8 +74,7 @@ public class FindPanel extends GridPane
     /**
      * Constructor that creates and displays the different elements of the Find Panel
      */
-    public FindPanel(MoeEditor ed)
-    {
+    public FindPanel(MoeEditor ed) {
         editor = ed;
         JavaFXUtil.addStyleClass(this, "moe-find-panel");
 
@@ -126,8 +123,7 @@ public class FindPanel extends GridPane
         previousButton = new Button();
         previousButton.setOnAction(e -> {
             updateFindResult();
-            if (currentNavigator != null && currentNavigator.validProperty().get())
-            {
+            if (currentNavigator != null && currentNavigator.validProperty().get()) {
                 currentNavigator.selectPrev();
             }
         });
@@ -139,8 +135,7 @@ public class FindPanel extends GridPane
         nextButton = new Button();
         nextButton.setOnAction(e -> {
             updateFindResult();
-            if (currentNavigator != null && currentNavigator.validProperty().get())
-            {
+            if (currentNavigator != null && currentNavigator.validProperty().get()) {
                 currentNavigator.selectNext(false);
             }
         });
@@ -153,9 +148,9 @@ public class FindPanel extends GridPane
         prevShortcut.visibleProperty().bind(findField.focusedProperty());
 
         Nodes.addInputMap(findField, InputMap.sequence(
-            InputMap.consume(EventPattern.keyPressed(KeyCode.ESCAPE), e -> cancelFind()),
-            InputMap.consume(EventPattern.keyPressed(KeyCode.ENTER), e -> nextButton.fire()),
-            InputMap.consume(EventPattern.keyPressed(KeyCode.ENTER, SHIFT_DOWN), e -> previousButton.fire())
+                InputMap.consume(EventPattern.keyPressed(KeyCode.ESCAPE), e -> cancelFind()),
+                InputMap.consume(EventPattern.keyPressed(KeyCode.ENTER), e -> nextButton.fire()),
+                InputMap.consume(EventPattern.keyPressed(KeyCode.ENTER, SHIFT_DOWN), e -> previousButton.fire())
         ));
 
         showingReplace = new SimpleBooleanProperty(false);
@@ -196,15 +191,13 @@ public class FindPanel extends GridPane
 
         replaceOne.setOnAction(e -> {
             updateFindResult();
-            if (currentNavigator.validProperty().get())
-            {
+            if (currentNavigator.validProperty().get()) {
                 setCurrentNavigator(currentNavigator.replaceCurrent(replaceField.getText()));
             }
         });
         replaceAll.setOnAction(e -> {
             updateFindResult();
-            if (currentNavigator.validProperty().get())
-            {
+            if (currentNavigator.validProperty().get()) {
                 currentNavigator.replaceAll(replaceField.getText());
             }
         });
@@ -226,15 +219,13 @@ public class FindPanel extends GridPane
         add(replaceOne, 2, 1);
         add(replaceAll, 3, 1);
 
-        for (Node n : new Node[] {replaceLabel, replaceField, replaceOne, replaceAll})
-        {
+        for (Node n : new Node[]{replaceLabel, replaceField, replaceOne, replaceAll}) {
             n.visibleProperty().bind(showingReplace);
             n.managedProperty().bind(n.visibleProperty());
         }
 
         mcBody.setFillHeight(true);
-        for (Button b : new Button[]{previousButton, nextButton, replaceOne, replaceAll})
-        {
+        for (Button b : new Button[]{previousButton, nextButton, replaceOne, replaceAll}) {
             b.setMaxHeight(Double.MAX_VALUE);
             b.setMaxWidth(Double.MAX_VALUE);
         }
@@ -243,8 +234,7 @@ public class FindPanel extends GridPane
     /**
      * Makes a cross inside a circle for the close icon
      */
-    private static Node makeCloseIcon()
-    {
+    private static Node makeCloseIcon() {
         // Some of this could be moved to CSS, but the size of the circle and lines must be specified in code,
         // and various display aspects like shadow size and stroke width are dependent on size, so it makes
         // sense to have it all together in one place:
@@ -266,8 +256,7 @@ public class FindPanel extends GridPane
     /**
      * Hides the panel and clears the text fields.
      */
-    private void cancelFind()
-    {
+    private void cancelFind() {
         findField.clear();
         replaceField.clear();
         setReplaceEnabled(false);
@@ -278,34 +267,29 @@ public class FindPanel extends GridPane
      * Finds a instance of the search string (forward, from the current selection beginning,
      * including the possibility that the search result begins at current selection beginning).
      */
-    private void updateFindResult()
-    {
+    private void updateFindResult() {
         setCurrentNavigator(editor.doFind(getSearchString(), !matchCaseCheckBox.isSelected()));
     }
 
     /**
      * Updates the search state based on the given FindNavigator object.
-     *
+     * <p>
      * This occurs either when the search term changes, or a replacement has occurred
      * (which basically triggers a new find).
-     *
+     * <p>
      * All results will be highlighted, and if there are any results, the first will be selected.
      */
-    private void setCurrentNavigator(FindNavigator navigator)
-    {
+    private void setCurrentNavigator(FindNavigator navigator) {
         currentNavigator = navigator;
         previousButton.disableProperty().unbind();
         nextButton.disableProperty().unbind();
-        if (currentNavigator == null)
-        {
+        if (currentNavigator == null) {
             // Don't turn us red if the search string is empty:
             JavaFXUtil.setPseudoclass("bj-no-find-result", !getSearchString().isEmpty(), findField);
             previousButton.setDisable(true);
             nextButton.setDisable(true);
             findResultsFound.set(false);
-        }
-        else
-        {
+        } else {
 
             JavaFXUtil.setPseudoclass("bj-no-find-result", false, findField);
             currentNavigator.highlightAll();
@@ -318,20 +302,17 @@ public class FindPanel extends GridPane
 
     /**
      * Display the find panel and initiate a search. If the selection is null the search
-     * the previous search String is used (if there is a previous search) 
+     * the previous search String is used (if there is a previous search)
      */
-    public void displayFindPanel(String selection)
-    {
-        if (selection == null)
-        {
+    public void displayFindPanel(String selection) {
+        if (selection == null) {
             selection = getSearchString();
         }
         this.setVisible(true);
         populateFindTextfield(selection);
     }
 
-    public String getSearchString()
-    {
+    public String getSearchString() {
         return findField.getText();
     }
 
@@ -339,8 +320,7 @@ public class FindPanel extends GridPane
      * Display either writes an empty message or a message reflecting the
      * number of occurrences found
      */
-    private void writeMessage(boolean emptyMessage, int counter)
-    {
+    private void writeMessage(boolean emptyMessage, int counter) {
         if (!emptyMessage) {
             editor.writeMessage(" ");
             return;
@@ -348,8 +328,8 @@ public class FindPanel extends GridPane
 
         if (counter > 0) {
             //if (editor.getCurrentTextPane().getSelectedText() != null) {
-                //move the caret to the beginning of the selected item
-                //editor.moveCaretPosition(editor.getCaretPosition()-getSearchString().length());
+            //move the caret to the beginning of the selected item
+            //editor.moveCaretPosition(editor.getCaretPosition()-getSearchString().length());
             //}
             editor.writeMessage(Config.getString("editor.highlight.found").trim() + " "
                     + counter + " " + Config.getString("editor.replaceAll.intancesOf").trim() + " "
@@ -368,8 +348,7 @@ public class FindPanel extends GridPane
      * Removes the highlights and sets the find and replace panel to invisible
      * Also resets the replace icon to closed
      */
-    public void close()
-    {
+    public void close() {
         editor.removeSearchHighlights();
         this.setVisible(false);
         editor.getCurrentTextPane().requestFocus();
@@ -378,16 +357,14 @@ public class FindPanel extends GridPane
     /**
      * Puts the focus in the find field
      */
-    protected void requestFindfieldFocus()
-    {
+    protected void requestFindfieldFocus() {
         findField.requestFocus();
     }
 
     /**
      * Populates the field and puts the focus in the text field
      */
-    protected void populateFindTextfield(String selection)
-    {
+    protected void populateFindTextfield(String selection) {
         findField.setText(selection);
         findField.selectAll();
         findField.requestFocus();
@@ -395,10 +372,10 @@ public class FindPanel extends GridPane
 
     /**
      * Allows the replace button to be en/disabled
+     *
      * @param isEnable true for enable; false if not
      */
-    protected void setReplaceEnabled(boolean isEnabled)
-    {
+    protected void setReplaceEnabled(boolean isEnabled) {
         showingReplace.set(isEnabled);
     }
 }

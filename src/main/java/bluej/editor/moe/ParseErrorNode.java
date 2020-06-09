@@ -25,36 +25,32 @@ import bluej.parser.nodes.RBTreeNode;
 
 /**
  * A node in a tree representing a parse error highlight and its position.
- * 
+ *
  * @author Davin McCall
  */
-public class ParseErrorNode extends RBTreeNode<ParseErrorNode>
-{
+public class ParseErrorNode extends RBTreeNode<ParseErrorNode> {
     private final Object highlightTag;
     private final String errCode;
-    
+
     /**
      * Construct a ParseErrorNode for the given highlight tag and the given error code / message.
      */
-    public ParseErrorNode(Object highlightTag, String errCode)
-    {
+    public ParseErrorNode(Object highlightTag, String errCode) {
         this.highlightTag = highlightTag;
         this.errCode = errCode;
     }
-    
+
     /**
      * Get the highlight tag for this parse error node.
      */
-    public Object getHighlightTag()
-    {
+    public Object getHighlightTag() {
         return highlightTag;
     }
-    
+
     /**
      * Get the error code for this parse error node.
      */
-    public String getErrCode()
-    {
+    public String getErrCode() {
         return errCode;
     }
 }

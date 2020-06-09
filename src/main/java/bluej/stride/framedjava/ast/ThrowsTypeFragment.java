@@ -22,38 +22,31 @@
 package bluej.stride.framedjava.ast;
 
 import bluej.stride.framedjava.elements.LocatableElement;
-import nu.xom.Attribute;
 import nu.xom.Element;
 
-public class ThrowsTypeFragment
-{
+public class ThrowsTypeFragment {
     public static final String ELEMENT = "throwstype";
     private final TypeSlotFragment throwType;
-    
-    public ThrowsTypeFragment(TypeSlotFragment content)
-    {
+
+    public ThrowsTypeFragment(TypeSlotFragment content) {
         this.throwType = content;
     }
-    
-    public ThrowsTypeFragment(Element el)
-    {
+
+    public ThrowsTypeFragment(Element el) {
         throwType = new TypeSlotFragment(el.getAttributeValue("type"), el.getAttributeValue("type-java"));
     }
-    
-    public Element toXML()
-    {
+
+    public Element toXML() {
         LocatableElement typeEl = new LocatableElement(null, ELEMENT);
         typeEl.addAttributeStructured("type", throwType);
         return typeEl;
     }
-    
-    public TypeSlotFragment getJavaSource()
-    {
+
+    public TypeSlotFragment getJavaSource() {
         return throwType;
     }
 
-    public String getType()
-    {
+    public String getType() {
         return throwType.getContent();
     }
 }

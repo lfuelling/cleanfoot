@@ -25,37 +25,31 @@ import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 
 public class SuperThisParamsExpressionFragment extends
-        OptionalExpressionSlotFragment
-{
+        OptionalExpressionSlotFragment {
 
     public SuperThisParamsExpressionFragment(String content, String javaCode,
-            ExpressionSlot slot)
-    {
+                                             ExpressionSlot slot) {
         super(content, javaCode, slot);
     }
 
-    public SuperThisParamsExpressionFragment(String content, String javaCode)
-    {
+    public SuperThisParamsExpressionFragment(String content, String javaCode) {
         super(content, javaCode);
     }
 
     @Override
-    protected String wrapForParse(String orig)
-    {
+    protected String wrapForParse(String orig) {
         // Doesn't matter for parsing if we pick super or this; super is a bit less ambiguous:
         return "super(" + orig + ")";
     }
 
     @Override
-    protected LocatableToken unwrapForParse(LocatableToken token)
-    {
+    protected LocatableToken unwrapForParse(LocatableToken token) {
         token.adjustStart(0 - "super(".length());
         return token;
     }
 
     @Override
-    protected boolean includeDirectDecl()
-    {
+    protected boolean includeDirectDecl() {
         return true;
     }
 

@@ -26,22 +26,19 @@ import java.math.BigDecimal;
 /**
  * As with ScratchRectangle, we use our own class because the bounds can be in any
  * number format
- * @author neil
  *
+ * @author neil
  */
-public class ScratchPoint extends ScratchObject
-{
+public class ScratchPoint extends ScratchObject {
     public BigDecimal x, y;
 
-    public ScratchPoint(BigDecimal x, BigDecimal y)
-    {
+    public ScratchPoint(BigDecimal x, BigDecimal y) {
         this.x = x;
         this.y = y;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ScratchPoint [x=");
         builder.append(x);

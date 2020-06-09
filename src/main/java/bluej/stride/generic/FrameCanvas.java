@@ -26,21 +26,14 @@
 package bluej.stride.generic;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import bluej.stride.framedjava.ast.Parser;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.frames.BlankFrame;
-
+import bluej.stride.framedjava.frames.CodeFrame;
+import bluej.stride.slots.HeaderItem;
+import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.ScalableHeightLabel;
+import bluej.utility.javafx.SharedTransition;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -57,33 +50,31 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
-
-import bluej.stride.framedjava.frames.CodeFrame;
-import bluej.stride.slots.HeaderItem;
-import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.SharedTransition;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * A canvas: an area that contain several frames in a vertical array.
- * 
+ * <p>
  * Each canvas actually contains:
- *  - N amounts of these triples:
- *     - cursor
- *     - "special"
- *     - frame
- *  - One final cursor
- *
+ * - N amounts of these triples:
+ * - cursor
+ * - "special"
+ * - frame
+ * - One final cursor
+ * <p>
  * Thus, even when there are no subframes, there is always one cursor in the canvas.
- * 
+ * <p>
  * The "special" is a VBox to which you can add extra content between frames,
  * such as error messages or popup meta-information about a frame.
- * 
+ *
  * @author Fraser McKay
  */
-public class FrameCanvas implements FrameContentItem
-{
+public class FrameCanvas implements FrameContentItem {
     private final CanvasParent parentBlock;
     //protected SelectionScope selectionScope;
 
@@ -99,27 +90,23 @@ public class FrameCanvas implements FrameContentItem
     private final SimpleBooleanProperty showingProperty = new SimpleBooleanProperty(true);
     private boolean animateLeftMarginScale;
 
-    private int childBlockIndex(int blockIndex)
-    {
+    private int childBlockIndex(int blockIndex) {
         // block 0 is child 2
         // block 1 is child 5
         // etc
-        return blockIndex * 3 + 2; 
+        return blockIndex * 3 + 2;
     }
-    
-    private int childCursorIndex(int cursorIndex)
-    {
+
+    private int childCursorIndex(int cursorIndex) {
         // cursor 0 is child 0
         // cursor 1 is child 3
         // etc
         return (cursorIndex * 3);
     }
-    
-    private void validate(FrameCursor cursor, int cursorIndex)
-    {
+
+    private void validate(FrameCursor cursor, int cursorIndex) {
         validate();
-        if (cursors.get(cursorIndex) != cursor)
-        {
+        if (cursors.get(cursorIndex) != cursor) {
             throw new IllegalStateException("Stable cursor was moved, from: " + cursorIndex + " to: " + cursors.indexOf(cursor));
         }
     }
@@ -127,48 +114,44 @@ public class FrameCanvas implements FrameContentItem
     /**
      * Checks that the contents are valid
      */
-    private void validate()
-    {
+    private void validate() {
         if (cursors.size() > 0 && cursors.size() != blockContents.size() + 1)
             throw new IllegalStateException("Canvas: cursors and blocks out of length sync");
         if (canvas.getChildren().size() != cursors.size() + blockContents.size() + specials.size())
             throw new IllegalStateException("Canvas: children out of length sync");
-        for (int i = 0; i < cursors.size(); i++)
-        {
+        for (int i = 0; i < cursors.size(); i++) {
             if (cursors.get(i) == null)
                 throw new IllegalStateException("Canvas: cursor is null");
-            
+
             if (cursors.indexOf(cursors.get(i)) != i || cursors.lastIndexOf(cursors.get(i)) != i)
                 throw new IllegalStateException("Canvas: cursor is duplicated");
-            
+
             if (canvas.getChildren().get(childCursorIndex(i)) != cursors.get(i).getNode())
                 throw new IllegalStateException("Canvas: cursors out of sync");
-            
+
             if (cursors.get(i).getParentCanvas() != this)
                 throw new IllegalStateException("Canvas: cursor parent out of sync");
         }
-        for (int i = 0; i < blockContents.size(); i++)
-        {
+        for (int i = 0; i < blockContents.size(); i++) {
             if (blockContents.get(i) == null)
                 throw new IllegalStateException("Canvas: block is null");
-            
+
             if (blockContents.indexOf(blockContents.get(i)) != i || blockContents.lastIndexOf(blockContents.get(i)) != i)
                 throw new IllegalStateException("Canvas: block is duplicated");
-            
+
             if (canvas.getChildren().get(childBlockIndex(i)) != blockContents.get(i).getNode())
                 throw new IllegalStateException("Canvas: blocks out of sync");
-            
+
             if (blockContents.get(i).getParentCanvas() != this)
                 throw new IllegalStateException("Canvas: block parent out of sync");
         }
-        for (int i = 0; i < blockContents.size(); i++)
-        {
+        for (int i = 0; i < blockContents.size(); i++) {
             if (specials.get(i) == null)
                 throw new IllegalStateException("Canvas: special is null");
-            
+
             if (specials.indexOf(specials.get(i)) != i || specials.lastIndexOf(specials.get(i)) != i)
                 throw new IllegalStateException("Canvas: special is duplicated");
-            
+
             if (canvas.getChildren().get(childBlockIndex(i) - 1) != specials.get(i))
                 throw new IllegalStateException("Canvas: specials out of sync");
         }
@@ -177,68 +160,54 @@ public class FrameCanvas implements FrameContentItem
     /**
      * Find if this is embedded in, for example, a "container" construct block like a loop or an if.
      */
-    public CanvasParent getParent()
-    {
+    public CanvasParent getParent() {
         return parentBlock;
     }
 
-    public VBox getSpecialBefore(FrameCursor cursor)
-    {
+    public VBox getSpecialBefore(FrameCursor cursor) {
         int index = 0;
-        if (cursor == null)
-        {
+        if (cursor == null) {
             index = 0;
-        }
-        else
-        {
+        } else {
             index = cursors.indexOf(cursor);
         }
         if (index < 0)
             throw new IllegalArgumentException("insertSpecialBefore: canvas does not contain specified cursor");
         return specials.get(index);
     }
-    
-    public VBox getSpecialBefore(Frame f)
-    {
+
+    public VBox getSpecialBefore(Frame f) {
         return getSpecialAfter(getCursorBefore(f));
     }
-    
-    public VBox getSpecialAfter(FrameCursor cursor)
-    {
+
+    public VBox getSpecialAfter(FrameCursor cursor) {
         int index;
-        if (cursor == null)
-        {
+        if (cursor == null) {
             index = cursors.size() - 1;
-        }
-        else
-        {
+        } else {
             index = cursors.indexOf(cursor);
         }
         if (index < 0)
             throw new IllegalArgumentException("insertSpecialBefore: canvas does not contain specified cursor");
         return specials.get(index);
     }
-    
+
     /**
      * Inserts block before the given cursor (which is guaranteed to end up after the inserted block)
      */
-    public void insertBlockBefore(Frame toAdd, FrameCursor cursor)
-    {
+    public void insertBlockBefore(Frame toAdd, FrameCursor cursor) {
         if (toAdd == null)
             throw new IllegalArgumentException("Cannot add null block");
         if (!acceptsType(toAdd))
             throw new IllegalArgumentException("Block " + getClass() + " does not accept " + toAdd.getClass());
         if (toAdd.getParentCanvas() != null)
             throw new IllegalArgumentException("Block already has parent");
-        
+
         int index = 0;
-        if (cursor == null)
-        {
+        if (cursor == null) {
             index = 0;
             cursor = cursors.get(index);
-        }
-        else
-        {
+        } else {
             index = cursors.indexOf(cursor);
         }
         if (index < 0)
@@ -255,27 +224,23 @@ public class FrameCanvas implements FrameContentItem
         toAdd.setParentCanvas(this);
         validate(cursor, index + 1);
     }
-    
+
     /**
      * Inserts block after the given cursor (which is guaranteed to remain in the same place)
      */
-    public void insertBlockAfter(Frame toAdd, FrameCursor cursor)
-    {
+    public void insertBlockAfter(Frame toAdd, FrameCursor cursor) {
         if (toAdd == null)
             throw new IllegalArgumentException("Cannot add null block");
         if (!acceptsType(toAdd))
             throw new IllegalArgumentException("Block " + getClass() + " does not accept " + toAdd.getClass());
         if (toAdd.getParentCanvas() != null)
             throw new IllegalArgumentException("Block already has parent");
-        
+
         int index;
-        if (cursor == null)
-        {
+        if (cursor == null) {
             index = cursors.size() - 1;
             cursor = cursors.get(index);
-        }
-        else
-        {
+        } else {
             index = cursors.indexOf(cursor);
         }
         if (index < 0)
@@ -295,10 +260,10 @@ public class FrameCanvas implements FrameContentItem
 
     /**
      * Remove a given block object from the list.
+     *
      * @param b block to remove
      */
-    public void removeBlock(Frame b)
-    {
+    public void removeBlock(Frame b) {
         int index = blockContents.indexOf(b);
         if (index < 0)
             throw new IllegalArgumentException("removeBlock: canvas does not contain specified block");
@@ -313,19 +278,18 @@ public class FrameCanvas implements FrameContentItem
         b.setParentCanvas(null);
         validate();
     }
-    
+
     /**
      * Replaces the block without altering any cursors
      */
-    public void replaceBlock(Frame old, Frame replacement)
-    {
+    public void replaceBlock(Frame old, Frame replacement) {
         if (replacement == null)
             throw new IllegalArgumentException("Cannot add null block");
         if (!acceptsType(replacement))
             throw new IllegalArgumentException("Block " + getClass() + " does not accept " + replacement.getClass());
         if (replacement.getParentCanvas() != null)
             throw new IllegalArgumentException("Block already has parent");
-        
+
         int index = blockContents.indexOf(old);
         if (index < 0)
             throw new IllegalArgumentException("replaceBlock: canvas does not contain specified block");
@@ -337,12 +301,11 @@ public class FrameCanvas implements FrameContentItem
         validate();
         replacement.focusWhenJustAdded();
     }
-    
+
     /**
      * Gets the block before the cursor.  Returns null if it's the first cursor.
      */
-    public Frame getFrameBefore(FrameCursor cursor)
-    {
+    public Frame getFrameBefore(FrameCursor cursor) {
         int index = cursors.indexOf(cursor);
         if (index < 0)
             throw new IllegalArgumentException("getBlockBefore: canvas does not contain specified cursor");
@@ -351,24 +314,22 @@ public class FrameCanvas implements FrameContentItem
         else
             return blockContents.get(index - 1);
     }
-    
 
-    public Stream<Frame> getFramesBefore(Frame f)
-    {
+
+    public Stream<Frame> getFramesBefore(Frame f) {
         if (f == null)
             return blockContents.stream();
         int index = blockContents.indexOf(f);
         if (index == -1)
             throw new IllegalArgumentException("getFramesBefore: canvas does not contain specified frame");
-        
+
         return blockContents.stream().limit(index);
     }
-    
+
     /**
      * Gets the block after the cursor.  Returns null if it's the last cursor.
      */
-    public Frame getFrameAfter(FrameCursor cursor)
-    {
+    public Frame getFrameAfter(FrameCursor cursor) {
         int index = cursors.indexOf(cursor);
         if (index < 0)
             throw new IllegalArgumentException("getBlockAfter: canvas does not contain specified cursor");
@@ -377,12 +338,11 @@ public class FrameCanvas implements FrameContentItem
         else
             return blockContents.get(index); //Not +1 -- each cursor index is before its corresponding block index
     }
-    
+
     /**
      * Gets the blocks after the cursor.  Null gets all blocks.
      */
-    public Stream<Frame> getFramesAfter(Frame frame)
-    {
+    public Stream<Frame> getFramesAfter(Frame frame) {
         if (frame == null)
             return blockContents.stream();
         int index = blockContents.indexOf(frame);
@@ -391,12 +351,11 @@ public class FrameCanvas implements FrameContentItem
         else
             return blockContents.stream().skip(index + 1);
     }
-    
+
     /**
      * Gets the cursor before the block.  Never returns null.
      */
-    public FrameCursor getCursorBefore(Frame block)
-    {
+    public FrameCursor getCursorBefore(Frame block) {
         int index = blockContents.indexOf(block);
         if (index < 0)
             throw new IllegalArgumentException("getCursorBefore: canvas does not contain specified block");
@@ -407,64 +366,50 @@ public class FrameCanvas implements FrameContentItem
     /**
      * Gets the cursor after the block.  Never returns null.
      */
-    public FrameCursor getCursorAfter(Frame block)
-    {
+    public FrameCursor getCursorAfter(Frame block) {
         int index = blockContents.indexOf(block);
         if (index < 0)
             throw new IllegalArgumentException("getCursorAfter: canvas does not contain specified block");
         else
             return cursors.get(index + 1);
     }
-    
-    public boolean acceptsType(Frame blockOfType)
-    {
+
+    public boolean acceptsType(Frame blockOfType) {
         if (blockOfType != null) {
             return parentBlock.check(this).canPlace(blockOfType.getClass());
         }
         return false;
     }
-    
+
     // To be used for formatting, not querying children, etc:
-    public Node getNode()
-    {
+    public Node getNode() {
         return canvas;
     }
 
-    public <T> List<T> getBlocksSubtype(Class<T> clazz)
-    {
+    public <T> List<T> getBlocksSubtype(Class<T> clazz) {
         List<T> r = new ArrayList<T>();
-        for (Frame b : blockContents)
-        {
-            if (clazz.isAssignableFrom(b.getClass()))
-            {
+        for (Frame b : blockContents) {
+            if (clazz.isAssignableFrom(b.getClass())) {
                 r.add(clazz.cast(b));
             }
         }
         return r;
     }
-    
-    public FrameCursor getPrevCursor(FrameCursor orig, boolean canChangeLevel)
-    {
+
+    public FrameCursor getPrevCursor(FrameCursor orig, boolean canChangeLevel) {
         int index = cursors.indexOf(orig);
-        if (index < 0)
-        {
+        if (index < 0) {
             throw new IllegalArgumentException("getPrevCursor: cursor not in this canvas");
-        }
-        else if (index == 0)
-        {
+        } else if (index == 0) {
             //Already at first cursor in this canvas:
             if (canChangeLevel)
                 return parentBlock.getCursorBefore(this);
             else
                 return null;
-        }
-        else
-        {
-            if (canChangeLevel)
-            {
+        } else {
+            if (canChangeLevel) {
                 FrameCursor c = blockContents.get(index - 1).getLastInternalCursor();
-                if (c != null)
-                {
+                if (c != null) {
                     return c;
                 }
             }
@@ -472,21 +417,19 @@ public class FrameCanvas implements FrameContentItem
             return cursors.get(index - 1);
         }
     }
-    
-    public FrameCursor getNextCursor(FrameCursor orig, boolean canChangeLevel)
-    {
+
+    public FrameCursor getNextCursor(FrameCursor orig, boolean canChangeLevel) {
         int index = cursors.indexOf(orig);
         if (index < 0) {
             throw new IllegalArgumentException("getPrevCursor: cursor not in this canvas");
-        }
-        else if (index == cursors.size() - 1) {
+        } else if (index == cursors.size() - 1) {
             //Already at last cursor in this canvas:
             if (canChangeLevel) {
                 return parentBlock.getCursorAfter(this);
             }
             return null;
         }
-            
+
         if (canChangeLevel) {
             FrameCursor c = blockContents.get(index).getFirstInternalCursor();
             if (c != null) {
@@ -496,73 +439,59 @@ public class FrameCanvas implements FrameContentItem
         // If we can't change level, or there is no internal cursor, go past:
         return cursors.get(index + 1);
     }
-    
+
     /**
      * Finds closest cursor to given point, even if out of bounds of this block
      */
-    public FrameCursor findClosestCursor(double sceneX, double sceneY, List<Frame> exclude, boolean isDrag, boolean canDescend)
-    {
-        CursorLoop: for (int i = 0; i < cursors.size(); i++)
-        {
+    public FrameCursor findClosestCursor(double sceneX, double sceneY, List<Frame> exclude, boolean isDrag, boolean canDescend) {
+        CursorLoop:
+        for (int i = 0; i < cursors.size(); i++) {
             //First check cursor:
             {
                 FrameCursor c = cursors.get(i);
                 Bounds sceneBounds = c.getSceneBounds();
-                if (sceneY < sceneBounds.getMaxY())
-                {
+                if (sceneY < sceneBounds.getMaxY()) {
                     return c;
                 }
             }
-             
+
             // Then check block (if not on last cursor):
-            if (i < blockContents.size())
-            {
+            if (i < blockContents.size()) {
                 Frame b = blockContents.get(i);
-                
+
                 //Debug.message("Looking for " + sceneY + )
-                
-                if (!canDescend || (exclude != null && exclude.contains(b)))
-                {
+
+                if (!canDescend || (exclude != null && exclude.contains(b))) {
                     // Find first non-excluded cursors above and below, pick closest:
                     int validCursorAbove = i;
-                    while (validCursorAbove >= 1 && (exclude != null && exclude.contains(blockContents.get(validCursorAbove - 1))))
-                    {
+                    while (validCursorAbove >= 1 && (exclude != null && exclude.contains(blockContents.get(validCursorAbove - 1)))) {
                         validCursorAbove -= 1;
                     }
-                    
+
                     int validCursorBelow = i + 1;
-                    while (validCursorBelow < blockContents.size() && (exclude != null && exclude.contains(blockContents.get(validCursorBelow))))
-                    {
+                    while (validCursorBelow < blockContents.size() && (exclude != null && exclude.contains(blockContents.get(validCursorBelow)))) {
                         validCursorBelow += 1;
                     }
-                    
+
                     double distToAbove = sceneY - cursors.get(validCursorAbove).getSceneBounds().getMaxY();
                     double distToBelow = sceneY - cursors.get(validCursorBelow).getSceneBounds().getMinY();
-                    
+
                     if (distToBelow < 0) // If we're above the next valid cursor:
                     {
-                        if (distToAbove <= -distToBelow)
-                        {
+                        if (distToAbove <= -distToBelow) {
                             // Closest to top:
                             return cursors.get(validCursorAbove);
-                        }
-                        else
-                        {
+                        } else {
                             return cursors.get(validCursorBelow);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // Jump to just before the next valid cursor, ready to move on to it:
                         i = validCursorBelow - 1;
                         continue CursorLoop;
                     }
-                }
-                else
-                {
+                } else {
                     FrameCursor c = b.findCursor(sceneX, sceneY, cursors.get(i), cursors.get(i + 1), exclude, isDrag, true);
-                    if (sceneY < b.lowestCursorY())
-                    {
+                    if (sceneY < b.lowestCursorY()) {
                         return c;
                     }
                 }
@@ -571,78 +500,65 @@ public class FrameCanvas implements FrameContentItem
         //TODO does this allow you to drag off screen?
         return getLastCursor();
     }
-    
-    
-    public FrameCursor getFirstCursor()
-    {
+
+
+    public FrameCursor getFirstCursor() {
         return cursors.get(0);
     }
-    
-    public FrameCursor getLastCursor()
-    {
+
+    public FrameCursor getLastCursor() {
         return cursors.get(cursors.size() - 1);
     }
-    
-    public Bounds getSceneBounds()
-    {
+
+    public Bounds getSceneBounds() {
         return canvas.localToScene(canvas.getBoundsInLocal());
     }
 
-    public double getHeight()
-    {
+    public double getHeight() {
         return canvas.getHeight();
     }
 
-    public int blockCount()
-    {
+    public int blockCount() {
         return blockContents.size();
     }
-    
+
     /**
-     * Do not modify the returned list! 
-     * 
+     * Do not modify the returned list!
+     * <p>
      * (I did try wrapping this with FXCollections.unmodifiableObservableList, but it
      * seemed to destroy the observable aspect for any listeners.
      */
-    public ObservableList<Frame> getBlockContents()
-    {
+    public ObservableList<Frame> getBlockContents() {
         return blockContents; // FXCollections.unmodifiableObservableList(blockContents);
     }
-    
-    public List<? extends RecallableFocus> getFocusableCursors()
-    {
+
+    public List<? extends RecallableFocus> getFocusableCursors() {
         return cursors;
     }
-    
+
     /**
      * Gets an ordered list of frames that lie between the two given cursors.
-     * 
+     * <p>
      * Both cursors must be non-null and must be in this canvas.  However, they can be passed
      * in either order; calling framesBetween(f, g) will give the same resuly as framesBetween(g, f)
      * and both are valid.  If f == g, you will get an empty list back.
      */
-    public List<Frame> framesBetween(FrameCursor a, FrameCursor b)
-    {
+    public List<Frame> framesBetween(FrameCursor a, FrameCursor b) {
         int early, late;
-        
+
         int ai = cursors.indexOf(a);
         int bi = cursors.indexOf(b);
-        
+
         if (ai == -1 || bi == -1)
             throw new IllegalArgumentException("framesBetween called for a cursor not present in canvas");
-        
-        if (ai < bi)
-        {
+
+        if (ai < bi) {
             early = ai;
             late = bi;
-        }
-        else if (bi < ai)
-        {
+        } else if (bi < ai) {
             early = bi;
             late = ai;
-        } 
-        else
-        {
+        } else {
             // Otherwise they are same cursor
             return Collections.emptyList();
         }
@@ -650,10 +566,9 @@ public class FrameCanvas implements FrameContentItem
         // 0 and 1.  So we just take a sublist from early (incl) to late (excl). 
         return Collections.unmodifiableList(blockContents.subList(early, late));
     }
-    
+
     // Must be later followed by call to growUsing
-    public void shrinkUsing(DoubleExpression animate)
-    {
+    public void shrinkUsing(DoubleExpression animate) {
         // If too many children, can't sensibly animate nicely, and if we do then we get an exception
         // in JavaFX because of the canvas size needed to animate a VBox that high (e.g. > 16K pixels high)
         // So for large canvases, just jump to the end result:
@@ -662,9 +577,7 @@ public class FrameCanvas implements FrameContentItem
             canvas.setClip(clipRect);
             canvas.maxHeightProperty().set(0);
             canvas.prefHeightProperty().bind(canvas.maxHeightProperty());
-        }
-        else
-        {
+        } else {
             // After lots of experimentation, here's how we shrink.
             // - We must set minimum height to 0
             // - We must animate maximum height down to 0
@@ -697,15 +610,13 @@ public class FrameCanvas implements FrameContentItem
             canvas.setEffect(pt);
         }
     }
-    
+
     // Must have been preceded by call to shrinkUsing
-    public void growUsing(DoubleExpression animate)
-    {
+    public void growUsing(DoubleExpression animate) {
         // If too many children, can't sensibly animate nicely, and if we do then we get an exception
         // in JavaFX because of the canvas size needed to animate a VBox that high (e.g. > 16K pixels high)
         // So only animate for small enough canvases.  For large, we will just jump to end result:
-        if (canvas.getChildren().size() < 100)
-        {
+        if (canvas.getChildren().size() < 100) {
             // Reverse changes in shrinkUsing
             double calcHeight = blockContents.stream().mapToDouble(f -> f.getRegion().getHeight()).sum();
             calcHeight += cursors.stream().mapToDouble(f -> f.getNode().getHeight()).sum();
@@ -714,10 +625,9 @@ public class FrameCanvas implements FrameContentItem
             canvas.maxHeightProperty().bind(animate.multiply(calcHeight));
         }
         // We keep on the previous effect and clip until we have reached full height
-        
+
         animate.addListener((a, b, newVal) -> {
-            if (newVal.doubleValue() >= 0.99)
-            {
+            if (newVal.doubleValue() >= 0.99) {
                 canvas.maxHeightProperty().unbind();
                 canvas.prefHeightProperty().unbind();
                 canvas.setPrefHeight(Region.USE_COMPUTED_SIZE);
@@ -727,107 +637,103 @@ public class FrameCanvas implements FrameContentItem
             }
         });
     }
-    
 
-    public DoubleExpression widthProperty()
-    {
+
+    public DoubleExpression widthProperty() {
         return canvas.widthProperty();
     }
-    
+
 //    //Top level canvas
 //    private Block embeddedInBlock = null;
 //    //Top-level selection scope
 //    protected SelectionScope selectionScope;
 //    private BlockCursor topCursor;
-    
+
     /**
      * Constructor that specifies that this canvas is part of, for example, an "if" or "for" block's canvas area
      */
-    public FrameCanvas(InteractionManager editor, CanvasParent parent, String stylePrefix)
-    {
+    public FrameCanvas(InteractionManager editor, CanvasParent parent, String stylePrefix) {
         this.parentBlock = parent;
         //Default setup
         canvas.getStyleClass().addAll("frame-canvas", stylePrefix + "frame-canvas");
-        
+
         JavaFXUtil.setPseudoclass("bj-empty", true, canvas);
         blockContents.addListener((ListChangeListener<Frame>) c -> {
-                boolean empty = blockContents.size() == 0;
-                JavaFXUtil.setPseudoclass("bj-empty", empty, canvas);
-                JavaFXUtil.setPseudoclass("bj-non-empty", !empty, canvas);
+            boolean empty = blockContents.size() == 0;
+            JavaFXUtil.setPseudoclass("bj-empty", empty, canvas);
+            JavaFXUtil.setPseudoclass("bj-non-empty", !empty, canvas);
 
-                //Notify parent:
-                parent.modifiedCanvasContent();
+            //Notify parent:
+            parent.modifiedCanvasContent();
         });
-        
-      //Drag
-        canvas.setOnDragOver(new EventHandler <DragEvent>() {
+
+        //Drag
+        canvas.setOnDragOver(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
                 /* data is dragged over the target */
                 //System.out.println("onDragOver");
-                
-                /* accept it only if it is  not dragged from the same node 
+
+                /* accept it only if it is  not dragged from the same node
                  * and if it has a string data */
                 if (event.getGestureSource() != this &&
                         event.getDragboard().hasString()) {
                     /* allow for both copying and moving, whatever user chooses */
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
-                
+
                 event.consume();
             }
         });
-        
+
         // If they click on the blank canvas, focus cursor
         // and move it to bottom of panel (since that's where the blank
         // part will be)
         canvas.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY && e.isStillSincePress())
-            {
+            if (e.getButton() == MouseButton.PRIMARY && e.isStillSincePress()) {
                 editor.clickNearestCursor(e.getSceneX(), e.getSceneY(), e.isShiftDown());
                 e.consume();
             }
         });
-        
-        
+
+
         FrameCursor topCursor = editor.createCursor(this);
         //c.setTranslateY(-3);
         //topCursor.setTranslateX(2);
         cursors.add(topCursor);
         canvas.getChildren().add(0, topCursor.getNode());
-        
+
         VBox topSpecial = new VBox();
         specials.add(topSpecial);
         canvas.getChildren().add(1, topSpecial);
-    
+
         editorFrm = editor;
     }
-    
+
     /**
      * Empty the canvas of block contents, and move them all to the target canvas, starting at the specified index (in that canvas's children)
+     *
      * @param targetCanvas canvas to export contents to
-     * @param index  starting index in other canvas to insert at
+     * @param index        starting index in other canvas to insert at
      */
-    public void emptyTo(FrameCanvas targetCanvas, Frame after)
-    {
+    public void emptyTo(FrameCanvas targetCanvas, Frame after) {
         List<Frame> allBlocks = getBlocksSubtype(Frame.class);
         //For each block inside, insert at specified index, working backwards so as to maintain order when they reach the target site
-        for (int i = allBlocks.size() - 1; i >= 0; i--)
-        {
-            targetCanvas.insertBlockAfter(allBlocks.get(i), targetCanvas.getCursorAfter(after));            
+        for (int i = allBlocks.size() - 1; i >= 0; i--) {
+            targetCanvas.insertBlockAfter(allBlocks.get(i), targetCanvas.getCursorAfter(after));
         }
     }
-    
-    public void moveContentsTo(FrameCanvas targetCanvas)
-    {
+
+    public void moveContentsTo(FrameCanvas targetCanvas) {
         getBlocksSubtype(Frame.class).forEach(b -> {
             removeBlock(b);
             targetCanvas.insertBlockAfter(b, targetCanvas.getLastCursor());
         });
     }
-    
+
     /**
      * Get the code inside this section, as text
+     *
      * @return code contained in this container
      */
     /*
@@ -858,9 +764,7 @@ public class FrameCanvas implements FrameContentItem
         return selectionScope;
     }
     */
-    
-    public void focusTopCursor()
-    {
+    public void focusTopCursor() {
         FrameCursor firstCursor = getFirstCursor();
         if (firstCursor == null) {
             firstCursor = getParent().getCursorAfter(this);
@@ -868,15 +772,12 @@ public class FrameCanvas implements FrameContentItem
         firstCursor.requestFocus();
     }
 
-    public boolean focusBottomCursor()
-    {
+    public boolean focusBottomCursor() {
         FrameCursor c = getLastCursor();
-        if (c != null)
-        {
+        if (c != null) {
             c.requestFocus();
             return true;
-        }
-        else
+        } else
             return false;
     }
 
@@ -913,27 +814,23 @@ public class FrameCanvas implements FrameContentItem
     }
     */
 
-    public void cleanup()
-    {
-        getBlockContents().forEach(f -> f.cleanup());        
+    public void cleanup() {
+        getBlockContents().forEach(f -> f.cleanup());
     }
 
-    public Stream<HeaderItem> getHeaderItems()
-    {
+    public Stream<HeaderItem> getHeaderItems() {
         return getBlocksSubtype(Frame.class).stream().flatMap(Frame::getHeaderItems);
     }
-    
+
     // Not static!  One pair per canvas
     private ScalableHeightLabel previewOpeningCurly;
     private ScalableHeightLabel previewClosingCurly;
-    
-    public void setAnimateLeftMarginScale(boolean animateLeftMarginScale)
-    {
+
+    public void setAnimateLeftMarginScale(boolean animateLeftMarginScale) {
         this.animateLeftMarginScale = animateLeftMarginScale;
     }
 
-    public void setTopOutsideBorderBackgroundPadding(Optional<Double> height)
-    {
+    public void setTopOutsideBorderBackgroundPadding(Optional<Double> height) {
         if (height.isPresent())
             canvas.setStyle("-bj-border-insets: " + (-height.get()) + " 0 0 0;");
         else
@@ -941,50 +838,40 @@ public class FrameCanvas implements FrameContentItem
     }
 
     @OnThread(Tag.FXPlatform)
-    public void previewCurly(boolean on, boolean affectOpen, boolean affectClose, double sceneX, DoubleExpression openingYAdjust, SharedTransition animate)
-    {
-        if (on)
-        {
+    public void previewCurly(boolean on, boolean affectOpen, boolean affectClose, double sceneX, DoubleExpression openingYAdjust, SharedTransition animate) {
+        if (on) {
             canvas.addSpace(animate);
 
             ReadOnlyDoubleWrapper xOffset = new ReadOnlyDoubleWrapper(sceneX - canvas.localToScene(canvas.getBoundsInLocal()).getMinX());
 
-            if (affectOpen)
-            {
+            if (affectOpen) {
                 previewOpeningCurly = new ScalableHeightLabel("{", true);
                 JavaFXUtil.addStyleClass(previewOpeningCurly, "preview-curly");
                 editorFrm.getCodeOverlayPane().addOverlay(previewOpeningCurly, canvas, xOffset, openingYAdjust);
                 previewOpeningCurly.growToFullHeightWith(animate, true);
             }
-            if (affectClose)
-            {
+            if (affectClose) {
                 previewClosingCurly = new ScalableHeightLabel("}", true);
                 JavaFXUtil.addStyleClass(previewClosingCurly, "preview-curly");
                 editorFrm.getCodeOverlayPane().addOverlay(previewClosingCurly, canvas, xOffset, canvas.heightProperty().subtract(18.0));
                 previewClosingCurly.growToFullHeightWith(animate, true);
             }
-        }
-        else
-        {
+        } else {
             canvas.removeSpace(animate);
 
-            if (affectOpen)
-            {
+            if (affectOpen) {
                 previewOpeningCurly.shrinkToNothingWith(animate, true);
             }
-            if (affectClose)
-            {
+            if (affectClose) {
                 previewClosingCurly.shrinkToNothingWith(animate, true);
             }
 
             animate.addOnStopped(() -> {
-                if (affectOpen)
-                {
+                if (affectOpen) {
                     editorFrm.getCodeOverlayPane().removeOverlay(previewOpeningCurly);
                     previewOpeningCurly = null;
                 }
-                if (affectClose)
-                {
+                if (affectClose) {
                     editorFrm.getCodeOverlayPane().removeOverlay(previewClosingCurly);
                     previewClosingCurly = null;
                 }
@@ -993,144 +880,119 @@ public class FrameCanvas implements FrameContentItem
     }
 
     @OnThread(Tag.FXPlatform)
-    public void previewCurly(boolean on, double sceneX, DoubleExpression openingYAdjust, SharedTransition animate)
-    {
+    public void previewCurly(boolean on, double sceneX, DoubleExpression openingYAdjust, SharedTransition animate) {
         previewCurly(on, true, true, sceneX, openingYAdjust, animate);
     }
-    
-    public List<FrameCursor> getCursors()
-    {
+
+    public List<FrameCursor> getCursors() {
         return cursors;
     }
 
-    public void clear()
-    {
+    public void clear() {
         while (blockContents.size() > 0)
             removeBlock(blockContents.get(0));
     }
 
-    public void setLastInMulti(boolean last)
-    {
+    public void setLastInMulti(boolean last) {
         JavaFXUtil.setPseudoclass("bj-last-canvas", last, canvas);
     }
 
-    public SimpleBooleanProperty getShowingProperty()
-    {
+    public SimpleBooleanProperty getShowingProperty() {
         return showingProperty;
     }
 
-    public boolean isAlmostBlank()
-    {
+    public boolean isAlmostBlank() {
         // Will also return true if there are no frames:
         return blockContents.stream().allMatch(f -> f instanceof BlankFrame);
     }
-    
-    public double getBottomMargin()
-    {
+
+    public double getBottomMargin() {
         return canvas.getBottomMargin();
     }
 
-    public DoubleExpression leftMargin()
-    {
+    public DoubleExpression leftMargin() {
         return canvas.leftMarginProperty();
     }
 
-    public DoubleExpression rightMargin()
-    {
+    public DoubleExpression rightMargin() {
         return canvas.rightMarginProperty();
     }
 
-    public void setPseudoclass(String name, boolean on)
-    {
+    public void setPseudoclass(String name, boolean on) {
         JavaFXUtil.setPseudoclass(name, on, canvas);
     }
 
     /**
      * Gets the bounds, in scene coordinates, of the contents of the canvas.
-     *
+     * <p>
      * The bounds of getNode() includes the margins of the canvas.  This utility method
      * excludes those margins and just gets the bounds of the actual visible canvas area
      * (which generally has the rounded rectangle around it)
      */
-    public Bounds getContentSceneBounds()
-    {
+    public Bounds getContentSceneBounds() {
         return canvas.getContentSceneBounds();
     }
 
     // From FrameContentItem:
 
     @Override
-    public Optional<FrameCanvas> getCanvas()
-    {
+    public Optional<FrameCanvas> getCanvas() {
         return Optional.of(this);
     }
 
     @Override
-    public Stream<HeaderItem> getHeaderItemsDeep()
-    {
+    public Stream<HeaderItem> getHeaderItemsDeep() {
         return getHeaderItems();
     }
 
     @Override
-    public Stream<HeaderItem> getHeaderItemsDirect()
-    {
+    public Stream<HeaderItem> getHeaderItemsDirect() {
         return Stream.empty();
     }
 
     @Override
-    public boolean focusBottomEndFromNext()
-    {
+    public boolean focusBottomEndFromNext() {
         return focusBottomCursor();
     }
 
     @Override
-    public boolean focusLeftEndFromPrev()
-    {
+    public boolean focusLeftEndFromPrev() {
         focusTopCursor();
         return true;
     }
 
     @Override
-    public boolean focusRightEndFromNext()
-    {
+    public boolean focusRightEndFromNext() {
         return focusBottomCursor();
     }
 
     @Override
-    public boolean focusTopEndFromPrev()
-    {
+    public boolean focusTopEndFromPrev() {
         focusTopCursor();
         return true;
     }
 
     @Override
-    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animation)
-    {
+    public void setView(Frame.View oldView, Frame.View newView, SharedTransition animation) {
         canvas.animateColorsToPseudoClass("bj-java-preview", newView == Frame.View.JAVA_PREVIEW, animation);
-        if (animateLeftMarginScale)
-        {
-            if (newView == Frame.View.JAVA_PREVIEW)
-            {
+        if (animateLeftMarginScale) {
+            if (newView == Frame.View.JAVA_PREVIEW) {
                 // Animate from 1 to 0, removing margin:
                 canvas.leftMarginScaleProperty().bind(animation.getOppositeProgress());
                 animation.addOnStopped(canvas.leftMarginScaleProperty()::unbind);
-            }
-            else
-            {
+            } else {
                 // Animate from 0 to 1, adding margin:
                 canvas.leftMarginScaleProperty().bind(animation.getProgress());
                 animation.addOnStopped(canvas.leftMarginScaleProperty()::unbind);
             }
         }
     }
-    
-    public void restore(List<? extends CodeElement> elements, InteractionManager editor)
-    {
+
+    public void restore(List<? extends CodeElement> elements, InteractionManager editor) {
         // First, make a mapping of all existing elements to their source
         Map<String, List<Frame>> existingLookup = new HashMap<>();
         List<String> existingList = new ArrayList<>();
-        for (CodeFrame f : getBlocksSubtype(CodeFrame.class))
-        {
+        for (CodeFrame f : getBlocksSubtype(CodeFrame.class)) {
             String xml = f.getCode().toXML().toXML();
             existingLookup.merge(xml, new ArrayList<>(Arrays.asList((Frame) f)), (a, b) -> {
                 a.addAll(b);
@@ -1141,28 +1003,21 @@ public class FrameCanvas implements FrameContentItem
         List<String> newContentXML = elements.stream().map(el -> el.toXML().toXML()).collect(Collectors.toList());
 
         // Check how many frames differ between the two, if they're of same length
-        if (existingList.size() == newContentXML.size())
-        {
+        if (existingList.size() == newContentXML.size()) {
             int numDiff = 0;
             int lastDiff = -1;
-            for (int i = 0; i < existingList.size(); i++)
-            {
-                if (existingList.get(i).equals(newContentXML.get(i)) == false)
-                {
+            for (int i = 0; i < existingList.size(); i++) {
+                if (existingList.get(i).equals(newContentXML.get(i)) == false) {
                     numDiff += 1;
                     lastDiff = i;
                 }
             }
-            if (numDiff == 0)
-            {
+            if (numDiff == 0) {
                 // Perfect match; don't need to do anything:
                 return;
-            }
-            else if (numDiff == 1)
-            {
+            } else if (numDiff == 1) {
                 // Just one frame was changed; can we re-purpose the frame in question?
-                if (blockContents.get(lastDiff).tryRestoreTo(elements.get(lastDiff)))
-                {
+                if (blockContents.get(lastDiff).tryRestoreTo(elements.get(lastDiff))) {
                     // Succesfully restored; we are done.
                     return;
                 }
@@ -1172,44 +1027,35 @@ public class FrameCanvas implements FrameContentItem
         // If that didn't pan out, make the new list from scratch, but
         // re-use old unchanged frames wherever possible:
         List<Frame> newContents = new ArrayList<>(elements.size());
-        for (int i = 0; i < elements.size(); i++)
-        {
+        for (int i = 0; i < elements.size(); i++) {
             // We must remove, because if we have two identical frames,
             // e.g. two blanks, we don't want to re-use the same one twice for
             // our new list:
             List<Frame> fs = existingLookup.get(newContentXML.get(i));
-            if (fs != null && fs.size() > 0)
-            {
+            if (fs != null && fs.size() > 0) {
                 newContents.add(fs.remove(0));
-            }
-            else
-            {
+            } else {
                 newContents.add(elements.get(i).createFrame(editor));
             }
         }
 
         // Copy across the old list.  Can't just manipulate blockContents directly
         // because we need to make sure all the cursors and specials are set right:
-        while (blockContents.size() > 0)
-        {
+        while (blockContents.size() > 0) {
             removeBlock(blockContents.get(blockContents.size() - 1));
         }
-        for (Frame f : newContents)
-        {
+        for (Frame f : newContents) {
             insertBlockAfter(f, getLastCursor());
         }
     }
 
-    public double getCurlyBracketHeight()
-    {
+    public double getCurlyBracketHeight() {
         return canvas.getCurlyBracketHeight();
     }
 
 
-    public Parser.JavaContext getContext()
-    {
-        switch (getParent().getChildKind(this))
-        {
+    public Parser.JavaContext getContext() {
+        switch (getParent().getChildKind(this)) {
             case IMPORTS:
                 return Parser.JavaContext.TOP_LEVEL;
             case STATEMENTS:

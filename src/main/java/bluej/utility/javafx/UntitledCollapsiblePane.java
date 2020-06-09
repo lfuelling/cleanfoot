@@ -42,14 +42,12 @@ import javafx.util.Duration;
 /**
  * Like TitledPane, but does not have a title section, and instead
  * just has an arrow to expand/collapse above the content.
- * 
+ * <p>
  * It turned out that styling TitledPane to act like this was nigh-on impossible,
  * so I borrowed some of its workings to make our own simpler version.
  */
-public class UntitledCollapsiblePane extends Pane
-{
-    public enum ArrowLocation
-    {
+public class UntitledCollapsiblePane extends Pane {
+    public enum ArrowLocation {
         /* Arrow at top, content expands downwards from top */
         TOP,
         /* Arrow at left, content expands rightwards from left */
@@ -62,8 +60,7 @@ public class UntitledCollapsiblePane extends Pane
     protected final double arrowPadding = 1;
     private final DoubleProperty transitionProperty = new SimpleDoubleProperty(1.0) {
         @Override
-        protected void invalidated()
-        {
+        protected void invalidated() {
             requestLayout();
         }
     };
@@ -73,8 +70,7 @@ public class UntitledCollapsiblePane extends Pane
     private FXPlatformRunnable cancelHover;
     private Animation animation;
 
-    public UntitledCollapsiblePane(Node content, ArrowLocation arrowLocation, boolean startCollapsed)
-    {
+    public UntitledCollapsiblePane(Node content, ArrowLocation arrowLocation, boolean startCollapsed) {
         this.content = content;
         this.arrowLocation = arrowLocation;
         this.arrow = new TriangleArrow(isVertical() ? Orientation.VERTICAL : Orientation.HORIZONTAL);
@@ -103,21 +99,17 @@ public class UntitledCollapsiblePane extends Pane
             cancelHover = JavaFXUtil.runAfter(Duration.millis(200), () -> JavaFXUtil.setPseudoclass("bj-hover-long", true, arrowWrapper));
         });
         arrowWrapper.setOnMouseExited(e -> {
-            if (cancelHover != null)
-            {
+            if (cancelHover != null) {
                 cancelHover.run();
                 cancelHover = null;
             }
             JavaFXUtil.setPseudoclass("bj-hover-long", false, arrowWrapper);
         });
 
-        if (startCollapsed)
-        {
+        if (startCollapsed) {
             transitionProperty.set(0.0);
             arrow.scaleProperty().set(1.0);
-        }
-        else
-        {
+        } else {
             transitionProperty.set(1.0);
             arrow.scaleProperty().set(-1.0);
         }
@@ -128,13 +120,12 @@ public class UntitledCollapsiblePane extends Pane
      * A constructor which takes the main parameters needed for the UntitledCollapsiblePane
      * besides a consumer function to be executed when the arrow is clicked.
      *
-     * @param content         A node has all contents to be added to the Pane
-     * @param arrowLocation   Where to place the arrow (e.g. Top, Left).
-     * @param startCollapsed  The initial folding state (true it is collapsed, false expanded)
-     * @param listener        A consumer function to be executed when the arrow is clicked
+     * @param content        A node has all contents to be added to the Pane
+     * @param arrowLocation  Where to place the arrow (e.g. Top, Left).
+     * @param startCollapsed The initial folding state (true it is collapsed, false expanded)
+     * @param listener       A consumer function to be executed when the arrow is clicked
      */
-    public UntitledCollapsiblePane(Node content, ArrowLocation arrowLocation, boolean startCollapsed, FXPlatformConsumer<? super Boolean> listener)
-    {
+    public UntitledCollapsiblePane(Node content, ArrowLocation arrowLocation, boolean startCollapsed, FXPlatformConsumer<? super Boolean> listener) {
         this(content, arrowLocation, startCollapsed);
         arrowWrapper.setOnMouseClicked(e -> {
             expanded.set(!expanded.get());
@@ -142,15 +133,12 @@ public class UntitledCollapsiblePane extends Pane
         });
     }
 
-    private boolean isVertical()
-    {
+    private boolean isVertical() {
         return arrowLocation == ArrowLocation.TOP;
     }
 
-    private void runAnimation(boolean toExpanded)
-    {
-        if (animation != null)
-        {
+    private void runAnimation(boolean toExpanded) {
+        if (animation != null) {
             animation.stop();
         }
         double dest = toExpanded ? 1 : 0;
@@ -162,31 +150,25 @@ public class UntitledCollapsiblePane extends Pane
         animation.playFromStart();
     }
 
-    public BooleanProperty expandedProperty()
-    {
+    public BooleanProperty expandedProperty() {
         return expanded;
     }
 
     @Override
-    protected void layoutChildren()
-    {
+    protected void layoutChildren() {
         this.layoutChildren(0, 0, getWidth(), getHeight());
     }
 
     private void layoutChildren(double x, double y,
-                                            final double w, final double h)
-    {
+                                final double w, final double h) {
 
         // header
         final double arrowSize;
 
-        if (isVertical())
-        {
+        if (isVertical()) {
             arrowSize = snapSizeY(TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding);
             arrowWrapper.resize(w, arrowSize);
-        }
-        else
-        {
+        } else {
             arrowSize = snapSizeX(TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding);
             arrowWrapper.resize(arrowSize, h);
         }
@@ -195,63 +177,51 @@ public class UntitledCollapsiblePane extends Pane
 
         // content size, in the dimension in which we collapse (height if arrow at top, else width)
         final double contentSize;
-        if (isVertical())
-        {
+        if (isVertical()) {
             contentSize = snapSizeY(h - arrowSize);
-        }
-        else
-        {
+        } else {
             contentSize = snapSizeX(w - arrowSize);
         }
 
-        if (isVertical())
-        {
+        if (isVertical()) {
             y += arrowSize;
             content.resize(w, contentSize);
             clipRect.setHeight(contentSize);
-        }
-        else
-        {
+        } else {
             x += arrowSize;
             content.resize(contentSize, h);
             clipRect.setWidth(contentSize);
         }
 
         positionInArea(content, x, y,
-            isVertical() ? w : contentSize, isVertical() ? contentSize : h, /*baseline ignored*/0, HPos.CENTER, VPos.CENTER);
+                isVertical() ? w : contentSize, isVertical() ? contentSize : h, /*baseline ignored*/0, HPos.CENTER, VPos.CENTER);
     }
 
     @Override
-    protected double computePrefWidth(double height)
-    {
+    protected double computePrefWidth(double height) {
         return isVertical() ? content.prefWidth(height) : content.prefWidth(height) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding;
     }
 
     @Override
-    protected double computePrefHeight(double width)
-    {
+    protected double computePrefHeight(double width) {
         return isVertical() ? content.prefHeight(width) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding : content.prefHeight(width);
     }
 
     @Override
-    protected double computeMinWidth(double height)
-    {
+    protected double computeMinWidth(double height) {
         return isVertical() ? content.minWidth(height) : content.minWidth(height) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding;
     }
 
     @Override
-    protected double computeMinHeight(double width)
-    {
+    protected double computeMinHeight(double width) {
         return isVertical() ? content.minHeight(width) * getTransition() + TriangleArrow.TRIANGLE_DEPTH + 2 * arrowPadding : content.minHeight(width);
     }
 
-    private double getTransition()
-    {
+    private double getTransition() {
         return transitionProperty.get();
     }
 
-    public void addArrowWrapperStyleClass(String styleClass)
-    {
+    public void addArrowWrapperStyleClass(String styleClass) {
         arrowWrapper.getStyleClass().add(styleClass);
     }
 }

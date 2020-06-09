@@ -21,13 +21,6 @@
  */
 package bluej.extensions;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import javafx.application.Platform;
-
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PackageEditor;
 import bluej.pkgmgr.Project;
@@ -35,54 +28,52 @@ import bluej.pkgmgr.dependency.Dependency;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.pkgmgr.target.DependentTarget;
 import bluej.utility.Utility;
+import javafx.application.Platform;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A wrapper for a class target (vertex) in the class diagram of BlueJ.
- * 
+ *
  * @author Simon Gerlach
  */
-public class BClassTarget
-{
+public class BClassTarget {
     private Identifier targetId;
 
     /**
      * Constructor. Creates a new {@link BClassTarget}.
-     * 
-     * @param targetId
-     *            The {@link Identifier} which represents the corresponding
-     *            class target. It is duty of the caller to guarantee that this
-     *            <code>targetId</code> is reasonable.
+     *
+     * @param targetId The {@link Identifier} which represents the corresponding
+     *                 class target. It is duty of the caller to guarantee that this
+     *                 <code>targetId</code> is reasonable.
      */
-    BClassTarget(Identifier targetId)
-    {
+    BClassTarget(Identifier targetId) {
         this.targetId = targetId;
     }
 
     /**
      * Returns the wrapped {@link ClassTarget} or <code>null</code> if no such
      * class target exist.
-     * 
+     *
      * @return The wrapped {@link ClassTarget}.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    ClassTarget getClassTarget() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    ClassTarget getClassTarget() throws ProjectNotOpenException, PackageNotFoundException {
         return targetId.getClassTarget();
     }
 
     /**
      * Notification that the name of the underlying class has changed.
-     * 
-     * @param newName
-     *            The new class name, fully qualified.
+     *
+     * @param newName The new class name, fully qualified.
      */
-    void nameChanged(String newName)
-    {
+    void nameChanged(String newName) {
         try {
             Project bluejProject = targetId.getBluejProject();
             Package bluejPackage = targetId.getBluejPackage();
@@ -100,40 +91,38 @@ public class BClassTarget
     /**
      * Recalculates the dependency arrows associated with this class target.
      * This may be necessary if the user has moved or resized the class target.
-     * 
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     *
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public void recalcDependentPositions() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public void recalcDependentPositions() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
-        
+
         if (classTarget != null) {
-            Platform.runLater(() -> {classTarget.recalcDependentPositions();});
+            Platform.runLater(() -> {
+                classTarget.recalcDependentPositions();
+            });
         }
     }
 
     /**
      * Revalidates the editor the wrapped class target is part of.
-     * 
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     *
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public void revalidate() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public void revalidate() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
 
         if (classTarget != null) {
             PackageEditor editor = classTarget.getPackage().getEditor();
-            Platform.runLater(() -> {editor.repaint();});
+            Platform.runLater(() -> {
+                editor.repaint();
+            });
         }
     }
 
@@ -142,94 +131,80 @@ public class BClassTarget
      * the naming inconsistency, which avoids a clash with
      * {@link java.lang.Object#getClass()}. May return <code>null</code> if this
      * class target is no longer valid.
-     * 
+     *
      * @return The class of this class target or <code>null</code> if there is
-     *         no such class.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * no such class.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public BClass getBClass() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public BClass getBClass() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
         return (classTarget != null) ? classTarget.getBClass() : null;
     }
 
     /**
      * Indicates whether this class target represents an interface.
-     * 
+     *
      * @return <code>true</code> if this target represents an interface,
-     *         <code>false</code> otherwise.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * <code>false</code> otherwise.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public boolean isInterface() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public boolean isInterface() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
         return (classTarget != null) && classTarget.isInterface();
     }
 
     /**
      * Indicates whether this class target represents a JUnit test.
-     * 
+     *
      * @return <code>true</code> if this target represents a JUnit test,
-     *         <code>false</code> otherwise.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * <code>false</code> otherwise.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public boolean isUnitTest() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public boolean isUnitTest() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
         return (classTarget != null) && classTarget.isUnitTest();
     }
 
     /**
      * Indicates whether this class target shall be visible in the graph.
-     * 
+     *
      * @return <code>true</code> if this class target is visible,
-     *         <code>false</code> otherwise.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * <code>false</code> otherwise.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public boolean isVisible() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public boolean isVisible() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
         return (classTarget != null) && classTarget.isVisible();
     }
 
     /**
      * Sets the visible setting of this class target.
-     * 
-     * @param visible
-     *            The new visible setting.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     *
+     * @param visible The new visible setting.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public void setVisible(boolean visible) throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public void setVisible(boolean visible) throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
 
         if (classTarget != null) {
-            Platform.runLater(() -> {classTarget.setVisible(visible);});
+            Platform.runLater(() -> {
+                classTarget.setVisible(visible);
+            });
         }
     }
 
@@ -238,18 +213,15 @@ public class BClassTarget
      * if there is no associated target. For example, this can be the the class
      * target of the corresponding test class of the class represented by this
      * class target.
-     * 
+     *
      * @return The associated target of this class target or <code>null</code>
-     *         if there is no associated target.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * if there is no associated target.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public BClassTarget getAssociation() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public BClassTarget getAssociation() throws ProjectNotOpenException, PackageNotFoundException {
         ClassTarget classTarget = getClassTarget();
         if (classTarget != null) {
             DependentTarget association = classTarget.getAssociation();
@@ -265,17 +237,14 @@ public class BClassTarget
     /**
      * Returns a {@link List} containing all dependencies that have this class
      * target as their origin.
-     * 
+     *
      * @return A {@link List} containing all outgoing dependencies.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public List<BDependency> getOutgoingDependencies() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public List<BDependency> getOutgoingDependencies() throws ProjectNotOpenException, PackageNotFoundException {
         List<BDependency> result = new ArrayList<BDependency>();
         ClassTarget classTarget = getClassTarget();
 
@@ -289,17 +258,14 @@ public class BClassTarget
     /**
      * Returns a {@link List} containing all dependencies that have this class
      * target as their destination.
-     * 
+     *
      * @return A {@link List} containing all incoming dependencies.
-     * @throws ProjectNotOpenException
-     *             if the project to which this class target belongs has been
-     *             closed by the user.
-     * @throws PackageNotFoundException
-     *             if the package to which this class target belongs has been
-     *             deleted by the user.
+     * @throws ProjectNotOpenException  if the project to which this class target belongs has been
+     *                                  closed by the user.
+     * @throws PackageNotFoundException if the package to which this class target belongs has been
+     *                                  deleted by the user.
      */
-    public List<BDependency> getIncomingDependencies() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    public List<BDependency> getIncomingDependencies() throws ProjectNotOpenException, PackageNotFoundException {
         List<BDependency> result = new ArrayList<BDependency>();
         ClassTarget classTarget = getClassTarget();
 
@@ -313,13 +279,11 @@ public class BClassTarget
     /**
      * Takes an {@link Iterator} of type {@link Dependency} and returns a
      * {@link List} of corresponding {@link BDependency} objects.
-     * 
-     * @param dependencies
-     *            An {@link Iterator} of type {@link Dependency}.
+     *
+     * @param dependencies An {@link Iterator} of type {@link Dependency}.
      * @return A {@link List} of corresponding {@link BDependency} objects.
      */
-    private List<BDependency> getBDependencies(Collection<? extends Dependency> dependencies)
-    {
+    private List<BDependency> getBDependencies(Collection<? extends Dependency> dependencies) {
         return Utility.mapList(dependencies, Dependency::getBDependency);
     }
 
@@ -327,8 +291,7 @@ public class BClassTarget
      * Returns a {@link String} representation of this object.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         try {
             ClassTarget classTarget = getClassTarget();
             return "BClassTarget: " + classTarget.getIdentifierName();

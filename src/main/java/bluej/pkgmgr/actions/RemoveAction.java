@@ -27,14 +27,12 @@ import bluej.pkgmgr.PkgMgrFrame;
  * "Remove (class/relation/package)" command. Remove an item from the
  * graph. If it's a class/package, prompt before removal. For a dependency
  * relation, modify the source to reflect the change.
- * 
+ *
  * @author Davin McCall.
  * @version $Id: RemoveAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class RemoveAction extends PkgMgrAction
-{
-    public RemoveAction(PkgMgrFrame pmf)
-    {
+final public class RemoveAction extends PkgMgrAction {
+    public RemoveAction(PkgMgrFrame pmf) {
         super(pmf, "menu.edit.remove");
     }
 
@@ -42,15 +40,13 @@ final public class RemoveAction extends PkgMgrAction
     // gets called twice (because the cmd+backspace key is processed twice)
     // This flag makes sure the dialog doesn't get called twice by preventing re-entry:
     private boolean processing = false;
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
-        if (!processing)
-        {
-             processing = true;
-             pmf.menuCall();
-             pmf.doRemove();
-             processing = false;
+
+    public void actionPerformed(PkgMgrFrame pmf) {
+        if (!processing) {
+            processing = true;
+            pmf.menuCall();
+            pmf.doRemove();
+            processing = false;
         }
     }
 }

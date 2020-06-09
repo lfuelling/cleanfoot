@@ -22,74 +22,72 @@
 
 package bluej;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import bluej.pkgmgr.Project;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
-  * Class to handle (throw and deliver) BlueJ events. Event are defined
-  * for things that might be caused by low level parts of the system which
-  * other parts of the system might be interested in. Objects can register
-  * themselves as event listeners. They then get notified of events.
-  *
-  * <p>A BlueJEvent has one argument. The argument passed differs for every 
-  * event type.
-  *
-  * <p>Event types and their arguments:<PRE>
-  *
-  *  type               argument            sent when...
-  *  -----------------------------------------------------------------------
-  *  CREATE_VM          (unused)            creation of VM has started
-  * 
-  *  CREATE_VM_FAILED   (unused)            creation of VM has failed
-  *
-  *  CREATE_VM_DONE     (unused)            creation of VM completed
-  *
-  *  METHOD_CALL        InvokerRecord       an interactive method call was started
-  *
-  *  EXECUTION_RESULT   bluej.debugmgr.ExecutionEvent   VM execution finished
-  *
-  *  GENERATING_DOCU    (unused)            documentation generation started
-  *
-  *  DOCU_GENERATED     (unused)            documentation generation finished
-  *
-  *  DOCU_ABORTED       (unused)            documentation generation aborted
-  *
-  * </PRE>
-  * 
-  * @author Michael Kolling
-  */
-public class BlueJEvent
-{
+ * Class to handle (throw and deliver) BlueJ events. Event are defined
+ * for things that might be caused by low level parts of the system which
+ * other parts of the system might be interested in. Objects can register
+ * themselves as event listeners. They then get notified of events.
+ *
+ * <p>A BlueJEvent has one argument. The argument passed differs for every
+ * event type.
+ *
+ * <p>Event types and their arguments:<PRE>
+ * <p>
+ * type               argument            sent when...
+ * -----------------------------------------------------------------------
+ * CREATE_VM          (unused)            creation of VM has started
+ * <p>
+ * CREATE_VM_FAILED   (unused)            creation of VM has failed
+ * <p>
+ * CREATE_VM_DONE     (unused)            creation of VM completed
+ * <p>
+ * METHOD_CALL        InvokerRecord       an interactive method call was started
+ * <p>
+ * EXECUTION_RESULT   bluej.debugmgr.ExecutionEvent   VM execution finished
+ * <p>
+ * GENERATING_DOCU    (unused)            documentation generation started
+ * <p>
+ * DOCU_GENERATED     (unused)            documentation generation finished
+ * <p>
+ * DOCU_ABORTED       (unused)            documentation generation aborted
+ *
+ * </PRE>
+ *
+ * @author Michael Kolling
+ */
+public class BlueJEvent {
     // BlueJ event types
 
-    public static final int CREATE_VM           = 0;
-    public static final int CREATE_VM_FAILED    = CREATE_VM + 1;
-    public static final int CREATE_VM_DONE      = CREATE_VM_FAILED + 1;
-    public static final int METHOD_CALL         = CREATE_VM_DONE + 1;
-    public static final int METHOD_CALL_FAILED  = METHOD_CALL + 1;
-    public static final int EXECUTION_RESULT    = METHOD_CALL_FAILED + 1;
-    public static final int GENERATING_DOCU     = EXECUTION_RESULT + 1;
-    public static final int DOCU_GENERATED      = GENERATING_DOCU + 1;
-    public static final int DOCU_ABORTED        = DOCU_GENERATED + 1;
-    
+    public static final int CREATE_VM = 0;
+    public static final int CREATE_VM_FAILED = CREATE_VM + 1;
+    public static final int CREATE_VM_DONE = CREATE_VM_FAILED + 1;
+    public static final int METHOD_CALL = CREATE_VM_DONE + 1;
+    public static final int METHOD_CALL_FAILED = METHOD_CALL + 1;
+    public static final int EXECUTION_RESULT = METHOD_CALL_FAILED + 1;
+    public static final int GENERATING_DOCU = EXECUTION_RESULT + 1;
+    public static final int DOCU_GENERATED = GENERATING_DOCU + 1;
+    public static final int DOCU_ABORTED = DOCU_GENERATED + 1;
+
     // other variables
 
     @OnThread(Tag.Any)
     private static final List<BlueJEventListener> listeners =
-        Collections.synchronizedList(new ArrayList<BlueJEventListener>());
+            Collections.synchronizedList(new ArrayList<BlueJEventListener>());
 
     /**
      * Raise a BlueJ event with an argument. All registered listeners
      * will be informed of this event.
      */
     @OnThread(Tag.FXPlatform)
-    public static void raiseEvent(int eventId, Object arg)
-    {
+    public static void raiseEvent(int eventId, Object arg) {
         Object[] listenersCopy = listeners.toArray();
         for (int i = listenersCopy.length - 1; i >= 0; i--) {
             BlueJEventListener listener = (BlueJEventListener) listenersCopy[i];
@@ -102,34 +100,31 @@ public class BlueJEvent
      * All registered listeners will be informed of this event.
      */
     @OnThread(Tag.FXPlatform)
-    public static void raiseEvent(int eventId, Object arg, Project prj)
-    {
+    public static void raiseEvent(int eventId, Object arg, Project prj) {
         Object[] listenersCopy = listeners.toArray();
         for (int i = listenersCopy.length - 1; i >= 0; i--) {
             BlueJEventListener listener = (BlueJEventListener) listenersCopy[i];
             listener.blueJEvent(eventId, arg, prj);
         }
     }
-    
+
     /**
      * Add a listener object. The object must implement the
      * BlueJEventListener interface.
      */
     @OnThread(Tag.Any)
-    public static void addListener(BlueJEventListener listener)
-    {
+    public static void addListener(BlueJEventListener listener) {
         if (!listeners.contains(listener))
             listeners.add(listener);
     }
-    
+
     /**
      * Remove a listener object from the known listener set.
      */
     @OnThread(Tag.Any)
-    public static void removeListener(BlueJEventListener listener)
-    {
+    public static void removeListener(BlueJEventListener listener) {
         listeners.remove(listener);
     }
-    
+
 }
 

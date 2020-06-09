@@ -27,88 +27,78 @@ import bluej.pkgmgr.PkgMgrFrame;
  * Records a single user interaction with the object construction
  * mechanisms of BlueJ.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class ConstructionInvokerRecord extends InvokerRecord
-{
+public class ConstructionInvokerRecord extends InvokerRecord {
     private final String type;
     private final String name;
     private final String command;
-    private final String [] argumentValues;
-    
-    public ConstructionInvokerRecord(String type, String name, String command, String [] argVals)
-    {
+    private final String[] argumentValues;
+
+    public ConstructionInvokerRecord(String type, String name, String command, String[] argVals) {
         this.type = type;
         this.name = name;
         this.command = command;
         this.argumentValues = argVals;
     }
-    
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
     }
-    
+
     @Override
-    public String [] getArgumentValues()
-    {
+    public String[] getArgumentValues() {
         return argumentValues;
     }
 
     @Override
-    public String getResultName()
-    {
+    public String getResultName() {
         return name;
     }
-    
+
     @Override
-    public String getResultTypeString()
-    {
+    public String getResultTypeString() {
         return type;
     }
-    
+
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return a String representing the object declaration
-     *         src or null if there is none.
+     * src or null if there is none.
      */
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
-        return firstIndent + fieldDeclarationStart + type + " " + name + statementEnd;       
+    public String toFixtureDeclaration(String firstIndent) {
+        return firstIndent + fieldDeclarationStart + type + " " + name + statementEnd;
     }
 
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String reprenting the object initialisation
-     *         src or null if there is none. 
+     * src or null if there is none.
      */
     @Override
-    public String toFixtureSetup(String secondIndent)
-    {
-        return secondIndent + name + " = " + command + statementEnd;          
+    public String toFixtureSetup(String secondIndent) {
+        return secondIndent + name + " = " + command + statementEnd;
     }
 
     /**
      * Construct a portion of a test method for this
      * invoker record.
-     * 
+     *
      * @return a String representing the test method src
      */
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         return secondIndent + type + " " + name + " = " + command + statementEnd;
     }
 
     @Override
-    public String toExpression()
-    {
+    public String toExpression() {
         return command;
     }
 }

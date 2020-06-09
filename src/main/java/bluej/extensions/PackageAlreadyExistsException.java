@@ -24,17 +24,16 @@ package bluej.extensions;
 /**
  * This exception is thrown when there is a request to create a new Package
  * but the package already exists in BlueJ.
- * 
+ *
  * @version $Id: PackageAlreadyExistsException.java 6215 2009-03-30 13:28:25Z polle $
  */
 
 /*
  * Author: Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class PackageAlreadyExistsException extends ExtensionException 
-{
-    PackageAlreadyExistsException (String reason) {
-        super (reason);
+public class PackageAlreadyExistsException extends ExtensionException {
+    PackageAlreadyExistsException(String reason) {
+        super(reason);
     }
 
 }

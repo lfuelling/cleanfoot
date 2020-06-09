@@ -22,39 +22,23 @@
 package bluej.debugmgr.inspector;
 
 import bluej.Config;
-import bluej.extensions.BClassTarget;
 import bluej.utility.javafx.JavaFXUtil;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerExpression;
-import javafx.beans.binding.ObjectExpression;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
-import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -65,16 +49,14 @@ import static bluej.debugger.DebuggerObject.OBJECT_REFERENCE;
 
 /**
  * A graphical representation of a list of fields from a class or object or method result, for use in an inspector.
- * 
+ *
  * @author Poul Henriksen <polle@mip.sdu.dk>
- *  
  */
 @OnThread(Tag.FXPlatform)
-public class FieldList extends ScrollPane 
-{
+public class FieldList extends ScrollPane {
     private final static Image objectrefIcon = Config.getImageAsFXImage("image.inspector.objectref");
     private static final double ROW_HEIGHT = 30;
-    
+
     // The actual list of fields, inside our ScrollPane:
     private final ContentPane content = new ContentPane();
     // The latest data:
@@ -84,8 +66,7 @@ public class FieldList extends ScrollPane
     // A placeholder shown where are no fields:
     private final Label placeholderLabel = new Label();
 
-    public FieldList()
-    {
+    public FieldList() {
         getStyleClass().add("field-list");
         setContent(new StackPane(content, placeholderLabel));
         content.managedProperty().bind(content.visibleProperty());
@@ -102,34 +83,29 @@ public class FieldList extends ScrollPane
     /**
      * Select the next item down, if possible
      */
-    public void down()
-    {
+    public void down() {
         select(Math.min(curData.size() - 1, selectedRow.get() + 1));
     }
 
     /**
      * Select the next item up, if possible
      */
-    public void up()
-    {
+    public void up() {
         select(Math.max(0, selectedRow.get() - 1));
     }
 
     /**
      * Sets the new fields and values.  If this is identical, the update is skipped.
      */
-    public void setData(List<FieldInfo> listData)
-    {
+    public void setData(List<FieldInfo> listData) {
         if (listData.equals(curData))
             return;
-        
+
         List<Node> children = new ArrayList<>();
-        for (int i = 0; i < listData.size(); i++)
-        {
+        for (int i = 0; i < listData.size(); i++) {
             FieldInfo field = listData.get(i);
             Label valueLabel = new Label(field.getValue());
-            if (OBJECT_REFERENCE.equals(valueLabel.getText()))
-            {
+            if (OBJECT_REFERENCE.equals(valueLabel.getText())) {
                 valueLabel.setGraphic(new ImageView(objectrefIcon));
                 valueLabel.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
             }
@@ -156,39 +132,34 @@ public class FieldList extends ScrollPane
         select(sel);
         requestLayout();
     }
-    
+
     /**
      * Sets the text to show when the list is empty
      */
-    public void setPlaceHolderText(String text)
-    {
+    public void setPlaceHolderText(String text) {
         placeholderLabel.setText(text);
     }
 
     /**
      * Gets the selected row index, to be listened to.
      */
-    public IntegerExpression selectedIndexProperty()
-    {
+    public IntegerExpression selectedIndexProperty() {
         return selectedRow;
     }
 
     /**
      * Selects the given row (first is zero)
      */
-    public void select(int index)
-    {
+    public void select(int index) {
         if (index == selectedRow.get())
             return;
-        
+
         selectedRow.set(index);
         ObservableList<Node> children = content.getChildren();
-        for (int i = 0; i < children.size(); i += 2)
-        {
+        for (int i = 0; i < children.size(); i += 2) {
             boolean selected = i / 2 == index;
             JavaFXUtil.setPseudoclass("bj-selected", selected, children.get(i), children.get(i + 1));
-            if (selected && (children.get(i).localToScene(0, 0).getY() < localToScene(0, 0).getY() || children.get(i).localToScene(0, ROW_HEIGHT).getY() > localToScene(0, getHeight()).getY()))
-            {
+            if (selected && (children.get(i).localToScene(0, 0).getY() < localToScene(0, 0).getY() || children.get(i).localToScene(0, ROW_HEIGHT).getY() > localToScene(0, getHeight()).getY())) {
                 JavaFXUtil.scrollTo(this, children.get(i));
             }
         }
@@ -200,42 +171,34 @@ public class FieldList extends ScrollPane
      * So the number of children is exactly double the number of fields (rows).
      */
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    private static class ContentPane extends Region
-    {
-        public ContentPane()
-        {
+    private static class ContentPane extends Region {
+        public ContentPane() {
             getStyleClass().add("field-list-content");
         }
-        
+
         @Override
-        protected void layoutChildren()
-        {
+        protected void layoutChildren() {
             Insets outerPadding = getInsets();
             List<Node> children = getChildren();
             double largestLeft = 0;
             double largestRight = 0;
-            for (int i = 0; i < children.size(); i += 2)
-            {
+            for (int i = 0; i < children.size(); i += 2) {
                 largestLeft = Math.max(largestLeft, children.get(i).prefWidth(ROW_HEIGHT));
                 largestRight = Math.max(largestRight, children.get(i + 1).prefWidth(ROW_HEIGHT));
             }
-            
+
             double leftWidth;
-            if (largestLeft + largestRight <= getWidth())
-            {
+            if (largestLeft + largestRight <= getWidth()) {
                 // Share any spare width among both sides equally:
                 leftWidth = largestLeft + (getWidth() - largestLeft - largestRight) * 0.5;
-            }
-            else
-            {
+            } else {
                 // We'll have to truncate, so we truncate the right which can be any width, whereas the left is likely to be smaller:
                 leftWidth = largestLeft;
             }
             double rightWidth = getWidth() - leftWidth - outerPadding.getLeft() - outerPadding.getRight();
-            
+
             double y = outerPadding.getTop();
-            for (int i = 0; i < children.size(); i += 2)
-            {
+            for (int i = 0; i < children.size(); i += 2) {
                 children.get(i).resizeRelocate(outerPadding.getLeft(), y, leftWidth, ROW_HEIGHT);
                 children.get(i + 1).resizeRelocate(outerPadding.getLeft() + leftWidth, y, rightWidth, ROW_HEIGHT);
                 y += ROW_HEIGHT;
@@ -244,19 +207,16 @@ public class FieldList extends ScrollPane
 
         // Make parent method public:
         @Override
-        public ObservableList<Node> getChildren()
-        {
+        public ObservableList<Node> getChildren() {
             return super.getChildren();
         }
 
         @Override
-        protected double computePrefWidth(double height)
-        {
+        protected double computePrefWidth(double height) {
             List<Node> children = getChildren();
             double largestLeft = 0;
             double largestRight = 0;
-            for (int i = 0; i < children.size(); i += 2)
-            {
+            for (int i = 0; i < children.size(); i += 2) {
                 largestLeft = Math.max(largestLeft, children.get(i).prefWidth(height));
                 largestRight = Math.max(largestRight, children.get(i + 1).prefWidth(height));
             }
@@ -264,8 +224,7 @@ public class FieldList extends ScrollPane
         }
 
         @Override
-        protected double computePrefHeight(double width)
-        {
+        protected double computePrefHeight(double width) {
             return ROW_HEIGHT * (getChildren().size() / 2) + getInsets().getTop() + getInsets().getBottom();
         }
     }

@@ -21,4 +21,4 @@
  */
 package bluej.stride.slots;
 
-public enum Focus { LEFT, RIGHT, SELECT_ALL }
+public enum Focus {LEFT, RIGHT, SELECT_ALL}

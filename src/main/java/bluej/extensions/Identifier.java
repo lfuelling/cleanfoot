@@ -22,11 +22,6 @@
 package bluej.extensions;
 
 
-import java.awt.EventQueue;
-import java.io.File;
-
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
 import bluej.pkgmgr.PkgMgrFrame;
@@ -35,30 +30,34 @@ import bluej.pkgmgr.dependency.Dependency;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.pkgmgr.target.Target;
 import bluej.views.View;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.awt.*;
+import java.io.File;
 
 /**
  * The problem I am trying to solve is to have a uniform and simple way to deal with
  * objects validity. An extension may be holding BProject  but this BProject may not be valid
  * since the gui has closed it. Or may be holding aBPackage and this not being valid
  * The same apply to a BClass or a BOBject.
- *
+ * <p>
  * To solve it I need to store the ID of the above objects and check if it is still valid
  * before doing anything.
  * Again, the problem is that for a BClass I need not only to check if the Class is valid
  * but also the Project and the Package !
  * So the ID if a BClass is really all of the above...
- *
+ * <p>
  * Then, the solution is to put all that is needed in here and have this class only deal with
  * checking the mess of it...
- *
+ * <p>
  * NOTE on class Names: Most of the time we would like the qualified form of the class name
  * however there are cases when we need the short form, it seems reasonable to store the
  * long form and derive the short one.
  *
  * @author Damiano Bolla 2003,2004
  */
-class Identifier
-{
+class Identifier {
     private final File projectId;
     private String packageId;
     private final String qualifiedClassName;
@@ -67,9 +66,7 @@ class Identifier
     /**
      * Constructor for the Identifier object
      */
-    @OnThread(Tag.Any)
-    Identifier(Project bluejProject)
-    {
+    @OnThread(Tag.Any) Identifier(Project bluejProject) {
         this(bluejProject, null, null);
     }
 
@@ -77,9 +74,7 @@ class Identifier
     /**
      * Constructor for the Identifier object
      */
-    @OnThread(Tag.Any)
-    Identifier(Project bluejProject, Package bluejPackage)
-    {
+    @OnThread(Tag.Any) Identifier(Project bluejProject, Package bluejPackage) {
         this(bluejProject, bluejPackage, null);
     }
 
@@ -87,9 +82,7 @@ class Identifier
     /**
      * Constructor for the Identifier object
      */
-    @OnThread(Tag.Any)
-    Identifier(Project bluejProject, Package bluejPackage, String aQualifiedClassName)
-    {
+    @OnThread(Tag.Any) Identifier(Project bluejProject, Package bluejPackage, String aQualifiedClassName) {
         projectId = bluejProject.getProjectDir();
         if (bluejPackage != null) packageId = bluejPackage.getQualifiedName();
         qualifiedClassName = aQualifiedClassName;
@@ -99,8 +92,7 @@ class Identifier
     /**
      * Returns the blueJProject and also checks its existence
      */
-    Project getBluejProject() throws ProjectNotOpenException
-    {
+    Project getBluejProject() throws ProjectNotOpenException {
         Project aProject = Project.getProject(projectId);
 
         if (aProject == null)
@@ -112,11 +104,11 @@ class Identifier
 
     /**
      * Returns the inner BlueJ package given the current identifier.
+     *
      * @throws ProjectNotOpenException
      * @throws PackageNotFoundException
      */
-    Package getBluejPackage() throws ProjectNotOpenException, PackageNotFoundException
-    {
+    Package getBluejPackage() throws ProjectNotOpenException, PackageNotFoundException {
         Project bluejProject = getBluejProject();
 
         Package bluejPkg = bluejProject.getCachedPackage(packageId);
@@ -127,17 +119,16 @@ class Identifier
     }
 
     /**
-     * Returns the name of the class. No checks are made for validity of 
-     * the name, to avoid having to compile the class in order to get 
+     * Returns the name of the class. No checks are made for validity of
+     * the name, to avoid having to compile the class in order to get
      * its name.
-     * This means that the name may not be valid, if the class has 
+     * This means that the name may not be valid, if the class has
      * been renamed or deleted.
-     * 
-     * @return    The qualified name of the class represented by this identifier,
-     *            or null if it doesn't represent a class
+     *
+     * @return The qualified name of the class represented by this identifier,
+     * or null if it doesn't represent a class
      */
-    String getClassName()
-    {
+    String getClassName() {
         return qualifiedClassName;
     }
 
@@ -146,21 +137,19 @@ class Identifier
      * The nice thing about this one is that it WILL open a frame if it was not already open.
      * This gets rid of one possible exception regarding a packageFrame not open...
      *
-     * @return                               The packageFrame value
-     * @exception  ProjectNotOpenException
-     * @exception  PackageNotFoundException
+     * @return The packageFrame value
+     * @throws ProjectNotOpenException
+     * @throws PackageNotFoundException
      */
     PkgMgrFrame getPackageFrame()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         Package thisPkg = getBluejPackage();
 
         // Get a frame for the package.
         final PkgMgrFrame pmf = PkgMgrFrame.createFrame(thisPkg, null);
 
         EventQueue.invokeLater(new Runnable() {
-            public void run()
-            {
+            public void run() {
                 pmf.setVisible(true);
             }
         });
@@ -170,13 +159,11 @@ class Identifier
     /**
      * Returns the Java class that is associated with this name in this package
      *
-     * @return      The java Class object
-     * 
-     * @exception  ProjectNotOpenException
-     * @exception  ClassNotFoundException
+     * @return The java Class object
+     * @throws ProjectNotOpenException
+     * @throws ClassNotFoundException
      */
-    Class<?> getJavaClass() throws ProjectNotOpenException, ClassNotFoundException
-    {
+    Class<?> getJavaClass() throws ProjectNotOpenException, ClassNotFoundException {
         Project bluejPrj = getBluejProject();
 
         Class<?> aClass = bluejPrj.loadClass(qualifiedClassName);
@@ -190,14 +177,12 @@ class Identifier
     /**
      * Returns the class target of this java class by checking its existence
      *
-     * @return      The classTarget value
-     * 
-     * @exception  ProjectNotOpenException
-     * @exception  PackageNotFoundException
+     * @return The classTarget value
+     * @throws ProjectNotOpenException
+     * @throws PackageNotFoundException
      */
     ClassTarget getClassTarget()
-             throws ProjectNotOpenException, PackageNotFoundException
-    {
+            throws ProjectNotOpenException, PackageNotFoundException {
         Package bluejPkg = getBluejPackage();
 
         String className = qualifiedClassName;
@@ -205,7 +190,7 @@ class Identifier
         if (dotpos > 0) {
             className = qualifiedClassName.substring(dotpos + 1);
         }
-        
+
         Target aTarget = bluejPkg.getTarget(className);
 
         if (aTarget == null) {
@@ -223,24 +208,21 @@ class Identifier
      * Returns the {@link Dependency} with the origin represented by this
      * {@link Identifier} and the target represented by the specified
      * {@link Identifier}.
-     * 
-     * @param targetId
-     *            The {@link Identifier} representing the target of the
-     *            dependency.
-     * @param type
-     *            The type of the dependency (there may be more than one
-     *            dependencies with the same origin and target but different
-     *            types).
+     *
+     * @param targetId The {@link Identifier} representing the target of the
+     *                 dependency.
+     * @param type     The type of the dependency (there may be more than one
+     *                 dependencies with the same origin and target but different
+     *                 types).
      * @return The {@link Dependency} with the origin represented by this
-     *         {@link Identifier} and the target represented by the specified
-     *         {@link Identifier} or <code>null</code> if there is no such
-     *         dependency.
+     * {@link Identifier} and the target represented by the specified
+     * {@link Identifier} or <code>null</code> if there is no such
+     * dependency.
      * @throws ProjectNotOpenException
      * @throws PackageNotFoundException
      */
     Dependency getDependency(Identifier targetId, Type type) throws ProjectNotOpenException,
-            PackageNotFoundException
-    {
+            PackageNotFoundException {
         ClassTarget origin = getClassTarget();
         ClassTarget target = targetId.getClassTarget();
 
@@ -255,25 +237,23 @@ class Identifier
     /**
      * Returns the view associated with this Class
      *
-     * @return        The bluejView value
-     * @exception  ProjectNotOpenException
-     * @exception  ClassNotFoundException
+     * @return The bluejView value
+     * @throws ProjectNotOpenException
+     * @throws ClassNotFoundException
      */
     View getBluejView()
-             throws ProjectNotOpenException, ClassNotFoundException
-    {
+            throws ProjectNotOpenException, ClassNotFoundException {
         Class<?> aClass = getJavaClass();
 
         // View.getView does not fail, if the class does not exist it will be created.
         return View.getView(aClass);
     }
-    
+
     /*
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int total = 0;
         if (projectId != null) {
             total += projectId.hashCode();
@@ -286,17 +266,16 @@ class Identifier
         }
         return total;
     }
-    
+
     /*
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(Object obj)
-    {
-        if (! (obj instanceof Identifier)) {
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Identifier)) {
             return false;
         }
-        
+
         Identifier other = (Identifier) obj;
         return !equalsIgnoreClass(other)
                 || (qualifiedClassName != null ? qualifiedClassName.equals(other.qualifiedClassName)
@@ -306,15 +285,13 @@ class Identifier
     /**
      * Compares the given {@link Identifier} with this one, ignoring the
      * represented class.
-     * 
-     * @param other
-     *            The {@link Identifier} to compare.
+     *
+     * @param other The {@link Identifier} to compare.
      * @return <code>true</code> if the specified {@link Identifier} has the
-     *         same project and package as this one, <code>false</code>
-     *         otherwise.
+     * same project and package as this one, <code>false</code>
+     * otherwise.
      */
-    boolean equalsIgnoreClass(Identifier other)
-    {
+    boolean equalsIgnoreClass(Identifier other) {
         if (!(projectId != null ? projectId.equals(other.projectId) : other.projectId == null)) {
             return false;
         }

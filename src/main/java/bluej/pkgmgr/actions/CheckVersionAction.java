@@ -21,8 +21,6 @@
  */
 package bluej.pkgmgr.actions;
 
-import javafx.application.Platform;
-
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.VersionCheckDialog;
 
@@ -30,20 +28,17 @@ import bluej.pkgmgr.VersionCheckDialog;
  * help...check for new version. Displays a dialog box with a "check version"
  * button, when pressed queries the web server to see if a newer version of
  * BlueJ is available.
- * 
+ *
  * @author Davin McCall
  * @version $Id: CheckVersionAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class CheckVersionAction extends PkgMgrAction
-{
+final public class CheckVersionAction extends PkgMgrAction {
 
-    public CheckVersionAction(PkgMgrFrame pmf)
-    {
+    public CheckVersionAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.versionCheck");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         new VersionCheckDialog(pmf.getFXWindow()).showAndWait();
     }

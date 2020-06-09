@@ -21,28 +21,26 @@
  */
 package bluej.editor.moe;
 
-import java.io.File;
-
 import bluej.Config;
 import bluej.utility.BlueJFileReader;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+
 /**
  * Wrapper for functionality around translating parser error codes to human-readable
  * error messages.
- * 
+ *
  * @author Davin McCall
  */
-public class ParserMessageHandler
-{
+public class ParserMessageHandler {
     /**
      * Translate an error code or message from the parser into a human-readable error message
      * in the appropriate language.
      */
     @OnThread(Tag.Any)
-    public static String getMessageForCode(String code)
-    {
+    public static String getMessageForCode(String code) {
         if (code.startsWith("BJ")) {
             // This looks like a BlueJ parser error code.
             File fileName = Config.getLanguageFile("bluejparser.help");

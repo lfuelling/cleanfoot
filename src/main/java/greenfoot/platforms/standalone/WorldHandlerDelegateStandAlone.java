@@ -40,19 +40,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implementation for running scenarios in a standalone application or applet.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.Simulation)
-public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate
-{
+public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate {
     @OnThread(Tag.Any)
     private final GreenfootScenarioViewer viewer;
     private final boolean lockScenario;
     private final WorldRenderer worldRenderer = new WorldRenderer();
     // Time last frame was painted, from System.nanoTime
     private long lastFramePaint;
-    
+
     // The two threads want to share images, but they both need time to draw/read the
     // image once they have hold of one.  We have one reference with the
     // latest image ready to draw (which the simulation thread promises not to touch
@@ -64,19 +63,16 @@ public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate
     private final ConcurrentLinkedQueue<BufferedImage> oldImages = new ConcurrentLinkedQueue<>();
 
     @OnThread(Tag.FXPlatform)
-    public WorldHandlerDelegateStandAlone (GreenfootScenarioViewer viewer, boolean lockScenario) 
-    {
+    public WorldHandlerDelegateStandAlone(GreenfootScenarioViewer viewer, boolean lockScenario) {
         this.viewer = viewer;
         this.lockScenario = lockScenario;
         new AnimationTimer() {
             @Override
             @OnThread(Tag.FXPlatform)
-            public void handle(long now)
-            {
+            public void handle(long now) {
                 BufferedImage worldImage = pendingImage.getAndSet(null);
                 // If there was an image ready, draw it as the world:
-                if (worldImage != null)
-                {
+                if (worldImage != null) {
                     viewer.setWorldImage(worldImage);
                     // Afterwards, put the image back on the queue for re-use:
                     oldImages.add(worldImage);
@@ -84,80 +80,69 @@ public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate
             }
         }.start();
     }
-    
-    public boolean maybeShowPopup(MouseEvent e)
-    {
+
+    public boolean maybeShowPopup(MouseEvent e) {
         // Not used in standalone
         return false;
     }
 
-    public void mouseClicked(MouseEvent e)
-    {
+    public void mouseClicked(MouseEvent e) {
         // Not used in standalone
     }
-    
-    public void mouseMoved(MouseEvent e)
-    {
+
+    public void mouseMoved(MouseEvent e) {
         // Not used in standalone
     }
 
     @Override
     @OnThread(Tag.Any)
-    public void setWorld(final World oldWorld, final World newWorld)
-    {
+    public void setWorld(final World oldWorld, final World newWorld) {
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public void instantiateNewWorld(String className, Runnable runIfError)
-    {
+    public void instantiateNewWorld(String className, Runnable runIfError) {
         WorldHandler.getInstance().clearWorldSet();
         World newWorld = viewer.instantiateNewWorld();
-        if (! WorldHandler.getInstance().checkWorldSet()) {
+        if (!WorldHandler.getInstance().checkWorldSet()) {
             WorldHandler.getInstance().setWorld(newWorld, false);
         }
     }
 
     @OnThread(Tag.Any)
-    public void discardWorld(World world)
-    {
+    public void discardWorld(World world) {
         // Remove the current world image:
         BufferedImage image = pendingImage.getAndSet(null);
-        if (image != null)
-        {
+        if (image != null) {
             oldImages.add(image);
         }
     }
 
-    public void addActor(Actor actor, int x, int y)
-    {
+    public void addActor(Actor actor, int x, int y) {
         // Nothing to be done
     }
 
     @Override
-    public void objectAddedToWorld(Actor actor)
-    {
+    public void objectAddedToWorld(Actor actor) {
     }
 
     @Override
-    public String ask(String prompt)
-    {
+    public String ask(String prompt) {
         String r = viewer.ask(prompt);
         return r;
     }
 
     @Override
-    public void paint(World world, boolean forcePaint)
-    {
+    public void paint(World world, boolean forcePaint) {
         if (world == null)
             return;
-        
+
         long now = System.nanoTime();
         // Don't try to go above 100 FPS:
         if (now - lastFramePaint < 10_000_000L)
             return;
         lastFramePaint = now;
-        
+
         int imageWidth = WorldVisitor.getWidthInPixels(world);
         int imageHeight = WorldVisitor.getHeightInPixels(world);
 
@@ -165,8 +150,7 @@ public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate
         // Re-use the image if it's available and the right size,
         // otherwise discard it and make a new one of right size:
         if (worldImage == null || worldImage.getHeight() != imageHeight
-                || worldImage.getWidth() != imageWidth)
-        {
+                || worldImage.getWidth() != imageWidth) {
             worldImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         }
 
@@ -174,15 +158,13 @@ public class WorldHandlerDelegateStandAlone implements WorldHandlerDelegate
         // Set the latest world image as pending, and get the old one to
         // keep for re-use:
         BufferedImage oldImage = pendingImage.getAndSet(worldImage);
-        if (oldImage != null)
-        {
+        if (oldImage != null) {
             oldImages.add(oldImage);
         }
     }
 
     @Override
-    public void notifyStoppedWithError()
-    {
+    public void notifyStoppedWithError() {
         // Nothing to be done, really.
     }
 }

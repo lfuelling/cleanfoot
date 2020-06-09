@@ -24,18 +24,16 @@ package bluej.debugger.gentype;
 /*
  * Interface for representing some sort of transform on type names, such as
  * stripping of package prefixes.
- * 
+ *
  * @author Davin McCall
- * 
+ *
  * @version $Id: NameTransform.java 6215 2009-03-30 13:28:25Z polle $
  */
-public interface NameTransform
-{
+public interface NameTransform {
     /**
      * Translate the given (fully qualified) type name.
-     * 
-     * @param typeName
-     *            The type name to translate
+     *
+     * @param typeName The type name to translate
      * @return The translated type name
      */
     String transform(String typeName);

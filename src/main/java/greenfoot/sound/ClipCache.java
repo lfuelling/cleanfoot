@@ -21,6 +21,10 @@
  */
 package greenfoot.sound;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -28,37 +32,34 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
 /**
  * A cache for soundclip data.
- * 
+ *
  * @author Davin McCall
  */
-public class ClipCache
-{
-    /** Data for clips that aren't currently in use */
-    private final LinkedHashMap<String,ClipData> freeClips = new LinkedHashMap<String,ClipData>();
+public class ClipCache {
+    /**
+     * Data for clips that aren't currently in use
+     */
+    private final LinkedHashMap<String, ClipData> freeClips = new LinkedHashMap<String, ClipData>();
     private int numberFreeClips = 0;
-    
+
     private static final int MAX_CACHED_CLIPS = 20;
-    
-    /** Data for clips that are in use */
-    private final Map<String,ClipData> cachedClips = new HashMap<String,ClipData>();
-    
+
+    /**
+     * Data for clips that are in use
+     */
+    private final Map<String, ClipData> cachedClips = new HashMap<String, ClipData>();
+
     public synchronized ClipData getCachedClip(URL url)
-        throws IOException, UnsupportedAudioFileException
-    {
+            throws IOException, UnsupportedAudioFileException {
         String urlStr = url.toString();
         ClipData data = cachedClips.get(urlStr);
         if (data == null) {
             // Maybe we have a free clip
             data = freeClips.remove(urlStr);
             if (data != null) {
-                numberFreeClips --;
+                numberFreeClips--;
                 cachedClips.put(urlStr, data);
             }
         }
@@ -67,11 +68,11 @@ public class ClipCache
             AudioInputStream ais = AudioSystem.getAudioInputStream(url);
             AudioFormat af = ais.getFormat();
             long frameLength = ais.getFrameLength();
-            
-            int total = (int)(af.getFrameSize() * frameLength);
-            byte[] allBytes = new byte[(int)(af.getFrameSize() * frameLength)];
+
+            int total = (int) (af.getFrameSize() * frameLength);
+            byte[] allBytes = new byte[(int) (af.getFrameSize() * frameLength)];
             int pos = 0;
-            
+
             try {
                 while (pos < total) {
                     int r = ais.read(allBytes, pos, total - pos);
@@ -80,22 +81,19 @@ public class ClipCache
                     }
                     pos += r;
                 }
-            }
-            finally {
+            } finally {
                 ais.close();
             }
-            
+
             data = new ClipData(urlStr, allBytes, af, (int) frameLength);
-        }
-        else {
+        } else {
             data.addUser();
         }
-        
+
         return data;
     }
-    
-    public synchronized void releaseClipData(ClipData data)
-    {
+
+    public synchronized void releaseClipData(ClipData data) {
         if (data.release()) {
             cachedClips.remove(data.getUrl());
             freeClips.put(data.getUrl(), data);

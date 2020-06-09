@@ -26,52 +26,48 @@ import java.util.List;
 
 /**
  * Mirrors the Scratch ScratchStageMorph class, which is the equivalent of World.
- * @author neil
  *
+ * @author neil
  */
-public class ScratchStageMorph extends ScriptableScratchMorph
-{
-    public ScratchStageMorph(int version, List<ScratchObject> scratchObjects)
-    {
+public class ScratchStageMorph extends ScriptableScratchMorph {
+    public ScratchStageMorph(int version, List<ScratchObject> scratchObjects) {
         super(ScratchUserObject.SCRATCH_STAGE_MORPH, version, scratchObjects);
     }
-    
+
     // Fields:
     //  zoom (int), hPan (int), vPan (int), obsoleteSavedState (?), sprites (array), volume (int), tempoBPM (int), sceneStates (?), lists(?)
-    
-    @Override public int fields()
-    {
+
+    @Override
+    public int fields() {
         return super.fields() + 9;
     }
-    
-    ScratchObjectArray getSprites()
-    {
-        return (ScratchObjectArray)scratchObjects.get(super.fields() + 4);
+
+    ScratchObjectArray getSprites() {
+        return (ScratchObjectArray) scratchObjects.get(super.fields() + 4);
     }
 
     @Override
-    protected void constructorContents(StringBuilder acc)
-    {
+    protected void constructorContents(StringBuilder acc) {
         ImageMedia image = getCostume();
         //TODO should this actually be our bounds rather than the world's image -- can we be stretched?
         acc.append("super(").append(image.getWidth()).append(", ").append(image.getHeight()).append(", 1);\n");
-        
+
         LinkedList<String> classes = new LinkedList<String>();
-        
+
         ScratchObjectArray sprites = getSprites();
         for (ScratchObject o : sprites.getValue()) {
-            ScratchSpriteMorph sprite = (ScratchSpriteMorph)o;
+            ScratchSpriteMorph sprite = (ScratchSpriteMorph) o;
             String spriteName = sprite.getObjNameJava();
             acc.append("addObject(new ").append(spriteName).append("(), ");
             acc.append(sprite.getGreenfootCentre().x.intValue());
             acc.append(", ");
             acc.append(sprite.getGreenfootCentre().y.intValue());
             acc.append(");\n");
-            
+
             // Add at beginning so that later classes will get drawn first:
-            classes.addFirst(spriteName); 
+            classes.addFirst(spriteName);
         }
-        
+
         if (!classes.isEmpty()) {
             acc.append("setPaintOrder(Bubble.class");
             for (String cls : classes) {
@@ -82,8 +78,7 @@ public class ScratchStageMorph extends ScriptableScratchMorph
     }
 
     @Override
-    protected String greenfootSuperClass()
-    {
+    protected String greenfootSuperClass() {
         return "World";
     }
 }

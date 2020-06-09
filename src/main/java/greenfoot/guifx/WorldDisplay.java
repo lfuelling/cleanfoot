@@ -22,11 +22,7 @@
 package greenfoot.guifx;
 
 import bluej.utility.javafx.FXPlatformConsumer;
-import javafx.animation.Animation;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.effect.ColorAdjust;
@@ -46,15 +42,13 @@ import threadchecker.Tag;
  * A class for handling the world part of the main GreenfootStage window.
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class WorldDisplay extends StackPane
-{
+public class WorldDisplay extends StackPane {
     private final ImageView imageView = new ImageView();
     private final AskPaneFX askPane = new AskPaneFX();
     private final Rectangle actorHighlight = new Rectangle();
     private final Animation actorHighlightAnimation;
-    
-    public WorldDisplay()
-    {
+
+    public WorldDisplay() {
         Pane highlightPane = new Pane(actorHighlight);
         highlightPane.setMouseTransparent(true);
         // Need a stack pane to be able to provide border around image and Greenfoot.ask() :
@@ -70,24 +64,23 @@ public class WorldDisplay extends StackPane
         actorHighlight.getStyleClass().add("actor-highlight");
         actorHighlight.getStrokeDashArray().setAll(6.0, 10.0);
         actorHighlightAnimation = new Timeline(
-            new KeyFrame(Duration.ZERO, 
-                new KeyValue(actorHighlight.strokeDashOffsetProperty(), 0),
-                new KeyValue(actorHighlight.strokeProperty(), Color.BLACK)),
-            new KeyFrame(Duration.seconds(2),
-                new KeyValue(actorHighlight.strokeProperty(), Color.WHITE, Interpolator.EASE_BOTH)),
-            new KeyFrame(Duration.seconds(4), 
-                new KeyValue(actorHighlight.strokeDashOffsetProperty(), 16, Interpolator.LINEAR),
-                new KeyValue(actorHighlight.strokeProperty(), Color.BLACK, Interpolator.EASE_BOTH)));
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(actorHighlight.strokeDashOffsetProperty(), 0),
+                        new KeyValue(actorHighlight.strokeProperty(), Color.BLACK)),
+                new KeyFrame(Duration.seconds(2),
+                        new KeyValue(actorHighlight.strokeProperty(), Color.WHITE, Interpolator.EASE_BOTH)),
+                new KeyFrame(Duration.seconds(4),
+                        new KeyValue(actorHighlight.strokeDashOffsetProperty(), 16, Interpolator.LINEAR),
+                        new KeyValue(actorHighlight.strokeProperty(), Color.BLACK, Interpolator.EASE_BOTH)));
         actorHighlightAnimation.setCycleCount(Animation.INDEFINITE);
     }
 
     /**
      * Sets the world image.  Turns off any greying effect.
-     * 
+     * <p>
      * Returns true if the world changed size
      */
-    public boolean setImage(Image image)
-    {
+    public boolean setImage(Image image) {
         Image oldImage = imageView.getImage();
         boolean newSize = oldImage == null || image == null ||
                 image.getWidth() != oldImage.getWidth() ||
@@ -102,8 +95,7 @@ public class WorldDisplay extends StackPane
      * Greys out the world to indicate it isn't in a valid state.
      * Turned off by next setImage call.
      */
-    public void greyOutWorld()
-    {
+    public void greyOutWorld() {
         ColorAdjust grey = new ColorAdjust(0.0, -1.0, -0.1, 0.0);
         GaussianBlur blur = new GaussianBlur();
         blur.setInput(grey);
@@ -116,8 +108,7 @@ public class WorldDisplay extends StackPane
      * same ask request without disturbing the GUI.
      */
     @OnThread(Tag.FXPlatform)
-    public void ensureAsking(String prompt, FXPlatformConsumer<String> withAnswer)
-    {
+    public void ensureAsking(String prompt, FXPlatformConsumer<String> withAnswer) {
         // Remember, all of this should be fine to call multiple times:
         imageView.setDisable(true);
         greyOutWorld();
@@ -138,16 +129,14 @@ public class WorldDisplay extends StackPane
     /**
      * Is the ask pane currently showing?
      */
-    public boolean isAsking()
-    {
+    public boolean isAsking() {
         return askPane.isVisible();
     }
 
     /**
      * Converts a point in the scene to world coordinates.
      */
-    public Point2D sceneToWorld(Point2D point2D)
-    {
+    public Point2D sceneToWorld(Point2D point2D) {
         // We use imageView, not ourselves, because there may be extra margin around the imageView
         // in this StackPane if the user has sized the window to be larger than the world size.
         return imageView.sceneToLocal(point2D);
@@ -156,8 +145,7 @@ public class WorldDisplay extends StackPane
     /**
      * Converts a point in world coordinates into screen coordinates.
      */
-    public Point2D worldToScreen(Point2D point2D)
-    {
+    public Point2D worldToScreen(Point2D point2D) {
         // We use imageView, not ourselves, because there may be extra margin around the imageView
         // in this StackPane if the user has sized the window to be larger than the world size.
         return imageView.localToScreen(point2D);
@@ -166,8 +154,7 @@ public class WorldDisplay extends StackPane
     /**
      * Checks if the given point (in world coordinates) lies inside the world or not.
      */
-    public boolean worldContains(Point2D point2D)
-    {
+    public boolean worldContains(Point2D point2D) {
         return imageView.contains(point2D);
     }
 
@@ -175,47 +162,44 @@ public class WorldDisplay extends StackPane
      * Is the world greyed out?  (It will be if there has been a call
      * to greyOutWorld(), but not yet followed by setImage)
      */
-    public boolean isGreyedOut()
-    {
+    public boolean isGreyedOut() {
         return imageView.getEffect() != null;
     }
 
     /**
      * Returns a rendered image which illustrates a snapshot of the world display.
+     *
      * @return the rendered image
      */
-    public Image getSnapshot()
-    {
+    public Image getSnapshot() {
         return imageView.snapshot(null, null);
     }
-    
+
     /**
      * Get the node containing the actual world image (sans any spacing/border).
      */
-    public Node getImageView()
-    {
+    public Node getImageView() {
         return imageView;
     }
 
     /**
      * Highlight the given actor bounds with a box overlay.
-     * @param x The centre X coordinate (in pixels, in the world)
-     * @param y The centre Y coordinate (in pixels, in the world)
-     * @param width The width of the image (in pixels)
-     * @param height The height of the image (in pixels)
+     *
+     * @param x        The centre X coordinate (in pixels, in the world)
+     * @param y        The centre Y coordinate (in pixels, in the world)
+     * @param width    The width of the image (in pixels)
+     * @param height   The height of the image (in pixels)
      * @param rotation The rotation of the actor (in degrees)
      */
-    public void setActorHighlight(int x, int y, int width, int height, int rotation)
-    {
+    public void setActorHighlight(int x, int y, int width, int height, int rotation) {
         // Sanity check in case of weird dimensions or being off-screen:
         if (x < -width || x > imageView.getImage().getWidth() + width
-            || y < -height || y > imageView.getImage().getHeight() + height
-            || width <= 0 || width > imageView.getImage().getWidth()
-            || height <=0 || height > imageView.getImage().getHeight())
-        {
+                || y < -height || y > imageView.getImage().getHeight() + height
+                || width <= 0 || width > imageView.getImage().getWidth()
+                || height <= 0 || height > imageView.getImage().getHeight()) {
             return;
-        }            
-        
+        }
+
         actorHighlight.setX(x - width / 2.0);
         actorHighlight.setY(y - height / 2.0);
         actorHighlight.setWidth(width);
@@ -228,8 +212,7 @@ public class WorldDisplay extends StackPane
     /**
      * Hide the highlight set by setActorHighlight
      */
-    public void clearActorHighlight()
-    {
+    public void clearActorHighlight() {
         actorHighlightAnimation.stop();
         actorHighlight.setVisible(false);
     }

@@ -29,12 +29,10 @@ import threadchecker.OnThread;
 import threadchecker.Tag;
 
 
-public interface DebuggableFrame
-{
+public interface DebuggableFrame {
     @OnThread(Tag.FXPlatform)
-    default HighlightedBreakpoint showDebugBefore(DebugInfo debug)
-    {
-        return ((JavaCanvas)getParentCanvas()).showDebugBefore((Frame)this, debug);
+    default HighlightedBreakpoint showDebugBefore(DebugInfo debug) {
+        return ((JavaCanvas) getParentCanvas()).showDebugBefore((Frame) this, debug);
     }
 
     FrameCanvas getParentCanvas();

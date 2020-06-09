@@ -27,30 +27,30 @@ package bluej.stride.framedjava.frames;
 
 
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
-import bluej.stride.generic.FrameContentItem;
-import bluej.utility.javafx.JavaFXUtil;
-import javafx.application.Platform;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
 import bluej.stride.framedjava.elements.AssignElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
+import bluej.stride.generic.FrameContentItem;
 import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
 import bluej.stride.slots.Focus;
 import bluej.stride.slots.HeaderItem;
 import bluej.stride.slots.SlotLabel;
+import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.SharedTransition;
+import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A set statement for assignment, e.g. "set x = 1"
+ *
  * @author Fraser McKay
  */
 public class AssignFrame extends SingleLineFrame
-  implements CodeFrame<AssignElement>, DebuggableFrame
-{
+        implements CodeFrame<AssignElement>, DebuggableFrame {
 
     public static final String ASSIGN_SYMBOL = "\u21D0";
     private final ExpressionSlot<FilledExpressionSlotFragment> slotLHS;
@@ -60,10 +60,10 @@ public class AssignFrame extends SingleLineFrame
 
     /**
      * Default constructor.
-     * @param editor 
+     *
+     * @param editor
      */
-    private AssignFrame(InteractionManager editor)
-    {
+    private AssignFrame(InteractionManager editor) {
         super(editor, null, "set-");
         //Parameters
         slotRHS = new FilledExpressionSlot(editor, this, this, getHeaderRow(), "", FilledExpressionSlot.SRC_HINTS);
@@ -72,25 +72,22 @@ public class AssignFrame extends SingleLineFrame
         slotLHS.setSimplePromptText("variable");
         assignLabel = new SlotLabel(ASSIGN_SYMBOL);
         setHeaderRow(slotLHS, assignLabel, slotRHS, previewSemi);
-        
+
         slotLHS.addClosingChar('=');
         slotLHS.addClosingChar(' ');
     }
-    
+
     // For replacement of a method call frame:
-    AssignFrame(InteractionManager editor, String lhs, String rhs)
-    {
+    AssignFrame(InteractionManager editor, String lhs, String rhs) {
         this(editor);
         slotLHS.setText(lhs);
         slotRHS.setText(rhs);
-        if (Platform.isFxApplicationThread())
-        {
+        if (Platform.isFxApplicationThread()) {
             JavaFXUtil.runPlatformLater(() -> slotRHS.requestFocus(Focus.LEFT));
         }
     }
-    
-    public AssignFrame(InteractionManager editor, FilledExpressionSlotFragment lhs, FilledExpressionSlotFragment rhs, boolean enabled)
-    {
+
+    public AssignFrame(InteractionManager editor, FilledExpressionSlotFragment lhs, FilledExpressionSlotFragment rhs, boolean enabled) {
         this(editor);
         slotLHS.setText(lhs);
         slotRHS.setText(rhs);
@@ -98,64 +95,52 @@ public class AssignFrame extends SingleLineFrame
     }
 
     @Override
-    public void regenerateCode()
-    {
-        element = new AssignElement(this, slotLHS.getSlotElement(), slotRHS.getSlotElement(), 
+    public void regenerateCode() {
+        element = new AssignElement(this, slotLHS.getSlotElement(), slotRHS.getSlotElement(),
                 frameEnabledProperty.get());
     }
-    
+
     @Override
-    public AssignElement getCode()
-    {
+    public AssignElement getCode() {
         return element;
     }
-    
-    public static FrameFactory<AssignFrame> getFactory()
-    {
+
+    public static FrameFactory<AssignFrame> getFactory() {
         return new FrameFactory<AssignFrame>() {
             @Override
-            public AssignFrame createBlock(InteractionManager editor)
-            {
+            public AssignFrame createBlock(InteractionManager editor) {
                 return new AssignFrame(editor);
             }
-                        
-            @Override 
-            public Class<AssignFrame> getBlockClass()
-            { 
+
+            @Override
+            public Class<AssignFrame> getBlockClass() {
                 return AssignFrame.class;
             }
         };
     }
-    
-    public ExpressionSlot<? extends ExpressionSlotFragment> getLHS()
-    {
+
+    public ExpressionSlot<? extends ExpressionSlotFragment> getLHS() {
         return slotLHS;
     }
-    
-    public ExpressionSlot<? extends ExpressionSlotFragment> getRHS()
-    {
+
+    public ExpressionSlot<? extends ExpressionSlotFragment> getRHS() {
         return slotRHS;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public boolean backspaceAtStart(FrameContentItem row, HeaderItem src)
-    {
-        if (src == slotRHS)
-        {
+    public boolean backspaceAtStart(FrameContentItem row, HeaderItem src) {
+        if (src == slotRHS) {
             collapseIntoMethodCall();
             return true;
-        }
-        else
+        } else
             return super.backspaceAtStart(row, src);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public boolean deleteAtEnd(FrameContentItem row, HeaderItem src)
-    {
-        if (src == slotLHS)
-        {
+    public boolean deleteAtEnd(FrameContentItem row, HeaderItem src) {
+        if (src == slotLHS) {
             collapseIntoMethodCall();
             return true;
         }
@@ -163,14 +148,12 @@ public class AssignFrame extends SingleLineFrame
     }
 
     @OnThread(Tag.FXPlatform)
-    private void collapseIntoMethodCall()
-    {
-        getParentCanvas().replaceBlock(this, new CallFrame(getEditor(), slotLHS.getText(), slotRHS.getText()));        
+    private void collapseIntoMethodCall() {
+        getParentCanvas().replaceBlock(this, new CallFrame(getEditor(), slotLHS.getText(), slotRHS.getText()));
     }
 
     @Override
-    public @OnThread(Tag.FXPlatform) void setView(View oldView, View newView, SharedTransition animation)
-    {
+    public @OnThread(Tag.FXPlatform) void setView(View oldView, View newView, SharedTransition animation) {
         super.setView(oldView, newView, animation);
         assignLabel.setText(newView == View.JAVA_PREVIEW ? "=" : ASSIGN_SYMBOL);
     }

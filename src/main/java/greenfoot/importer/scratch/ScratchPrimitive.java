@@ -23,27 +23,23 @@ package greenfoot.importer.scratch;
 
 /**
  * A primitive value (e.g. string, byte array, colour)
- * 
- * Things like int are stored as Integer 
- * 
+ * <p>
+ * Things like int are stored as Integer
+ *
  * @author neil
  */
-class ScratchPrimitive extends ScratchObject
-{
+class ScratchPrimitive extends ScratchObject {
     private final Object value;
 
-    public ScratchPrimitive(Object value)
-    {
+    public ScratchPrimitive(Object value) {
         this.value = value;
     }
-    
-    public Object getValue()
-    {
+
+    public Object getValue() {
         return value;
     }
-    
-    public String toString()
-    {
+
+    public String toString() {
         return value == null ? "null" : value.toString();
     }
 }

@@ -30,46 +30,44 @@ import java.util.Properties;
  * A Scratch object.  This can be a user-object (which includes sprites, stages, images, etc)
  * or it can be a primitive (byte array, colour, etc); this is taken care of by various
  * sub-classes.
+ *
  * @author neil
  */
-public class ScratchObject
-{
+public class ScratchObject {
     /**
      * Resolves all ScratchObjectReferences inside this object.
-     * 
+     * <p>
      * Because Scratch objects stored in the file may have circular references,
      * they are stored in a long table, and any pointers to objects in the table
      * are stored as ScratchObjectReference.  Once everything is loaded,
      * we invoke this method everywhere, passing the object table,
      * so that the references can get resolved.
-     * 
+     *
      * @param objects
      * @return The resolved object.  Returns "this" by default,
-     *   but ScratchObjectReferences will return a different object.
+     * but ScratchObjectReferences will return a different object.
      */
-    public ScratchObject resolve(ArrayList<ScratchObject> objects)
-    {
+    public ScratchObject resolve(ArrayList<ScratchObject> objects) {
         return this;
     }
-    
+
     /**
      * Gets the value for this object.  You will mainly want to call this
      * and cast the result when you have an expectation of the inner class.
      * For example, you may expect a colour, so you call getValue() and cast
      * to java.awt.Color.
+     *
      * @return The value represented by this object; by default returns "this",
-     *   but ScratchPrimitive will return the primitive value inside.
+     * but ScratchPrimitive will return the primitive value inside.
      */
-    public Object getValue()
-    {
+    public Object getValue() {
         return this;
     }
 
     /**
      * Saves the item (e.g. image, sound, class) in the given project
      */
-    public File saveInto(File destDir, Properties props, String prefix) throws IOException
-    {
+    public File saveInto(File destDir, Properties props, String prefix) throws IOException {
         return null;
     }
 }

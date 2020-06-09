@@ -21,7 +21,6 @@
  */
 package bluej.utility.javafx;
 
-import javafx.application.Platform;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -29,7 +28,6 @@ import threadchecker.Tag;
  * Equivalent to Runnable, but clearer (including to plugin) that it runs on FX thread
  */
 @FunctionalInterface
-public interface FXRunnable extends FXPlatformRunnable
-{
+public interface FXRunnable extends FXPlatformRunnable {
     @OnThread(Tag.FX) void run();
 }

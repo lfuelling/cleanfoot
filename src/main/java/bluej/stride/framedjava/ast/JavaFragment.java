@@ -21,8 +21,6 @@
  */
 package bluej.stride.framedjava.ast;
 
-import java.util.stream.Stream;
-
 import bluej.stride.framedjava.errors.CodeError;
 import bluej.stride.framedjava.errors.ErrorShower;
 import bluej.stride.framedjava.errors.JavaCompileError;
@@ -31,29 +29,34 @@ import bluej.stride.framedjava.slots.ExpressionSlot;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.stream.Stream;
+
 /**
  * A JavaFragment is a small piece of content in a Java class.  It never spans more than one line,
  * and thus never includes a newline character.
  */
-public abstract class JavaFragment
-{
+public abstract class JavaFragment {
     // Positions in .java file on disk:
     private int lineNumber;
     private int columnNumber;
     private int len;
 
-    public enum Destination
-    {
-        /** Source will be as-is, with no substitutions */
+    public enum Destination {
+        /**
+         * Source will be as-is, with no substitutions
+         */
         JAVA_FILE_TO_COMPILE,
-        /** Source may have substitutions to make it valid */
+        /**
+         * Source may have substitutions to make it valid
+         */
         SOURCE_DOC_TO_ANALYSE,
-        /** Source will be as-is, and no positions recorded */
-        TEMPORARY; 
-        
+        /**
+         * Source will be as-is, and no positions recorded
+         */
+        TEMPORARY;
+
         // Should we substitute invalid code (e.g. empty variable name in declaration) for valid code?
-        public boolean substitute()
-        {
+        public boolean substitute() {
             // Previously we only subsituted when doing code completion and not when compiling properly,
             // because substitution can turn invalid code into valid code.
             // Now we now allow code substitution in all cases, but we monitor code for early errors,
@@ -70,8 +73,7 @@ public abstract class JavaFragment
     public abstract ErrorShower getErrorShower();
 
     @OnThread(Tag.FX)
-    public final void recordDiskPosition(int lineNumber, int columnNumber, int len)
-    {
+    public final void recordDiskPosition(int lineNumber, int columnNumber, int len) {
         this.lineNumber = lineNumber;
         this.columnNumber = columnNumber;
         this.len = len;
@@ -82,13 +84,12 @@ public abstract class JavaFragment
      * have to map this back to a location in Stride code.  The way we do this is that we go through
      * the Java fragments (produced from the Stride code) in order, and ask them "Is this error
      * position within your bounds?"  The fragment then returns one of these enum values, documented below.
-     * 
+     * <p>
      * Note that two adjacent fragments can both say that they overlap the error location, because
      * we include the left and right edges of the fragment, so an error exactly on the boundary of
      * two fragments will cause them both to say overlap.
      */
-    enum ErrorRelation
-    {
+    enum ErrorRelation {
         /**
          * The error location lies before this fragment.
          */
@@ -112,40 +113,37 @@ public abstract class JavaFragment
          */
         CANNOT_SHOW
     }
-    
-    public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn)
-    {
+
+    public ErrorRelation checkCompileError(int startLine, int startColumn, int endLine, int endColumn) {
         if (startLine > lineNumber)
             return ErrorRelation.AFTER_FRAGMENT;
         else if (endLine < lineNumber)
             return ErrorRelation.BEFORE_FRAGMENT;
-        
+
         // Assuming startLine < endLine, now we know that the startLine--endLine range includes lineNumber
         // But we could still be outside the range, if we are before the start column on the start line,
         // or after the end column on the end line, so we need to check those cases.
-        if (startLine == lineNumber)
-        {
+        if (startLine == lineNumber) {
             if (startColumn > columnNumber + len)
                 return ErrorRelation.AFTER_FRAGMENT;
-            
+
             // We are after the start; but are we before the end?
-            
+
             if (endLine > lineNumber)
                 return ErrorRelation.OVERLAPS_FRAGMENT;
-            // Now we know endLine == lineNumber:
+                // Now we know endLine == lineNumber:
             else if (endColumn < columnNumber)
                 return ErrorRelation.BEFORE_FRAGMENT;
-            
+
             // Otherwise we must be before the end
         }
         // Now we know that startLine < lineNumber
-        else if (endLine == lineNumber)
-        {
+        else if (endLine == lineNumber) {
             if (endColumn < columnNumber + len)
                 return ErrorRelation.BEFORE_FRAGMENT;
         }
         // Otherwise, startLine < lineNumber and endLine > lineNumber
-                    
+
         return ErrorRelation.OVERLAPS_FRAGMENT;
     }
 
@@ -153,25 +151,21 @@ public abstract class JavaFragment
      * Shows a compile error for this Java fragment, either on the fragment
      * itself or on its redirect (see getCompileErrorRedirect()).
      *
-     * @param startLine The .java file error position.  Will be mapped back to position in Java editor.
+     * @param startLine   The .java file error position.  Will be mapped back to position in Java editor.
      * @param startColumn Ditto
-     * @param endLine Ditto
-     * @param endColumn Ditto
-     * @param message The error message
-     * @param identifier The error identifier (for data recording purposes).
+     * @param endLine     Ditto
+     * @param endColumn   Ditto
+     * @param message     The error message
+     * @param identifier  The error identifier (for data recording purposes).
      */
     @OnThread(Tag.FX)
-    public final void showCompileError(int startLine, int startColumn, int endLine, int endColumn, String message, int identifier)
-    {
+    public final void showCompileError(int startLine, int startColumn, int endLine, int endColumn, String message, int identifier) {
         // This makes sure we can't end up in a loop; we only ever do one redirect:
         JavaFragment redirect = getCompileErrorRedirect();
-        if (redirect != null)
-        {
+        if (redirect != null) {
             // If we redirect, we span the whole fragment:
             new JavaCompileError(redirect, 0, redirect.len, message, identifier);
-        }
-        else
-        {
+        } else {
             int startPos = getErrorStartPos(startLine, startColumn);
             int endPos = getErrorEndPos(endLine, endColumn);
 
@@ -191,8 +185,7 @@ public abstract class JavaFragment
     @OnThread(Tag.FX)
     protected abstract JavaFragment getCompileErrorRedirect();
 
-    public int getErrorEndPos(int endLine, int endColumn)
-    {
+    public int getErrorEndPos(int endLine, int endColumn) {
         int endPos;
         if (endLine > lineNumber)
             endPos = len;
@@ -203,8 +196,7 @@ public abstract class JavaFragment
         return endPos;
     }
 
-    public int getErrorStartPos(int startLine, int startColumn)
-    {
+    public int getErrorStartPos(int startLine, int startColumn) {
         int startPos;
         if (startLine < lineNumber)
             startPos = 0;
@@ -217,9 +209,9 @@ public abstract class JavaFragment
 
     /**
      * Finds any pre-compilation errors in this element, i.e. syntax errors.
-     * 
+     * <p>
      * If this element returns no errors, then the code can be generated into valid Java.
-     * 
+     * <p>
      * (TODO in the future, this should strengthen to: returning no errors means code won't give syntax error)
      */
     @OnThread(Tag.FXPlatform)
@@ -228,28 +220,28 @@ public abstract class JavaFragment
     @OnThread(Tag.FXPlatform)
     public abstract void addError(CodeError codeError);
 
-    public class PosInSourceDoc
-    {
+    public class PosInSourceDoc {
         public final int offset;
 
-        public PosInSourceDoc(int offset)
-        {
+        public PosInSourceDoc(int offset) {
             this.offset = offset;
         }
+
         /*public PosInSourceDoc()
         {
             this.offset = 0;
         }*/
-        public JavaFragment getFragment() { return JavaFragment.this; }
+        public JavaFragment getFragment() {
+            return JavaFragment.this;
+        }
     }
 
 
-    public PosInSourceDoc getPosInSourceDoc(int offset)
-    {
+    public PosInSourceDoc getPosInSourceDoc(int offset) {
         return new PosInSourceDoc(offset);
     }
-    public PosInSourceDoc getPosInSourceDoc()
-    {
+
+    public PosInSourceDoc getPosInSourceDoc() {
         return getPosInSourceDoc(0);
     }
 }

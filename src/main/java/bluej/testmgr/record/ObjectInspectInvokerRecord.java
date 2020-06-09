@@ -24,84 +24,74 @@ package bluej.testmgr.record;
 import bluej.pkgmgr.PkgMgrFrame;
 
 /**
- * Records a single user interaction with the 
+ * Records a single user interaction with the
  * object inspection mechanisms of BlueJ.
- * 
+ * <p>
  * This record is for objects accessed through inspectors
  * (not currently working).
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class ObjectInspectInvokerRecord extends InvokerRecord
-{
+public class ObjectInspectInvokerRecord extends InvokerRecord {
     private final String name;
     private InvokerRecord parentIr;
 
     /**
      * Object inspection from an initial result.
-     * 
+     *
      * @param type
      * @param name
-     */    
-    public ObjectInspectInvokerRecord(String name)
-    {
+     */
+    public ObjectInspectInvokerRecord(String name) {
         this.name = name;
     }
 
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
-    }    
-    
+    }
+
     /**
      * Object inspection from another inspector.
-     * 
+     *
      * @param type
      * @param name
      * @param ir
      */
-    public ObjectInspectInvokerRecord(String name, InvokerRecord ir)
-    {
+    public ObjectInspectInvokerRecord(String name, InvokerRecord ir) {
         this.name = name;
         this.parentIr = ir;
     }
 
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
-        return null;
-    }
-    
-    @Override
-    public String toFixtureSetup(String secondIndent)
-    {
+    public String toFixtureDeclaration(String firstIndent) {
         return null;
     }
 
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toFixtureSetup(String secondIndent) {
         return null;
     }
 
     @Override
-    public String toExpression()
-    {
-        if(parentIr != null) {
-            return parentIr.toExpression() + "." + name; 
-        }
-        else {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
+        return null;
+    }
+
+    @Override
+    public String toExpression() {
+        if (parentIr != null) {
+            return parentIr.toExpression() + "." + name;
+        } else {
             return name;
         }
     }
 
     @Override
-    public void incUsageCount()
-    {
-        if(parentIr != null) {
-            parentIr.incUsageCount();     
+    public void incUsageCount() {
+        if (parentIr != null) {
+            parentIr.incUsageCount();
         }
     }
-    
+
 }

@@ -21,6 +21,11 @@
  */
 package bluej.compiler;
 
+import bluej.Config;
+import bluej.compiler.Diagnostic.DiagnosticOrigin;
+
+import javax.tools.Diagnostic;
+import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -28,82 +33,60 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
-
-import bluej.Config;
-import bluej.compiler.Diagnostic.DiagnosticOrigin;
-
 /**
  * A compiler implementation using the Compiler API introduced in Java 6.
- * 
+ *
  * @author Marion Zalk
  */
-public class CompilerAPICompiler extends Compiler
-{
+public class CompilerAPICompiler extends Compiler {
     private static final AtomicInteger nextDiagnosticIdentifier = new AtomicInteger(1);
 
-    public CompilerAPICompiler()
-    {
+    public CompilerAPICompiler() {
         setDebug(true);
         setDeprecation(true);
     }
-    
+
     /**
      * Compile some source files by using the JavaCompiler API. Allows for the addition of user
      * options
-     * 
-     * @param sources
-     *            The files to compile
-     * @param observer
-     *            The compilation observer
-     * @param internal
-     *            True if compiling BlueJ-generated code (shell files); false if
-     *            compiling user code
-     * 
-     * @return  true if successful
+     *
+     * @param sources  The files to compile
+     * @param observer The compilation observer
+     * @param internal True if compiling BlueJ-generated code (shell files); false if
+     *                 compiling user code
+     * @return true if successful
      */
     @Override
     public boolean compile(final File[] sources, final CompileObserver observer,
-            final boolean internal, List<String> userOptions, Charset fileCharset, CompileType type)
-    {
+                           final boolean internal, List<String> userOptions, Charset fileCharset, CompileType type) {
         boolean result = true;
         JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
         List<String> optionsList = new ArrayList<String>();
-        
+
         if (jc == null) {
             // We'd expect that this should never happen, but it's been reported once.
             observer.compilerMessage(new bluej.compiler.Diagnostic(bluej.compiler.Diagnostic.ERROR,
                     "The compiler does not appear to be available."), type);
             return false;
         }
-        
+
         DiagnosticListener<JavaFileObject> diagListener = new DiagnosticListener<JavaFileObject>() {
             @Override
-            public void report(Diagnostic<? extends JavaFileObject> diag)
-            {
+            public void report(Diagnostic<? extends JavaFileObject> diag) {
                 String src = null;
-                if (diag.getSource() != null)
-                {
+                if (diag.getSource() != null) {
                     // With JDK 6, diag.getSource().getName()  apparently just returns the base
                     // name without a path. To get the path we need to ask for the URI.
                     //     However:
                     // With JDK 7, the diag.getSource().toURI() returns an unusable URI if the
                     // path is a UNC path (\\server\sharename\projdir\somefile.java).
-                    
+
                     if (Config.isJava17()) {
                         src = diag.getSource().getName();
-                    }
-                    else {
+                    } else {
                         // See bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6419926
                         // JDK6 returns URIs without a scheme in some cases, so always resolve against a
                         // known "file:/" URI:
@@ -111,11 +94,11 @@ public class CompilerAPICompiler extends Compiler
                         src = new File(srcUri).getPath();
                     }
                 }
-                
+
                 int diagType;
                 bluej.compiler.Diagnostic bjDiagnostic;
                 String message = diag.getMessage(null);
-                
+
                 if (diag.getKind() == Diagnostic.Kind.ERROR) {
                     diagType = bluej.compiler.Diagnostic.ERROR;
                     message = processMessage(src, (int) diag.getLineNumber(), message);
@@ -133,15 +116,14 @@ public class CompilerAPICompiler extends Compiler
                     // then gives a second error with actual line number and more helpful message
                     // "bad operand types for binary operator '+'".  So I think we can just ignore
                     // the -1 error instead of trying to display it:
-                    
+
                     if (diag.getLineNumber() == -1)
                         bjDiagnostic = null;
                     else
                         bjDiagnostic = new bluej.compiler.Diagnostic(diagType,
-                            message, src, diag.getLineNumber(), beginCol,
-                            diag.getLineNumber(), endCol, DiagnosticOrigin.JAVAC, getNewErrorIdentifer());
-                }
-                else if (diag.getKind() == Diagnostic.Kind.WARNING) {
+                                message, src, diag.getLineNumber(), beginCol,
+                                diag.getLineNumber(), endCol, DiagnosticOrigin.JAVAC, getNewErrorIdentifer());
+                } else if (diag.getKind() == Diagnostic.Kind.WARNING) {
                     if (message.startsWith("bootstrap class path not set in conjunction with -source ")) {
                         // Java 7 produces this warning if "-source 1.6" is specified
                         return;
@@ -150,8 +132,8 @@ public class CompilerAPICompiler extends Compiler
                         // Chinese version of above
                         return;
                     }
-                    
-                    if (message.startsWith("ブートストラップ・クラスパスが-source") && message.endsWith("一緒に設定されていません")){
+
+                    if (message.startsWith("ブートストラップ・クラスパスが-source") && message.endsWith("一緒に設定されていません")) {
                         // Japanese version of above
                         return;
                     }
@@ -161,8 +143,7 @@ public class CompilerAPICompiler extends Compiler
                     bjDiagnostic = new bluej.compiler.Diagnostic(diagType,
                             message, src, diag.getLineNumber(), beginCol,
                             diag.getLineNumber(), endCol, DiagnosticOrigin.JAVAC, getNewErrorIdentifer());
-                }
-                else {
+                } else {
                     diagType = bluej.compiler.Diagnostic.NOTE;
                     bjDiagnostic = new bluej.compiler.Diagnostic(diagType, message);
                     // Two variants of the warning message:
@@ -170,70 +151,64 @@ public class CompilerAPICompiler extends Compiler
                     // - for multiple, "Some input files use unchecked or unsafe operations"
                     if (internal &&
                             (message.endsWith(" uses unchecked or unsafe operations.") ||
-                            message.endsWith("Some input files use unchecked or unsafe operations.") ||
-                            message.endsWith("Recompile with -Xlint:unchecked for details."))) {
+                                    message.endsWith("Some input files use unchecked or unsafe operations.") ||
+                                    message.endsWith("Recompile with -Xlint:unchecked for details."))) {
                         return;
                     }
                 }
-                
+
                 if (bjDiagnostic != null)
                     observer.compilerMessage(bjDiagnostic, type);
             }
         };
-        
-        try
-        {  
+
+        try {
             //setup the filemanager
             StandardJavaFileManager sjfm = jc.getStandardFileManager(diagListener, null, fileCharset);
             List<File> pathList = new ArrayList<File>();
             List<File> outputList = new ArrayList<File>();
             outputList.add(getDestDir());
             pathList.addAll(getClassPath());
-            
+
             // In BlueJ, the destination directory and the source path are
             // always the same
             sjfm.setLocation(StandardLocation.SOURCE_PATH, outputList);
             sjfm.setLocation(StandardLocation.CLASS_PATH, pathList);
             File tempDir = null;
-            if (type.keepClasses())
-            {
+            if (type.keepClasses()) {
                 sjfm.setLocation(StandardLocation.CLASS_OUTPUT, outputList);
-            }
-            else
-            {
+            } else {
                 // We could make a new file manager that memory-mapped the output files
                 // and discarded them... but creating a temporary dir is much more
                 // straightforward:
                 tempDir = Files.createTempDirectory("bluej").toFile();
                 sjfm.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(tempDir));
             }
-            
+
             //get the source files for compilation  
             Iterable<? extends JavaFileObject> compilationUnits1 =
-                sjfm.getJavaFileObjectsFromFiles(Arrays.asList(sources));
+                    sjfm.getJavaFileObjectsFromFiles(Arrays.asList(sources));
             //add any options
-            if(isDebug()) {
+            if (isDebug()) {
                 optionsList.add("-g");
             }
-            if(isDeprecation()) {
+            if (isDeprecation()) {
                 optionsList.add("-deprecation");
             }
-            
+
             File[] bootClassPath = getBootClassPath();
             if (bootClassPath != null && bootClassPath.length != 0) {
                 sjfm.setLocation(StandardLocation.PLATFORM_CLASS_PATH, Arrays.asList(bootClassPath));
             }
-            
+
             optionsList.addAll(userOptions);
-            
+
             //compile
             result = jc.getTask(null, sjfm, diagListener, optionsList, null, compilationUnits1).call();
             sjfm.close();
             if (tempDir != null)
                 tempDir.delete();
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace(System.out);
             return false;
         }
@@ -244,43 +219,37 @@ public class CompilerAPICompiler extends Compiler
     /**
      * Processes messages returned from the compiler. This just slightly adjusts the format of some
      * messages.
-     * 
-     * @param src  The source file path
-     * @param pos  The line number at which the error occurrs
-     * @param message  The error message
+     *
+     * @param src     The source file path
+     * @param pos     The line number at which the error occurrs
+     * @param message The error message
      */
-    protected String processMessage(String src, int pos, String message)
-    {
+    protected String processMessage(String src, int pos, String message) {
         // For JDK 6, the message is in this format: 
         //   path and filename:line number:message
         // i.e includes the path and line number; so we need to strip that off.
         String expected = src + ":" + pos + ": ";
-        if (message.startsWith(expected)) 
-        {
+        if (message.startsWith(expected)) {
             message = message.substring(expected.length());
         }
-        
+
         if (message.contains("cannot resolve symbol")
                 || message.contains("cannot find symbol")
-                || message.contains("incompatible types")) 
-        {
+                || message.contains("incompatible types")) {
             // divide the message into lines so we can retrieve necessary values
             int index1, index2;
             String line2, line3;
             index1 = message.indexOf('\n');
-            if (index1 == -1) 
-            {
+            if (index1 == -1) {
                 // We don't know how to handle this.
                 return message;
             }
-            index2 = message.indexOf('\n',index1+1);
+            index2 = message.indexOf('\n', index1 + 1);
             //i.e there are only 2 lines not 3
-            if (index2 < index1) 
-            {
+            if (index2 < index1) {
                 line2 = message.substring(index1).trim();
                 line3 = "";
-            }
-            else {
+            } else {
                 line2 = message.substring(index1, index2).trim();
                 line3 = message.substring(index2).trim();
             }
@@ -289,25 +258,22 @@ public class CompilerAPICompiler extends Compiler
             //e.g incompatible types
             //found   : int
             //required: java.lang.String
-            if (line2.startsWith("found") && line2.indexOf(':') != -1) 
-            {
-                message = message +" - found " + line2.substring(line2.indexOf(':') + 2);
+            if (line2.startsWith("found") && line2.indexOf(':') != -1) {
+                message = message + " - found " + line2.substring(line2.indexOf(':') + 2);
             }
             if (line3.startsWith("required") && line3.indexOf(':') != -1) {
-                message = message +" but expected " + line3.substring(line3.indexOf(':') + 2);
+                message = message + " but expected " + line3.substring(line3.indexOf(':') + 2);
             }
             //e.g cannot find symbol
             //symbol: class Persons
-            if (line2.startsWith("symbol") && line2.indexOf(':') != -1) 
-            {
+            if (line2.startsWith("symbol") && line2.indexOf(':') != -1) {
                 message = message + " - " + line2.substring(line2.indexOf(':') + 2);
             }
         }
         return message;
     }
 
-    public static int getNewErrorIdentifer()
-    {
+    public static int getNewErrorIdentifer() {
         return nextDiagnosticIdentifier.getAndIncrement();
     }
 }

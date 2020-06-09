@@ -24,24 +24,21 @@ package bluej.groupwork.ui;
 import bluej.groupwork.TeamStatusInfo;
 import bluej.groupwork.TeamStatusInfo.Status;
 import bluej.utility.Debug;
-
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A TableCell which shows one cell in the second column's of Status table.
  * It is wrapped in a container to allow a border with padding to be applied.
- *
+ * <p>
  * It also replaces StatusMessageCellRenderer class
  *
  * @author Amjad Altadmri
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class StatusTableCell extends TableCell<TeamStatusInfo, Object>
-{
+public class StatusTableCell extends TableCell<TeamStatusInfo, Object> {
     private final boolean isDVCS;
     private final int column;
     protected ObservableList<TeamStatusInfo> resources;
@@ -49,8 +46,7 @@ public class StatusTableCell extends TableCell<TeamStatusInfo, Object>
     /**
      *
      */
-    public StatusTableCell(boolean isDVCS, int column)
-    {
+    public StatusTableCell(boolean isDVCS, int column) {
         this.isDVCS = isDVCS;
         this.column = column;
         setText("");
@@ -58,23 +54,16 @@ public class StatusTableCell extends TableCell<TeamStatusInfo, Object>
     }
 
     @Override
-    protected void updateItem(Object v, boolean empty)
-    {
+    protected void updateItem(Object v, boolean empty) {
         super.updateItem(v, empty);
-        if (v != null)
-        {
-            if (v instanceof String)
-            {
+        if (v != null) {
+            if (v instanceof String) {
                 setText(String.valueOf(v));
-            }
-            else if (v instanceof Status)
-            {
+            } else if (v instanceof Status) {
                 Status status = (Status) v;
                 setText(getMessage(status));
                 setTextFill(status.getStatusColour());
-            }
-            else
-                {
+            } else {
                 Debug.reportError("Status Table Cell should be either String or TeamStatusInfo.Status :" + v.toString());
             }
         }
@@ -82,14 +71,12 @@ public class StatusTableCell extends TableCell<TeamStatusInfo, Object>
 
     // TODO NOT the best way but should work fine for now
     // Divide into three different Cell Factories: column1 and DVCS/nonDVCS for column 2
-    private String getMessage(Status status)
-    {
+    private String getMessage(Status status) {
         switch (column) {
             case 1:
                 if (isDVCS) {
                     return status.getDCVSStatusString(false);
-                }
-                else {
+                } else {
                     Debug.reportError("DVCS can't be false here for column = 1");
                     break;
                 }

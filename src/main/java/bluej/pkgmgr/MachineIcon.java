@@ -21,28 +21,16 @@
  */
 package bluej.pkgmgr;
 
-import javax.swing.*;
-
 import bluej.Config;
 import bluej.pkgmgr.actions.RestartVMAction;
-import bluej.utility.Debug;
 import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.javafx.ResizableCanvas;
-import javafx.animation.Animation;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
+import javafx.animation.*;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -50,20 +38,13 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcTo;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.*;
 import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 @OnThread(Tag.FXPlatform)
-public class MachineIcon extends HBox
-{
+public class MachineIcon extends HBox {
     private static final int NUM_BARS = 12;
     private static final double MIN_INTENSITY = 0.3;
 
@@ -76,12 +57,11 @@ public class MachineIcon extends HBox
     private ContextMenu contextMenu;
     private Animation animation;
 
-    public MachineIcon(PkgMgrFrame pmf, RestartVMAction resetAction)
-    {
+    public MachineIcon(PkgMgrFrame pmf, RestartVMAction resetAction) {
         JavaFXUtil.addStyleClass(this, "machine-icon-container");
         barContainer = new Pane();
         HBox.setHgrow(barContainer, Priority.ALWAYS);
-        HBox.setMargin(barContainer, new Insets(2,0,1,0));
+        HBox.setMargin(barContainer, new Insets(2, 0, 1, 0));
         JavaFXUtil.addStyleClass(barContainer, "machine-icon-bar-holder");
         bar = new Rectangle();
         JavaFXUtil.addStyleClass(bar, "machine-icon-bar");
@@ -116,30 +96,27 @@ public class MachineIcon extends HBox
         });
     }
 
-    private static Node drawResetArrow()
-    {
+    private static Node drawResetArrow() {
         Path path = new Path();
         JavaFXUtil.addStyleClass(path, "reset-vm-button-arrow");
 
         path.getElements().addAll(
-            new MoveTo(1, 1),
-            new LineTo(9, 1),
-            new MoveTo(9, 1),
-            new ArcTo(5, 5, 180.0, 9.0, 11.0, false, true),
-            new MoveTo(9, 11),
-            new LineTo(1, 11),
-            new LineTo(4, 8),
-            new MoveTo(1, 11),
-            new LineTo(4, 14)
+                new MoveTo(1, 1),
+                new LineTo(9, 1),
+                new MoveTo(9, 1),
+                new ArcTo(5, 5, 180.0, 9.0, 11.0, false, true),
+                new MoveTo(9, 11),
+                new LineTo(1, 11),
+                new LineTo(4, 8),
+                new MoveTo(1, 11),
+                new LineTo(4, 14)
         );
 
         return path;
     }
 
-    private void cancelAnimation()
-    {
-        if (animation != null)
-        {
+    private void cancelAnimation() {
+        if (animation != null) {
             animation.stop();
             animation = null;
         }
@@ -149,8 +126,7 @@ public class MachineIcon extends HBox
      * Indicate that the machine is idle.
      */
     @OnThread(Tag.FXPlatform)
-    public void setIdle()
-    {
+    public void setIdle() {
         cancelAnimation();
         running.set(false);
         indicatorPosition.set(0.0);
@@ -160,13 +136,12 @@ public class MachineIcon extends HBox
      * Indicate that the machine is running.
      */
     @OnThread(Tag.FXPlatform)
-    public void setRunning()
-    {
+    public void setRunning() {
         cancelAnimation();
         running.set(true);
         animation = new Timeline(30.0,
-            new KeyFrame(Duration.ZERO, new KeyValue(indicatorPosition, 0, Interpolator.LINEAR)),
-            new KeyFrame(Duration.millis(1000), new KeyValue(indicatorPosition, 1.0, Interpolator.LINEAR)));
+                new KeyFrame(Duration.ZERO, new KeyValue(indicatorPosition, 0, Interpolator.LINEAR)),
+                new KeyFrame(Duration.millis(1000), new KeyValue(indicatorPosition, 1.0, Interpolator.LINEAR)));
         animation.setAutoReverse(true);
         animation.setCycleCount(Animation.INDEFINITE);
         animation.playFromStart();
@@ -176,8 +151,7 @@ public class MachineIcon extends HBox
      * Indicate that the machine is stopped.
      */
     @OnThread(Tag.FXPlatform)
-    public void setStopped()
-    {
+    public void setStopped() {
         cancelAnimation();
     }
 }

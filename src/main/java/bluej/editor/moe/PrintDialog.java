@@ -21,6 +21,7 @@
  */
 package bluej.editor.moe;
 
+import bluej.Config;
 import bluej.pkgmgr.Package;
 import bluej.prefmgr.PrefMgr;
 import bluej.prefmgr.PrefMgr.PrintSize;
@@ -29,27 +30,20 @@ import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
-import bluej.Config;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A print dialog with options specific to the editor.
  */
-public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
-{
+public class PrintDialog extends Dialog<PrintDialog.PrintChoices> {
     @OnThread(Tag.Any)
-    public static class PrintChoices
-    {
+    public static class PrintChoices {
         // These three only apply for whole package:
         public final boolean printDiagram;
         public final boolean printReadme;
@@ -60,8 +54,7 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
         public final boolean printLineNumbers;
         public final boolean printHighlighting;
 
-        public PrintChoices(boolean printDiagram, boolean printReadme, boolean printSource, PrintSize printSize, boolean printLineNumbers, boolean printHighlighting)
-        {
+        public PrintChoices(boolean printDiagram, boolean printReadme, boolean printSource, PrintSize printSize, boolean printLineNumbers, boolean printHighlighting) {
             this.printDiagram = printDiagram;
             this.printReadme = printReadme;
             this.printSource = printSource;
@@ -82,8 +75,7 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
      * @param pkg The Package, if printing a whole package.
      *            Null if printing a single class.
      */
-    public PrintDialog(Window owner, Package pkg)
-    {
+    public PrintDialog(Window owner, Package pkg) {
         setTitle(Config.getString("editor.printDialog.title"));
         initOwner(owner);
         initModality(Modality.WINDOW_MODAL);
@@ -109,8 +101,7 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
         final CheckBox checkReadme;
         final CheckBox checkDiagram;
         final CheckBox checkSource;
-        if (pkg != null)
-        {
+        if (pkg != null) {
             checkSource = new CheckBox(Config.getString("pkgmgr.printDialog.printSource"));
             checkLineNumbers.disableProperty().bind(checkSource.selectedProperty().not());
             checkHighlighting.disableProperty().bind(checkSource.selectedProperty().not());
@@ -119,29 +110,24 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
 
             checkDiagram = new CheckBox(Config.getString("pkgmgr.printDialog.printDiagram"));
             checkDiagram.setSelected(PrefMgr.getFlag(PrefMgr.PACKAGE_PRINT_DIAGRAM));
-            if (pkg.isUnnamedPackage())
-            {
+            if (pkg.isUnnamedPackage()) {
                 checkReadme = new CheckBox(Config.getString("pkgmgr.printDialog.printReadme"));
                 checkReadme.setSelected(PrefMgr.getFlag(PrefMgr.PACKAGE_PRINT_README));
                 vBox.getChildren().add(0, checkReadme);
                 cannotPrint = Bindings.createBooleanBinding(
-                    () -> !checkSource.isSelected() && !checkDiagram.isSelected() && !checkReadme.isSelected(),
-                    checkSource.selectedProperty(),
-                    checkDiagram.selectedProperty(),
-                    checkReadme.selectedProperty());
-            }
-            else
-            {
+                        () -> !checkSource.isSelected() && !checkDiagram.isSelected() && !checkReadme.isSelected(),
+                        checkSource.selectedProperty(),
+                        checkDiagram.selectedProperty(),
+                        checkReadme.selectedProperty());
+            } else {
                 checkReadme = null;
                 cannotPrint = Bindings.createBooleanBinding(
-                    () -> !checkSource.isSelected() && !checkDiagram.isSelected(),
-                    checkSource.selectedProperty(), checkDiagram.selectedProperty());
+                        () -> !checkSource.isSelected() && !checkDiagram.isSelected(),
+                        checkSource.selectedProperty(), checkDiagram.selectedProperty());
             }
 
             vBox.getChildren().add(0, checkDiagram);
-        }
-        else
-        {
+        } else {
             checkReadme = null;
             checkDiagram = null;
             checkSource = null;
@@ -153,8 +139,7 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
 
         getDialogPane().setContent(vBox);
         setResultConverter(bt -> {
-            if (bt == ButtonType.OK)
-            {
+            if (bt == ButtonType.OK) {
                 if (checkDiagram != null)
                     PrefMgr.setFlag(PrefMgr.PACKAGE_PRINT_DIAGRAM, checkDiagram.isSelected());
                 if (checkReadme != null)
@@ -164,14 +149,14 @@ public class PrintDialog extends Dialog<PrintDialog.PrintChoices>
                 PrefMgr.setFlag(PrefMgr.PRINT_LINE_NUMBERS, checkLineNumbers.isSelected());
                 PrefMgr.setFlag(PrefMgr.PRINT_SCOPE_HIGHLIGHTING, checkHighlighting.isSelected());
                 PrefMgr.setPrintFontSize(comboSize.getValue());
-                
+
                 return new PrintChoices(
                         checkDiagram != null && checkDiagram.isSelected(),
                         checkReadme != null && checkReadme.isSelected(),
                         checkSource != null && checkSource.isSelected(),
-                    comboSize.getValue(),
-                    checkLineNumbers.isSelected(),
-                    checkHighlighting.isSelected());
+                        comboSize.getValue(),
+                        checkLineNumbers.isSelected(),
+                        checkHighlighting.isSelected());
             }
             return null;
         });

@@ -23,13 +23,11 @@ package greenfoot.guifx.export;
 
 import bluej.Config;
 import bluej.utility.javafx.FXCustomizedDialog;
-
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import threadchecker.OnThread;
@@ -37,24 +35,22 @@ import threadchecker.Tag;
 
 /**
  * Display a "proxy authentication required" dialog, prompting for username and password.
- * 
+ *
  * @author Davin McCall
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class ProxyAuthDialog extends FXCustomizedDialog<ProxyAuthDialog.ProxyAuthInfo>
-{
+public class ProxyAuthDialog extends FXCustomizedDialog<ProxyAuthDialog.ProxyAuthInfo> {
     private final TextField usernameField = new TextField();
     private final PasswordField passwordField = new PasswordField();
-    
+
     /**
      * Construct a new proxy authentication dialog.
      *
      * @param parent The owner {@link Window} for this dialog.
      *               Should not be null, as this is not a top Application window.
      */
-    public ProxyAuthDialog(Window parent)
-    {
+    public ProxyAuthDialog(Window parent) {
         super(parent, Config.getString("export.publish.proxyAuth"), null);
         setModal(true);
         buildUI();
@@ -67,12 +63,11 @@ public class ProxyAuthDialog extends FXCustomizedDialog<ProxyAuthDialog.ProxyAut
                 ? new ProxyAuthInfo(usernameField.getText(), passwordField.getText())
                 : null);
     }
-    
+
     /**
      * Build the user interface
      */
-    private void buildUI()
-    {
+    private void buildUI() {
         GridPane authPanel = new GridPane();
         usernameField.setPrefColumnCount(20);
         passwordField.setPrefColumnCount(20);
@@ -86,24 +81,20 @@ public class ProxyAuthDialog extends FXCustomizedDialog<ProxyAuthDialog.ProxyAut
     /**
      * Proxy authentication credentials.
      */
-    public class ProxyAuthInfo
-    {
+    public class ProxyAuthInfo {
         private final String username;
         private final String password;
 
-        private ProxyAuthInfo(String username, String password)
-        {
+        private ProxyAuthInfo(String username, String password) {
             this.username = username;
             this.password = password;
         }
 
-        public String getUsername()
-        {
+        public String getUsername() {
             return username;
         }
 
-        public String getPassword()
-        {
+        public String getPassword() {
             return password;
         }
     }

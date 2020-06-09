@@ -24,17 +24,14 @@ package bluej.stride.framedjava.elements;
 import bluej.stride.framedjava.ast.JavadocUnit;
 import nu.xom.Element;
 
-public abstract class DocumentContainerCodeElement extends ContainerCodeElement
-{
+public abstract class DocumentContainerCodeElement extends ContainerCodeElement {
     protected JavadocUnit documentation;
-    
-    protected void addJavadocElement(Element element)
-    {
+
+    protected void addJavadocElement(Element element) {
         element.appendChild(documentation.toXML());
     }
 
-    public String getDocumentation()
-    {
+    public String getDocumentation() {
         return documentation.toString();
     }
 }

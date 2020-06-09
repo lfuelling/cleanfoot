@@ -21,35 +21,31 @@
  */
 package bluej.stride.framedjava.frames;
 
+import bluej.Config;
+import bluej.debugger.DebuggerField;
+import bluej.pkgmgr.Package;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Window;
-
-import bluej.Config;
-import bluej.debugger.DebuggerField;
-import bluej.pkgmgr.Package;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class ReferenceDebugVarInfo implements DebugVarInfo
-{
+public class ReferenceDebugVarInfo implements DebugVarInfo {
     private final Package pkg;
     private final Window editorFrame;
     private final DebuggerField field;
-    
+
     @OnThread(Tag.Any)
-    public ReferenceDebugVarInfo(Package pkg, Window editorFrame, DebuggerField field)
-    {
+    public ReferenceDebugVarInfo(Package pkg, Window editorFrame, DebuggerField field) {
         this.pkg = pkg;
         this.editorFrame = editorFrame;
         this.field = field;
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public Node getDisplay(DebugVarInfo prev)
-    {
+    public Node getDisplay(DebugVarInfo prev) {
         Image img = Config.getImageAsFXImage("image.eval.object");
         ImageView view = new ImageView(img);
         view.setOnMouseClicked(e -> {
@@ -62,8 +58,7 @@ public class ReferenceDebugVarInfo implements DebugVarInfo
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public String getInternalValueString()
-    {
+    public String getInternalValueString() {
         return "" + field.getValueObject(null).getObjectReference().uniqueID();
     }
 

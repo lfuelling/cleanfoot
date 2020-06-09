@@ -21,77 +21,65 @@
  */
 package bluej.stride.operations;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.Config;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.generic.Frame;
+import bluej.stride.generic.FrameCursor;
 import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
+import java.util.Arrays;
+import java.util.List;
 
-public class DeleteFrameOperation extends FrameOperation
-{
+public class DeleteFrameOperation extends FrameOperation {
 
-    public DeleteFrameOperation(InteractionManager editor)
-    {
+    public DeleteFrameOperation(InteractionManager editor) {
         super(editor, "DELETE", Combine.ALL, new KeyCodeCombination(KeyCode.DELETE));
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.delete"), MenuItemOrder.DELETE));
     }
 
     @OnThread(Tag.FXPlatform)
     @Override
-    public void enablePreview()
-    {
+    public void enablePreview() {
         editor.getSelection().setDeletePreview(true);
     }
 
     @OnThread(Tag.FXPlatform)
     @Override
-    public void disablePreview()
-    {
+    public void disablePreview() {
         editor.getSelection().setDeletePreview(false);
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         int effort = frames.stream().mapToInt(Frame::calculateEffort).sum();
         editor.showUndoDeleteBanner(effort);
         deleteFrames(frames, editor);
     }
 
     @OnThread(Tag.FXPlatform)
-    public static void deleteFrames(List<Frame> frames, InteractionManager editor)
-    {
-        if (!frames.isEmpty())
-        {
+    public static void deleteFrames(List<Frame> frames, InteractionManager editor) {
+        if (!frames.isEmpty()) {
             FrameCursor focusAfter = frames.get(0).getCursorBefore();
             frames.forEach(frame -> frame.getParentCanvas().removeBlock(frame));
             // Clear selection first to prevent problem in frame cursor focus looking at selection for menu items:
             editor.getSelection().clear();
             focusAfter.requestFocus();
-        }
-        else
-        {
+        } else {
             editor.getSelection().clear();
         }
     }
 
     @Override
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         return true;
     }
 }

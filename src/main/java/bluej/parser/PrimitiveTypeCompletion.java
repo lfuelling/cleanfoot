@@ -21,46 +21,40 @@
  */
 package bluej.parser;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.stride.generic.InteractionManager.Kind;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class PrimitiveTypeCompletion extends AssistContent
-{
+import java.util.Arrays;
+import java.util.List;
+
+public class PrimitiveTypeCompletion extends AssistContent {
     private final String type;
     private final String description;
-    
-    private PrimitiveTypeCompletion(String type, String description)
-    {
+
+    private PrimitiveTypeCompletion(String type, String description) {
         this.type = type;
         this.description = description;
     }
 
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return type;
     }
 
     @Override
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         return null;
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return null;
     }
 
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return null;
     }
 
@@ -68,21 +62,18 @@ public class PrimitiveTypeCompletion extends AssistContent
     public CompletionKind getKind() {
         return CompletionKind.TYPE;
     }
-    
-    
+
 
     @Override
-    public Kind getTypeKind()
-    {
+    public Kind getTypeKind() {
         return Kind.PRIMITIVE;
     }
 
     @Override
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         return description;
     }
-    
+
     public static PrimitiveTypeCompletion primByte = new PrimitiveTypeCompletion("byte",
             "The primitive byte type.  If you are unsure whether you want byte or Byte, then choose byte (this type).");
     public static PrimitiveTypeCompletion primShort = new PrimitiveTypeCompletion("short",
@@ -101,15 +92,13 @@ public class PrimitiveTypeCompletion extends AssistContent
             "The primitive character type.  If you are unsure whether you want char or Character, then choose char (this type).");
     public static PrimitiveTypeCompletion primVoid = new PrimitiveTypeCompletion("void",
             "The empty type.  If you are unsure whether you want void or Void, then choose void (this type).");
-    
-    public static List<PrimitiveTypeCompletion> allPrimitiveTypes()
-    {
+
+    public static List<PrimitiveTypeCompletion> allPrimitiveTypes() {
         return Arrays.asList(primByte, primShort, primInt, primLong, primFloat, primDouble, primBoolean, primChar, primVoid);
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         // TODO Auto-generated method stub
         return null;
     }

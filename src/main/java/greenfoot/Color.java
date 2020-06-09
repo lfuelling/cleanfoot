@@ -27,8 +27,7 @@ package greenfoot;
  *
  * @author Fabio Heday
  */
-public class Color
-{
+public class Color {
 
     /**
      * The color white. In the default RGB space.
@@ -102,8 +101,7 @@ public class Color
      *
      * @param c the java.awt.Color
      */
-    Color(java.awt.Color c)
-    {
+    Color(java.awt.Color c) {
         this.color = c;
     }
 
@@ -115,8 +113,7 @@ public class Color
      * @param g the green component
      * @param b the blue component
      */
-    public Color(int r, int g, int b)
-    {
+    public Color(int r, int g, int b) {
         this.color = new java.awt.Color(r, g, b);
     }
 
@@ -129,8 +126,7 @@ public class Color
      * @param b the blue component
      * @param a the alpha component
      */
-    public Color(int r, int g, int b, int a)
-    {
+    public Color(int r, int g, int b, int a) {
         this.color = new java.awt.Color(r, g, b, a);
     }
 
@@ -145,8 +141,7 @@ public class Color
      * @return a new GreenfootColor object that is a brighter version of this
      * GreenfootColor with the same alpha value.
      */
-    public Color brighter()
-    {
+    public Color brighter() {
         return new Color(this.color.brighter());
     }
 
@@ -162,8 +157,7 @@ public class Color
      * @return a new GreenfootColor object that is a darker version of this
      * GreenfootColor with the same alpha value.
      */
-    public Color darker()
-    {
+    public Color darker() {
         return new Color(this.color.darker());
     }
 
@@ -178,8 +172,7 @@ public class Color
      * @return true if the colors are the same; false otherwise.
      */
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         return obj instanceof Color && ((Color) obj).getColorObject().equals(this.color);
     }
 
@@ -188,8 +181,7 @@ public class Color
      *
      * @return the red component.
      */
-    public int getRed()
-    {
+    public int getRed() {
         return this.color.getRed();
     }
 
@@ -198,8 +190,7 @@ public class Color
      *
      * @return the green component.
      */
-    public int getGreen()
-    {
+    public int getGreen() {
         return this.color.getGreen();
     }
 
@@ -208,8 +199,7 @@ public class Color
      *
      * @return the alpha component.
      */
-    public int getAlpha()
-    {
+    public int getAlpha() {
         return this.color.getAlpha();
     }
 
@@ -218,8 +208,7 @@ public class Color
      *
      * @return the blue component.
      */
-    public int getBlue()
-    {
+    public int getBlue() {
         return this.color.getBlue();
     }
 
@@ -227,10 +216,8 @@ public class Color
      * Computes the hash code for this <code>Color</code>.
      *
      * @return a hash code value for this object.
-     *
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         return this.color.hashCode();
     }
 
@@ -238,8 +225,7 @@ public class Color
      * Return a text representation of the color.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Color{" + "color=" + color + '}';
     }
 
@@ -248,8 +234,7 @@ public class Color
      *
      * @return the Color object.
      */
-    java.awt.Color getColorObject()
-    {
+    java.awt.Color getColorObject() {
         return this.color;
     }
 

@@ -25,7 +25,6 @@ import bluej.debugger.DebuggerClass;
 import bluej.debugger.DebuggerField;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.JavaType;
-
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
@@ -34,20 +33,18 @@ import threadchecker.Tag;
 
 /**
  * An implement of DebuggerField using the Java Debug Interface (JDI).
- * 
+ *
  * @author Davin McCall
  */
-public class JdiField extends DebuggerField
-{
+public class JdiField extends DebuggerField {
     @OnThread(Tag.Any)
     private final Field field;
     @OnThread(Tag.Any)
     private final JdiObject object;
     private final boolean hidden;
-    
+
     @OnThread(Tag.Any)
-    public JdiField(Field field, JdiObject object, boolean hidden)
-    {
+    public JdiField(Field field, JdiObject object, boolean hidden) {
         this.field = field;
         this.object = object;
         this.hidden = hidden;
@@ -55,38 +52,32 @@ public class JdiField extends DebuggerField
 
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return field.name();
     }
 
     @Override
-    public JavaType getType()
-    {
+    public JavaType getType() {
         if (object != null) {
             return JdiReflective.fromField(field, object);
-        }
-        else {
+        } else {
             return JdiReflective.fromField(field);
         }
     }
 
     @Override
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return field.modifiers();
     }
 
     @Override
     @OnThread(Tag.Any)
     @SuppressWarnings("threadchecker")
-    public String getValueString()
-    {
+    public String getValueString() {
         Value value;
         if (object != null) {
             value = object.obj.getValue(field);
-        }
-        else {
+        } else {
             value = field.declaringType().getValue(field);
         }
 
@@ -94,20 +85,18 @@ public class JdiField extends DebuggerField
     }
 
     @Override
-    public DebuggerObject getValueObject(JavaType expectedType)
-    {
+    public DebuggerObject getValueObject(JavaType expectedType) {
         Value value;
         if (object != null) {
             value = object.obj.getValue(field);
-        }
-        else {
+        } else {
             value = field.declaringType().getValue(field);
         }
-        
+
         if (value == null) {
             return JdiObject.getDebuggerObject(null);
         }
-        
+
         if (value instanceof ObjectReference) {
             ObjectReference or = (ObjectReference) value;
             if (expectedType == null) {
@@ -115,19 +104,17 @@ public class JdiField extends DebuggerField
             }
             return JdiObject.getDebuggerObject(or, expectedType);
         }
-        
+
         return null;
     }
 
     @Override
-    public DebuggerClass getDeclaringClass()
-    {
+    public DebuggerClass getDeclaringClass() {
         return new JdiClass(field.declaringType());
     }
-    
+
     @Override
-    public boolean isHidden()
-    {
+    public boolean isHidden() {
         return hidden;
     }
 }

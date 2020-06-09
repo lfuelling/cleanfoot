@@ -31,21 +31,22 @@ import threadchecker.Tag;
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public class UpdateStatus
-{
-    /** file status, if available (may be null) */
+public class UpdateStatus {
+    /**
+     * file status, if available (may be null)
+     */
     public final TeamStatusInfo infoStatus;
-    /** message status, if available (may be null) */
+    /**
+     * message status, if available (may be null)
+     */
     public final String stringStatus;
 
-    public UpdateStatus(TeamStatusInfo infoStatus)
-    {
+    public UpdateStatus(TeamStatusInfo infoStatus) {
         this.infoStatus = infoStatus;
         this.stringStatus = null;
     }
 
-    public UpdateStatus(String stringStatus)
-    {
+    public UpdateStatus(String stringStatus) {
         this.stringStatus = stringStatus;
         this.infoStatus = null;
     }

@@ -31,67 +31,68 @@ import java.util.Set;
 
 /**
  * Contains a collection of sounds that are currently open (playing or paused).
- * 
+ *
  * @author Poul Henriksen
  */
-public class SoundCollection implements SimulationListener, SoundPlaybackListener
-{
-    /** Sounds currently playing or paused by this SoundCollection. */
+public class SoundCollection implements SimulationListener, SoundPlaybackListener {
+    /**
+     * Sounds currently playing or paused by this SoundCollection.
+     */
     private final Set<Sound> playingSounds = new HashSet<Sound>();
-    
-    /** Sounds paused by the user code. */
+
+    /**
+     * Sounds paused by the user code.
+     */
     private final Set<Sound> pausedSounds = new HashSet<Sound>();
-    
-    /** Sounds closed by the user code. */
+
+    /**
+     * Sounds closed by the user code.
+     */
     private final Set<Sound> stoppedSounds = new HashSet<Sound>();
-    
+
     private volatile boolean ignoreEvents = false;
-    
+
     /**
      * Stop sounds when simulation is disabled (a new world is created).
      */
     @OnThread(Tag.Any)
-    public void simulationChangedAsync(AsyncEvent e)
-    {
+    public void simulationChangedAsync(AsyncEvent e) {
         if (e == AsyncEvent.DISABLED) {
             close();
         }
     }
 
     @Override
-    public @OnThread(Tag.Simulation) void simulationChangedSync(SyncEvent e)
-    {
+    public @OnThread(Tag.Simulation) void simulationChangedSync(SyncEvent e) {
     }
 
     /**
      * Stops all sounds and makes them release the resources.
-     * 
      */
-    private void close()
-    {    	
+    private void close() {
         synchronized (this) {
             ignoreEvents = true;
         }
-        
+
         Iterator<Sound> iter = playingSounds.iterator();
-        while (iter.hasNext() ) {
+        while (iter.hasNext()) {
             Sound sound = iter.next();
             sound.close();
         }
-        
+
         iter = pausedSounds.iterator();
-        while (iter.hasNext() ) {
+        while (iter.hasNext()) {
             Sound sound = iter.next();
             sound.close();
         }
-        
+
 
         iter = stoppedSounds.iterator();
-        while (iter.hasNext() ) {
+        while (iter.hasNext()) {
             Sound sound = iter.next();
             sound.close();
         }
-        
+
         playingSounds.clear();
         pausedSounds.clear();
         stoppedSounds.clear();
@@ -103,8 +104,7 @@ public class SoundCollection implements SimulationListener, SoundPlaybackListene
 
     // Listener callbacks
 
-    public synchronized void playbackStarted(Sound sound)
-    {
+    public synchronized void playbackStarted(Sound sound) {
         if (!ignoreEvents) {
             playingSounds.add(sound);
             pausedSounds.remove(sound);
@@ -112,8 +112,7 @@ public class SoundCollection implements SimulationListener, SoundPlaybackListene
         }
     }
 
-    public synchronized void playbackStopped(Sound sound)
-    {       
+    public synchronized void playbackStopped(Sound sound) {
         if (!ignoreEvents) {
             playingSounds.remove(sound);
             pausedSounds.remove(sound);
@@ -121,17 +120,15 @@ public class SoundCollection implements SimulationListener, SoundPlaybackListene
         }
     }
 
-    public synchronized void playbackPaused(Sound sound)
-    {
+    public synchronized void playbackPaused(Sound sound) {
         if (!ignoreEvents) {
             pausedSounds.add(sound);
             playingSounds.remove(sound);
             stoppedSounds.remove(sound);
         }
     }
-    
-    public synchronized void soundClosed(Sound sound) 
-    {
+
+    public synchronized void soundClosed(Sound sound) {
         if (!ignoreEvents) {
             pausedSounds.remove(sound);
             playingSounds.remove(sound);

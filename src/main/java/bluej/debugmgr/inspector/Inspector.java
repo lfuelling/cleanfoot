@@ -21,11 +21,16 @@
  */
 package bluej.debugmgr.inspector;
 
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import bluej.Config;
+import bluej.debugger.DebuggerField;
+import bluej.debugger.DebuggerObject;
+import bluej.pkgmgr.Package;
+import bluej.pkgmgr.PackageEditor;
+import bluej.testmgr.record.GetInvokerRecord;
+import bluej.testmgr.record.InvokerRecord;
+import bluej.testmgr.record.ObjectInspectInvokerRecord;
+import bluej.utility.DialogManager;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.EventHandler;
@@ -44,45 +49,36 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
-import bluej.Config;
-import bluej.debugger.DebuggerField;
-import bluej.debugger.DebuggerObject;
-import bluej.pkgmgr.Package;
-import bluej.pkgmgr.PackageEditor;
-import bluej.pkgmgr.PkgMgrFrame;
-import bluej.testmgr.record.GetInvokerRecord;
-import bluej.testmgr.record.InvokerRecord;
-import bluej.testmgr.record.ObjectInspectInvokerRecord;
-import bluej.utility.DialogManager;
-import bluej.utility.javafx.JavaFXUtil;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * 
  * A window that displays the fields in an object or class. This class is
  * subclassed for objects, classes and method results separately
  * (ObjectInspector, ClassInspector, ResultInspector).
- * 
+ *
  * @author Michael Kolling
  * @author Poul Henriksen
  * @author Bruce Quig
  */
 @OnThread(Tag.FXPlatform)
-public abstract class Inspector extends Stage
-{
+public abstract class Inspector extends Stage {
     // === static variables ===
 
     protected final static String showClassLabel = Config.getString("debugger.inspector.showClass");
     protected final static String inspectLabel = Config.getString("debugger.inspector.inspect");
     protected final static String getLabel = Config.getString("debugger.inspector.get");
     protected final static String close = Config.getString("close");
-    
+
     // === instance variables ===
-    
+
     protected FieldList fieldList = null;
 
     protected Button inspectButton;
@@ -90,19 +86,19 @@ public abstract class Inspector extends Stage
     protected AssertPanel assertPanel;
 
     protected DebuggerObject selectedField; // the object currently selected in
-                                            // the list
+    // the list
     protected String selectedFieldName; // the name of the field of the
-                                        // currently selected object
+    // currently selected object
     protected String selectedFieldType;
     protected InvokerRecord selectedInvokerRecord; // an InvokerRecord for the
-                                                   // selected object (if possible, else null)
+    // selected object (if possible, else null)
 
     protected final Package pkg;
     protected final InspectorManager inspectorManager;
     protected final InvokerRecord ir;
     private double initialClickX;
     private double initialClickY;
-    
+
     // Each inspector is uniquely numbered in a session, for the purposes
     // of data collection:
     private static final AtomicInteger nextUniqueId = new AtomicInteger(1);
@@ -117,40 +113,34 @@ public abstract class Inspector extends Stage
      * Convert a field to a string representation, used to display the field in the inspector value list.
      */
     @OnThread(Tag.FXPlatform)
-    public static String fieldToString(DebuggerField field)
-    {
+    public static String fieldToString(DebuggerField field) {
         int mods = field.getModifiers();
         String result = "";
         if (Modifier.isPrivate(mods)) {
             result = "private ";
-        }
-        else if (Modifier.isPublic(mods)) {
+        } else if (Modifier.isPublic(mods)) {
             result = "public ";
-        }
-        else if (Modifier.isProtected(mods)) {
+        } else if (Modifier.isProtected(mods)) {
             result = "protected ";
         }
-        
+
         if (field.isHidden()) {
             result += "(hidden) ";
         }
-        
+
         result += field.getType().toString(true);
         result += " " + field.getName();
         return result;
     }
-    
+
     /**
      * Constructor.
-     * 
-     * @param pkg
-     *            the package this inspector belongs to (or null)
-     * @param ir
-     *            the InvokerRecord for this inspector (or null)
+     *
+     * @param pkg the package this inspector belongs to (or null)
+     * @param ir  the InvokerRecord for this inspector (or null)
      */
-    protected Inspector(InspectorManager inspectorManager, Package pkg, InvokerRecord ir, StageStyle stageStyle)
-    {
-        if(inspectorManager == null) {
+    protected Inspector(InspectorManager inspectorManager, Package pkg, InvokerRecord ir, StageStyle stageStyle) {
+        if (inspectorManager == null) {
             throw new NullPointerException("An inspector must have an InspectorManager.");
         }
 
@@ -166,7 +156,10 @@ public abstract class Inspector extends Stage
         this.uniqueId = nextUniqueId.incrementAndGet();
 
         // We want to be able to veto a close
-        setOnCloseRequest(e -> { e.consume(); doClose(true); });
+        setOnCloseRequest(e -> {
+            e.consume();
+            doClose(true);
+        });
         addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.ESCAPE)
                 doClose(true);
@@ -185,21 +178,18 @@ public abstract class Inspector extends Stage
         addEventHandler(WindowEvent.ANY, e -> {
             boolean shown = e.getEventType() == WindowEvent.WINDOW_SHOWN;
             boolean hidden = e.getEventType() == WindowEvent.WINDOW_HIDDEN;
-            
-            if (hidden)
-            {
+
+            if (hidden) {
                 autoUpdate.stop();
-            }
-            else if (shown && shouldAutoUpdate())
-            {
+            } else if (shown && shouldAutoUpdate()) {
                 // Start updating:
                 autoUpdate.playFromStart();
             }
         });
-        
+
         initFieldList();
-        
-        
+
+
     }
 
     /**
@@ -211,46 +201,38 @@ public abstract class Inspector extends Stage
     /**
      * Initializes the list of fields. This creates the component that shows the
      * fields.
-     * @param valueFieldColor 
+     *
+     * @param valueFieldColor
      */
-    private void initFieldList()
-    {
+    private void initFieldList() {
         fieldList = new FieldList();
         JavaFXUtil.addChangeListenerPlatform(fieldList.selectedIndexProperty(), index -> listElementSelected(index.intValue()));
-        
+
         // add mouse listener to monitor for double clicks to inspect list
         // objects. assumption is made that valueChanged will have selected
         // object on first click
         fieldList.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY)
-            {
+            if (e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY) {
                 doInspect();
             }
         });
-        
+
         // To make it possible to close dialogs with the keyboard (ENTER), we
         // grab the key event from the fieldlist which otherwise consumes it
         // as part of the edit action (even though it's not editable)
         addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             // Enter or escape?
-            if (e.getCode() == KeyCode.ESCAPE || e.getCode() == KeyCode.ENTER)
-            {
+            if (e.getCode() == KeyCode.ESCAPE || e.getCode() == KeyCode.ENTER) {
                 doClose(true);
                 e.consume();
-            }
-            else if (e.getCode() == KeyCode.SPACE && fieldList.isFocused())
-            {
+            } else if (e.getCode() == KeyCode.SPACE && fieldList.isFocused()) {
                 doInspect();
-                e.consume();    
-            }
-            else if (e.getCode() == KeyCode.UP)
-            {
+                e.consume();
+            } else if (e.getCode() == KeyCode.UP) {
                 fieldList.requestFocus();
                 fieldList.up();
                 e.consume();
-            }
-            else if (e.getCode() == KeyCode.DOWN)
-            {
+            } else if (e.getCode() == KeyCode.DOWN) {
                 fieldList.requestFocus();
                 fieldList.down();
                 e.consume();
@@ -258,16 +240,14 @@ public abstract class Inspector extends Stage
         });
     }
 
-    protected boolean isGetEnabled()
-    {
+    protected boolean isGetEnabled() {
         return ir != null;
     }
 
     /**
      * De-iconify the window (if necessary) and bring it to the front.
      */
-    public void bringToFront()
-    {
+    public void bringToFront() {
         setIconified(false); // de-iconify
         toFront(); // window to front
     }
@@ -291,7 +271,7 @@ public abstract class Inspector extends Stage
 
     /**
      * Return the preferred number of rows that should be shown in the list
-     * 
+     *
      * @return The number of rows
      */
     abstract protected int getPreferredRows();
@@ -301,14 +281,12 @@ public abstract class Inspector extends Stage
     /**
      * Requests an update of the field values shown in this viewer to show current object
      * values.
-     * 
      */
-    public void update()
-    {
+    public void update() {
         final List<FieldInfo> listData = getListData();
 
         int prevSelection = fieldList.selectedIndexProperty().get();
-        
+
         fieldList.setData(listData);
         //fieldList.setTableHeader(null);
 
@@ -319,16 +297,12 @@ public abstract class Inspector extends Stage
 
     /**
      * Store the object currently selected in the list.
-     * 
-     * @param object
-     *            The new CurrentObj value
-     * @param name
-     *            The name of the selected field
-     * @param type
-     *            The type of the selected field
+     *
+     * @param object The new CurrentObj value
+     * @param name   The name of the selected field
+     * @param type   The type of the selected field
      */
-    protected void setCurrentObj(DebuggerObject object, String name, String type)
-    {
+    protected void setCurrentObj(DebuggerObject object, String name, String type) {
         selectedField = object;
         selectedFieldName = name;
         selectedFieldType = type;
@@ -336,14 +310,11 @@ public abstract class Inspector extends Stage
 
     /**
      * Enable or disable the Inspect and Get buttons.
-     * 
-     * @param inspect
-     *            The new ButtonsEnabled value
-     * @param get
-     *            The new ButtonsEnabled value
+     *
+     * @param inspect The new ButtonsEnabled value
+     * @param get     The new ButtonsEnabled value
      */
-    protected void setButtonsEnabled(boolean inspect, boolean get)
-    {
+    protected void setButtonsEnabled(boolean inspect, boolean get) {
         inspectButton.setDisable(!inspect);
         getButton.setDisable(!(get && isGetEnabled()));
     }
@@ -351,11 +322,10 @@ public abstract class Inspector extends Stage
     /**
      * The "Inspect" button was pressed. Inspect the selected object.
      */
-    protected void doInspect()
-    {
+    protected void doInspect() {
         if (selectedField != null) {
             boolean isPublic = !getButton.isDisable();
-            
+
             InvokerRecord newIr = new ObjectInspectInvokerRecord(selectedFieldName, ir);
             inspectorManager.getInspectorInstance(selectedField, selectedFieldName, pkg, isPublic ? newIr : null, this, null);
         }
@@ -365,8 +335,7 @@ public abstract class Inspector extends Stage
      * The "Get" button was pressed. Get the selected object on the object
      * bench.
      */
-    protected void doGet()
-    {
+    protected void doGet() {
         if (selectedField != null) {
             GetInvokerRecord getIr = new GetInvokerRecord(selectedFieldType, selectedFieldName, ir);
             DebuggerObject selField = this.selectedField;
@@ -379,13 +348,12 @@ public abstract class Inspector extends Stage
     /**
      * Close this inspector. The caller should remove it from the list of open
      * inspectors.
-     * 
-     * @param handleAssertions   Whether assertions should be attached to the
-     *                           invoker record. If true, the user may be prompted
-     *                           to fill in assertion data. 
+     *
+     * @param handleAssertions Whether assertions should be attached to the
+     *                         invoker record. If true, the user may be prompted
+     *                         to fill in assertion data.
      */
-    public void doClose(boolean handleAssertions)
-    {
+    public void doClose(boolean handleAssertions) {
         boolean closeOk = true;
 
         if (handleAssertions) {
@@ -399,25 +367,23 @@ public abstract class Inspector extends Stage
         }
     }
 
-    protected boolean handleAssertions()
-    {
+    protected boolean handleAssertions() {
         if (assertPanel != null && assertPanel.isAssertEnabled()) {
-            
-            if (! assertPanel.isAssertComplete()) {
+
+            if (!assertPanel.isAssertComplete()) {
                 int choice = DialogManager.askQuestionFX(this, "empty-assertion-text");
-                
+
                 if (choice == 0) {
                     return false;
                 }
             }
-            
+
             ir.addAssertion(assertPanel.getAssertStatement());
         }
         return true;
     }
 
-    protected Button createCloseButton()
-    {
+    protected Button createCloseButton() {
         Button button = new Button(close);
         button.setOnAction(e -> doClose(true));
         return button;
@@ -425,11 +391,10 @@ public abstract class Inspector extends Stage
 
     /**
      * Creates a panel with an inspect button and a get button
-     * 
+     *
      * @return A panel with two buttons
      */
-    protected Node createInspectAndGetButtons()
-    {
+    protected Node createInspectAndGetButtons() {
         // Create panel with "inspect" and "get" buttons
         Pane buttonPanel = new VBox();
         inspectButton = new Button(inspectLabel);
@@ -451,8 +416,7 @@ public abstract class Inspector extends Stage
     // Allow movement of the window by dragging
     // Adapted from: http://www.stupidjavatricks.com/?p=4
     // (with improvements).
-    protected void installListenersForMoveDrag(double curvedCornersMargin)
-    {
+    protected void installListenersForMoveDrag(double curvedCornersMargin) {
         resizeListener.setCurvedCorners(curvedCornersMargin);
         addEventHandler(MouseEvent.MOUSE_MOVED, resizeListener);
         addEventHandler(MouseEvent.MOUSE_PRESSED, resizeListener);
@@ -475,24 +439,21 @@ public abstract class Inspector extends Stage
 
 
     }
-    
+
     @OnThread(Tag.Any)
-    public int getUniqueId()
-    {
+    public int getUniqueId() {
         return uniqueId;
     }
 
     // Adapted from HeavyweightDialog.positionStage
-    public void centerOnOwner()
-    {
+    public void centerOnOwner() {
         // Firstly we need to force CSS and layout to happen, as the window
         // may not have been shown yet (so it has no dimensions)
         getScene().getRoot().applyCss();
         getScene().getRoot().layout();
 
         final Window owner = getOwner();
-        if (owner == null)
-        {
+        if (owner == null) {
             centerOnScreen();
             return;
         }
@@ -525,8 +486,7 @@ public abstract class Inspector extends Stage
      * Adapted from:
      * http://stackoverflow.com/questions/19455059/allow-user-to-resize-an-undecorated-stage
      */
-    static class ResizeListener implements EventHandler<MouseEvent>
-    {
+    static class ResizeListener implements EventHandler<MouseEvent> {
         private final Stage stage;
         private Cursor cursorEvent = Cursor.DEFAULT;
         private final int border = 4;
@@ -544,9 +504,9 @@ public abstract class Inspector extends Stage
             Scene scene = stage.getScene();
 
             double mouseEventX = mouseEvent.getSceneX(),
-                mouseEventY = mouseEvent.getSceneY(),
-                sceneWidth = scene.getWidth(),
-                sceneHeight = scene.getHeight();
+                    mouseEventY = mouseEvent.getSceneY(),
+                    sceneWidth = scene.getWidth(),
+                    sceneHeight = scene.getHeight();
 
             if (MouseEvent.MOUSE_MOVED.equals(mouseEventType) == true) {
                 double cornerBorder = Math.max(curvedCornersMargin, border);
@@ -570,7 +530,7 @@ public abstract class Inspector extends Stage
                     cursorEvent = Cursor.DEFAULT;
                 }
                 scene.setCursor(cursorEvent);
-            } else if(MouseEvent.MOUSE_EXITED.equals(mouseEventType) || MouseEvent.MOUSE_EXITED_TARGET.equals(mouseEventType)){
+            } else if (MouseEvent.MOUSE_EXITED.equals(mouseEventType) || MouseEvent.MOUSE_EXITED_TARGET.equals(mouseEventType)) {
                 scene.setCursor(Cursor.DEFAULT);
             } else if (MouseEvent.MOUSE_PRESSED.equals(mouseEventType) == true) {
                 startX = stage.getWidth() - mouseEventX;
@@ -578,7 +538,7 @@ public abstract class Inspector extends Stage
             } else if (MouseEvent.MOUSE_DRAGGED.equals(mouseEventType) == true) {
                 if (Cursor.DEFAULT.equals(cursorEvent) == false) {
                     if (Cursor.W_RESIZE.equals(cursorEvent) == false && Cursor.E_RESIZE.equals(cursorEvent) == false) {
-                        double minHeight = stage.getMinHeight() > (border*2) ? stage.getMinHeight() : (border*2);
+                        double minHeight = stage.getMinHeight() > (border * 2) ? stage.getMinHeight() : (border * 2);
                         if (Cursor.NW_RESIZE.equals(cursorEvent) == true || Cursor.N_RESIZE.equals(cursorEvent) == true || Cursor.NE_RESIZE.equals(cursorEvent) == true) {
                             if (stage.getHeight() > minHeight || mouseEventY < 0) {
                                 stage.setHeight(stage.getY() - mouseEvent.getScreenY() + stage.getHeight());
@@ -592,7 +552,7 @@ public abstract class Inspector extends Stage
                     }
 
                     if (Cursor.N_RESIZE.equals(cursorEvent) == false && Cursor.S_RESIZE.equals(cursorEvent) == false) {
-                        double minWidth = stage.getMinWidth() > (border*2) ? stage.getMinWidth() : (border*2);
+                        double minWidth = stage.getMinWidth() > (border * 2) ? stage.getMinWidth() : (border * 2);
                         if (Cursor.NW_RESIZE.equals(cursorEvent) == true || Cursor.W_RESIZE.equals(cursorEvent) == true || Cursor.SW_RESIZE.equals(cursorEvent) == true) {
                             if (stage.getWidth() > minWidth || mouseEventX < 0) {
                                 stage.setWidth(stage.getX() - mouseEvent.getScreenX() + stage.getWidth());
@@ -611,8 +571,7 @@ public abstract class Inspector extends Stage
             }
         }
 
-        public void setCurvedCorners(double curvedCornersMargin)
-        {
+        public void setCurvedCorners(double curvedCornersMargin) {
             this.curvedCornersMargin = curvedCornersMargin;
         }
     }

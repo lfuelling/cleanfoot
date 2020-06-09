@@ -21,42 +21,36 @@
  */
 package bluej.stride.operations;
 
-import java.util.Arrays;
-import java.util.List;
-
 import bluej.Config;
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
-public class CutFrameOperation extends FrameOperation
-{
+import java.util.Arrays;
+import java.util.List;
 
-    public CutFrameOperation(InteractionManager editor)
-    {
+public class CutFrameOperation extends FrameOperation {
+
+    public CutFrameOperation(InteractionManager editor) {
         super(editor, "CUT", Combine.ALL, new KeyCodeCombination(KeyCode.X, KeyCombination.SHORTCUT_DOWN));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    protected void execute(List<Frame> frames)
-    {
-        if (frames.size() > 0)
-        {
+    protected void execute(List<Frame> frames) {
+        if (frames.size() > 0) {
             new CopyFrameAsStrideOperation(editor).execute(frames);
             DeleteFrameOperation.deleteFrames(frames, editor);
         }
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.cut"), MenuItemOrder.CUT));
     }
 }

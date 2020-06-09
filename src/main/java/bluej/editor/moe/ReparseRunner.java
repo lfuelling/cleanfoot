@@ -21,7 +21,6 @@
  */
 package bluej.editor.moe;
 
-import bluej.Config;
 import bluej.prefmgr.PrefMgr;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.JavaFXUtil;
@@ -30,41 +29,37 @@ import threadchecker.Tag;
 
 /**
  * Process the document re-parse queue.
- * 
+ *
  * <p>This is a Runnable which runs on the Swing/AWT event queue. It performs
  * a small amount of re-parsing before re-queing itself, which allows input
  * to be processed in the meantime.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class ReparseRunner implements FXPlatformRunnable
-{
+public class ReparseRunner implements FXPlatformRunnable {
     private final MoeEditor editor;
-    
+
     private final int procTime; //the time allowed for the incremental parsing before re-queueing
-    
-    public ReparseRunner(MoeEditor editor)
-    {
+
+    public ReparseRunner(MoeEditor editor) {
         this.editor = editor;
         this.procTime = 15;
     }
-    
-    public void run()
-    {
+
+    public void run() {
         MoeSyntaxDocument document = editor.getSourceDocument();
         long begin = System.currentTimeMillis();
         if (PrefMgr.getScopeHighlightStrength().get() != 0 && document != null && document.pollReparseQueue()) {
             // Continue processing
             while (System.currentTimeMillis() - begin < this.procTime) {
-                if (! document.pollReparseQueue()) {
+                if (!document.pollReparseQueue()) {
                     break;
                 }
             }
             editor.getSourceDocument().applyPendingScopeBackgrounds();
             JavaFXUtil.runPlatformLater(this);
-        }
-        else {
+        } else {
             // tell MoeEditor we are no longer scheduled.
             editor.reparseRunnerFinished();
         }

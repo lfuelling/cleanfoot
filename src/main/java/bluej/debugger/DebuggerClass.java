@@ -26,14 +26,13 @@ import java.util.List;
 /**
  * A class for representing classes in the debugged VM.
  *
- * @author     Michael Kolling
+ * @author Michael Kolling
  */
-public abstract class DebuggerClass
-{
+public abstract class DebuggerClass {
     /**
-     *  Return the name of this class (fully qualified).
+     * Return the name of this class (fully qualified).
      *
-     *@return    The class name
+     * @return The class name
      */
     public abstract String getName();
 
@@ -41,24 +40,21 @@ public abstract class DebuggerClass
      * Get a list of static fields declared in this class.
      */
     public abstract List<DebuggerField> getStaticFields();
-    
+
     /**
      * Get the static field specified by the given index.
      */
-    public DebuggerField getStaticField(int slot)
-    {
+    public DebuggerField getStaticField(int slot) {
         return getStaticFields().get(slot);
     }
-    
+
     /**
      * Returns true if this represents a Java interface
-     * 
      */
     public abstract boolean isInterface();
 
     /**
      * Returns true if this represents an enum
-     * 
      */
     public abstract boolean isEnum();
 

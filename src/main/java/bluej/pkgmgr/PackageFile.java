@@ -21,46 +21,43 @@
  */
 package bluej.pkgmgr;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.IOException;
+import java.util.Properties;
+
 /**
  * Interface to a package file.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.Any)
-public interface PackageFile
-{
+public interface PackageFile {
     /**
      * Create this package.
-     * 
+     *
      * @return true if it was created, false if it was not created (possibly
-     *         because a package already existed here).
+     * because a package already existed here).
      * @throws IOException If the package file(s) could not be created.
-     * 
      */
     boolean create()
-        throws IOException;
+            throws IOException;
 
     /**
      * Load the properties from the file into the given properties.
-     * 
+     *
      * @throws IOException
      */
     void load(Properties p)
-        throws IOException;
+            throws IOException;
 
     /**
      * Save the given properties to the file.
-     * 
+     *
      * @return False if it couldn't save it.
      * @throws IOException
-     * 
      */
     void save(Properties p)
-        throws IOException;
+            throws IOException;
 }

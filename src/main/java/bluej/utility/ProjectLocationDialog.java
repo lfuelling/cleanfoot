@@ -28,16 +28,10 @@ import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.dialog.DialogPaneAnimateError;
 import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.OverrunStyle;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
@@ -51,8 +45,7 @@ import java.nio.file.Paths;
  * e.g. for new projects, save as or checkout.
  */
 @OnThread(Tag.FXPlatform)
-class ProjectLocationDialog
-{
+class ProjectLocationDialog {
     private final Dialog<File> dialog;
     private final TextField nameField;
     private final TextField parentField;
@@ -61,8 +54,7 @@ class ProjectLocationDialog
     private final DialogPaneAnimateError dialogPane;
     private boolean dialogHasBeenEdited = false;
 
-    public ProjectLocationDialog(Project project, Window owner, String title)
-    {
+    public ProjectLocationDialog(Project project, Window owner, String title) {
         dialog = new Dialog<>();
         dialog.initOwner(owner);
         dialog.initModality(Modality.WINDOW_MODAL);
@@ -81,10 +73,14 @@ class ProjectLocationDialog
         nameField = new TextField(project != null ? project.getProjectName() + "-copy" : "");
         nameField.setPromptText(Config.getString("newProject.prompt"));
         gridPane.add(nameField, 1, 0);
-        JavaFXUtil.addChangeListenerPlatform(nameField.textProperty(), s -> {dialogHasBeenEdited = true;});
-        parentField = new TextField(project != null ? project.getProjectDir().getParent() : 
+        JavaFXUtil.addChangeListenerPlatform(nameField.textProperty(), s -> {
+            dialogHasBeenEdited = true;
+        });
+        parentField = new TextField(project != null ? project.getProjectDir().getParent() :
                 PrefMgr.getProjectDirectory().getAbsolutePath());
-        JavaFXUtil.addChangeListenerPlatform(parentField.textProperty(), s -> {dialogHasBeenEdited = true;});
+        JavaFXUtil.addChangeListenerPlatform(parentField.textProperty(), s -> {
+            dialogHasBeenEdited = true;
+        });
         gridPane.add(parentField, 1, 1);
         Button chooseParent = new Button(Config.getString("newProject.parent.choose"));
         chooseParent.setOnAction(e -> {
@@ -101,15 +97,14 @@ class ProjectLocationDialog
         compoundPath.setMinWidth(250.0);
         compoundPath.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
         JavaFXUtil.addStyleClass(compoundPath, "compound-path");
-        compoundPath.textProperty().bind(new StringBinding()
-        {
+        compoundPath.textProperty().bind(new StringBinding() {
             {
                 super.bind(nameField.textProperty());
                 super.bind(parentField.textProperty());
             }
+
             @Override
-            protected String computeValue()
-            {
+            protected String computeValue() {
                 return new File(parentField.getText(), nameField.getText()).getAbsolutePath();
             }
         });
@@ -120,14 +115,12 @@ class ProjectLocationDialog
         JavaFXUtil.addStyleClass(content, "new-project-dialog");
         ColumnConstraints column2 = new ColumnConstraints();
         column2.setHgrow(Priority.ALWAYS);
-        gridPane.getColumnConstraints().addAll(new ColumnConstraints(), column2, new ColumnConstraints(), new ColumnConstraints() );
+        gridPane.getColumnConstraints().addAll(new ColumnConstraints(), column2, new ColumnConstraints(), new ColumnConstraints());
         dialogPane.setContent(content);
         dialog.setResultConverter(button -> {
-            if (button == ButtonType.OK)
-            {
+            if (button == ButtonType.OK) {
                 return new File(compoundPath.getText());
-            }
-            else
+            } else
                 return null;
         });
         dialog.setResizable(true);
@@ -138,15 +131,13 @@ class ProjectLocationDialog
         updateOKButton(false);
     }
 
-    private Label makeLabel(String string)
-    {
+    private Label makeLabel(String string) {
         Label label = new Label(string);
         label.setMinWidth(Region.USE_PREF_SIZE);
         return label;
     }
 
-    public File showAndWait()
-    {
+    public File showAndWait() {
         return dialog.showAndWait().orElse(null);
     }
 
@@ -157,49 +148,34 @@ class ProjectLocationDialog
      *              even if it has been blank since the dialog was shown (we do
      *              this when the user mouses over OK).
      */
-    private void updateOKButton(boolean force)
-    {
+    private void updateOKButton(boolean force) {
         boolean enable = false;
         // First check that the parent doesn't exist:
-        try
-        {
-            if (!Paths.get(parentField.getText()).toFile().exists())
-            {
+        try {
+            if (!Paths.get(parentField.getText()).toFile().exists()) {
                 showError(Config.getString("newProject.error.parentNotExist"), false);
-            }
-            else if (dialogHasBeenEdited || force)
-            {
+            } else if (dialogHasBeenEdited || force) {
                 // Name cannot be empty (we check separately for this, because
                 // empty name would just check parent directory, but that's not a valid choice)
-                if (nameField.getText().isEmpty())
-                {
+                if (nameField.getText().isEmpty()) {
                     showError(Config.getString("newProject.error.nameEmpty"), true);
-                }
-                else
-                {
+                } else {
                     // Check if the compound path is valid:
                     File compound = Paths.get(compoundPath.getText()).toFile();
 
                     // Check if it exists:
-                    if (compound.exists())
-                    {
+                    if (compound.exists()) {
                         showError(Config.getString("newProject.error.compoundExist"), false);
-                    }
-                    else
-                    {
+                    } else {
                         hideError();
                         enable = true;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 hideError();
                 enable = true;
             }
-        }
-        catch (InvalidPathException e)
-        {
+        } catch (InvalidPathException e) {
             showError(Config.getString("newProject.error.pathInvalid"), true);
         }
 
@@ -207,15 +183,13 @@ class ProjectLocationDialog
         dialog.setOnShown(e -> Platform.runLater(nameField::requestFocus));
     }
 
-    private void hideError()
-    {
+    private void hideError() {
         errorLabel.setText("");
         JavaFXUtil.setPseudoclass("bj-dialog-error", false, nameField);
         JavaFXUtil.setPseudoclass("bj-dialog-error", false, parentField);
     }
 
-    private void showError(String error, boolean problemIsName)
-    {
+    private void showError(String error, boolean problemIsName) {
         // show error, highlight field red if problem is name:
         errorLabel.setText(error);
         JavaFXUtil.setPseudoclass("bj-dialog-error", problemIsName, nameField);
@@ -225,8 +199,7 @@ class ProjectLocationDialog
     /**
      * Sets the OK button of the dialog to be enabled (pass true) or not (pass false)
      */
-    private void setOKEnabled(boolean okEnabled)
-    {
+    private void setOKEnabled(boolean okEnabled) {
         dialogPane.getOKButton().setDisable(!okEnabled);
     }
 

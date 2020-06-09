@@ -26,66 +26,56 @@ import bluej.utility.javafx.FXPlatformConsumer;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * SelectionSet holds a set of selected graph elements. By inserting an
  * element into this set, it is automatically set to selected.
- * 
+ *
  * @author fisker
  * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public final class SelectionSet
-{
+public final class SelectionSet {
     private final Set<Target> elements = new HashSet<>();
     private final List<FXPlatformConsumer<Collection<Target>>> listeners = new ArrayList<>();
 
     /**
-     * 
      * @param graphEditor
      */
     @OnThread(Tag.Any)
-    public SelectionSet(Collection<Target> initial)
-    {
+    public SelectionSet(Collection<Target> initial) {
         elements.addAll(initial);
     }
 
     /**
      * Add an unselected selectable graphElement to the set and
      * set it's 'selected' flag.
-     * 
-     * @param element  The element to add
+     *
+     * @param element The element to add
      */
-    public void add(Target element)
-    {
+    public void add(Target element) {
         if (!element.isSelected()) {
             element.setSelected(true);
             elements.add(element);
             notifyListeners();
         }
     }
-    
+
     /**
      * Add all the elements from another selection set to this one.
      */
-    public void addAll(Collection<Target> newSet)
-    {
+    public void addAll(Collection<Target> newSet) {
         for (Target t : newSet)
             add(t); // add will notify listeners
     }
 
     /**
      * Remove the graphElement and set it's 'selected' flag false.
-     * 
+     *
      * @param graphElement
      */
-    public void remove(Target element)
-    {
+    public void remove(Target element) {
         if (element != null) {
             element.setSelected(false);
             elements.remove(element);
@@ -97,8 +87,7 @@ public final class SelectionSet
      * Remove all the graphElements from the list. Set each removed grahpElement
      * 'selected' flag to false. Does NOT selfuse remove method.
      */
-    public void clear()
-    {
+    public void clear() {
         for (Target element : elements) {
             element.setSelected(false);
         }
@@ -108,68 +97,61 @@ public final class SelectionSet
 
     /**
      * Perform a double click on the selection.
-     * 
-     * @param  openInNewWindow if this is true, the editor opens in a new window.
+     *
+     * @param openInNewWindow if this is true, the editor opens in a new window.
      */
-    public void doubleClick(boolean openInNewWindow)
-    {
+    public void doubleClick(boolean openInNewWindow) {
         for (Target element : elements) {
             element.doubleClick(openInNewWindow);
-        }        
+        }
     }
 
     /**
      * A move gesture (either move or resize) has stopped. Inform all elements
      * in this selection that they shoudl react.
      */
-    public void moveStopped()
-    {
+    public void moveStopped() {
     }
 
     /**
      * Tell whether the selection is empty.
-     * 
-     * @return  true, if the selection is empty.
+     *
+     * @return true, if the selection is empty.
      */
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return elements.isEmpty();
     }
-    
+
     /**
      * Change the selection to contain only the specified element.
-     * 
-     * @param element  The single element to hold in the selection. 
+     *
+     * @param element The single element to hold in the selection.
      */
-    public void selectOnly(Target element)
-    {
+    public void selectOnly(Target element) {
         // add and clear will notify listeners
         clear();
         add(element);
     }
-    
-    /** 
+
+    /**
      * Return a random vertex from this selection.
-     * @return  An vertex, or null, if none exists.
+     *
+     * @return An vertex, or null, if none exists.
      */
-    public Target getAnyVertex()
-    {
+    public Target getAnyVertex() {
         for (Target element : elements) {
             return element;
         }
         return null;
     }
 
-    public List<Target> getSelected()
-    {
+    public List<Target> getSelected() {
         return new ArrayList<>(elements);
     }
 
-    private void notifyListeners()
-    {
+    private void notifyListeners() {
         List<Target> curSelection = new ArrayList<>(this.elements);
-        for (FXPlatformConsumer<Collection<Target>> listener : listeners)
-        {
+        for (FXPlatformConsumer<Collection<Target>> listener : listeners) {
             listener.accept(curSelection);
         }
     }
@@ -179,8 +161,7 @@ public final class SelectionSet
      * It may be run partway through some actions so allow for rapid
      * repeated changes.
      */
-    public void addListener(FXPlatformConsumer<Collection<Target>> listener)
-    {
+    public void addListener(FXPlatformConsumer<Collection<Target>> listener) {
         listeners.add(listener);
     }
 }

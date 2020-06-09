@@ -21,19 +21,6 @@
  */
 package greenfoot.vmcomm;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.IntBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.channels.FileChannel.MapMode;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import bluej.pkgmgr.Project;
 import bluej.utility.Debug;
 import greenfoot.guifx.GreenfootStage;
@@ -41,16 +28,28 @@ import javafx.scene.input.KeyCode;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.IntBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.channels.FileLock;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import static greenfoot.vmcomm.Command.*;
 
 /**
  * VMCommsMain is an abstraction for the inter-VM communications interface ("main VM" side) in
  * Greenfoot. It encapsulates a temporary file and memory-mapped buffer.
- * 
+ *
  * @author Davin McCall
  */
-public class VMCommsMain implements Closeable
-{
+public class VMCommsMain implements Closeable {
     // The server-debug VM protocol relies on locking three distinct areas of the file:
     //  A - the server VM "put" area
     //  B - the debug VM "put" area
@@ -85,10 +84,10 @@ public class VMCommsMain implements Closeable
 
     public static final int SERVER_AREA_OFFSET_BYTES = 4;
     public static final int SERVER_AREA_SIZE_BYTES = USER_AREA_OFFSET_BYTES - SERVER_AREA_OFFSET_BYTES;
-    
+
     public static final int SYNC_AREA_OFFSET_BYTES = 0;
     public static final int SYNC_AREA_SIZE_BYTES = 4;
-    
+
     private final int fileSize;
     private File shmFile;
     private FileChannel fc;
@@ -102,9 +101,9 @@ public class VMCommsMain implements Closeable
     private int setSpeedCommandCount = 0;
     private int lastPaintSeq = -1;
     private int lastConsumedImg = -1;
-    
+
     private boolean checkingIO = false;
-    
+
     private boolean haveUpdatedImage = false;
     private boolean haveUpdatedErrorCount = false;
     private long lastExecStartTime;
@@ -127,7 +126,7 @@ public class VMCommsMain implements Closeable
     private int prevWorldCounter = 0;
     // The world cell size (0 if no world)
     private int worldCellSize;
-    
+
     private final Thread ioThread;
 
     private boolean delayLoop;
@@ -135,119 +134,104 @@ public class VMCommsMain implements Closeable
 
     /**
      * Constructor for VMCommsMain. Creates a temporary file and maps it into memory.
-     * 
-     * @throws IOException  if the file could not be created or mapped.
+     *
+     * @throws IOException if the file could not be created or mapped.
      */
     @SuppressWarnings("resource")
-    public VMCommsMain(Project project) throws IOException
-    {
+    public VMCommsMain(Project project) throws IOException {
         fileSize = Integer.parseInt(project.getUnnamedPackage().getLastSavedProperties().getProperty("shm.size", Integer.toString(DEFAULT_MAPPED_SIZE)));
-        
+
         shmFile = File.createTempFile("greenfoot", "shm");
         shmFile.deleteOnExit();
         fc = new RandomAccessFile(shmFile, "rw").getChannel();
         sharedMemoryByte = fc.map(MapMode.READ_WRITE, 0, fileSize);
         sharedMemory = sharedMemoryByte.asIntBuffer();
-        
+
         // Obtain the put-area lock right from the start:
         putLock = fc.lock(SERVER_AREA_OFFSET_BYTES, SERVER_AREA_SIZE_BYTES, false);
         syncLock = fc.lock(SYNC_AREA_OFFSET_BYTES, SYNC_AREA_SIZE_BYTES, false);
-        
+
         ioThread = new Thread() {
             @OnThread(Tag.Worker)
-            public void run()
-            {
-                while (checkIO())
-                {
+            public void run() {
+                while (checkIO()) {
                 }
             }
         };
-        
+
         ioThread.start();
     }
-    
+
     /**
      * Close the communications channel, and release resources.
      */
     @Override
     @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-    public void close()
-    {
-        try
-        {
+    public void close() {
+        try {
             fc.close();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             // There is no meaningful way to handle I/O error at this point, and anyway the file
             // is no longer needed, so we just ignore the exception.
         }
-        
+
         shmFile = null;
         fc = null;
         sharedMemoryByte = null;
         sharedMemory = null;
     }
-    
+
     /**
      * Get the file channel for this communication channel.
      */
-    public FileChannel getChannel()
-    {
+    public FileChannel getChannel() {
         return fc;
     }
-    
+
     /**
      * Get the shared memory buffer for this communication channel.
      */
-    public MappedByteBuffer getSharedBuffer()
-    {
+    public MappedByteBuffer getSharedBuffer() {
         return sharedMemoryByte;
     }
-    
+
     /**
      * Get the name of the file used for this communication channel.
      */
-    public File getSharedFile()
-    {
+    public File getSharedFile() {
         return shmFile;
     }
 
     /**
      * Get the size of the file used for this communication channel.
      */
-    public int getSharedFileSize()
-    {
+    public int getSharedFileSize() {
         return fileSize;
     }
 
     /**
      * Write commands into the shared memory buffer.
      */
-    private synchronized void writeCommands(List<Command> pendingCommands)
-    {
+    private synchronized void writeCommands(List<Command> pendingCommands) {
         // Number of commands:
         int pendingCountPos = sharedMemory.position();
         sharedMemory.put(pendingCommands.size());
-        
+
         int numIssued = 0;
-        for (Command pendingCommand : pendingCommands)
-        {
+        for (Command pendingCommand : pendingCommands) {
             // sequence, type, extra info:
             int totalLength = pendingCommand.extraInfo.length + 2;
-            if (sharedMemory.position() + totalLength > USER_AREA_OFFSET)
-            {
+            if (sharedMemory.position() + totalLength > USER_AREA_OFFSET) {
                 // We can't write all commands in the available buffer:
                 sharedMemory.put(pendingCountPos, numIssued);
-                if (numIssued == 0)
-                {
+                if (numIssued == 0) {
                     // I don't imagine this should ever happen, but let's make sure we get
                     // something meaningful in the log if it does:
                     throw new RuntimeException("Single command exceeds buffer size");
                 }
                 return;
             }
-            
+
             // Start with sequence ID:
             sharedMemory.put(pendingCommand.commandSequence);
             // Put size of this command (measured in integers), including command type:
@@ -258,14 +242,13 @@ public class VMCommsMain implements Closeable
             numIssued++;
         }
     }
-    
+
     /**
      * Get the world cell size, if it is known.
-     * 
-     * @return  The cell size in pixels, or 0 if there is no world.
+     *
+     * @return The cell size in pixels, or 0 if there is no world.
      */
-    public int getWorldCellSize()
-    {
+    public int getWorldCellSize() {
         return worldCellSize;
     }
 
@@ -273,26 +256,22 @@ public class VMCommsMain implements Closeable
      * Check for input / send output, and apply received data to the stage.
      */
     @OnThread(Tag.FXPlatform)
-    public synchronized void checkIO(GreenfootStage stage)
-    {
-        if (checkingIO)
-        {
+    public synchronized void checkIO(GreenfootStage stage) {
+        if (checkingIO) {
             return; // avoid re-entrancy
         }
-        
+
         checkingIO = true;
 
         // We should only draw if either the world didn't change, or there
         // was a change, but a world is left.  i.e. don't draw if the world got removed:
         boolean shouldDraw = !worldChanged || worldPresentAfterChange;
-        if (worldChanged)
-        {
+        if (worldChanged) {
             stage.worldChanged(worldPresentAfterChange);
             worldChanged = false;
         }
-        
-        if (haveUpdatedImage && shouldDraw)
-        {
+
+        if (haveUpdatedImage && shouldDraw) {
             // skip: sequence number, last paint sequence, then:
             IntBuffer copy = sharedMemory.asReadOnlyBuffer();
             copy.position(USER_AREA_OFFSET + 2);
@@ -302,39 +281,36 @@ public class VMCommsMain implements Closeable
             haveUpdatedImage = false;
             lastConsumedImg = lastPaintSeq;
         }
-        
-        if (haveUpdatedErrorCount)
-        {
+
+        if (haveUpdatedErrorCount) {
             stage.bringTerminalToFront();
             haveUpdatedErrorCount = false;
         }
-        
-        if (updatedSimulationSpeed != -1)
-        {
+
+        if (updatedSimulationSpeed != -1) {
             stage.notifySimulationSpeed(updatedSimulationSpeed);
             updatedSimulationSpeed = -1;
-        }        
-        
-        if (promptCodepoints != null && askId > lastAnswer)
-        {
+        }
+
+        if (promptCodepoints != null && askId > lastAnswer) {
             stage.receivedAsk(promptCodepoints);
             promptCodepoints = null;
         }
 
         stage.setLastUserExecutionStartTime(lastExecStartTime, delayLoop);
-            
+
         checkingIO = false;
-        
+
         notifyAll(); // wake IO thread
     }
 
     /**
      * Check for input / send output
+     *
      * @return true If we should continue processing, false if not.
      */
     @OnThread(Tag.Worker)
-    private boolean checkIO()
-    {
+    private boolean checkIO() {
         FileChannel sharedMemoryLock = this.fc;
 
         // We are holding the lock for the main put area:
@@ -342,87 +318,75 @@ public class VMCommsMain implements Closeable
         sharedMemory.put(-lastSeq);
         sharedMemory.put(lastConsumedImg);
         writeCommands(pendingCommands);
-        
+
         FileLock fileLock = null;
-        
-        try
-        {
+
+        try {
             putLock.release();
             fileLock = sharedMemoryLock.lock(USER_AREA_OFFSET_BYTES, fileSize - USER_AREA_OFFSET_BYTES, false);
             syncLock.release();
 
             int seq = sharedMemory.get(USER_AREA_OFFSET);
-            if (seq > lastSeq)
-            {
+            if (seq > lastSeq) {
                 // The client VM has painted a new frame for us:
                 lastSeq = seq;
 
-                synchronized (this)
-                {
+                synchronized (this) {
                     sharedMemory.position(USER_AREA_OFFSET + 1);
                     int paintSeq = sharedMemory.get();
                     int width = sharedMemory.get();
                     int height = sharedMemory.get();
-                    if (width != 0 && height != 0 && paintSeq != lastPaintSeq)
-                    {
+                    if (width != 0 && height != 0 && paintSeq != lastPaintSeq) {
                         lastPaintSeq = paintSeq;
                         haveUpdatedImage = true;
                     }
                     sharedMemory.position(sharedMemory.position() + width * height);
-    
+
                     // Get rid of all commands that the client has confirmed it has seen:
                     int lastAckCommand = sharedMemory.get();
-                    if (lastAckCommand != -1)
-                    {
-                        for (Iterator<Command> iterator = pendingCommands.iterator(); iterator.hasNext(); )
-                        {
+                    if (lastAckCommand != -1) {
+                        for (Iterator<Command> iterator = pendingCommands.iterator(); iterator.hasNext(); ) {
                             Command pendingCommand = iterator.next();
-                            if (pendingCommand.commandSequence <= lastAckCommand)
-                            {
-                                if(pendingCommand.commandType == COMMAND_SET_SPEED)
-                                {
+                            if (pendingCommand.commandSequence <= lastAckCommand) {
+                                if (pendingCommand.commandType == COMMAND_SET_SPEED) {
                                     setSpeedCommandCount = setSpeedCommandCount - 1;
                                 }
                                 iterator.remove();
                             }
                         }
                     }
-                    
+
                     // If there's a new error, show the terminal at the front so that the user sees it: 
                     int latestStoppedWithErrorCount = sharedMemory.get();
-                    if (latestStoppedWithErrorCount != previousStoppedWithErrorCount)
-                    {
+                    if (latestStoppedWithErrorCount != previousStoppedWithErrorCount) {
                         //stage.bringTerminalToFront();
                         previousStoppedWithErrorCount = latestStoppedWithErrorCount;
                         haveUpdatedErrorCount = true;
                     }
-                    
+
                     int highTime = sharedMemory.get();
                     int lowTime = sharedMemory.get();
-                    lastExecStartTime = (((long)highTime) << 32) | ((long)lowTime & 0xFFFFFFFFL);
-    
+                    lastExecStartTime = (((long) highTime) << 32) | ((long) lowTime & 0xFFFFFFFFL);
+
                     int simSpeed = sharedMemory.get();
                     // Only send the new speed value if the pendingCommands does not include setSpeed commands
-                    if (setSpeedCommandCount == 0)
-                    {
+                    if (setSpeedCommandCount == 0) {
                         updatedSimulationSpeed = simSpeed;
                     }
-    
+
                     int worldCounter = sharedMemory.get();
                     // If the new counter is different (zero/non-zero change, or incremented),
                     // store that into our fields:
-                    if (worldCounter != prevWorldCounter)
-                    {
+                    if (worldCounter != prevWorldCounter) {
                         worldChanged = true;
                         worldPresentAfterChange = worldCounter != 0;
                         prevWorldCounter = worldCounter;
                     }
-                    
+
                     worldCellSize = sharedMemory.get();
-                    
+
                     int askId = sharedMemory.get();
-                    if (askId > 0 && askId > lastAnswer)
-                    {
+                    if (askId > 0 && askId > lastAnswer) {
                         this.askId = askId;
                         // Length followed by codepoints for the prompt string:
                         int askLength = sharedMemory.get();
@@ -434,85 +398,68 @@ public class VMCommsMain implements Closeable
                     delayLoop = delayLoopStatus == 1;
                 }
             }
-        }
-        catch (IOException ex)
-        {
+        } catch (IOException ex) {
             Debug.reportError(ex);
-        }
-        catch (IllegalArgumentException ex)
-        {
+        } catch (IllegalArgumentException ex) {
             // Happens when world size is too large: swallow quietly, as will happen repeatedly.
             // The exception will be reported to the user from the debug VM side.
-        }
-        finally
-        {
+        } finally {
             // Re-acquire the put-area lock (A), and then release the get-area lock (B)
             // before re-acquiring the sync lock (C):
-            try
-            {
+            try {
                 putLock = fc.lock(SERVER_AREA_OFFSET_BYTES, SERVER_AREA_SIZE_BYTES, false);
-                if (fileLock != null)
-                {
+                if (fileLock != null) {
                     fileLock.release();
                 }
                 syncLock = fc.lock(SYNC_AREA_OFFSET_BYTES, SYNC_AREA_SIZE_BYTES, false);
-            }
-            catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 Debug.reportError(ex);
             }
         }
-        
-        
+
+
         // To avoid consuming close to 100% CPU, we wait on the animation timer:
-        synchronized (this)
-        {
-            try
-            {
+        synchronized (this) {
+            try {
                 wait();
-            }
-            catch (InterruptedException ie)
-            {
+            } catch (InterruptedException ie) {
                 // Nothing needs to be done.
             }
             return shmFile != null;
         }
     }
-    
+
     /**
      * Send an "instantiate world" command.
      */
-    public synchronized void instantiateWorld(String className)
-    {
+    public synchronized void instantiateWorld(String className) {
         pendingCommands.add(new Command(COMMAND_INSTANTIATE_WORLD, className.codePoints().toArray()));
     }
-    
+
     /**
      * Send a "discard world" command.
      */
-    public synchronized void discardWorld()
-    {
+    public synchronized void discardWorld() {
         pendingCommands.add(new Command(COMMAND_DISCARD_WORLD));
     }
-    
+
     /**
      * Send an answer (after receving an "ask" request).
      */
-    public synchronized void sendAnswer(String answer)
-    {
+    public synchronized void sendAnswer(String answer) {
         Command answerCommand = new Command(COMMAND_ANSWERED, answer.codePoints().toArray());
         pendingCommands.add(answerCommand);
         // Remember that we've now answered:
         lastAnswer = answerCommand.commandSequence;
     }
-    
+
     /**
      * Send an updated property value.
-     * @param key    The property name
-     * @param value  The property value
+     *
+     * @param key   The property name
+     * @param value The property value
      */
-    public synchronized void sendProperty(String key, String value)
-    {
+    public synchronized void sendProperty(String key, String value) {
         int[] keyCodepoints = key.codePoints().toArray();
         int[] valueCodepoints = value == null ? new int[0] : value.codePoints().toArray();
         int[] combined = new int[1 + keyCodepoints.length + 1 + valueCodepoints.length];
@@ -522,90 +469,82 @@ public class VMCommsMain implements Closeable
         System.arraycopy(valueCodepoints, 0, combined, 2 + keyCodepoints.length, valueCodepoints.length);
         pendingCommands.add(new Command(COMMAND_PROPERTY_CHANGED, combined));
     }
-    
+
     /**
      * Send an "act" command.
      */
-    public synchronized void act()
-    {
+    public synchronized void act() {
         pendingCommands.add(new Command(COMMAND_ACT));
     }
-    
+
     /**
      * Send a "run simulation" command.
      */
-    public synchronized void runSimulation()
-    {
+    public synchronized void runSimulation() {
         pendingCommands.add(new Command(COMMAND_RUN));
     }
 
     /**
      * Send a "pause simulation" command.
      */
-    public synchronized void pauseSimulation()
-    {
+    public synchronized void pauseSimulation() {
         pendingCommands.add(new Command(COMMAND_PAUSE));
     }
-    
+
     /**
      * Continue a mouse drag, identified by the given id. Note that drags are initiated by
      * a pick request executed via a separate mechanism
-     * 
+     *
      * @see greenfoot.core.PickActorHelper
      */
-    public synchronized void continueDrag(int dragId, int x, int y)
-    {
+    public synchronized void continueDrag(int dragId, int x, int y) {
         pendingCommands.add(new Command(COMMAND_CONTINUE_DRAG, dragId, x, y));
     }
-    
+
     /**
      * End a drag, identified by the given id.
      */
-    public synchronized void endDrag(int dragId)
-    {
+    public synchronized void endDrag(int dragId) {
         pendingCommands.add(new Command(COMMAND_END_DRAG, dragId));
     }
-    
+
     /**
      * Send a key event.
-     * 
-     * @param eventType   The event type
-     * @param keyCode     The key code, from KeyEvent.getCode()
-     * @param keyText     The key text, from KeyEvent.getText()
+     *
+     * @param eventType The event type
+     * @param keyCode   The key code, from KeyEvent.getCode()
+     * @param keyText   The key text, from KeyEvent.getText()
      */
-    public synchronized void sendKeyEvent(int eventType, KeyCode keyCode, String keyText)
-    {
+    public synchronized void sendKeyEvent(int eventType, KeyCode keyCode, String keyText) {
         int[] textCodePoints = keyText.codePoints().toArray();
 
         // Ordinal from KeyCode, followed by text codepoints:
         int[] data = new int[textCodePoints.length + 1];
         data[0] = keyCode.ordinal();
         System.arraycopy(textCodePoints, 0, data, 1, textCodePoints.length);
-        
+
         pendingCommands.add(new Command(eventType, data));
     }
-    
+
     /**
      * Send a mouse event.
-     * 
-     * @param eventType   The event type
-     * @param x           The mouse x-coordinate (in pixels)
-     * @param y           The mouse y-coordinate (in pixels)
-     * @param button      The button pressed (for button events)
-     * @param clickCount  The click count (for click events)
+     *
+     * @param eventType  The event type
+     * @param x          The mouse x-coordinate (in pixels)
+     * @param y          The mouse y-coordinate (in pixels)
+     * @param button     The button pressed (for button events)
+     * @param clickCount The click count (for click events)
      */
-    public synchronized void sendMouseEvent(int eventType, int x, int y, int button, int clickCount)
-    {
+    public synchronized void sendMouseEvent(int eventType, int x, int y, int button, int clickCount) {
         pendingCommands.add(new Command(eventType, x, y, button, clickCount));
     }
 
     /**
      * Set the simulation speed to a specified value
      *
-     * @param speed   The speed value
+     * @param speed The speed value
      */
-    public synchronized void setSimulationSpeed(int speed)
-    {
+    public synchronized void setSimulationSpeed(int speed) {
         pendingCommands.add(new Command(COMMAND_SET_SPEED, speed));
         // Keeps track of how many setSpeed commands exist in the pendingCommand list.
         // This is useful to avoid speedSlider jittering movement.
@@ -616,8 +555,7 @@ public class VMCommsMain implements Closeable
      * The debug VM has terminated.  We re-use the same shared memory file,
      * so we must reset our state ready for a new debug VM.
      */
-    public void vmTerminated()
-    {
+    public void vmTerminated() {
         lastSeq = 0;
         pendingCommands.clear();
         setSpeedCommandCount = 0;
@@ -631,10 +569,10 @@ public class VMCommsMain implements Closeable
 
     /**
      * The world display has gained or lost focus
+     *
      * @param focused true if the world display gained focus, false if it lost focus
      */
-    public synchronized void worldFocusChanged(boolean focused)
-    {
+    public synchronized void worldFocusChanged(boolean focused) {
         pendingCommands.add(new Command(focused ? COMMAND_WORLD_FOCUS_GAINED : COMMAND_WORLD_FOCUS_LOST));
     }
 }

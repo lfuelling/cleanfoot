@@ -21,21 +21,21 @@
  */
 package bluej.classmgr;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.*;
-
 import bluej.Config;
 import bluej.utility.Debug;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Class to maintain a single file/directory location in a classpath
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  * @version $Id: ClassPathEntry.java 16031 2016-06-14 13:32:45Z nccb $
  */
-public class ClassPathEntry
-{
+public class ClassPathEntry {
     private static final String statusGood = Config.getString("classmgr.statusgood");
     private static final String statusBad = Config.getString("classmgr.statusbad");
     private static final String statusNew = Config.getString("classmgr.statusnew");
@@ -54,17 +54,16 @@ public class ClassPathEntry
      * Flag to mark entries added after system start (unloaded).
      */
     private final boolean justAdded;
-    
+
     /**
      * Holds a file/directory location in a classpath entry along with a
      * description.
      *
-     * @param location  the directory path or filename or a jar/zip file
+     * @param location    the directory path or filename or a jar/zip file
      * @param description a short description of the classes represented
      *                    by this classpath entry
      */
-    public ClassPathEntry(String location, String description)
-    {
+    public ClassPathEntry(String location, String description) {
         this(location, description, false);
     }
 
@@ -72,18 +71,16 @@ public class ClassPathEntry
     /**
      * Holds a file/directory location in a classpath entry along with a description.
      *
-     * @param file the file holding one path entry.
+     * @param file        the file holding one path entry.
      * @param description a short description of the classes represented by this classpath entry
      */
-    public ClassPathEntry(File file, String description)
-    {
+    public ClassPathEntry(File file, String description) {
         this.file = file;
         this.description = description;
         this.justAdded = false;
     }
 
-    public ClassPathEntry(String location, String description, boolean isNew)
-    {
+    public ClassPathEntry(String location, String description, boolean isNew) {
         // we take the decision that all ClassPathEntries should
         // be absolute (the behaviour of BlueJ should not change
         // dependant upon what directory the user was in when they
@@ -100,8 +97,7 @@ public class ClassPathEntry
      *
      * @returns a string describing the contents of this classpath entry
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         if (description == null)
             return Config.getString("classmgr.error.nodescription") +
                     " (" + file.getPath() + ")";
@@ -113,10 +109,9 @@ public class ClassPathEntry
      * Gets the File for this class path entry.
      *
      * @returns a File identifying the file or directory that this class
-     *          path entry represents
+     * path entry represents
      */
-    public File getFile()
-    {
+    public File getFile() {
         return file;
     }
 
@@ -124,10 +119,9 @@ public class ClassPathEntry
      * Gets the path for this class path entry.
      *
      * @returns a File identifying the file or directory that this class
-     * @note    this path is always absolute because of our constructor
+     * @note this path is always absolute because of our constructor
      */
-    public String getPath()
-    {
+    public String getPath() {
         return file.getPath();
     }
 
@@ -136,16 +130,15 @@ public class ClassPathEntry
      * if the canonical path could not be found.
      *
      * @returns a String representing the canonical path of the file or
-     *          directory that this class path entry represents
-     * @note    the Config.getString in this method was changed from a
-     *          static class string to a local variable because we need to instantiate
-     *          ClassPathEntries on the remote VM, and it has no access to the Config
-     *          files and was therefore generating error message when the class was
-     *          loaded (even though we don't use getCanonicalPathNoException() on
-     *          the remote VM).
+     * directory that this class path entry represents
+     * @note the Config.getString in this method was changed from a
+     * static class string to a local variable because we need to instantiate
+     * ClassPathEntries on the remote VM, and it has no access to the Config
+     * files and was therefore generating error message when the class was
+     * loaded (even though we don't use getCanonicalPathNoException() on
+     * the remote VM).
      */
-    public String getCanonicalPathNoException()
-    {
+    public String getCanonicalPathNoException() {
         String path;
         try {
             path = file.getCanonicalPath();
@@ -161,14 +154,10 @@ public class ClassPathEntry
      *
      * @returns a URL representing this classpath entry
      */
-    public URL safeGetURL()
-    {
-        try
-        {
+    public URL safeGetURL() {
+        try {
             return file.toURI().toURL();
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             Debug.reportError("Bad class path entry: " + file, e);
             return null;
         }
@@ -178,17 +167,15 @@ public class ClassPathEntry
      * Determine if this class path entry has been added after
      * BlueJ was started (and thus isn't loaded).
      */
-    public boolean isNew()
-    {
+    public boolean isNew() {
         return justAdded;
     }
-    
+
     /**
      * Determine if this class path entry represents a valid entry
      * on the current VM (ie file/dir exists and is readable)
      */
-    public boolean isValid()
-    {
+    public boolean isValid() {
         /* If its a directory then it exists and we wont try to
            work out any more about it.. its valid as far as we are
            concerned */
@@ -207,48 +194,43 @@ public class ClassPathEntry
     /**
      * Return the current status as a string (Loaded/Not Loaded/Error).
      */
-    public String getStatusString()
-    {
+    public String getStatusString() {
         if (!isValid())
             return statusBad;
-        else if(isNew())
+        else if (isNew())
             return statusNew;
         else
             return statusGood;
     }
-    
+
     /**
      * Determine if this class path entry represents a Jar file.
      *
      * @returns a boolean indicating if this entry is a jar or
-     *          zip file.
+     * zip file.
      */
-    public boolean isJar()
-    {
+    public boolean isJar() {
         String name = file.getName().toLowerCase();
 
         return file.isFile() &&
-            (name.endsWith(".zip") || name.endsWith(".jar"));
+                (name.endsWith(".zip") || name.endsWith(".jar"));
     }
 
-    public String toString()
-    {
+    public String toString() {
         return getPath();
     }
 
     /* we want to appear the same as another ClassPathEntry if our
        location is identical - we ignore the description */
 
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
-        return this.file.equals(((ClassPathEntry)o).file);
+        return this.file.equals(((ClassPathEntry) o).file);
     }
 
-    public int hashCode()
-    {
+    public int hashCode() {
         return file.hashCode();
     }
 }

@@ -21,45 +21,28 @@
  */
 package bluej.groupwork.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-
 import bluej.Config;
-import bluej.groupwork.HistoryInfo;
-import bluej.groupwork.LogHistoryListener;
-import bluej.groupwork.Repository;
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.*;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.pkgmgr.Project;
 import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
-
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.*;
 
 /**
  * A frame to display the commit history, including dates, users, revisions
@@ -69,8 +52,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class HistoryFrame extends FXCustomizedDialog<Void>
-{
+public class HistoryFrame extends FXCustomizedDialog<Void> {
     private final Project project;
     private HistoryWorker worker;
 
@@ -85,8 +67,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
     /**
      * Create a new HistoryFrame.
      */
-    public HistoryFrame(PkgMgrFrame pmf)
-    {
+    public HistoryFrame(PkgMgrFrame pmf) {
         super(pmf.getFXWindow(), "team.history.title", "team-history");
         project = pmf.getProject();
         prepareData();
@@ -98,8 +79,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
     /**
      * Construct the main pane UI components.
      */
-    private Pane makeMainPane()
-    {
+    private Pane makeMainPane() {
         // History list
         historyList.setCellFactory(param -> new HistoryCell());
         ScrollPane historyPane = new ScrollPane(historyList);
@@ -110,8 +90,8 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
         HBox filterBox = new HBox();
         filterBox.setAlignment(Pos.BASELINE_LEFT);
         filterBox.getChildren().addAll(new Label(Config.getString("team.history.filefilter") + " "), fileFilterCombo,
-                                       new Label(Config.getString("team.history.userfilter") + " "), userFilterCombo,
-                                       activityBar);
+                new Label(Config.getString("team.history.userfilter") + " "), userFilterCombo,
+                activityBar);
         HBox.setMargin(fileFilterCombo, new Insets(0, 40, 0, 0));
         HBox.setMargin(userFilterCombo, new Insets(0, 40, 0, 0));
 
@@ -126,8 +106,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
     /**
      * Create the button panel with a Close button
      */
-    private void prepareButtonPane()
-    {
+    private void prepareButtonPane() {
         //close button
         getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
         this.setOnCloseRequest(event -> {
@@ -137,10 +116,9 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
         });
     }
 
-    private void prepareData()
-    {
+    private void prepareData() {
         Repository repository;
-        if (project.getTeamSettingsController().isDVCS()){
+        if (project.getTeamSettingsController().isDVCS()) {
             //don't connect to the remote repository if git.
             repository = project.getTeamSettingsController().trytoEstablishRepository(false);
         } else {
@@ -159,8 +137,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
      * Filter the history info list according to the selected file and user
      * filters. The filtered list is then displayed.
      */
-    private void refilter()
-    {
+    private void refilter() {
         String user = null;
         if (userFilterCombo.getSelectionModel().getSelectedIndex() > 0) {
             user = userFilterCombo.getSelectionModel().getSelectedItem();
@@ -174,8 +151,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
         List<HistoryInfo> displayList;
         if (user == null && file == null) {
             displayList = historyInfoList;
-        }
-        else {
+        } else {
             displayList = new ArrayList<>();
             for (HistoryInfo info : historyInfoList) {
                 if (user != null && !info.getUser().equals(user)) {
@@ -195,8 +171,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
     /**
      * Check whether a history item pertains at all to a particular file
      */
-    private boolean historyInfoHasFile(HistoryInfo info, String file)
-    {
+    private boolean historyInfoHasFile(HistoryInfo info, String file) {
         return Arrays.stream(info.getFiles()).anyMatch(f -> f.equals(file));
     }
 
@@ -204,8 +179,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
      * Reset the filter boxes (user filter and file filter), adding a complete list
      * of all users and files.
      */
-    private void resetFilterBoxes()
-    {
+    private void resetFilterBoxes() {
         SortedSet<String> files = new TreeSet<>();
         SortedSet<String> users = new TreeSet<>();
 
@@ -231,42 +205,36 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
      * A worker class to fetch the required information from the repository
      * in the background.
      */
-    private class HistoryWorker extends FXWorker implements LogHistoryListener
-    {
+    private class HistoryWorker extends FXWorker implements LogHistoryListener {
         private final List<HistoryInfo> responseList;
         private final Repository repository;
         private TeamworkCommand command;
         private TeamworkCommandResult response;
 
-        public HistoryWorker(Repository repository)
-        {
+        public HistoryWorker(Repository repository) {
             this.responseList = new ArrayList<>();
             command = repository.getLogHistory(this);
             this.repository = repository;
         }
 
         @OnThread(Tag.Worker)
-        public Object construct()
-        {
+        public Object construct() {
             response = command.getResult();
             return response;
         }
 
         @OnThread(Tag.Any)
-        public void logInfoAvailable(HistoryInfo hInfo)
-        {
+        public void logInfoAvailable(HistoryInfo hInfo) {
             responseList.add(hInfo);
         }
 
-        public void finished()
-        {
+        public void finished() {
             if (command != null) {
                 activityBar.setRunning(false);
                 command = null; // marks the command as finished
                 if (response.isError()) {
                     HistoryFrame.this.dialogThenHide(() -> TeamUtils.handleServerResponseFX(response, HistoryFrame.this.asWindow()));
-                }
-                else {
+                } else {
                     responseList.sort(new DateCompare());
 
                     // Make the history list forget the preferred size that was forced
@@ -282,8 +250,7 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
             }
         }
 
-        public void abort()
-        {
+        public void abort() {
             activityBar.setRunning(false);
             if (command != null) {
                 command.cancel();
@@ -298,10 +265,8 @@ public class HistoryFrame extends FXCustomizedDialog<Void>
  *
  * @author Davin McCall
  */
-class DateCompare implements Comparator<HistoryInfo>
-{
-    public int compare(HistoryInfo hi0, HistoryInfo hi1)
-    {
+class DateCompare implements Comparator<HistoryInfo> {
+    public int compare(HistoryInfo hi0, HistoryInfo hi1) {
         return hi1.getDate().compareTo(hi0.getDate());
     }
 }

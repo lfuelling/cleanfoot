@@ -27,22 +27,19 @@ import threadchecker.Tag;
 
 /**
  * A TypeArgumentEntity representing a solid (i.e. non-wildcard) type argument.
- * 
+ *
  * @author Davin McCall
  */
-public class SolidTargEntity extends TypeArgumentEntity
-{
+public class SolidTargEntity extends TypeArgumentEntity {
     private final JavaEntity solid;
-    
-    public SolidTargEntity(JavaEntity solid)
-    {
+
+    public SolidTargEntity(JavaEntity solid) {
         this.solid = solid;
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public GenTypeParameter getType()
-    {
+    public GenTypeParameter getType() {
         TypeEntity ce = solid.resolveAsType();
         if (ce != null) {
             return ce.getType();

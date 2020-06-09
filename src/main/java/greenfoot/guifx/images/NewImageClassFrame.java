@@ -28,19 +28,13 @@ import bluej.pkgmgr.Project;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
 import greenfoot.guifx.ClassNameVerifier;
-
-import java.io.File;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -48,6 +42,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.io.File;
 
 /**
  * A (modal) dialog for selecting a class image. The image can be selected from either the
@@ -57,8 +53,7 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.NewImageClassInfo>
-{
+public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.NewImageClassInfo> {
     private final Project project;
 
     private final TextField classNameField = new TextField();
@@ -71,14 +66,12 @@ public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.Ne
      * The information selected in the dialog: class name,
      * template name and source type.
      */
-    public static class NewImageClassInfo
-    {
+    public static class NewImageClassInfo {
         public final String className;
         public final SourceType sourceType;
         public final File imageFile;
 
-        private NewImageClassInfo(String className, SourceType sourceType, File imageFile)
-        {
+        private NewImageClassInfo(String className, SourceType sourceType, File imageFile) {
             this.className = className;
             this.sourceType = sourceType;
             this.imageFile = imageFile;
@@ -88,11 +81,10 @@ public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.Ne
     /**
      * Construct an SelectImageFrame to be used for creating a new class.
      *
-     * @param owner    The parent frame
-     * @param project  The project to contain the new class
+     * @param owner   The parent frame
+     * @param project The project to contain the new class
      */
-    public NewImageClassFrame(Window owner, Project project)
-    {
+    public NewImageClassFrame(Window owner, Project project) {
         super(owner, Config.getString("imagelib.newClass"), "image-lib");
         this.project = project;
         buildUI();
@@ -101,8 +93,7 @@ public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.Ne
     /**
      * build the UI components
      */
-    private void buildUI()
-    {
+    private void buildUI() {
         // Ok and cancel buttons
         getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
 
@@ -122,8 +113,7 @@ public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.Ne
      *
      * @param pkg The default project's package.
      */
-    private Pane buildClassDetailsPanel(Package pkg)
-    {
+    private Pane buildClassDetailsPanel(Package pkg) {
         classNameField.setPrefWidth(220);
         classNameField.setPromptText(Config.getString("pkgmgr.newClass.prompt"));
 
@@ -154,8 +144,7 @@ public class NewImageClassFrame extends FXCustomizedDialog<NewImageClassFrame.Ne
      * @param classNameVerifier the class verifier that validates the class name's
      *                          text field contents.
      */
-    private void updateControls(ClassNameVerifier classNameVerifier)
-    {
+    private void updateControls(ClassNameVerifier classNameVerifier) {
         boolean valid = classNameVerifier.checkValidity();
         errorMsgLabel.setVisible(!valid);
         errorMsgLabel.setText(classNameVerifier.getMessage());

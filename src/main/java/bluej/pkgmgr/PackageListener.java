@@ -26,17 +26,16 @@ import threadchecker.Tag;
 
 /**
  * An interface for watching package events.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public interface PackageListener
-{
+public interface PackageListener {
     /**
      * The package has closed.
      */
     void graphClosed();
-    
+
     /**
      * The graph changed - a class was added or removed.
      */

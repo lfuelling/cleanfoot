@@ -25,42 +25,36 @@ import java.math.BigDecimal;
 
 /**
  * Represents a Rectangle in Scratch.
- * 
+ * <p>
  * We can't use java.awt.Rectangle (for example) because Scratch rectangles can
  * have floating point or integer limits, so hence we must store all measurements
  * using the a class that can represent all of those.  Number would do it, but we also
  * need to perform calculations so BigDecimal seems like a good alternative (plus, Scratch
  * does support arbitrary precision integers).
- * 
- * @author neil
  *
+ * @author neil
  */
-public class ScratchRectangle extends ScratchObject
-{
+public class ScratchRectangle extends ScratchObject {
     // x and y are the top-left of the rectangle, x2 and y2 are the bottom right
     public BigDecimal x, y, x2, y2;
 
-    public ScratchRectangle(BigDecimal x, BigDecimal y, BigDecimal x2, BigDecimal y2)
-    {
+    public ScratchRectangle(BigDecimal x, BigDecimal y, BigDecimal x2, BigDecimal y2) {
         this.x = x;
         this.y = y;
         this.x2 = x2;
         this.y2 = y2;
     }
-    
-    public BigDecimal getWidth()
-    {
+
+    public BigDecimal getWidth() {
         return x2.subtract(x);
     }
-    
-    public BigDecimal getHeight()
-    {
+
+    public BigDecimal getHeight() {
         return y2.subtract(y);
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ScratchRectangle [x=");
         builder.append(x);
@@ -74,8 +68,7 @@ public class ScratchRectangle extends ScratchObject
         return builder.toString();
     }
 
-    public ScratchPoint getMiddle()
-    {
+    public ScratchPoint getMiddle() {
         return new ScratchPoint(x.add(x2).divide(new BigDecimal(2)), y.add(y2).divide(new BigDecimal(2)));
     }
 }

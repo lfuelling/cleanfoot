@@ -36,112 +36,98 @@ import java.util.List;
 
 /**
  * A parsed compilation unit node.
- * 
+ *
  * @author Davin McCall
  */
-public class ParsedCUNode extends IncrementalParsingNode
-{
+public class ParsedCUNode extends IncrementalParsingNode {
     private EntityResolver parentResolver;
     private final ImportsCollection imports = new ImportsCollection();
 
     private int size = 0;
-    
+
     /**
      * Construct a parsed node for as yet unknown source.
      */
-    public ParsedCUNode()
-    {
+    public ParsedCUNode() {
         super(null);
     }
-    
+
     /**
      * Construct a parsed node for the given document. The node will
      * assume its size is 0; the text from the document (if any) should
      * be explicitly inserted.
      */
-    public ParsedCUNode(MoeSyntaxDocument document)
-    {
+    public ParsedCUNode(MoeSyntaxDocument document) {
         super(null);
         size = 0;
     }
-    
+
     /**
      * Set the entity resolver used to resolve symbols.
      */
-    public void setParentResolver(EntityResolver parentResolver)
-    {
+    public void setParentResolver(EntityResolver parentResolver) {
         this.parentResolver = parentResolver;
     }
 
-    public ImportsCollection getImports()
-    {
+    public ImportsCollection getImports() {
         return imports;
     }
-    
-    public EntityResolver getParentResolver()
-    {
+
+    public EntityResolver getParentResolver() {
         return parentResolver;
     }
-    
+
     /**
      * Overridden getSize() which returns the document size.
-     * 
+     *
      * @see bluej.parser.nodes.ParsedNode#getSize()
      */
-    public int getSize()
-    {
+    public int getSize() {
         return size;
     }
 
     @Override
-    public void resize(int newSize)
-    {
+    public void resize(int newSize) {
         size = newSize;
     }
-    
+
     @Override
-    public void setSize(int newSize)
-    {
+    public void setSize(int newSize) {
         size = newSize;
     }
-    
+
     @Override
-    protected int doPartialParse(ParseParams params, int state)
-    {
+    protected int doPartialParse(ParseParams params, int state) {
         last = params.tokenStream.LA(1);
-       
+
         if (checkBoundary(params, last)) {
             return PP_PULL_UP_CHILD;
         }
-        
+
         params.parser.parseCUpart(state);
         return PP_OK;
     }
 
     @Override
-    protected boolean isDelimitingNode(NodeAndPosition<ParsedNode> nap)
-    {
+    protected boolean isDelimitingNode(NodeAndPosition<ParsedNode> nap) {
         // All node types: package statement, import (Inner), type definition,
         // are all delimiting nodes. Only a comment is not.
         int nt = nap.getNode().getNodeType();
         return nt != ParsedNode.NODETYPE_COMMENT;
     }
-    
+
     @Override
-    protected boolean isNodeEndMarker(int tokenType)
-    {
+    protected boolean isNodeEndMarker(int tokenType) {
         return false;
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return true;
     }
-    
+
     @Override
-    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource)
-    {
+    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource) {
         PackageOrClass poc = super.resolvePackageOrClass(name, querySource);
         if (poc == null) {
             poc = imports.getTypeImport(name);
@@ -163,12 +149,11 @@ public class ParsedCUNode extends IncrementalParsingNode
         }
         return poc;
     }
-    
+
     @Override
-    public JavaEntity getValueEntity(String name, Reflective querySource)
-    {
+    public JavaEntity getValueEntity(String name, Reflective querySource) {
         // We may have static imports
-        
+
         List<JavaEntity> simports = imports.getStaticImports(name);
         for (JavaEntity importType : simports) {
             importType = importType.resolveAsType();
@@ -183,7 +168,7 @@ public class ParsedCUNode extends IncrementalParsingNode
                 }
             }
         }
-        
+
         simports = imports.getStaticWildcardImports();
         for (JavaEntity importType : simports) {
             importType = importType.resolveAsType();
@@ -198,19 +183,18 @@ public class ParsedCUNode extends IncrementalParsingNode
                 }
             }
         }
-        
+
         return resolvePackageOrClass(name, querySource);
     }
-    
+
     @Override
-    public TypeEntity resolveQualifiedClass(String name)
-    {
+    public TypeEntity resolveQualifiedClass(String name) {
         if (parentResolver != null) {
             return parentResolver.resolveQualifiedClass(name);
         }
         return null;
     }
-    
+
 //    public static void printTree(ParsedNode node, int nodepos, int indent)
 //    {
 //        for (int i = 0; i < indent; i++) {

@@ -21,47 +21,42 @@
  */
 package bluej.utility.javafx.binding;
 
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.MultiListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * This class is useful when you want to bind one (observable) list to some function of another observable list
- * but you need to not only listen to changes in that list, but also further lists inside it. 
- * 
+ * but you need to not only listen to changes in that list, but also further lists inside it.
  */
-public abstract class DeepListBinding<DEST>
-{
+public abstract class DeepListBinding<DEST> {
     private final ObservableList<DEST> dest;
     private final MultiListener<ObservableList<?>> multiListener;
-    
-    public DeepListBinding(ObservableList<DEST> dest)
-    {
+
+    public DeepListBinding(ObservableList<DEST> dest) {
         this.dest = dest;
         final ListChangeListener<Object> listener = c -> update();
-        this.multiListener = new MultiListener<>(l -> { l.addListener(listener); return () -> l.removeListener(listener);});
+        this.multiListener = new MultiListener<>(l -> {
+            l.addListener(listener);
+            return () -> l.removeListener(listener);
+        });
     }
-    
-    public void startListening()
-    {
+
+    public void startListening() {
         update();
     }
 
     protected abstract Stream<ObservableList<?>> getListenTargets();
-    
+
     protected abstract Stream<DEST> calculateValues();
 
-    protected void update()
-    {
+    protected void update() {
         // First, update all the listeners:
         multiListener.listenOnlyTo(getListenTargets());
-        
+
         // Now alter our bound list:
         dest.setAll(calculateValues().collect(Collectors.toList()));
     }

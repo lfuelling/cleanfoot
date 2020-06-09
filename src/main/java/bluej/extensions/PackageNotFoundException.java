@@ -24,19 +24,18 @@ package bluej.extensions;
 
 /**
  * This exception will be thrown when a reference to a package
- * is no longer valid. The most likely reason is that the 
+ * is no longer valid. The most likely reason is that the
  * user has deleted the package from the GUI.
- * 
+ *
  * @version $Id: PackageNotFoundException.java 6215 2009-03-30 13:28:25Z polle $
  */
 
 /*
  * Author: Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class PackageNotFoundException extends ExtensionException 
-{
-    PackageNotFoundException (String reason) {
-        super (reason);
+public class PackageNotFoundException extends ExtensionException {
+    PackageNotFoundException(String reason) {
+        super(reason);
     }
 
 }

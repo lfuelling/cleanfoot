@@ -25,17 +25,15 @@ package bluej.debugmgr;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-/** 
+/**
  * This class implements a singleton history object for library class
  * invocations.
  *
  * @author Michael Kolling
  * @version $Id: ClassHistory.java 16001 2016-06-09 15:35:27Z nccb $
- *
  */
 @OnThread(Tag.Any)
-public class ClassHistory extends History
-{
+public class ClassHistory extends History {
     // ======= static (factory) section =======
 
     private static ClassHistory classHistory = null;
@@ -45,9 +43,8 @@ public class ClassHistory extends History
      * is called, the 'maxLength' parameter determines the history
      * size. The parameter has no effect on subsequent calls.
      */
-    public static ClassHistory getClassHistory(int maxLength)
-    {
-        if(classHistory == null)
+    public static ClassHistory getClassHistory(int maxLength) {
+        if (classHistory == null)
             classHistory = new ClassHistory(maxLength);
         return classHistory;
     }
@@ -57,8 +54,7 @@ public class ClassHistory extends History
     /**
      * Initialise this history with some often-used classes for convinience.
      */
-    private ClassHistory(int maxLength)
-    {
+    private ClassHistory(int maxLength) {
         super(maxLength, false);
         put("java.lang.String");
         put("java.lang.Math");

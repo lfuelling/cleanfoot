@@ -21,6 +21,12 @@
  */
 package bluej.groupwork.ui;
 
+import bluej.Config;
+import bluej.groupwork.TeamSettings;
+import bluej.groupwork.TeamworkCommandResult;
+import bluej.groupwork.TeamworkProvider;
+import bluej.utility.javafx.FXCustomizedDialog;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.application.Platform;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ProgressBar;
@@ -28,14 +34,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Window;
-
-import bluej.Config;
-import bluej.groupwork.TeamSettings;
-import bluej.groupwork.TeamworkCommandResult;
-import bluej.groupwork.TeamworkProvider;
-import bluej.utility.javafx.FXCustomizedDialog;
-import bluej.utility.javafx.JavaFXUtil;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -47,24 +45,21 @@ import threadchecker.Tag;
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class CheckConnectionDialog extends FXCustomizedDialog<Void>
-{
+public class CheckConnectionDialog extends FXCustomizedDialog<Void> {
     private ProgressBar activityIndicator;
     private Text connLabel;
 
     private final TeamSettings settings;
     private final TeamworkProvider provider;
 
-    public CheckConnectionDialog(Window owner, TeamworkProvider provider, TeamSettings settings)
-    {
+    public CheckConnectionDialog(Window owner, TeamworkProvider provider, TeamSettings settings) {
         super(owner, "team.settings.checkConnection", "team-test-connection");
         this.provider = provider;
         this.settings = settings;
         buildUI();
     }
 
-    private void buildUI()
-    {
+    private void buildUI() {
         VBox contentPane = new VBox();
         contentPane.setMinHeight(120.0);
         JavaFXUtil.addStyleClass(contentPane, "pane");
@@ -80,8 +75,7 @@ public class CheckConnectionDialog extends FXCustomizedDialog<Void>
         contentPane.setFillWidth(true);
     }
 
-    public void showAndCheck()
-    {
+    public void showAndCheck() {
         // Must start the thread before calling showAndWait, because
         // we are modal - showAndWait will block.
         new Thread(new Runnable() {
@@ -90,12 +84,9 @@ public class CheckConnectionDialog extends FXCustomizedDialog<Void>
             public void run() {
                 final TeamworkCommandResult res = provider.checkConnection(settings);
                 Platform.runLater(() -> {
-                    if (!res.isError())
-                    {
+                    if (!res.isError()) {
                         connLabel.setText(Config.getString("team.checkconn.ok"));
-                    }
-                    else
-                    {
+                    } else {
                         connLabel.setText(Config.getString("team.checkconn.bad")
                                 + System.getProperty("line.separator") + System.getProperty("line.separator")
                                 + res.getErrorMessage());

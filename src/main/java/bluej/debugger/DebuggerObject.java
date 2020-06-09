@@ -21,49 +21,48 @@
  */
 package bluej.debugger;
 
-import java.lang.reflect.Modifier;
-import java.util.List;
-
 import bluej.debugger.gentype.GenTypeClass;
 import bluej.debugger.gentype.JavaType;
+
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 /**
  * A class representing an object, and its type, in the debugged VM. The "null" value
  * can also be represented.
  *
- * @author     Michael Kolling
+ * @author Michael Kolling
  */
-public abstract class DebuggerObject
-{
+public abstract class DebuggerObject {
     public static final String OBJECT_REFERENCE = "<object reference>";
-    
+
     /**
      * Get the fully qualified name of the class of this object.
      * If this object is the "null object", return an empty string.
      *
-     * @return  the fully qualified class name
+     * @return the fully qualified class name
      */
     public abstract String getClassName();
-    
+
     /**
-     *  Get the class of this object.
+     * Get the class of this object.
      *
-     *  @return    The class object.
+     * @return The class object.
      */
     public abstract DebuggerClass getClassRef();
-    
+
     /**
      * Get the complete generic type of this object, if known. If not known, the raw
      * dynamic type of the object is returned, or null if this is the null object.
-     * 
-     * @return    The object type (or null for the null object).
+     *
+     * @return The object type (or null for the null object).
      */
     public abstract GenTypeClass getGenType();
 
     /**
-     *  Return true if this object is an array.
+     * Return true if this object is an array.
      *
-     *@return    The Array value
+     * @return The Array value
      */
     public abstract boolean isArray();
 
@@ -76,22 +75,20 @@ public abstract class DebuggerObject
      * Get all field/value pairs for the object.
      */
     public abstract List<DebuggerField> getFields();
-    
+
     /**
-     * Get a field/value pair, specified by index. 
+     * Get a field/value pair, specified by index.
      */
-    public DebuggerField getField(int slot)
-    {
+    public DebuggerField getField(int slot) {
         return getFields().get(slot);
     }
-    
+
     /**
      * Get an instance field/value pair, specified by index.
      */
-    public DebuggerField getInstanceField(int slot)
-    {
+    public DebuggerField getInstanceField(int slot) {
         for (DebuggerField field : getFields()) {
-            if (! Modifier.isStatic(field.getModifiers())) {
+            if (!Modifier.isStatic(field.getModifiers())) {
                 if (slot == 0) {
                     return field;
                 }
@@ -100,7 +97,7 @@ public abstract class DebuggerObject
         }
         return null;
     }
-    
+
     /**
      * Return the number of array elements. Returns -1 if the object is not an array.
      */
@@ -110,12 +107,12 @@ public abstract class DebuggerObject
      * Return the array element type. Returns null if the object is not an array.
      */
     public abstract JavaType getElementType();
-    
+
     /**
      * Return the array element object for the specified index.
      */
     public abstract DebuggerObject getElementObject(int index);
-    
+
     /**
      * Return a string representation of the array element at the specified index.
      * For null, the string "null" will be returned.
@@ -129,7 +126,7 @@ public abstract class DebuggerObject
      * Return the JDI object. This exposes the JDI to Inspectors.
      * If JDI is not being used, it should return null.
      *
-     * @return    The ObjectReference value
+     * @return The ObjectReference value
      */
     public abstract com.sun.jdi.ObjectReference getObjectReference();
 

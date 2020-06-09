@@ -25,29 +25,24 @@ import java.util.List;
 
 /**
  * Mirrors the Scratch Morph class, the base class for a lot of things in Scratch.
- * 
+ * <p>
  * Mainly relevant because it holds the bounds (particularly useful for sprites).
- * 
- * @author neil
  *
+ * @author neil
  */
-public class Morph extends ScratchUserObject
-{
-    public Morph(int id, int version, List<ScratchObject> scratchObjects)
-    {
+public class Morph extends ScratchUserObject {
+    public Morph(int id, int version, List<ScratchObject> scratchObjects) {
         super(id, version, scratchObjects);
     }
 
     // Fields:
     //  bounds (Rectangle), owner (?), submorphs (array), color (Color), flags (int), placeholder (null)
-    
-    public int fields()
-    {
-        return 6; 
+
+    public int fields() {
+        return 6;
     }
-    
-    public ScratchRectangle getBounds()
-    {
-        return (ScratchRectangle)scratchObjects.get(0);
+
+    public ScratchRectangle getBounds() {
+        return (ScratchRectangle) scratchObjects.get(0);
     }
 }

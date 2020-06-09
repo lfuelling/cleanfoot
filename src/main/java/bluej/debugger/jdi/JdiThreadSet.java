@@ -21,40 +21,36 @@
  */
 package bluej.debugger.jdi;
 
-import java.util.*;
-
 import bluej.utility.Debug;
-
 import com.sun.jdi.ThreadReference;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.HashSet;
+import java.util.Iterator;
+
 /**
  * A wrapper around a TreeSet that helps us
  * store JdiThreads.
- * 
- * @author  Michael Kolling
+ *
+ * @author Michael Kolling
  */
 @OnThread(Tag.Any)
-public class JdiThreadSet extends HashSet<JdiThread>
-{
+public class JdiThreadSet extends HashSet<JdiThread> {
     /**
      * Construct an empty thread set.
-     * 
      */
-    public JdiThreadSet()
-    {
+    public JdiThreadSet() {
         super();
     }
 
     /**
      * Find the thread in the set representing the thread reference specified.
      */
-    public JdiThread find(ThreadReference thread)
-    {
-        for(Iterator<JdiThread> it=iterator(); it.hasNext(); ) {
+    public JdiThread find(ThreadReference thread) {
+        for (Iterator<JdiThread> it = iterator(); it.hasNext(); ) {
             JdiThread currentThread = it.next();
-            if(currentThread.sameThread(thread)) {
+            if (currentThread.sameThread(thread)) {
                 return currentThread;
             }
         }
@@ -65,11 +61,10 @@ public class JdiThreadSet extends HashSet<JdiThread>
     /**
      * Remove the given thread from the set.
      */
-    public JdiThread removeThread(ThreadReference thread)
-    {
-        for(Iterator<JdiThread> it=iterator(); it.hasNext(); ) {
+    public JdiThread removeThread(ThreadReference thread) {
+        for (Iterator<JdiThread> it = iterator(); it.hasNext(); ) {
             JdiThread jdiThread = it.next();
-            if(jdiThread.sameThread(thread)) {
+            if (jdiThread.sameThread(thread)) {
                 it.remove();
                 return jdiThread;
             }

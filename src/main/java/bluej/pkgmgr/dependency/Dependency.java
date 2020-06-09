@@ -21,12 +21,6 @@
  */
 package bluej.pkgmgr.dependency;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.Properties;
-
-import javax.swing.*;
-
 import bluej.Config;
 import bluej.extensions.BDependency;
 import bluej.extensions.BDependency.Type;
@@ -34,22 +28,24 @@ import bluej.extensions.ExtensionBridge;
 import bluej.extensions.event.DependencyEvent;
 import bluej.extmgr.ExtensionsManager;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.PackageEditor;
-import bluej.pkgmgr.target.*;
+import bluej.pkgmgr.target.DependentTarget;
+import bluej.pkgmgr.target.Target;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.*;
+import java.util.Properties;
+
 /**
  * A dependency between two targets in a package.
- * 
+ *
  * @author Michael Cahill
  * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public abstract class Dependency
-{
+public abstract class Dependency {
     @OnThread(Tag.Any)
     public final Target from;
     @OnThread(Tag.Any)
@@ -66,23 +62,20 @@ public abstract class Dependency
     static final int SELECT_DIST = 4;
 
     @OnThread(Tag.Any)
-    public Dependency(Package pkg, DependentTarget from, DependentTarget to)
-    {
+    public Dependency(Package pkg, DependentTarget from, DependentTarget to) {
         this.from = from;
         this.to = to;
         this.pkg = pkg;
     }
 
     @OnThread(Tag.Any)
-    public Dependency(Package pkg)
-    {
-        this(pkg, (DependentTarget)null, null);
+    public Dependency(Package pkg) {
+        this(pkg, (DependentTarget) null, null);
     }
 
     @Override
     @OnThread(Tag.Any)
-    public boolean equals(Object other)
-    {
+    public boolean equals(Object other) {
         if (!(other instanceof Dependency))
             return false;
         Dependency d = (Dependency) other;
@@ -91,26 +84,22 @@ public abstract class Dependency
 
     @Override
     @OnThread(Tag.Any)
-    public int hashCode()
-    {
+    public int hashCode() {
         return to.hashCode() - from.hashCode();
     }
 
     @OnThread(Tag.Any)
-    public DependentTarget getFrom()
-    {
+    public DependentTarget getFrom() {
         return (DependentTarget) from;
     }
 
     @OnThread(Tag.Any)
-    public DependentTarget getTo()
-    {
+    public DependentTarget getTo() {
         return (DependentTarget) to;
     }
 
     @OnThread(Tag.SwingIsFX)
-    public BDependency getBDependency()
-    {
+    public BDependency getBDependency() {
         if (singleBDependency == null) {
             singleBDependency = ExtensionBridge.newBDependency(this, getType());
         }
@@ -123,7 +112,7 @@ public abstract class Dependency
      * extensions to distinguish between the different types of dependencies.
      * Subclasses must implement this method and return an appropriate constant
      * of {@link bluej.extensions.BDependency.Type}.
-     * 
+     *
      * @return The type of this dependency;
      */
     @OnThread(Tag.Any)
@@ -132,35 +121,33 @@ public abstract class Dependency
     /**
      * Determine the dependency's "to" and "from" nodes by loading their names from the
      * given Properties.
-     * 
+     *
      * @return true if successful or false if the named targets could not be found
      */
     @OnThread(Tag.Any)
-    public Dependency(Package pkg, Properties props, String prefix) throws DependencyNotFoundException
-    {
+    public Dependency(Package pkg, Properties props, String prefix) throws DependencyNotFoundException {
         this.pkg = pkg;
         String fromName = props.getProperty(prefix + ".from");
         if (fromName == null) {
             throw new DependencyNotFoundException("No 'from' target specified for dependency " + prefix);
         }
         this.from = pkg.getTarget(fromName);
-        if (! (this.from instanceof DependentTarget)) {
+        if (!(this.from instanceof DependentTarget)) {
             throw new DependencyNotFoundException("Failed to find 'from' target " + fromName);
         }
-                
+
         String toName = props.getProperty(prefix + ".to");
         if (toName == null) {
             throw new DependencyNotFoundException("No 'to' target specified for dependency " + prefix);
         }
         this.to = pkg.getTarget(toName);
-        if (! (this.to instanceof DependentTarget)) {
+        if (!(this.to instanceof DependentTarget)) {
             throw new DependencyNotFoundException("Failed to find 'to' target " + toName);
         }
     }
 
     @OnThread(Tag.FXPlatform)
-    public void save(Properties props, String prefix)
-    {
+    public void save(Properties props, String prefix) {
         props.put(prefix + ".from", from.getIdentifierName());
         props.put(prefix + ".to", to.getIdentifierName());
     }
@@ -170,23 +157,20 @@ public abstract class Dependency
      */
     abstract public void remove();
 
-    public String toString()
-    {
+    public String toString() {
         return getFrom().getIdentifierName() + " --> " + getTo().getIdentifierName();
     }
 
     @OnThread(Tag.Any)
-    public boolean isVisible()
-    {
+    public boolean isVisible() {
         return visible;
     }
-    
-    public void setVisible(boolean vis)
-    {
+
+    public void setVisible(boolean vis) {
         if (vis != this.visible) {
             this.visible = vis;
             pkg.repaint();
-            
+
             SwingUtilities.invokeLater(() -> {
                 // Inform all listeners about the visibility change
                 DependencyEvent event = new DependencyEvent(this, getFrom().getPackage(), vis);
@@ -195,14 +179,12 @@ public abstract class Dependency
         }
     }
 
-    public void setSelected(boolean selected)
-    {
+    public void setSelected(boolean selected) {
         this.selected = selected;
         pkg.repaint();
     }
 
-    public boolean isSelected()
-    {
+    public boolean isSelected() {
         return selected;
     }
 
@@ -212,8 +194,7 @@ public abstract class Dependency
      * lines (e.g. extends). Should be overwritten for dependencies with
      * different shape.
      */
-    public boolean contains(int x, int y)
-    {
+    public boolean contains(int x, int y) {
         Line line = computeLine();
         Rectangle2D bounds = getBoxFromLine(line);
 
@@ -229,8 +210,7 @@ public abstract class Dependency
         return (norm < SELECT_DIST * SELECT_DIST);
     }
 
-    static final double normDist(double ax, double ay, double bx, double by, double scale)
-    {
+    static final double normDist(double ax, double ay, double bx, double by, double scale) {
         return ((ax - bx) * (ax - bx) + (ay - by) * (ay - by)) * scale * scale;
     }
 
@@ -238,12 +218,11 @@ public abstract class Dependency
      * Given the line describing start and end points of this dependency, return
      * its bounding box.
      */
-    protected Rectangle2D getBoxFromLine(Line line)
-    {
+    protected Rectangle2D getBoxFromLine(Line line) {
         double x = Math.min(line.from.getX(), line.to.getX()) - SELECT_DIST;
         double y = Math.min(line.from.getY(), line.to.getY()) - SELECT_DIST;
-        double width = Math.max(line.from.getX(), line.to.getX()) - x + (2*SELECT_DIST);
-        double height = Math.max(line.from.getY(), line.to.getY()) - y + (2*SELECT_DIST);
+        double width = Math.max(line.from.getX(), line.to.getX()) - x + (2 * SELECT_DIST);
+        double height = Math.max(line.from.getY(), line.to.getY()) - y + (2 * SELECT_DIST);
 
         return new Rectangle2D(x, y, width, height);
     }
@@ -254,8 +233,7 @@ public abstract class Dependency
      * as straight lines from and to the target border (such as extends
      * dependencies) and should be redefined for different shaped dependencies.
      */
-    public Line computeLine()
-    {
+    public Line computeLine() {
         // Compute centre points of source and dest target
         Point2D pFrom = new Point2D(from.getX() + from.getWidth() / 2, from.getY() + from.getHeight() / 2);
         Point2D pTo = new Point2D(to.getX() + to.getWidth() / 2, to.getY() + to.getHeight() / 2);
@@ -277,14 +255,12 @@ public abstract class Dependency
      * (start point, end point, angle) concisely.
      */
     @OnThread(Tag.FXPlatform)
-    public static class Line
-    {
+    public static class Line {
         public Point2D from;
         public Point2D to;
         double angle;
 
-        public Line(Point2D from, Point2D to, double angle)
-        {
+        public Line(Point2D from, Point2D to, double angle) {
             this.from = from;
             this.to = to;
             this.angle = angle;
@@ -292,10 +268,8 @@ public abstract class Dependency
     }
 
     @OnThread(Tag.Any)
-    public static class DependencyNotFoundException extends Exception
-    {
-        public DependencyNotFoundException(String s)
-        {
+    public static class DependencyNotFoundException extends Exception {
+        public DependencyNotFoundException(String s) {
             super(s);
         }
     }

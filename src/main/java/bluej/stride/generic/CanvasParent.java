@@ -21,27 +21,24 @@
  */
 package bluej.stride.generic;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public interface CanvasParent extends CursorFinder
-{
+import java.util.List;
+import java.util.stream.Collectors;
+
+public interface CanvasParent extends CursorFinder {
     FrameTypeCheck check(FrameCanvas childCanvas);
 
-    default FrameCursor getCursorBefore(FrameCanvas c)
-    {
+    default FrameCursor getCursorBefore(FrameCanvas c) {
         List<FrameCanvas> canvases = getFrame().getCanvases().collect(Collectors.toList());
         int index = canvases.indexOf(c);
         if (index == -1)
             throw new IllegalStateException("Canvas not known by parent frame");
 
         FrameCursor candidate = null;
-        while (index > 0 && (candidate = canvases.get(index - 1).getLastCursor()) == null)
-        {
+        while (index > 0 && (candidate = canvases.get(index - 1).getLastCursor()) == null) {
             index -= 1;
         }
 
@@ -51,16 +48,14 @@ public interface CanvasParent extends CursorFinder
             return getFrame().getCursorBefore();
     }
 
-    default FrameCursor getCursorAfter(FrameCanvas c)
-    {
+    default FrameCursor getCursorAfter(FrameCanvas c) {
         List<FrameCanvas> canvases = getFrame().getCanvases().collect(Collectors.toList());
         int index = canvases.indexOf(c);
         if (index == -1)
             throw new IllegalStateException("Canvas not known by parent frame");
 
         FrameCursor candidate = null;
-        while (index + 1 < canvases.size() && (candidate = canvases.get(index + 1).getFirstCursor()) == null)
-        {
+        while (index + 1 < canvases.size() && (candidate = canvases.get(index + 1).getFirstCursor()) == null) {
             index += 1;
         }
 
@@ -74,25 +69,23 @@ public interface CanvasParent extends CursorFinder
 
     InteractionManager getEditor();
 
-    default void modifiedCanvasContent()
-    {
+    default void modifiedCanvasContent() {
         // By default, notify editor of all changes:
         getEditor().modifiedFrame(null, false);
     }
 
     // package-visible
     @OnThread(Tag.FXPlatform)
-    static boolean processInnerExtensionKey(CanvasParent p, FrameCanvas canvas, FrameCursor cursor, char c, RecallableFocus rc, boolean atTop)
-    {
+    static boolean processInnerExtensionKey(CanvasParent p, FrameCanvas canvas, FrameCursor cursor, char c, RecallableFocus rc, boolean atTop) {
         List<ExtensionDescription> candidates = p.getAvailableExtensions(canvas, cursor).stream()
                 .filter(e -> e.getShortcutKey() == c && e.validFor(atTop ? ExtensionSource.INSIDE_FIRST : ExtensionSource.INSIDE_LATER))
                 .collect(Collectors.toList());
-        
+
         if (candidates.size() == 0) {
             return false;
         }
         if (candidates.size() > 1) {
-            throw new IllegalStateException("Ambiguous inner extension for: " + (int)c);
+            throw new IllegalStateException("Ambiguous inner extension for: " + (int) c);
         }
 
         p.getEditor().beginRecordingState(rc);
@@ -103,10 +96,11 @@ public interface CanvasParent extends CursorFinder
 
     Frame getFrame();
 
-    enum CanvasKind
-    {
+    enum CanvasKind {
         FIELDS, CONSTRUCTORS, METHODS, STATEMENTS, IMPORTS
     }
-    
-    default CanvasKind getChildKind(FrameCanvas c) { return CanvasKind.STATEMENTS; }
+
+    default CanvasKind getChildKind(FrameCanvas c) {
+        return CanvasKind.STATEMENTS;
+    }
 }

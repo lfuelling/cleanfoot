@@ -22,42 +22,34 @@
 package bluej.groupwork.ui;
 
 import bluej.groupwork.HistoryInfo;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * Renderer for cells in the log/history list.
- * 
+ *
  * @author Amjad Altadmri
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class HistoryCell extends ListCell<HistoryInfo>
-{
+public class HistoryCell extends ListCell<HistoryInfo> {
     @Override
-    public void updateItem(HistoryInfo info, boolean empty)
-    {
+    public void updateItem(HistoryInfo info, boolean empty) {
         super.updateItem(info, empty);
-        if (empty || info == null)
-        {
+        if (empty || info == null) {
             setText(null);
             setGraphic(null);
-        }
-        else
-        {
-            setText(info.getDate() + "  "  + info.getRevision() + "\n" + info.getUser() + "\n" + info.getComment());
+        } else {
+            setText(info.getDate() + "  " + info.getRevision() + "\n" + info.getUser() + "\n" + info.getComment());
             setGraphic(getGraphics(info));
         }
     }
 
-    private Node getGraphics(HistoryInfo info)
-    {
+    private Node getGraphics(HistoryInfo info) {
         ObservableList<String> files = FXCollections.observableArrayList(info.getFiles());
         ListView<String> filesListView = new ListView<>(files);
         // Generally cells are around 24px

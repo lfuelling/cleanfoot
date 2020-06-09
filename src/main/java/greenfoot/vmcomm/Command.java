@@ -25,8 +25,7 @@ package greenfoot.vmcomm;
  * A command or event from the server VM to the debug VM, such
  * as keyboard/mouse event, Run, Reset, etc
  */
-public class Command
-{
+public class Command {
     // These are the constants passed in the shared memory between processes,
     // hence they cannot be enums.  They are not persisted anywhere, so can
     // be changed at will (as long as they don't overlap).
@@ -75,8 +74,8 @@ public class Command
 
     public static final int COMMAND_WORLD_FOCUS_GAINED = 40;
     public static final int COMMAND_WORLD_FOCUS_LOST = 41;
-    
-    
+
+
     // Commands are assigned a stricly increasing ID:
     private static int nextCommandSequence = 1;
 
@@ -87,26 +86,23 @@ public class Command
     /**
      * Construct a command of the given type, and with any number of additional parameters.
      */
-    public Command(int commandType, int... extraInfo)
-    {
+    public Command(int commandType, int... extraInfo) {
         this.commandSequence = nextCommandSequence++;
         this.commandType = commandType;
         this.extraInfo = extraInfo;
     }
-    
+
     /**
      * Check if an event is a key event.
      */
-    public static boolean isKeyEvent(int event)
-    {
+    public static boolean isKeyEvent(int event) {
         return event >= KEY_DOWN && event <= KEY_TYPED;
     }
 
     /**
      * Check if an even is a mouse event.
      */
-    public static boolean isMouseEvent(int event)
-    {
+    public static boolean isMouseEvent(int event) {
         return event >= MOUSE_CLICKED && event <= MOUSE_EXITED;
     }
 }

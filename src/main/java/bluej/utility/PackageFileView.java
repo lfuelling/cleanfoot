@@ -21,24 +21,22 @@
  */
 package bluej.utility;
 
-import java.io.File;
-
-import javax.swing.Icon;
-import javax.swing.filechooser.FileView;
-
 import bluej.Config;
 import bluej.pkgmgr.Package;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileView;
+import java.io.File;
 
 /**
  * A FileView subclass that enables BlueJ packages to be displayed with a
  * distinct icon in a FileChooser.
  *
  * @author Michael Kolling
- * @see FileUtility
  * @version $Id: PackageFileView.java 12533 2014-10-10 12:08:52Z nccb $
+ * @see FileUtility
  */
-public class PackageFileView extends FileView
-{
+public class PackageFileView extends FileView {
     private static Icon bluejProjectIcon;
     private static Icon greenfootProjectIcon;
 
@@ -48,8 +46,7 @@ public class PackageFileView extends FileView
      * the system.)
      */
     @Override
-    public String getName(File f)
-    {
+    public String getName(File f) {
         return null;
     }
 
@@ -57,8 +54,7 @@ public class PackageFileView extends FileView
      * A human readable description of the file.
      */
     @Override
-    public String getDescription(File f)
-    {
+    public String getDescription(File f) {
         return null;
     }
 
@@ -66,8 +62,7 @@ public class PackageFileView extends FileView
      * A human readable description of the type of the file.
      */
     @Override
-    public String getTypeDescription(File f)
-    {
+    public String getTypeDescription(File f) {
         return null;
     }
 
@@ -76,25 +71,21 @@ public class PackageFileView extends FileView
      * Everything else gets handled by the system (by returning null).
      */
     @Override
-    public Icon getIcon(File f)
-    {
+    public Icon getIcon(File f) {
         if (Config.isMacOS() && f.getAbsolutePath().equals("/net")) {
             // On MacOS this path is a special mapping; looking for a particular
             // file inside it can cause a significant delay.
             return null;
         }
-        
-        if(Package.isPackage(f))
+
+        if (Package.isPackage(f))
             if (Config.isGreenfoot()) {
-                if (greenfootProjectIcon == null)
-                {
+                if (greenfootProjectIcon == null) {
                     greenfootProjectIcon = Config.getFixedImageAsIcon("greenfoot-project.png");
                 }
                 return greenfootProjectIcon;
-            }
-            else {
-                if (bluejProjectIcon == null)
-                {
+            } else {
+                if (bluejProjectIcon == null) {
                     bluejProjectIcon = Config.getFixedImageAsIcon("bluej-project.png");
                 }
                 return bluejProjectIcon;

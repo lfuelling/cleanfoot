@@ -24,11 +24,10 @@ package bluej.stride.slots;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public interface SlotValueListener
-{
+public interface SlotValueListener {
     /**
      * Return true if newValue should be used, false if it should be rejected.
-     * 
+     *
      * @param oldValue
      * @param newValue
      * @param parent
@@ -37,8 +36,10 @@ public interface SlotValueListener
     boolean valueChanged(HeaderItem slot, String oldValue, String newValue, FocusParent<HeaderItem> parent);
 
     @OnThread(Tag.FXPlatform)
-    default void backSpacePressedAtStart(HeaderItem slot) {}
+    default void backSpacePressedAtStart(HeaderItem slot) {
+    }
 
     @OnThread(Tag.FXPlatform)
-    default void deletePressedAtEnd(HeaderItem slot) {}
+    default void deletePressedAtEnd(HeaderItem slot) {
+    }
 }

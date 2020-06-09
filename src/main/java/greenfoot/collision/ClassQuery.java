@@ -23,23 +23,19 @@ package greenfoot.collision;
 
 import greenfoot.Actor;
 
-public class ClassQuery implements CollisionQuery
-{
+public class ClassQuery implements CollisionQuery {
     private final Class<?> cls;
     private final CollisionQuery subQuery;
-    
-    public ClassQuery(Class<?> cls, CollisionQuery subQuery)
-    {
+
+    public ClassQuery(Class<?> cls, CollisionQuery subQuery) {
         this.cls = cls;
         this.subQuery = subQuery;
     }
-    
-    public boolean checkCollision(Actor actor)
-    {
+
+    public boolean checkCollision(Actor actor) {
         if (cls.isInstance(actor)) {
             return subQuery.checkCollision(actor);
-        }
-        else {
+        } else {
             return false;
         }
     }

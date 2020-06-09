@@ -25,33 +25,30 @@ import bluej.debugger.gentype.JavaType;
 
 /**
  * An entity to represent a constant string value.
- * 
+ *
  * @author Davin McCall
  */
-public class ConstantStringEntity extends ValueEntity
-{
+public class ConstantStringEntity extends ValueEntity {
     private final String value;
-    
+
     /**
      * Construct a constant string entity
-     * @param stringType  A representation of the "java.lang.String" type
-     * @param value       The string value
+     *
+     * @param stringType A representation of the "java.lang.String" type
+     * @param value      The string value
      */
-    public ConstantStringEntity(JavaType stringType, String value)
-    {
+    public ConstantStringEntity(JavaType stringType, String value) {
         super(stringType);
         this.value = value.intern();
     }
-    
+
     @Override
-    public boolean isConstantString()
-    {
+    public boolean isConstantString() {
         return true;
     }
-    
+
     @Override
-    public String getConstantString()
-    {
+    public String getConstantString() {
         return value;
     }
 }

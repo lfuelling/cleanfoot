@@ -40,17 +40,15 @@ import java.util.stream.Collectors;
  * Dialog for showing the user a list of files which failed
  * an import.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  * @version $Id: ImportFailedDialog.java 16020 2016-06-12 21:51:31Z nccb $
  */
 @OnThread(Tag.FXPlatform)
-public class ImportFailedDialog extends javafx.scene.control.Dialog<Void>
-{
+public class ImportFailedDialog extends javafx.scene.control.Dialog<Void> {
     private static final String dialogTitle = Config.getString("pkgmgr.importfailed.title");
     private final ButtonType CONTINUE;
 
-    public ImportFailedDialog(javafx.stage.Window parent, java.util.List<File> files)
-    {
+    public ImportFailedDialog(javafx.stage.Window parent, java.util.List<File> files) {
         initOwner(parent);
         setTitle(dialogTitle);
         initModality(Modality.WINDOW_MODAL);

@@ -21,44 +21,36 @@
  */
 package bluej.pkgmgr;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-
 import bluej.parser.InfoParser;
 import bluej.parser.symtab.ClassInfo;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 /**
  * A container holding information about a class's source file. The
  * information is collected mainly by the class parser, and used for
  * automatic editing of the source.
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  * @version $Id: SourceInfo.java 16066 2016-06-21 20:19:57Z nccb $
  */
-public final class SourceInfo
-{
+public final class SourceInfo {
     private ClassInfo info;
 
-    public SourceInfo()
-    {
+    public SourceInfo() {
         info = null;
     }
 
-    public void setSourceModified()
-    {
+    public void setSourceModified() {
         info = null;
     }
 
-    public ClassInfo getInfo(File sourceFile, Package pkg)
-    {
-        if(info == null)
-        {
-            try
-            {
+    public ClassInfo getInfo(File sourceFile, Package pkg) {
+        if (info == null) {
+            try {
                 info = InfoParser.parseWithPkg(sourceFile, pkg);
-            }
-            catch (FileNotFoundException fnfe)
-            {
+            } catch (FileNotFoundException fnfe) {
                 // info remains null
             }
         }
@@ -70,8 +62,7 @@ public final class SourceInfo
      * Similar to getInfo, but do not parse if info is not available.
      * Instead, return null, if we got no info.
      */
-    public ClassInfo getInfoIfAvailable()
-    {
+    public ClassInfo getInfoIfAvailable() {
         return info;
     }
 }

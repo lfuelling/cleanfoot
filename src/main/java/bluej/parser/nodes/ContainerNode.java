@@ -24,34 +24,29 @@ package bluej.parser.nodes;
 /**
  * A basic container node implementation. A container node contains some sort of inner
  * scope.
- * 
+ *
  * @author Davin McCall
  */
-public class ContainerNode extends JavaParentNode
-{
+public class ContainerNode extends JavaParentNode {
     private final int nodeType;
-    
-    public ContainerNode(JavaParentNode parent, int nodeType)
-    {
+
+    public ContainerNode(JavaParentNode parent, int nodeType) {
         super(parent);
         this.nodeType = nodeType;
     }
-    
+
     @Override
-    public int getNodeType()
-    {
+    public int getNodeType() {
         return nodeType;
     }
-    
+
     @Override
-    public boolean isContainer()
-    {
+    public boolean isContainer() {
         return true;
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return true;
     }
 }

@@ -21,6 +21,7 @@
  */
 @OnThread(Tag.FX)
 package bluej.stride.framedjava.errors;
+
 import threadchecker.OnThread;
 import threadchecker.Tag;
 

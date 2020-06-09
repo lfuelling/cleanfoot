@@ -21,22 +21,13 @@
  */
 package bluej.groupwork.git;
 
-import bluej.groupwork.LogHistoryListener;
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusListener;
-import bluej.groupwork.TeamSettings;
-import bluej.groupwork.TeamworkCommand;
+import bluej.groupwork.*;
 import bluej.utility.Debug;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -46,12 +37,16 @@ import org.eclipse.jgit.revwalk.RevWalkUtils;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
 /**
- *
  * @author Fabio Hedayioglu
  */
-public class GitRepository implements Repository
-{
+public class GitRepository implements Repository {
 
     private final File projectPath;
     private final String protocol; // Only for data collection
@@ -65,16 +60,16 @@ public class GitRepository implements Repository
     /**
      * Create a Git repository when all fields are known. Usually when cloning a
      * repository.
+     *
      * @param projectPath path to save the project to.
-     * @param protocol protocol used when communicating to the server
-     * @param reposUrl repository's path on the remote server
-     * @param userName user name to be used to authenticate on the server
-     * @param password user password
-     * @param yourName user name to be registered on the local git repository
-     * @param yourEmail user e-mail to be registered on the local git repository
+     * @param protocol    protocol used when communicating to the server
+     * @param reposUrl    repository's path on the remote server
+     * @param userName    user name to be used to authenticate on the server
+     * @param password    user password
+     * @param yourName    user name to be registered on the local git repository
+     * @param yourEmail   user e-mail to be registered on the local git repository
      */
-    public GitRepository(File projectPath, String protocol, String reposUrl, String userName, String password, String yourName, String yourEmail) 
-    {
+    public GitRepository(File projectPath, String protocol, String reposUrl, String userName, String password, String yourName, String yourEmail) {
         this.projectPath = projectPath;
         this.protocol = protocol;
         this.reposUrl = reposUrl;
@@ -83,38 +78,32 @@ public class GitRepository implements Repository
         this.yourName = yourName;
         this.yourEmail = yourEmail;
     }
-    
-    public void setReposUrl(String url) 
-    {
+
+    public void setReposUrl(String url) {
         this.reposUrl = url;
     }
 
-    public String getReposUrl() 
-    {
+    public String getReposUrl() {
         return this.reposUrl;
     }
 
     @Override
-    public void setPassword(TeamSettings newSettings) 
-    {
+    public void setPassword(TeamSettings newSettings) {
         this.password = newSettings.getPassword();
     }
-    
+
     @Override
-    public boolean versionsDirectories() 
-    {
+    public boolean versionsDirectories() {
         return true;
     }
 
     @Override
-    public TeamworkCommand checkout(File projectPath) 
-    {
+    public TeamworkCommand checkout(File projectPath) {
         return new GitCloneCommand(this, projectPath);
     }
 
     @Override
-    public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files, String commitComment)
-    {
+    public TeamworkCommand commitAll(Set<File> newFiles, Set<File> binaryNewFiles, Set<File> deletedFiles, Set<File> files, String commitComment) {
         //we dont' need a list of binary files and regular files. merge them.
         newFiles.addAll(binaryNewFiles);
 
@@ -122,63 +111,52 @@ public class GitRepository implements Repository
     }
 
     @Override
-    public TeamworkCommand shareProject() 
-    {
+    public TeamworkCommand shareProject() {
         return new GitShareCommand(this);
     }
 
     @Override
-    public TeamworkCommand pushChanges()
-    {
+    public TeamworkCommand pushChanges() {
         return new GitPushChangesCommand(this);
     }
 
     @Override
-    public TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote) 
-    {
+    public TeamworkCommand getStatus(StatusListener listener, FileFilter filter, boolean includeRemote) {
         return new GitStatusCommand(this, listener, filter, includeRemote);
     }
 
     @Override
-    public TeamworkCommand getModules(List<String> modules)
-    {
+    public TeamworkCommand getModules(List<String> modules) {
         return null; // not necessary on Git repositories.
     }
 
     @Override
-    public TeamworkCommand getLogHistory(LogHistoryListener listener) 
-    {
+    public TeamworkCommand getLogHistory(LogHistoryListener listener) {
         return new GitHistoryCommand(this, listener);
     }
 
     @Override
-    public boolean prepareDeleteDir(File dir) 
-    {
+    public boolean prepareDeleteDir(File dir) {
         return true;
     }
 
     @Override
-    public void prepareCreateDir(File dir) 
-    {
-        
+    public void prepareCreateDir(File dir) {
+
     }
 
     @Override
-    public FileFilter getMetadataFilter() 
-    {
-        return new FileFilter()
-        {
-            public boolean accept(File pathname) 
-            {
+    public FileFilter getMetadataFilter() {
+        return new FileFilter() {
+            public boolean accept(File pathname) {
                 return !pathname.getName().equals(".git");
             }
         };
     }
 
     @Override
-    public void getAllLocallyDeletedFiles(Set<File> files)
-    {
-        
+    public void getAllLocallyDeletedFiles(Set<File> files) {
+
         try (Git repo = Git.open(getProjectPath())) {
             Status s = repo.status().call();
 
@@ -187,25 +165,22 @@ public class GitRepository implements Repository
             filesStr.stream().forEach((fileName) -> {
                 files.add(new File(fileName));
             });
-        }catch (IOException | GitAPIException | NoWorkTreeException ex) {
+        } catch (IOException | GitAPIException | NoWorkTreeException ex) {
             Debug.reportError("Git get all locally deleted command exception", ex);
         }
     }
 
     @Override
-    public String getVCSType() 
-    {
+    public String getVCSType() {
         return "Git";
     }
 
     @Override
-    public String getVCSProtocol() 
-    {
+    public String getVCSProtocol() {
         return protocol;
     }
-    
-    public UsernamePasswordCredentialsProvider getCredentialsProvider() 
-    {
+
+    public UsernamePasswordCredentialsProvider getCredentialsProvider() {
         // set a configuration with username and password.
         UsernamePasswordCredentialsProvider cp = new UsernamePasswordCredentialsProvider(userName,
                 password == null ? "" : password);
@@ -215,38 +190,34 @@ public class GitRepository implements Repository
     /**
      * @return the yourName
      */
-    public String getYourName() 
-    {
+    public String getYourName() {
         return yourName;
     }
 
     /**
      * @return the yourEmail
      */
-    public String getYourEmail() 
-    {
+    public String getYourEmail() {
         return yourEmail;
     }
-    
-    protected File getProjectPath() 
-    {
+
+    protected File getProjectPath() {
         return this.projectPath;
     }
-    
-    
+
+
     /** Utility methods **/
-    
+
     /**
      * given a objectID, returns the RevTree it belongs to.
      *
-     * @param repo the repository
+     * @param repo  the repository
      * @param objID the objectId
      * @return the tree if found.
      * @throws IncorrectObjectTypeException
      * @throws IOException
      */
-    public RevTree getTree(org.eclipse.jgit.lib.Repository repo, ObjectId objID) throws IncorrectObjectTypeException, IOException
-    {
+    public RevTree getTree(org.eclipse.jgit.lib.Repository repo, ObjectId objID) throws IncorrectObjectTypeException, IOException {
         RevTree tree;
         try (RevWalk walk = new RevWalk(repo)) {
             RevCommit commit = walk.parseCommit(objID);
@@ -257,19 +228,18 @@ public class GitRepository implements Repository
         }
         return tree;
     }
-    
-    
+
+
     /**
      * finds out if local or remote is ahead.
      *
-     * @param repo git repository
-     * @param local master
+     * @param repo   git repository
+     * @param local  master
      * @param remote origin/master
      * @return true if local is ahead of origin/master. False otherwise.
      * @throws IOException
      */
-    public boolean isLocalAhead(Git repo, Ref local, Ref remote) throws IOException
-    {
+    public boolean isLocalAhead(Git repo, Ref local, Ref remote) throws IOException {
         RevWalk walk = new RevWalk(repo.getRepository());
         try {
             RevCommit localCommit = walk.parseCommit(local.getObjectId());

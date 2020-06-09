@@ -21,14 +21,17 @@
  */
 package bluej.stride.framedjava.elements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
-
 import bluej.debugger.gentype.ConstructorReflective;
+import bluej.parser.ExpressionTypeInfo;
+import bluej.parser.entity.EntityResolver;
 import bluej.stride.framedjava.ast.FrameFragment;
+import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
+import bluej.stride.framedjava.ast.JavaSource;
+import bluej.stride.framedjava.ast.Loader;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
+import bluej.stride.framedjava.errors.SyntaxCodeError;
+import bluej.stride.framedjava.frames.TopLevelFrame;
+import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.generic.AssistContentThreadSafe;
 import bluej.stride.generic.InteractionManager;
 import nu.xom.Attribute;
@@ -36,33 +39,27 @@ import nu.xom.Element;
 import nu.xom.Elements;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.parser.ExpressionTypeInfo;
-import bluej.parser.entity.EntityResolver;
-import bluej.stride.framedjava.ast.JavaFragment.PosInSourceDoc;
-import bluej.stride.framedjava.ast.JavaSource;
-import bluej.stride.framedjava.ast.Loader;
-import bluej.stride.framedjava.errors.SyntaxCodeError;
-import bluej.stride.framedjava.frames.TopLevelFrame;
-import bluej.stride.framedjava.slots.ExpressionSlot;
 
-public interface TopLevelCodeElement
-{
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+public interface TopLevelCodeElement {
     // This is primarily a marker for ClassElement and InterfaceElement,
     // to try to make sure we don't pass the wrong element when a top-level element is intended
-    
+
     // Helper methods:
-    static ArrayList<TypeSlotFragment> xmlToTypeList(Element el, String container, String itemName, String itemAttribute)
-    {
+    static ArrayList<TypeSlotFragment> xmlToTypeList(Element el, String container, String itemName, String itemAttribute) {
         ArrayList<TypeSlotFragment> members = new ArrayList<>();
         Element collectionChildElement = el.getFirstChildElement(container);
-        if (collectionChildElement != null ) {
+        if (collectionChildElement != null) {
             Elements children = collectionChildElement.getChildElements();
             for (int i = 0; i < children.size(); i++) {
                 final Element child = children.get(i);
                 if (child.getLocalName().equals(itemName)) {
                     members.add(new TypeSlotFragment(child.getAttributeValue(itemAttribute), child.getAttributeValue(itemAttribute + "-java")));
-                }
-                else {
+                } else {
                     bluej.utility.Debug.reportError("Wrong element format: expected '" + itemName + "', found '" + child.getLocalName() + "'.");
                 }
             }
@@ -71,11 +68,9 @@ public interface TopLevelCodeElement
     }
 
     // Makes an XML element named container, with an element per string (of type itemName) with content put in the given itemAttribute
-    static Element typeListToXML(List<TypeSlotFragment> items, String container, String itemName, String itemAttribute)
-    {
+    static Element typeListToXML(List<TypeSlotFragment> items, String container, String itemName, String itemAttribute) {
         Element el = new Element(container);
-        for (TypeSlotFragment s : items)
-        {
+        for (TypeSlotFragment s : items) {
             LocatableElement child = new LocatableElement(null, itemName);
             child.addAttributeStructured(itemAttribute, s);
             el.appendChild(child);
@@ -83,11 +78,10 @@ public interface TopLevelCodeElement
         return el;
     }
 
-    static List<CodeElement> fillChildrenElements(ContainerCodeElement parent, Element el, String string)
-    {
+    static List<CodeElement> fillChildrenElements(ContainerCodeElement parent, Element el, String string) {
         List<CodeElement> members = new ArrayList<CodeElement>();
         Element collectionChildElement = el.getFirstChildElement(string);
-        if (collectionChildElement != null ) {
+        if (collectionChildElement != null) {
             Elements children = collectionChildElement.getChildElements();
             for (int i = 0; i < children.size(); i++) {
                 CodeElement member = Loader.loadElement(children.get(i));
@@ -98,8 +92,7 @@ public interface TopLevelCodeElement
         return members;
     }
 
-    static Attribute getStrideVersionAttribute()
-    {
+    static Attribute getStrideVersionAttribute() {
         return new Attribute("strideversion", "1");
     }
 
@@ -110,7 +103,7 @@ public interface TopLevelCodeElement
     List<ImportElement> getImports();
 
     String getName();
-    
+
     // Used to help style the tab:
     String getStylePrefix();
 
@@ -130,15 +123,14 @@ public interface TopLevelCodeElement
     @OnThread(Tag.FXPlatform) JavaSource toJavaSource();
 
     @OnThread(Tag.FXPlatform)
-    default JavaSource toJavaSource(boolean warning)
-    {
+    default JavaSource toJavaSource(boolean warning) {
         JavaSource java = toJavaSource();
         if (warning) {
             // TODO AA make it non-compiled fragment
 
             // Clone before modifying:
             java = new JavaSource(java);
-            java.prependLine(Arrays.asList(new FrameFragment(null, (CodeElement)this, "// WARNING: This file is auto-generated and any changes to it will be overwritten")), null);
+            java.prependLine(Arrays.asList(new FrameFragment(null, (CodeElement) this, "// WARNING: This file is auto-generated and any changes to it will be overwritten")), null);
         }
         return java;
     }

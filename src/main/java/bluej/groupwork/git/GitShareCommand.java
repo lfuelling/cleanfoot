@@ -23,30 +23,28 @@ package bluej.groupwork.git;
 
 import bluej.groupwork.TeamworkCommandError;
 import bluej.groupwork.TeamworkCommandResult;
-import java.io.IOException;
-import java.util.Collection;
-import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.StoredConfig;
+
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Git command to share a project
  *
  * @author Fabio Heday
  */
-public class GitShareCommand extends GitCommand
-{
+public class GitShareCommand extends GitCommand {
 
-    public GitShareCommand(GitRepository repository)
-    {
+    public GitShareCommand(GitRepository repository) {
         super(repository);
     }
 
     @Override
-    public TeamworkCommandResult getResult()
-    {
+    public TeamworkCommandResult getResult() {
         try {
             if (isRemoteRepoEmpty()) {
                 //remote repository is empty, we can proceed initializing the
@@ -73,8 +71,7 @@ public class GitShareCommand extends GitCommand
         return new TeamworkCommandResult();
     }
 
-    private boolean isRemoteRepoEmpty() throws GitAPIException
-    {
+    private boolean isRemoteRepoEmpty() throws GitAPIException {
         try {
             String gitUrl = getRepository().getReposUrl();
 

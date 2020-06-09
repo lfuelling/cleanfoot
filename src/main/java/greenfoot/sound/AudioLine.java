@@ -36,7 +36,7 @@ import javax.sound.sampled.SourceDataLine;
  * implement our own drain method. By using this timing we also don't have to
  * open and close on the line in order to reset the framecount of the line when
  * restarting, since it is not used anyway.
- * 
+ *
  * <p>
  * <p>
  * There are several inconsistencies between different platforms that means that
@@ -76,7 +76,7 @@ import javax.sound.sampled.SourceDataLine;
  * <ul>
  * <li>Repeatedly calling close and open makes it hang in close.</li>
  * <li>Haven't tested whether line.drain() works.</li>
- * 
+ *
  * </ul>
  * <p>
  * Mac (OS 10.5.6, JDK 1.5.0_16
@@ -92,20 +92,16 @@ import javax.sound.sampled.SourceDataLine;
  * <li>It skips START events if the line is closed before we have received the
  * START event.</li>
  * </ul>
- * 
- * 
- * 
+ *
  * @author Poul Henriksen
- * 
  */
-public class AudioLine
-{
+public class AudioLine {
 
-    private static void printDebug(String s)
-    {
+    private static void printDebug(String s) {
         // Comment this line out if you don't want debug info.
         // System.out.println(s);
     }
+
     /**
      * Extra delay in ms added to the sleep time before stopping the sound. This
      * is just an extra buffer of time to make sure we don't close it too soon.
@@ -120,11 +116,17 @@ public class AudioLine
      */
     private final SourceDataLine line;
     private final AudioFormat format;
-    /** Total bytes written since playback started. */
+    /**
+     * Total bytes written since playback started.
+     */
     private long totalWritten;
-    /** Whether the line is open. */
+    /**
+     * Whether the line is open.
+     */
     private boolean open;
-    /** Whether the line has been started. */
+    /**
+     * Whether the line has been started.
+     */
     private boolean started;
     private int masterVolume;
     /**
@@ -137,11 +139,12 @@ public class AudioLine
      * no longer reset.
      */
     private boolean reset;
-    /** Keeps track of how much time have been spend on active playback. */
+    /**
+     * Keeps track of how much time have been spend on active playback.
+     */
     private final TimeTracker timeTracker;
 
-    public AudioLine(SourceDataLine line, AudioFormat format)
-    {
+    public AudioLine(SourceDataLine line, AudioFormat format) {
         this.line = line;
         this.format = format;
         timeTracker = new TimeTracker();
@@ -149,17 +152,16 @@ public class AudioLine
 
     /**
      * Opens the line. If already open, this method does nothing.
-     * 
+     *
      * @throws LineUnavailableException if the line cannot be opened due to
-     *             resource restrictions
+     *                                  resource restrictions
      * @throws IllegalArgumentException if <code>format</code> is not fully
-     *             specified or invalid
-     * @throws SecurityException if the line cannot be opened due to security
-     *             restrictions
+     *                                  specified or invalid
+     * @throws SecurityException        if the line cannot be opened due to security
+     *                                  restrictions
      */
     public synchronized void open()
-            throws LineUnavailableException, IllegalArgumentException, IllegalStateException, SecurityException
-    {
+            throws LineUnavailableException, IllegalArgumentException, IllegalStateException, SecurityException {
         if (!open) {
             line.open(format);
             open = true;
@@ -170,8 +172,7 @@ public class AudioLine
     /**
      * Closes the line. If the line is not open, this method does nothing.
      */
-    public synchronized void close()
-    {
+    public synchronized void close() {
         if (open) {
             open = false;
             reset();
@@ -184,8 +185,7 @@ public class AudioLine
      * Unlike SourceDataLine this method does NOT have to be called before
      * writing to the line.
      */
-    public synchronized void start()
-    {
+    public synchronized void start() {
         if (!started && open) {
             line.start();
             started = true;
@@ -201,8 +201,7 @@ public class AudioLine
      * Stops the line. Playback will stop. It can later be resumed by calling
      * start.
      */
-    public synchronized void stop()
-    {
+    public synchronized void stop() {
         if (open) {
             //stop = true;
             notifyAll();
@@ -217,8 +216,7 @@ public class AudioLine
      * buffer. The line will remain open. If the line is not open, this method
      * does nothing.
      */
-    public synchronized void reset()
-    {
+    public synchronized void reset() {
         printDebug("reset() start");
 
         if (open) {
@@ -242,12 +240,11 @@ public class AudioLine
      * Will attempt to write the given bytes to the line. This method might
      * block if it can't write it all at once. If the line is not open then this
      * method will return 0 immediately.
-     * 
+     *
      * @return The number of bytes written (different from len if the line was
-     *         stopped while writing).
+     * stopped while writing).
      */
-    public int write(byte[] b, int off, int len)
-    {
+    public int write(byte[] b, int off, int len) {
         synchronized (this) {
             if (!open) {
                 return 0;
@@ -266,8 +263,7 @@ public class AudioLine
             writing = false;
             if (!reset) {
                 totalWritten += written;
-            }
-            else if (reset && open) {
+            } else if (reset && open) {
                 // Flush what we just wrote to keep it reset.
                 line.flush();
             }
@@ -279,12 +275,11 @@ public class AudioLine
      * Wait for the line to finish playback. If this line is closed or reset it
      * will return immediately. If the line is stopped, this method will not
      * return until the line is started again.
-     * 
+     *
      * @return True if we successfully drained all the data, false if the line
-     *         was closed before playback finished.
+     * was closed before playback finished.
      */
-    public synchronized boolean drain()
-    {
+    public synchronized boolean drain() {
         printDebug("Draining start");
         printDebug(" totalWritten: " + totalWritten);
         long timeLeft = getTimeLeft();
@@ -293,17 +288,14 @@ public class AudioLine
             if (started && timeLeft > 0) {
                 try {
                     wait(timeLeft);
+                } catch (InterruptedException e) {
                 }
-                catch (InterruptedException e) {
-                }
-            }
-            else if (!started || writing) {
+            } else if (!started || writing) {
                 try {
                     // Line is stopped, or we are currently writing to the line
                     // so we wait until waken up again.
                     wait();
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                 }
             }
             timeLeft = getTimeLeft();
@@ -313,23 +305,19 @@ public class AudioLine
         return timeLeft <= 0;
     }
 
-    public synchronized boolean isOpen()
-    {
+    public synchronized boolean isOpen() {
         return open;
     }
 
-    private synchronized long getTimeLeft()
-    {
+    private synchronized long getTimeLeft() {
         return SoundUtils.getTimeToPlayBytes(totalWritten, format) - timeTracker.getTimeTracked() + EXTRA_SLEEP_DELAY;
     }
 
-    public long getLongFramePosition()
-    {
+    public long getLongFramePosition() {
         return line.getLongFramePosition();
     }
 
-    public synchronized void setVolume(int masterVolume)
-    {
+    public synchronized void setVolume(int masterVolume) {
         this.masterVolume = masterVolume;
         try {
             open();
@@ -340,14 +328,12 @@ public class AudioLine
                     volume.setValue(val);
                 }
             }
-        }
-        catch (LineUnavailableException ex) {
+        } catch (LineUnavailableException ex) {
             SoundExceptionHandler.handleLineUnavailableException(ex);
         }
     }
 
-    public synchronized int getVolume()
-    {
+    public synchronized int getVolume() {
         return masterVolume;
     }
 }

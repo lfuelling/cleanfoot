@@ -21,61 +21,52 @@
  */
 package bluej.utility;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-
-import javax.swing.Icon;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Return a filled oval as an Icon
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class OvalIcon implements Icon
-{
+public class OvalIcon implements Icon {
     private final Color color;
     private static OvalIcon redIcon;
     private static OvalIcon blankIcon;
 
-    public static OvalIcon getRedOvalIcon()
-    {
+    public static OvalIcon getRedOvalIcon() {
         if (redIcon == null)
             redIcon = new OvalIcon(Color.red);
-        return redIcon;        
+        return redIcon;
     }
 
-    public static OvalIcon getBlankOvalIcon()
-    {
+    public static OvalIcon getBlankOvalIcon() {
         if (blankIcon == null)
             blankIcon = new OvalIcon(null);
         return blankIcon;
     }
 
-    public OvalIcon (Color c)
-    {
+    public OvalIcon(Color c) {
         color = c;
     }
 
     @Override
-    public void paintIcon (Component c, Graphics g, int x, int y)
-    {
-        if(color != null) {
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+        if (color != null) {
             int width = getIconWidth();
             int height = getIconHeight();
-            g.setColor (color);
-            g.fillOval (x, y, width, height);
+            g.setColor(color);
+            g.fillOval(x, y, width, height);
         }
     }
+
     @Override
-    public int getIconWidth()
-    {
+    public int getIconWidth() {
         return 10;
     }
-    
+
     @Override
-    public int getIconHeight()
-    { 
+    public int getIconHeight() {
         return 10;
     }
 }

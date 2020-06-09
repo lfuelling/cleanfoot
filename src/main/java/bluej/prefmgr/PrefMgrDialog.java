@@ -21,42 +21,36 @@
  */
 package bluej.prefmgr;
 
-import javax.swing.SwingUtilities;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 import bluej.BlueJTheme;
-import bluej.pkgmgr.Project;
-import bluej.utility.Utility;
-import bluej.utility.javafx.SwingNodeFixed;
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.embed.swing.SwingNode;
-import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TitledPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
-
 import bluej.Config;
 import bluej.classmgr.ClassMgrPrefPanel;
 import bluej.editor.moe.EditorPrefPanel;
 import bluej.editor.moe.KeyBindingsPanel;
 import bluej.extmgr.ExtensionPrefManager;
 import bluej.extmgr.ExtensionsManager;
+import bluej.pkgmgr.Project;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.JavaFXUtil;
+import bluej.utility.javafx.SwingNodeFixed;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.embed.swing.SwingNode;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * A JDialog subclass to allow the user to interactively edit
@@ -64,21 +58,22 @@ import threadchecker.Tag;
  *
  * <p>A singleton.
  *
- * @author  Andrew Patterson
- * @author  Michael Kolling
+ * @author Andrew Patterson
+ * @author Michael Kolling
  */
-public class PrefMgrDialog
-{
+public class PrefMgrDialog {
     private static PrefMgrDialog dialog = null;
-    
+
     /**
      * Creating the preference panes requires thread-hopping.  This property
      * is set to true (on the FXPlatform thread) once they are ready.
      */
     @OnThread(Tag.FXPlatform)
     private final BooleanProperty prefPanesCreated = new SimpleBooleanProperty(false);
-    
-    /** Indicates whether the dialog has been prepared for display. */
+
+    /**
+     * Indicates whether the dialog has been prepared for display.
+     */
     private boolean prepared = false;
     private Project curProject; // can be null
 
@@ -86,8 +81,7 @@ public class PrefMgrDialog
      * Show the preferences dialog when ready.  The dialog
      * may not be visible yet when this method returns.
      */
-    public static void showDialog(Project project)
-    {
+    public static void showDialog(Project project) {
         getInstance().prepareDialogThen(project, () -> {
             dialog.window.show();
             // Work around bug where every other time dialog is shown, it would have wrong size:
@@ -98,7 +92,7 @@ public class PrefMgrDialog
     /**
      * Show the preferences dialog when ready.  The dialog
      * may not be visible yet when this method returns.
-     * 
+     *
      * @param paneNumber The index of the pane to show
      */
     public static void showDialog(Project project, int paneNumber) {
@@ -109,18 +103,16 @@ public class PrefMgrDialog
             dialog.tabbedPane.getScene().getWindow().sizeToScene();
         });
     }
+
     /**
      * Prepare this dialog for display then run the given action.
      */
     @OnThread(Tag.FXPlatform)
-    private void prepareDialogThen(Project project, FXPlatformRunnable runnable)
-    {
-        if (!prepared)
-        {
+    private void prepareDialogThen(Project project, FXPlatformRunnable runnable) {
+        if (!prepared) {
             if (prefPanesCreated.get())
                 makeDialog();
-            else
-            {
+            else {
                 // Will only get called when it becomes true:
                 JavaFXUtil.addSelfRemovingListener(prefPanesCreated, b -> JavaFXUtil.runNowOrLater(() -> prepareDialogThen(project, runnable)));
                 return;
@@ -133,10 +125,10 @@ public class PrefMgrDialog
 
     /**
      * Returns the current instance of the dialog, can be null.
+     *
      * @return the current instance of the dialog, can be null.
      */
-    public static final PrefMgrDialog getInstance ()
-    {
+    public static final PrefMgrDialog getInstance() {
         if (dialog == null) {
             dialog = new PrefMgrDialog();
         }
@@ -150,22 +142,20 @@ public class PrefMgrDialog
 
     private Dialog<Void> window;
     private TabPane tabbedPane = null;
-    
+
     /**
      * Setup the UI for the dialog and event handlers for the dialog's buttons.
      *
      * @param title the title of the dialog
      */
-    private PrefMgrDialog()
-    {
+    private PrefMgrDialog() {
         createPrefPanes();
     }
 
     /**
      * Create all known preference panes.
      */
-    private void createPrefPanes()
-    {
+    private void createPrefPanes() {
         // Editor panel is first:
         EditorPrefPanel panel = new EditorPrefPanel();
         add(0, panel, Config.getString("prefmgr.edit.prefpaneltitle"), panel);
@@ -183,8 +173,7 @@ public class PrefMgrDialog
         add(1, kbPanel, Config.getString("prefmgr.edit.keybindingstitle"), kbPanel);
 
         SwingUtilities.invokeLater(() -> {
-            if (!Config.isGreenfoot())
-            {
+            if (!Config.isGreenfoot()) {
                 SwingNode extSwing = new SwingNodeFixed();
                 ExtensionPrefManager mgr = ExtensionsManager.getInstance().getPrefManager();
                 extSwing.setContent(mgr.getPanel());
@@ -196,46 +185,42 @@ public class PrefMgrDialog
             Platform.runLater(() -> prefPanesCreated.set(true));
         });
     }
-    
+
     /**
      * Register a panel to be shown in the preferences dialog
      *
-     * @param panel     the panel to add
-     * @param title     a string describing the panel
-     * @param listener  an object which will be notified of events concerning the
-     *                  preferences dialog
+     * @param panel    the panel to add
+     * @param title    a string describing the panel
+     * @param listener an object which will be notified of events concerning the
+     *                 preferences dialog
      */
-    public void add(int index, Node panel, String title, PrefPanelListener listener)
-    {
+    public void add(int index, Node panel, String title, PrefPanelListener listener) {
         tabs.add(index, panel);
         // Listener order doesn't really matter, but let's go with it anyway:
         listeners.add(index, listener);
         titles.add(index, title);
     }
 
-    private void startEditing(Project project)
-    {
+    private void startEditing(Project project) {
         curProject = project;
         for (Iterator<PrefPanelListener> i = listeners.iterator(); i.hasNext(); ) {
             PrefPanelListener ppl = i.next();
             ppl.beginEditing(project);
-        }        
+        }
     }
 
-    private void selectTab(int tabNumber)
-    {
+    private void selectTab(int tabNumber) {
         tabbedPane.getSelectionModel().select(tabNumber);
     }
 
-    private void makeDialog()
-    {
+    private void makeDialog() {
         window = new Dialog<>();
         BlueJTheme.setWindowIconFX(window);
         window.setTitle(Config.getApplicationName() + ": " + Config.getString("prefmgr.title"));
         Config.addDialogStylesheets(window.getDialogPane());
         JavaFXUtil.addStyleClass(window.getDialogPane(), "prefmgr-dialog-pane");
         window.setOnShown(e -> Utility.bringToFrontFX(window.getDialogPane().getScene().getWindow()));
-        
+
         window.setResizable(true);
 
         tabbedPane = new TabPane();
@@ -253,17 +238,13 @@ public class PrefMgrDialog
         }
 
         window.setResultConverter(bt -> {
-            if (bt == ButtonType.OK)
-            {
-                for (Iterator<PrefPanelListener> i = listeners.iterator(); i.hasNext(); )
-                {
+            if (bt == ButtonType.OK) {
+                for (Iterator<PrefPanelListener> i = listeners.iterator(); i.hasNext(); ) {
                     PrefPanelListener ppl = i.next();
                     ppl.commitEditing(curProject);
                 }
                 return null;
-            }
-            else
-            {
+            } else {
                 for (Iterator<PrefPanelListener> i = listeners.iterator(); i.hasNext(); ) {
                     PrefPanelListener ppl = i.next();
                     ppl.revertEditing(curProject);
@@ -274,14 +255,12 @@ public class PrefMgrDialog
         window.getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
         window.getDialogPane().setContent(tabbedPane);
     }
-    
-    public static Node headedVBox(String titleID, List<Node> contents)
-    {
+
+    public static Node headedVBox(String titleID, List<Node> contents) {
         return headedVBoxTranslated(Config.getString(titleID), contents);
     }
 
-    public static Node headedVBoxTranslated(String title, List<Node> contents)
-    {
+    public static Node headedVBoxTranslated(String title, List<Node> contents) {
         VBox body = new VBox();
         body.getChildren().setAll(contents);
         JavaFXUtil.addStyleClass(body, "prefmgr-titled-content");
@@ -289,17 +268,15 @@ public class PrefMgrDialog
         return JavaFXUtil.withStyleClass(titledPane, "prefmgr-titled");
     }
 
-    public static Node labelledItem(String labelID, Node item)
-    {
+    public static Node labelledItem(String labelID, Node item) {
         return labelledItem(new Label(Config.getString(labelID)), item);
     }
-    public static Node labelledItem(Label label, Node item)
-    {
+
+    public static Node labelledItem(Label label, Node item) {
         return JavaFXUtil.withStyleClass(new HBox(label, item), "prefmgr-label-hbox");
     }
-    
-    public static Node wrappedLabel(String content)
-    {
+
+    public static Node wrappedLabel(String content) {
         return new TextFlow(JavaFXUtil.withStyleClass(new Text(content), "prefmgr-text-wrapped"));
     }
 }

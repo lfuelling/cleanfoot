@@ -21,16 +21,6 @@
  */
 package bluej.stride.framedjava.slots;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javafx.beans.binding.StringExpression;
-import javafx.scene.Node;
-
 import bluej.Config;
 import bluej.editor.stride.FrameCatalogue;
 import bluej.stride.framedjava.ast.TypeSlotFragment;
@@ -48,44 +38,58 @@ import bluej.utility.javafx.FXBiConsumer;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.FXSupplier;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.beans.binding.StringExpression;
+import javafx.scene.Node;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by neil on 22/05/2016.
  */
-public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCompletionCalculator> implements CopyableHeaderItem
-{
+public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCompletionCalculator> implements CopyableHeaderItem {
     private final InteractionManager editor;
     private boolean isReturnType = false;
     private final List<FXSupplier<Boolean>> backspaceListeners = new ArrayList<>();
     private final List<FXSupplier<Boolean>> deleteListeners = new ArrayList<>();
-    
-    public enum Role
-    {
-        /** Declaring arbitrary variable; can be any type */
+
+    public enum Role {
+        /**
+         * Declaring arbitrary variable; can be any type
+         */
         DECLARATION,
-        /** Return type; like DECLARATION but could also be void */
+        /**
+         * Return type; like DECLARATION but could also be void
+         */
         RETURN,
-        /** Extends; must be a non-final class (not interface or primitive) */
+        /**
+         * Extends; must be a non-final class (not interface or primitive)
+         */
         EXTENDS,
-        /** Must be an interface */
+        /**
+         * Must be an interface
+         */
         INTERFACE,
-        /** Throws or Catch; must be a throwable */
+        /**
+         * Throws or Catch; must be a throwable
+         */
         THROWS_CATCH
     }
-    
-    public TypeSlot(InteractionManager editor, Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row, Role role, String stylePrefix)
-    {
+
+    public TypeSlot(InteractionManager editor, Frame parentFrame, CodeFrame<?> parentCodeFrame, FrameContentRow row, Role role, String stylePrefix) {
         super(editor, parentFrame, parentCodeFrame, row, stylePrefix, calculatorForRole(editor, role), hintsForRole(role));
         this.editor = editor;
         onTextPropertyChangeOld(this::adjustReturnFrames);
     }
 
-    private static TypeCompletionCalculator calculatorForRole(InteractionManager editor, Role role)
-    {
-        switch (role)
-        {
+    private static TypeCompletionCalculator calculatorForRole(InteractionManager editor, Role role) {
+        switch (role) {
             case THROWS_CATCH:
                 return new TypeCompletionCalculator(editor, Throwable.class);
             case INTERFACE:
@@ -96,8 +100,7 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
         return new TypeCompletionCalculator(editor);
     }
 
-    private static List<FrameCatalogue.Hint> hintsForRole(Role role)
-    {
+    private static List<FrameCatalogue.Hint> hintsForRole(Role role) {
         FrameCatalogue.Hint hintInt = new FrameCatalogue.Hint("int", "An integer (whole number)");
         FrameCatalogue.Hint hintDouble = new FrameCatalogue.Hint("double", "A number value");
         FrameCatalogue.Hint hintVoid = new FrameCatalogue.Hint("void", "No return");
@@ -106,8 +109,7 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
         FrameCatalogue.Hint hintList = new FrameCatalogue.Hint("List<String>", "A list of String");
         FrameCatalogue.Hint hintObj = Config.isGreenfoot() ? hintActor : hintList;
         FrameCatalogue.Hint hintIO = new FrameCatalogue.Hint("IOException", "An IO exception");
-        switch (role)
-        {
+        switch (role) {
             case DECLARATION:
                 return Arrays.asList(hintInt, hintDouble, hintString, hintObj);
             case RETURN:
@@ -126,60 +128,51 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
     }
 
     @Override
-    protected TypeSlotFragment makeSlotFragment(String content, String javaCode)
-    {
+    protected TypeSlotFragment makeSlotFragment(String content, String javaCode) {
         return new TypeSlotFragment(content, javaCode, this);
     }
 
     @Override
-    public ExpressionSlot asExpressionSlot() { return null; }
+    public ExpressionSlot asExpressionSlot() {
+        return null;
+    }
 
-    public void setText(TypeSlotFragment rhs)
-    {
+    public void setText(TypeSlotFragment rhs) {
         rhs.registerSlot(this);
-        setText(rhs.getContent());        
+        setText(rhs.getContent());
     }
 
     @Override
-    protected InfixType newInfix(InteractionManager editor, ModificationToken token)
-    {
+    protected InfixType newInfix(InteractionManager editor, ModificationToken token) {
         return new InfixType(editor, this, token);
     }
 
-    public void markReturnType()
-    {
+    public void markReturnType() {
         isReturnType = true;
     }
-    
-    private void adjustReturnFrames(String oldValue, String newValue)
-    {
+
+    private void adjustReturnFrames(String oldValue, String newValue) {
         if (!isReturnType)
             return;
-        
-        if ((oldValue.equals("void") || oldValue.equals("")) && !(newValue.equals("void") || newValue.equals("")))
-        {
+
+        if ((oldValue.equals("void") || oldValue.equals("")) && !(newValue.equals("void") || newValue.equals(""))) {
             // Added a return type; need to go through and add empty slots for all returns that don't have them:
-            for (Frame f : Utility.iterableStream(getParentFrame().getAllFrames()))
-            {
-                if (f instanceof ReturnFrame)
-                {
+            for (Frame f : Utility.iterableStream(getParentFrame().getAllFrames())) {
+                if (f instanceof ReturnFrame) {
                     ReturnFrame rf = (ReturnFrame) f;
                     rf.showValue();
                 }
             }
-        }
-        else if (!oldValue.equals("void") && newValue.equals("void"))
-        {
+        } else if (!oldValue.equals("void") && newValue.equals("void")) {
             // Removed a return type; prompt about removing return values from all returns
             List<FXRunnable> removeActions = getParentFrame().getAllFrames()
-                .filter(f -> f instanceof ReturnFrame)
-                .map(f -> (ReturnFrame)f)
-                .map(rf -> rf.getRemoveFilledValueAction())
-                .filter(a -> a != null)
-                .collect(Collectors.toList());
+                    .filter(f -> f instanceof ReturnFrame)
+                    .map(f -> (ReturnFrame) f)
+                    .map(rf -> rf.getRemoveFilledValueAction())
+                    .filter(a -> a != null)
+                    .collect(Collectors.toList());
 
-            if (!removeActions.isEmpty())
-            {
+            if (!removeActions.isEmpty()) {
                 JavaFXUtil.runNowOrLater(() -> {
                     SuggestedFollowUpDisplay disp = new SuggestedFollowUpDisplay(editor, "Return type changed to void.  Would you like to remove return values from all return frames in this method?", () -> removeActions.forEach(FXRunnable::run));
                     disp.showBefore(getComponents().get(0));
@@ -189,26 +182,22 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
     }
 
     @Override
-    public void saved()
-    {
-        
+    public void saved() {
+
     }
 
     @Override
-    public boolean canCollapse()
-    {
+    public boolean canCollapse() {
         // Type slots can never be collapsed:
         return false;
     }
 
     @Override
-    public List<PossibleTypeLink> findLinks()
-    {
+    public List<PossibleTypeLink> findLinks() {
         return topLevel.findTypeLinks();
     }
-    
-    public StringExpression javaProperty()
-    {
+
+    public StringExpression javaProperty() {
         // Java is the text until we sort out wildcards:
         return textMirror;
     }
@@ -219,18 +208,16 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
      * it's inside a generic sub-structured item).  Passes the text
      * before the comma and after the comma.
      */
-    public void onTopLevelComma(FXBiConsumer<String, String> listener)
-    {
+    public void onTopLevelComma(FXBiConsumer<String, String> listener) {
         afterModify.add(() -> {
             topLevel.runIfCommaDirect(listener);
         });
     }
 
     @Override
-    public @OnThread(Tag.FXPlatform) boolean backspaceAtStart()
-    {
+    public @OnThread(Tag.FXPlatform) boolean backspaceAtStart() {
         // Must make sure that we run all listeners, and not short-circuit because one returned true:
-        boolean transferredFocus = Utility.mapList(backspaceListeners, FXSupplier::get).stream().reduce(false, (a, b) -> a || b); 
+        boolean transferredFocus = Utility.mapList(backspaceListeners, FXSupplier::get).stream().reduce(false, (a, b) -> a || b);
         if (transferredFocus)
             return true;
         else
@@ -239,8 +226,7 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public boolean deleteAtEnd()
-    {
+    public boolean deleteAtEnd() {
         // Must make sure that we run all listeners, and not short-circuit because one returned true:
         boolean transferredFocus = Utility.mapList(deleteListeners, FXSupplier::get).stream().reduce(false, (a, b) -> a || b);
         if (transferredFocus)
@@ -248,22 +234,19 @@ public class TypeSlot extends StructuredSlot<TypeSlotFragment, InfixType, TypeCo
         else
             return super.deleteAtEnd();
     }
-    
+
     // Should return true if focus has been transferred out of the slot
-    public void addBackspaceAtStartListener(FXSupplier<Boolean> listener)
-    {
+    public void addBackspaceAtStartListener(FXSupplier<Boolean> listener) {
         backspaceListeners.add(listener);
     }
 
     // Should return true if focus has been transferred out of the slot
-    public void addDeleteAtEndListener(FXSupplier<Boolean> listener)
-    {
+    public void addDeleteAtEndListener(FXSupplier<Boolean> listener) {
         deleteListeners.add(listener);
     }
 
     @Override
-    public Stream<? extends Node> makeDisplayClone(InteractionManager editor)
-    {
+    public Stream<? extends Node> makeDisplayClone(InteractionManager editor) {
         return topLevel.makeDisplayClone(editor);
     }
 }

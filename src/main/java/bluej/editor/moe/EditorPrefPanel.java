@@ -46,11 +46,10 @@ import java.util.List;
  * A PrefPanel subclass to allow the user to interactively edit
  * editor settings
  *
- * @author  Michael Kolling
+ * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public class EditorPrefPanel extends VBox implements PrefPanelListener
-{
+public class EditorPrefPanel extends VBox implements PrefPanelListener {
     private final TextField editorFontField;
     private final CheckBox highlightingBox;
     private final CheckBox autoIndentBox;
@@ -61,47 +60,45 @@ public class EditorPrefPanel extends VBox implements PrefPanelListener
     /**
      * Setup the UI for the dialog and event handlers for the buttons.
      */
-    public EditorPrefPanel()
-    {
+    public EditorPrefPanel() {
         JavaFXUtil.addStyleClass(this, "prefmgr-pref-panel");
-        
-        scopeHighlightingPrefDisplay=new ScopeHighlightingPrefDisplay();
+
+        scopeHighlightingPrefDisplay = new ScopeHighlightingPrefDisplay();
 
         List<Node> editorPanel = new ArrayList<>();
         {
-            GridPane topPanel=new GridPane();
+            GridPane topPanel = new GridPane();
             JavaFXUtil.addStyleClass(topPanel, "prefmgr-java-editor-top");
-            
+
             editorFontField = new TextField();
             editorFontField.setPrefColumnCount(4);
             topPanel.add(PrefMgrDialog.labelledItem("prefmgr.edit.editorfontsize", editorFontField), 0, 0);
             autoIndentBox = new CheckBox(Config.getString("prefmgr.edit.autoindent"));
             topPanel.add(autoIndentBox, 1, 0);
-            
+
             highlightingBox = new CheckBox(Config.getString("prefmgr.edit.usesyntaxhilighting"));
             topPanel.add(highlightingBox, 0, 1);
-            
+
             lineNumbersBox = new CheckBox(Config.getString("prefmgr.edit.displaylinenumbers"));
             topPanel.add(lineNumbersBox, 0, 2);
-            
-            matchBracketsBox= new CheckBox(Config.getString("prefmgr.edit.matchBrackets"));
+
+            matchBracketsBox = new CheckBox(Config.getString("prefmgr.edit.matchBrackets"));
             topPanel.add(matchBracketsBox, 1, 1);
-            
+
             //colour scope highlighter slider
             Pane bottomPanel = new HBox();
             JavaFXUtil.addStyleClass(bottomPanel, "prefmgr-java-scope-hbox");
-            bottomPanel.getChildren().add(scopeHighlightingPrefDisplay.getHighlightStrengthSlider());            
+            bottomPanel.getChildren().add(scopeHighlightingPrefDisplay.getHighlightStrengthSlider());
             bottomPanel.getChildren().add(scopeHighlightingPrefDisplay.getColourPalette());
-                        
+
             editorPanel.add(topPanel);
             editorPanel.add(PrefMgrDialog.headedVBox("prefmgr.edit.colortransparency", Arrays.asList(bottomPanel)));
         }
-        
+
         getChildren().add(PrefMgrDialog.headedVBox("prefmgr.edit.editor.title", editorPanel));
     }
 
-    public void beginEditing(Project project)
-    {
+    public void beginEditing(Project project) {
         editorFontField.setText(String.valueOf(PrefMgr.getEditorFontSize().get()));
         highlightingBox.setSelected(PrefMgr.getFlag(PrefMgr.HIGHLIGHTING));
         autoIndentBox.setSelected(PrefMgr.getFlag(PrefMgr.AUTO_INDENT));
@@ -109,14 +106,12 @@ public class EditorPrefPanel extends VBox implements PrefPanelListener
         matchBracketsBox.setSelected(PrefMgr.getFlag(PrefMgr.MATCH_BRACKETS));
     }
 
-    public void revertEditing(Project project)
-    {
+    public void revertEditing(Project project) {
     }
 
-    public void commitEditing(Project project)
-    {
+    public void commitEditing(Project project) {
         String fontText = editorFontField.getText();
-        
+
 
         PrefMgr.setFlag(PrefMgr.HIGHLIGHTING, highlightingBox.isSelected());
         PrefMgr.setFlag(PrefMgr.AUTO_INDENT, autoIndentBox.isSelected());
@@ -125,8 +120,8 @@ public class EditorPrefPanel extends VBox implements PrefPanelListener
         int strength = scopeHighlightingPrefDisplay.getStrengthValue();
         try {
             PrefMgr.setEditorFontSize(Integer.parseInt(fontText));
+        } catch (NumberFormatException nfe) {
         }
-        catch (NumberFormatException nfe) { }
         PrefMgr.setScopeHighlightStrength(strength);
         EditorManager.getEditorManager().refreshAll();
     }

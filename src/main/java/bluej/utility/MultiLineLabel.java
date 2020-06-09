@@ -21,91 +21,76 @@
  */
 package bluej.utility;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * A multi-line Label-like AWT component.
- * 
+ *
  * @author Justin Tan
  */
 @OnThread(Tag.Swing)
-public class MultiLineLabel extends JPanel
-{
+public class MultiLineLabel extends JPanel {
     protected int fontAttributes = Font.PLAIN;
     protected float alignment;
     protected Color col = null;
     protected int spacing = 0;
 
     /**
-     ** Constructor - make a multiline label
+     * * Constructor - make a multiline label
      **/
-    public MultiLineLabel(String text, float alignment)
-    {
+    public MultiLineLabel(String text, float alignment) {
         this.alignment = alignment;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        if(text != null) {
+        if (text != null) {
             setText(text);
         }
     }
 
     /**
-     ** Constructor, defaults to centered text
+     * * Constructor, defaults to centered text
      **/
-    public MultiLineLabel(String text)
-    {
+    public MultiLineLabel(String text) {
         this(text, LEFT_ALIGNMENT);
     }
 
     /**
      * Constructor, empty with the given alignment
      */
-    public MultiLineLabel(float alignment)
-    {
+    public MultiLineLabel(float alignment) {
         this(null, alignment);
     }
 
     /**
      * Constructor, empty with the given alignment and line spacing
      */
-    public MultiLineLabel(float alignment, int spacing)
-    {
+    public MultiLineLabel(float alignment, int spacing) {
         this(null, alignment);
         this.spacing = spacing;
     }
 
     /**
-     ** Constructor - make an empty multiline label
+     * * Constructor - make an empty multiline label
      **/
-    public MultiLineLabel()
-    {
+    public MultiLineLabel() {
         this(null, LEFT_ALIGNMENT);
     }
 
-    public void setText(String text)
-    {
+    public void setText(String text) {
         // clear the existing lines from the panel
         removeAll();
         addText(text);
     }
 
-    public void addText(String text)
-    {
+    public void addText(String text) {
         addText(text, 12);
     }
 
-    public void addText(String text, int size)
-    {
-        if(spacing > 0) {
+    public void addText(String text, int size) {
+        if (spacing > 0) {
             add(Box.createVerticalStrut(spacing));
         }
 
@@ -123,11 +108,10 @@ public class MultiLineLabel extends JPanel
             }
 
             add(l);
-        }   
+        }
     }
 
-    public void addText(String text, boolean bold, boolean italic)
-    {
+    public void addText(String text, boolean bold, boolean italic) {
         int oldAttributes = fontAttributes;
         setBold(bold);
         setItalic(italic);
@@ -136,9 +120,8 @@ public class MultiLineLabel extends JPanel
     }
 
     @Override
-    public void setForeground(Color col)
-    {
-        this.col = col;    
+    public void setForeground(Color col) {
+        this.col = col;
         Component[] components = this.getComponents();
         for (int i = 0; i < components.length; i++) {
             Component component = components[i];
@@ -146,22 +129,18 @@ public class MultiLineLabel extends JPanel
         }
     }
 
-    public void setItalic(boolean italic)
-    {
-        if(italic) {
+    public void setItalic(boolean italic) {
+        if (italic) {
             fontAttributes |= Font.ITALIC;
-        }
-        else {
+        } else {
             fontAttributes &= ~Font.ITALIC;
         }
     }
 
-    public void setBold(boolean bold)
-    {
-        if(bold) {
+    public void setBold(boolean bold) {
+        if (bold) {
             fontAttributes |= Font.BOLD;
-        }
-        else {
+        } else {
             fontAttributes &= ~Font.BOLD;
         }
     }

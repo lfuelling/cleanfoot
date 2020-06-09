@@ -28,25 +28,22 @@ import threadchecker.Tag;
 
 /**
  * A TypeArgumentEntity for representing unbounded wildcards ("?").
- * 
+ *
  * @author Davin McCall
  */
-public class UnboundedWildcardEntity extends TypeArgumentEntity
-{
+public class UnboundedWildcardEntity extends TypeArgumentEntity {
     private GenTypeClass objClass;
 
     @OnThread(Tag.FXPlatform)
-    public UnboundedWildcardEntity(EntityResolver resolver)
-    {
+    public UnboundedWildcardEntity(EntityResolver resolver) {
         TypeEntity objEntity = resolver.resolveQualifiedClass("java.lang.Object");
         if (objEntity != null) {
             objClass = objEntity.getClassType();
         }
     }
-    
+
     @Override
-    public GenTypeParameter getType()
-    {
+    public GenTypeParameter getType() {
         return new GenTypeUnbounded(objClass);
     }
 }

@@ -32,29 +32,26 @@ import java.util.List;
  * @author Michael Kolling
  */
 @OnThread(Tag.Any)
-public final class ExceptionDescription
-{
+public final class ExceptionDescription {
     private final String className;
     private final String text;
     private final List<SourceLocation> stack;
 
     /**
      * Construct an exception description.
-     * 
-     * @param className  The name of the exception class
-     * @param text       The exception message
-     * @param stack      The stack trace for the exception
+     *
+     * @param className The name of the exception class
+     * @param text      The exception message
+     * @param stack     The stack trace for the exception
      */
-    public ExceptionDescription(String className, String text, 
-                                List<SourceLocation> stack)
-    {
+    public ExceptionDescription(String className, String text,
+                                List<SourceLocation> stack) {
         this.className = className;
         this.text = text;
         this.stack = stack;
     }
 
-    public ExceptionDescription(String text)
-    {
+    public ExceptionDescription(String text) {
         this.className = null;
         this.text = text;
         this.stack = null;
@@ -63,16 +60,14 @@ public final class ExceptionDescription
     /**
      * Return the name of the exception class.
      */
-    public String getClassName()
-    {
+    public String getClassName() {
         return className;
     }
 
     /**
      * Return the text of the exception.
-     */    
-    public String getText()
-    {
+     */
+    public String getText() {
         return text;
     }
 
@@ -81,13 +76,11 @@ public final class ExceptionDescription
      * location. Element 0 in the list is the current frame, higher numbers
      * are caller frames.
      */
-    public List<SourceLocation> getStack()
-    {
+    public List<SourceLocation> getStack() {
         return stack;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return className + ": " + text;
     }
 

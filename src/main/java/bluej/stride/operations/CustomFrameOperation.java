@@ -21,35 +21,31 @@
  */
 package bluej.stride.operations;
 
-import java.util.List;
-import java.util.function.Consumer;
-
-import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import javafx.beans.value.ObservableValue;
 import bluej.stride.generic.Frame;
 import bluej.stride.generic.InteractionManager;
+import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import bluej.utility.Utility;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Implementation of FrameOperation, designed to allow you to
  * pass a lambda as the execute method.
  */
-public class CustomFrameOperation extends FrameOperation
-{
+public class CustomFrameOperation extends FrameOperation {
     private final List<ItemLabel> labels;
     private final Consumer<List<Frame>> action;
 
     // Constructor for operations with customisable Combine
-    public CustomFrameOperation(InteractionManager editor, String identifier, Combine combine, List<String> name, MenuItemOrder menuOrder, Consumer<List<Frame>> action)
-    {
+    public CustomFrameOperation(InteractionManager editor, String identifier, Combine combine, List<String> name, MenuItemOrder menuOrder, Consumer<List<Frame>> action) {
         super(editor, identifier, combine);
         this.labels = Utility.mapList(name, n -> l(n, menuOrder));
         this.action = action;
     }
-    
+
     // Constructor for operations that only work on one frame (known a priori)
-    public CustomFrameOperation(InteractionManager editor, String identifier, List<String> name, MenuItemOrder menuOrder, Frame f, Runnable action)
-    {
+    public CustomFrameOperation(InteractionManager editor, String identifier, List<String> name, MenuItemOrder menuOrder, Frame f, Runnable action) {
         this(editor, identifier, Combine.ONE, name, menuOrder, frames -> {
             if (frames.size() != 1 || frames.get(0) != f) {
                 // TODO Next condition is temporary until JDK bug fix
@@ -59,22 +55,19 @@ public class CustomFrameOperation extends FrameOperation
             action.run();
         });
     }
-    
+
     @Override
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         action.accept(frames);
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return labels;
     }
 
     @Override
-    public boolean onlyOnContextMenu()
-    {
+    public boolean onlyOnContextMenu() {
         // Frame-specific operations only appear on the context menu:
         return true;
     }

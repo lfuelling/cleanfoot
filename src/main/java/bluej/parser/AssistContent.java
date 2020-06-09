@@ -21,127 +21,102 @@
  */
 package bluej.parser;
 
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import bluej.stride.generic.InteractionManager.Kind;
 import bluej.utility.Utility;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.stride.generic.InteractionManager.Kind;
 
+import java.lang.reflect.Modifier;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
  * Describes a possible code completion.
- * 
+ *
  * @author Marion Zalk
  */
 @OnThread(Tag.FXPlatform)
-public abstract class AssistContent
-{
+public abstract class AssistContent {
     @OnThread(Tag.Any)
-    public enum Access
-    {
+    public enum Access {
         PRIVATE, PROTECTED, PACKAGE, PUBLIC
     }
+
     @OnThread(Tag.Any)
-    public enum CompletionKind
-    {
+    public enum CompletionKind {
         METHOD, CONSTRUCTOR, FIELD, LOCAL_VAR, FORMAL_PARAM, TYPE;
-        
-        public static Set<CompletionKind> allMembers()
-        {
+
+        public static Set<CompletionKind> allMembers() {
             return new HashSet<>(Arrays.asList(METHOD, FIELD));
         }
     }
 
     @OnThread(Tag.Any)
-    public static class ParamInfo
-    {
+    public static class ParamInfo {
         private final String fullType;
         private final String formalName;
         private final String dummyName;
         private final Supplier<String> javadocDescription;
-        
-        public ParamInfo(String fullType, String formalName, String dummyName, Supplier<String> javadocDescription)
-        {
+
+        public ParamInfo(String fullType, String formalName, String dummyName, Supplier<String> javadocDescription) {
             this.fullType = fullType;
             this.formalName = formalName;
             this.dummyName = dummyName;
             this.javadocDescription = javadocDescription;
         }
-        
-        public String getQualifiedType()
-        {
+
+        public String getQualifiedType() {
             return fullType;
         }
-        
-        public String getUnqualifiedType()
-        {
+
+        public String getUnqualifiedType() {
             // Consider java.util.List<? extends greenfoot.Actor>
             // To dequalify, we must find all sections like (\w+\.) and remove them.
             int beginCurIdent = -1;
             StringBuilder r = new StringBuilder();
-            for (int i = 0; i < fullType.length(); i++)
-            {
+            for (int i = 0; i < fullType.length(); i++) {
                 final char c = fullType.charAt(i);
-                if (beginCurIdent == -1 && Character.isJavaIdentifierStart(c))
-                {
+                if (beginCurIdent == -1 && Character.isJavaIdentifierStart(c)) {
                     // Started an identifier:
                     beginCurIdent = i;
-                }
-                else if (beginCurIdent != -1)
-                {
+                } else if (beginCurIdent != -1) {
                     // Found an identifier; does it continue or stop?
-                    
-                    if (c == '.')
-                    {
+
+                    if (c == '.') {
                         // Qualififer; ignore the whole identifier and dot:
                         beginCurIdent = -1;
-                    }
-                    else if (!Character.isJavaIdentifierPart(c))
-                    {
+                    } else if (!Character.isJavaIdentifierPart(c)) {
                         // Identifier ends, but in something other than a dot; keep it:
                         r.append(fullType, beginCurIdent, i + 1);
                         beginCurIdent = -1;
                     }
                     // Otherwise the identifier continues, so nothing to do
-                }
-                else
-                {
+                } else {
                     // No identifier, add to result
                     r.append(c);
                 }
             }
-            
+
             if (beginCurIdent != -1)
                 r.append(fullType.substring(beginCurIdent));
-            
+
             return r.toString();
         }
-        
-        public String getDummyName()
-        {
+
+        public String getDummyName() {
             return dummyName;
         }
 
-        public String getFormalName()
-        {
+        public String getFormalName() {
             return formalName;
         }
-        
-        public String getJavadocDescription()
-        {
+
+        public String getJavadocDescription() {
             return javadocDescription.get();
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
@@ -156,8 +131,7 @@ public abstract class AssistContent
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             int result = fullType != null ? fullType.hashCode() : 0;
             result = 31 * result + (formalName != null ? formalName.hashCode() : 0);
             result = 31 * result + (dummyName != null ? dummyName.hashCode() : 0);
@@ -167,8 +141,7 @@ public abstract class AssistContent
 
         // For debugging:
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "ParamInfo{" +
                     "dummyName='" + dummyName + '\'' +
                     ", fullType='" + fullType + '\'' +
@@ -177,31 +150,39 @@ public abstract class AssistContent
                     '}';
         }
     }
-    
-    /** The name of the variable or method or type */
+
+    /**
+     * The name of the variable or method or type
+     */
     @OnThread(Tag.Any)
     public abstract String getName();
-    
-    /** Will return empty list if it's a method with no parameters,
-     *  but null if it is a variable or type and thus can't have parameters */
+
+    /**
+     * Will return empty list if it's a method with no parameters,
+     * but null if it is a variable or type and thus can't have parameters
+     */
     @OnThread(Tag.FXPlatform)
     public abstract List<ParamInfo> getParams();
 
-    /** Get the type for this completion (as a string).
-     *  For methods, this is the return type; for variables it is the type of the variable. 
-     *  Confusingly, for types this returns null (use getName instead). */
-    public abstract String getType();
-    
     /**
-     *  Get the access for this completion (as a string).
+     * Get the type for this completion (as a string).
+     * For methods, this is the return type; for variables it is the type of the variable.
+     * Confusingly, for types this returns null (use getName instead).
+     */
+    public abstract String getType();
+
+    /**
+     * Get the access for this completion (as a string).
      */
     public abstract Access getAccessPermission();
 
-    /** Get the declaring class of this completion (as a string).
+    /**
+     * Get the declaring class of this completion (as a string).
      * Returns null if it is a local variable (i.e. not a member of a class)
-     * or a non-inner-class type. */
+     * or a non-inner-class type.
+     */
     public abstract String getDeclaringClass();
-    
+
     public abstract CompletionKind getKind();
 
     /**
@@ -211,45 +192,40 @@ public abstract class AssistContent
      */
     @OnThread(Tag.FXPlatform)
     public abstract String getJavadoc();
-    
+
     /**
      * Gets the package name.  Only valid for class types; returns null otherwise.
      */
-    public String getPackage()
-    {
+    public String getPackage() {
         return null;
     }
-    
+
     /**
      * Gets the super types of the type.  Only valid for class types; returns null otherwise.
      */
-    public List<String> getSuperTypes()
-    {
+    public List<String> getSuperTypes() {
         return null;
     }
-    
+
     /**
      * Gets the kind of the type (class, interface, etc).  Only valid for types; returns null otherwise.
      */
-    public Kind getTypeKind()
-    {
+    public Kind getTypeKind() {
         return null;
     }
 
     /**
      * Callback interface for notification that javadoc is available.
      */
-    public interface JavadocCallback
-    {
+    public interface JavadocCallback {
         /**
          * The javadoc for the given method is now available
          * (call getJavadoc() to retrieve it).
          */
         void gotJavadoc(AssistContent content);
     }
-    
-    public static Access fromModifiers(int modifiers)
-    {
+
+    public static Access fromModifiers(int modifiers) {
         if (Modifier.isPrivate(modifiers)) {
             return Access.PRIVATE;
         }
@@ -262,11 +238,10 @@ public abstract class AssistContent
         return Access.PACKAGE;
     }
 
-    public static Comparator<AssistContent> getComparator()
-    {
+    public static Comparator<AssistContent> getComparator() {
         return Comparator.comparing(AssistContent::getName)
-            .thenComparing(AssistContent::getKind)
-            .thenComparing(AssistContent::getParams,
-                Utility.listComparator(Comparator.comparing(ParamInfo::getQualifiedType)));
+                .thenComparing(AssistContent::getKind)
+                .thenComparing(AssistContent::getParams,
+                        Utility.listComparator(Comparator.comparing(ParamInfo::getQualifiedType)));
     }
 }

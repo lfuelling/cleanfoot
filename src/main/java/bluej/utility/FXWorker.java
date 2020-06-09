@@ -22,29 +22,34 @@
 package bluej.utility;
 
 import javafx.application.Platform;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * This is a copy from the SwingWorker, which is an abstract class
  * that you subclass to perform GUI-related work in a dedicated thread.
- *
  */
-public abstract class FXWorker
-{
+public abstract class FXWorker {
     private Object value;  // see getValue(), setValue()
 
     /**
      * Class to maintain reference to current worker thread
      * under separate synchronization control.
      */
-    private static class ThreadVar
-    {
+    private static class ThreadVar {
         private Thread thread;
-        ThreadVar(Thread t) { thread = t; }
-        synchronized Thread get() { return thread; }
-        synchronized void clear() { thread = null; }
+
+        ThreadVar(Thread t) {
+            thread = t;
+        }
+
+        synchronized Thread get() {
+            return thread;
+        }
+
+        synchronized void clear() {
+            thread = null;
+        }
     }
 
     private final ThreadVar threadVar;
@@ -53,17 +58,14 @@ public abstract class FXWorker
      * Start a thread that will call the <code>construct</code> method
      * and then exit.
      */
-    public FXWorker()
-    {
+    public FXWorker() {
         Runnable doConstruct = new Runnable() {
             @Override
             @OnThread(value = Tag.Worker, ignoreParent = true)
-            public void run()
-            {
+            public void run() {
                 try {
                     setValue(construct());
-                }
-                finally {
+                } finally {
                     threadVar.clear();
                 }
 
@@ -79,16 +81,14 @@ public abstract class FXWorker
      * Get the value produced by the worker thread, or null if it
      * hasn't been constructed yet.
      */
-    protected synchronized Object getValue()
-    {
+    protected synchronized Object getValue() {
         return value;
     }
 
     /**
      * Set the value produced by worker thread
      */
-    private synchronized void setValue(Object x)
-    {
+    private synchronized void setValue(Object x) {
         value = x;
     }
 
@@ -103,14 +103,14 @@ public abstract class FXWorker
      * after the <code>construct</code> method has returned.
      */
     @OnThread(Tag.FXPlatform)
-    public void finished() { }
+    public void finished() {
+    }
 
     /**
      * A new method that interrupts the worker thread.  Call this method
      * to force the worker to stop what it's doing.
      */
-    public void interrupt()
-    {
+    public void interrupt() {
         Thread t = threadVar.get();
         if (t != null) {
             t.interrupt();
@@ -125,8 +125,7 @@ public abstract class FXWorker
      *
      * @return the value created by the <code>construct</code> method
      */
-    public Object get()
-    {
+    public Object get() {
         while (true) {
             Thread t = threadVar.get();
             if (t == null) {
@@ -134,8 +133,7 @@ public abstract class FXWorker
             }
             try {
                 t.join();
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // propagate
                 return null;
             }
@@ -145,8 +143,7 @@ public abstract class FXWorker
     /**
      * Start the worker thread.
      */
-    public void start()
-    {
+    public void start() {
         Thread t = threadVar.get();
         if (t != null) {
             t.start();

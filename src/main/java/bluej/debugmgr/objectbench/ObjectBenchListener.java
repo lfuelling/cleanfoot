@@ -21,15 +21,14 @@
  */
 package bluej.debugmgr.objectbench;
 
-import java.util.*;
+import java.util.EventListener;
 
 /**
  * The listener for ObjectBench events.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  * @version $Id: ObjectBenchListener.java 6215 2009-03-30 13:28:25Z polle $
  */
-public interface ObjectBenchListener extends EventListener
-{
+public interface ObjectBenchListener extends EventListener {
     void objectEvent(ObjectBenchEvent e);
 }

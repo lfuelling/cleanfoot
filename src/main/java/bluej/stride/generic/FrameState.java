@@ -21,50 +21,45 @@
  */
 package bluej.stride.generic;
 
+import bluej.parser.entity.EntityResolver;
+import bluej.stride.framedjava.elements.ClassElement;
+import bluej.stride.framedjava.elements.TopLevelCodeElement;
+import bluej.stride.framedjava.frames.TopLevelFrame;
+import javafx.scene.Node;
+import nu.xom.Builder;
+import nu.xom.ParsingException;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javafx.scene.Node;
-
-import nu.xom.Builder;
-import bluej.parser.entity.EntityResolver;
-import bluej.stride.framedjava.elements.ClassElement;
-import bluej.stride.framedjava.elements.TopLevelCodeElement;
-import bluej.stride.framedjava.frames.TopLevelFrame;
-import nu.xom.ParsingException;
-
 /**
  * Stores a ClassElement's state as XML
  */
-public class FrameState
-{
+public class FrameState {
     private final String classElementXML;
     private int cursorIndex; // Which cursor
     private int cursorInfo; // Saved state, e.g. caret position
 
-    public FrameState(TopLevelCodeElement topLevelElement)
-    {
+    public FrameState(TopLevelCodeElement topLevelElement) {
         this.classElementXML = topLevelElement.toXML().toXML();
         cursorIndex = -1;
         cursorInfo = -1;
     }
-    
-    public FrameState(TopLevelFrame<?> frame, TopLevelCodeElement classElement, RecallableFocus focusOverride)
-    {
+
+    public FrameState(TopLevelFrame<?> frame, TopLevelCodeElement classElement, RecallableFocus focusOverride) {
         this.classElementXML = classElement.toXML().toXML();
         List<RecallableFocus> focusables = frame.getFocusables().collect(Collectors.toList());
-        this.cursorIndex = -1;    
+        this.cursorIndex = -1;
 
         if (focusOverride != null) {
             this.cursorIndex = focusables.indexOf(focusOverride);
             this.cursorInfo = focusOverride.getFocusInfo();
-        }
-        else {
+        } else {
             for (int i = 0; i < focusables.size(); i++) {
                 RecallableFocus recallableFocus = focusables.get(i);
-                if (recallableFocus!= null && recallableFocus.isFocused()) {
+                if (recallableFocus != null && recallableFocus.isFocused()) {
                     this.cursorIndex = i;
                     this.cursorInfo = recallableFocus.getFocusInfo();
                     break;
@@ -72,46 +67,39 @@ public class FrameState
             }
         }
     }
-    
+
     /**
      * Create a ClassElement corresponding to this FrameState.
-     * 
-     * @param resolver   The resolver used to resolve identifiers
-     * @param packageName  The name of the package containing the class (empty string for default package)
-     * @return  A new ClassElement.
+     *
+     * @param resolver    The resolver used to resolve identifiers
+     * @param packageName The name of the package containing the class (empty string for default package)
+     * @return A new ClassElement.
      */
-    public ClassElement getClassElement(EntityResolver resolver, String packageName)
-    {
-        try
-        {
+    public ClassElement getClassElement(EntityResolver resolver, String packageName) {
+        try {
             return new ClassElement(new Builder().build(new StringReader(classElementXML))
                     .getRootElement(), resolver, packageName);
-        }
-        catch (IOException | ParsingException e)
-        {
+        } catch (IOException | ParsingException e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
-    public boolean equals(Object obj)
-    {
-        if ( obj == null || !(obj instanceof FrameState) ) {
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof FrameState)) {
             return false;
         }
-        FrameState otherState = (FrameState)obj;
+        FrameState otherState = (FrameState) obj;
         // Currently, it is equality on the contents only, not on the cursor position.
         return otherState.classElementXML.equals(classElementXML);//&& cursorPosition == otherState.cursorPosition;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return classElementXML.hashCode();
     }
 
-    public Node recallFocus(TopLevelFrame<?> frame)
-    {
+    public Node recallFocus(TopLevelFrame<?> frame) {
         List<RecallableFocus> focusables = frame.getFocusables().collect(Collectors.toList());
         if (cursorIndex >= 0 && cursorIndex < focusables.size()) {
             return focusables.get(cursorIndex).recallFocus(cursorInfo);

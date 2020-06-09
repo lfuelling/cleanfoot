@@ -22,12 +22,7 @@
 package bluej.debugger.jdi;
 
 import bluej.debugger.DebuggerObject;
-import bluej.debugger.gentype.GenTypeArray;
-import bluej.debugger.gentype.GenTypeArrayClass;
-import bluej.debugger.gentype.GenTypeClass;
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.Reflective;
-
+import bluej.debugger.gentype.*;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ObjectReference;
@@ -38,16 +33,14 @@ import threadchecker.Tag;
 /**
  * Represents an array object running on the user (remote) machine.
  *
- * @author     Michael Kolling
- * @created    December 26, 2000
+ * @author Michael Kolling
+ * @created December 26, 2000
  */
-public class JdiArray extends JdiObject
-{
+public class JdiArray extends JdiObject {
     private JavaType componentType;
 
     @OnThread(Tag.Any)
-    protected JdiArray(ArrayReference obj)
-    {
+    protected JdiArray(ArrayReference obj) {
         this.obj = obj;
         obj.disableCollection();
         calcComponentType();
@@ -55,37 +48,37 @@ public class JdiArray extends JdiObject
 
     /**
      * Constructor for when the array type is known.
-     * @param obj           The reference to the the remote object
-     * @param expectedType  The known type of the object
+     *
+     * @param obj          The reference to the the remote object
+     * @param expectedType The known type of the object
      */
-    protected JdiArray(ArrayReference obj, JavaType expectedType)
-    {
+    protected JdiArray(ArrayReference obj, JavaType expectedType) {
         this.obj = obj;
         obj.disableCollection();
         // All arrays extend java.lang.Object - so it's possible that the
         // expected type is java.lang.Object and not an array type at all.
-        if(expectedType instanceof GenTypeArray) {
+        if (expectedType instanceof GenTypeArray) {
             String ctypestr = obj.referenceType().signature();
             JavaType genericType = expectedType;
             int level = 0;
-            
+
             // Go downwards until we find the base component type
-            while(genericType instanceof GenTypeArray) {
-                GenTypeArray genericArray = (GenTypeArray)genericType;
+            while (genericType instanceof GenTypeArray) {
+                GenTypeArray genericArray = (GenTypeArray) genericType;
                 genericType = genericArray.getArrayComponent();
                 ctypestr = ctypestr.substring(1);
                 level++;
             }
-            
+
             // If the arrays are of different depths, no inference is possible
             // (this is possible because all arrays extend Object)
-            if(ctypestr.charAt(0) == '[') {
+            if (ctypestr.charAt(0) == '[') {
                 calcComponentType();
                 return;
             }
 
             // The array may be of a primitive type.
-            if(genericType.isPrimitive()) {
+            if (genericType.isPrimitive()) {
                 calcComponentType();
                 return;
             }
@@ -93,9 +86,9 @@ public class JdiArray extends JdiObject
             // It's not really possible for an array to have a component type
             // that is a wildcard, but this type is inferred in some cases so
             // it must be handled here.
-            
+
             JavaType component;
-            
+
             if (genericType instanceof GenTypeClass) {
                 // the sig looks like "Lpackage/package/class;". Strip the 'L'
                 // and the ';'
@@ -112,7 +105,7 @@ public class JdiArray extends JdiObject
                 componentType = component;
             }
         }
-        
+
         if (componentType == null) {
             calcComponentType();
         }
@@ -120,8 +113,7 @@ public class JdiArray extends JdiObject
 
     @OnThread(Tag.Any)
     @SuppressWarnings("threadchecker")
-    private void calcComponentType()
-    {
+    private void calcComponentType() {
         ArrayType ar = (ArrayType) obj.referenceType();
         String componentSig = ar.componentSignature();
         JdiReflective.StringIterator i = new JdiReflective.StringIterator(componentSig);
@@ -130,55 +122,49 @@ public class JdiArray extends JdiObject
 
     /**
      * Get the name of the class of this object.
-     * 
+     *
      * @return String representing the Class name.
      */
     @Override
     @OnThread(Tag.Any)
-    public String getClassName()
-    {
+    public String getClassName() {
         return obj.referenceType().name();
     }
 
     /**
      * Get the GenType object representing the type of this array.
-     * 
-     * @return   GenType representing the type of the array.
+     *
+     * @return GenType representing the type of the array.
      */
     @Override
-    public GenTypeClass getGenType()
-    {
+    public GenTypeClass getGenType() {
         Reflective r = new JdiArrayReflective(componentType, obj.referenceType());
         return new GenTypeArrayClass(r, componentType);
     }
-    
+
     /**
      * Return true if this object is an array.
      *
-     * @return    The Array value
+     * @return The Array value
      */
     @Override
     @OnThread(Tag.Any)
-    public boolean isArray()
-    {
+    public boolean isArray() {
         return true;
     }
 
     @Override
-    public int getElementCount()
-    {
+    public int getElementCount() {
         return ((ArrayReference) obj).length();
     }
-    
+
     @Override
-    public JavaType getElementType()
-    {
+    public JavaType getElementType() {
         return componentType;
     }
-    
+
     @Override
-    public String getElementValueString(int index)
-    {
+    public String getElementValueString(int index) {
         Value val = ((ArrayReference) obj).getValue(index);
         return JdiUtils.getJdiUtils().getValueString(val);
     }
@@ -190,8 +176,7 @@ public class JdiArray extends JdiObject
      * @return       The InstanceFieldObject value
      */
     @Override
-    public DebuggerObject getElementObject(int index)
-    {
+    public DebuggerObject getElementObject(int index) {
         Value val = ((ArrayReference) obj).getValue(index);
         return JdiObject.getDebuggerObject((ObjectReference) val, componentType);
     }

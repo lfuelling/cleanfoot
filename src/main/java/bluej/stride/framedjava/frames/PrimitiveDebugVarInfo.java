@@ -26,23 +26,19 @@ import javafx.scene.control.Label;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class PrimitiveDebugVarInfo implements DebugVarInfo
-{
+public class PrimitiveDebugVarInfo implements DebugVarInfo {
     private final String value;
 
     @OnThread(Tag.Any)
-    public PrimitiveDebugVarInfo(String value)
-    {
+    public PrimitiveDebugVarInfo(String value) {
         this.value = value;
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public Node getDisplay(DebugVarInfo prev)
-    {
+    public Node getDisplay(DebugVarInfo prev) {
         Label l = new Label(value);
-        if (prev != null && !getInternalValueString().equals(prev.getInternalValueString()))
-        {
+        if (prev != null && !getInternalValueString().equals(prev.getInternalValueString())) {
             l.setStyle("-fx-font-weight: bold;-fx-underline:true;");
         }
         return l;
@@ -50,8 +46,7 @@ public class PrimitiveDebugVarInfo implements DebugVarInfo
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public String getInternalValueString()
-    {
+    public String getInternalValueString() {
         return value;
     }
 

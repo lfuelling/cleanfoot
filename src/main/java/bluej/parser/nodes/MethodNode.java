@@ -26,11 +26,7 @@ import bluej.debugger.gentype.JavaType;
 import bluej.debugger.gentype.Reflective;
 import bluej.editor.moe.MoeSyntaxDocument;
 import bluej.parser.ExpressionTypeInfo;
-import bluej.parser.entity.JavaEntity;
-import bluej.parser.entity.PackageOrClass;
-import bluej.parser.entity.TparEntity;
-import bluej.parser.entity.TypeEntity;
-import bluej.parser.entity.ValueEntity;
+import bluej.parser.entity.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -40,11 +36,10 @@ import java.util.List;
 
 /**
  * A node representing a parsed method or constructor.
- * 
+ *
  * @author Davin McCall
  */
-public class MethodNode extends JavaParentNode
-{
+public class MethodNode extends JavaParentNode {
     private final String name;
     private final String javadoc;
     private JavaEntity returnType;
@@ -53,15 +48,15 @@ public class MethodNode extends JavaParentNode
     private List<TparEntity> typeParams = null;
     private boolean isVarArgs = false;
     private int modifiers = 0;
-    
+
     /**
      * Construct a MethodNode representing a constructor or method.
+     *
      * @param parent  The parent node (containing this node)
      * @param name    The constructor/method name
      * @param javadoc The javadoc comment text (or null)
      */
-    public MethodNode(JavaParentNode parent, String name, String javadoc)
-    {
+    public MethodNode(JavaParentNode parent, String name, String javadoc) {
         super(parent);
         this.name = name;
         this.javadoc = javadoc;
@@ -70,129 +65,117 @@ public class MethodNode extends JavaParentNode
 
     /**
      * Set the return type of this method.
-     * 
+     *
      * <p>(If the returnType is unresolved, it must resolve against type parameters for
      * this actual method).
      */
-    public void setReturnType(JavaEntity returnType)
-    {
+    public void setReturnType(JavaEntity returnType) {
         this.returnType = returnType;
     }
-    
+
     /**
      * Add a method parameter
-     * @param name  The parameter name
-     * @param type  The parameter type
+     *
+     * @param name The parameter name
+     * @param type The parameter type
      */
-    public void addParameter(String name, JavaEntity type)
-    {
+    public void addParameter(String name, JavaEntity type) {
         paramNames.add(name);
         paramTypes.add(type);
     }
-    
+
     /**
      * Set the type parameters for this method.
      */
-    public void setTypeParams(List<TparEntity> typeParams)
-    {
+    public void setTypeParams(List<TparEntity> typeParams) {
         this.typeParams = typeParams;
     }
-    
+
     /**
      * Mark this method as a varargs method (or not).
-     * @param isVarArgs  Whether this method is a varargs method.
+     *
+     * @param isVarArgs Whether this method is a varargs method.
      */
-    public void setVarArgs(boolean isVarArgs)
-    {
+    public void setVarArgs(boolean isVarArgs) {
         this.isVarArgs = isVarArgs;
     }
-    
+
     /**
      * Check whether this method is a varargs method.
      */
-    public boolean isVarArgs()
-    {
+    public boolean isVarArgs() {
         return isVarArgs;
     }
-    
+
     /**
      * Set the modifiers on this method (as per java.lang.reflect.Modifier)
      */
-    public void setModifiers(int modifiers)
-    {
+    public void setModifiers(int modifiers) {
         this.modifiers = modifiers;
     }
-    
+
     /**
      * Get the modifiers on this method (as per java.lang.reflect.Modifier)
      */
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return modifiers;
     }
-    
+
     /**
      * Get the parameter names of this method
+     *
      * @return
      */
-    public List<String> getParamNames()
-    {
+    public List<String> getParamNames() {
         return paramNames;
     }
-    
+
     /**
      * Get the parameter types of this method.
      */
-    public List<JavaEntity> getParamTypes()
-    {
+    public List<JavaEntity> getParamTypes() {
         return paramTypes;
     }
-    
+
     /**
      * Get the javadoc comment text for this node. May return null.
      */
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         return javadoc;
     }
-    
+
     @Override
-    public boolean isContainer()
-    {
+    public boolean isContainer() {
         return true;
     }
-    
+
     @Override
-    public int getNodeType()
-    {
+    public int getNodeType() {
         return ParsedNode.NODETYPE_METHODDEF;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
-    
+
     /**
      * Get the return type of the method represented by this node.
      * Returns a possibly unresolved JavaEntity. For a constructor,
      * returns null.
      */
-    public JavaEntity getReturnType()
-    {
+    public JavaEntity getReturnType() {
         return returnType;
     }
-    
+
     /**
      * Get the type parameters for this method.
      */
-    public List<GenTypeDeclTpar> getTypeParams()
-    {
+    public List<GenTypeDeclTpar> getTypeParams() {
         if (typeParams == null) {
             return null;
         }
-        
+
         List<GenTypeDeclTpar> tparList = new ArrayList<GenTypeDeclTpar>(typeParams.size());
         for (TparEntity tparEnt : typeParams) {
             GenTypeDeclTpar tparType = tparEnt.getType();
@@ -202,28 +185,25 @@ public class MethodNode extends JavaParentNode
         }
         return tparList;
     }
-    
+
     @Override
-    protected boolean marksOwnEnd()
-    {
+    protected boolean marksOwnEnd() {
         return true;
     }
-    
+
     @Override
-    public JavaEntity getValueEntity(String name, Reflective querySource)
-    {
+    public JavaEntity getValueEntity(String name, Reflective querySource) {
         JavaEntity paramEntity = getParameterEntity(name, querySource);
         if (paramEntity != null) {
             return paramEntity;
         }
         return super.getValueEntity(name, querySource);
     }
-    
+
     /**
      * Look for a value entity in the method parameters.
      */
-    private JavaEntity getParameterEntity(String name, Reflective querySource)
-    {
+    private JavaEntity getParameterEntity(String name, Reflective querySource) {
         Iterator<String> i = paramNames.iterator();
         Iterator<JavaEntity> j = paramTypes.iterator();
         while (i.hasNext()) {
@@ -238,11 +218,10 @@ public class MethodNode extends JavaParentNode
         }
         return null;
     }
-    
+
     @Override
     public PackageOrClass resolvePackageOrClass(String name,
-            Reflective querySource)
-    {
+                                                Reflective querySource) {
         if (typeParams != null) {
             for (TparEntity tpar : typeParams) {
                 if (tpar.getName().equals(name)) {
@@ -252,11 +231,10 @@ public class MethodNode extends JavaParentNode
         }
         return super.resolvePackageOrClass(name, querySource);
     }
-    
+
     @Override
     protected ExpressionTypeInfo getExpressionType(int pos, int nodePos,
-            JavaEntity defaultType, MoeSyntaxDocument document)
-    {
+                                                   JavaEntity defaultType, MoeSyntaxDocument document) {
         if (Modifier.isStatic(modifiers)) {
             JavaType dtype = defaultType.getType();
             if (dtype != null) {

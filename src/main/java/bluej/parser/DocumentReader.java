@@ -21,42 +21,36 @@
  */
 package bluej.parser;
 
-import java.io.Reader;
-
-import javax.swing.text.Document;
-import javax.swing.text.Segment;
-
 import bluej.editor.moe.MoeSyntaxDocument;
-import bluej.utility.Debug;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import javax.swing.text.Segment;
+import java.io.Reader;
+
 /**
  * An efficient reader which reads directly from the supplied Document.
- * 
+ *
  * @author Davin McCall
  */
-public class DocumentReader extends Reader
-{
+public class DocumentReader extends Reader {
     private final Segment buffer;
     private final MoeSyntaxDocument document;
     private int bufpos;
     private int docPosition;
     private final int docLength;
-    
+
     /**
      * Construct a DocumentReader to read an entire document.
      */
-    public DocumentReader(MoeSyntaxDocument document)
-    {
+    public DocumentReader(MoeSyntaxDocument document) {
         this(document, 0);
     }
-    
+
     /**
      * Construct a DocumentReader to read a document starting from the given position.
      */
-    public DocumentReader(MoeSyntaxDocument document, int position)
-    {
+    public DocumentReader(MoeSyntaxDocument document, int position) {
         buffer = new Segment();
         buffer.setPartialReturn(true);
         this.document = document;
@@ -64,13 +58,12 @@ public class DocumentReader extends Reader
         docLength = document.getLength();
         fillBuffer();
     }
-    
+
     /**
      * Construct a new DocumentReader to read text between the two
      * given document positions.
      */
-    public DocumentReader(MoeSyntaxDocument document, int position, int endpos)
-    {
+    public DocumentReader(MoeSyntaxDocument document, int position, int endpos) {
         buffer = new Segment();
         buffer.setPartialReturn(true);
         this.document = document;
@@ -80,41 +73,38 @@ public class DocumentReader extends Reader
             throw new IllegalArgumentException("Trying to construct DocumentReader to look up to " + endpos + " in a document of length: " + document.getLength());
         fillBuffer();
     }
-    
+
     @Override
-    @OnThread(value = Tag.FXPlatform,ignoreParent = true)
-    public void close()
-    {
+    @OnThread(value = Tag.FXPlatform, ignoreParent = true)
+    public void close() {
         // Nothing to do
     }
 
     @Override
-    @OnThread(value = Tag.FXPlatform,ignoreParent = true)
-    public int read()
-    {
+    @OnThread(value = Tag.FXPlatform, ignoreParent = true)
+    public int read() {
         if (bufpos == buffer.getEndIndex()) {
             if (docPosition == docLength) {
                 return -1;
             }
             fillBuffer();
         }
-        
+
         return buffer.array[bufpos++];
     }
-    
+
     @Override
-    @OnThread(value = Tag.FXPlatform,ignoreParent = true)
-    public int read(char[] cbuf, int off, int len)
-    {
+    @OnThread(value = Tag.FXPlatform, ignoreParent = true)
+    public int read(char[] cbuf, int off, int len) {
         int docAvail = Math.min(len, docLength - docPosition + buffer.getEndIndex() - bufpos);
-        
+
         if (docAvail == 0) {
             return -1;
         }
-        
+
         len = Math.min(len, docAvail);
         int remaining = len;
-        
+
         while (remaining > 0) {
             int avail = Math.min(buffer.getEndIndex() - bufpos, remaining);
             if (avail == 0) {
@@ -126,15 +116,14 @@ public class DocumentReader extends Reader
             bufpos += avail;
             remaining -= avail;
         }
-        
+
         return len;
     }
 
-    private void fillBuffer()
-    {
+    private void fillBuffer() {
         int docAvail = docLength - docPosition;
-            document.getText(docPosition, docAvail, buffer);
-            docPosition += (buffer.getEndIndex() - buffer.getBeginIndex());
-            bufpos = buffer.getBeginIndex();
+        document.getText(docPosition, docAvail, buffer);
+        docPosition += (buffer.getEndIndex() - buffer.getBeginIndex());
+        bufpos = buffer.getBeginIndex();
     }
 }

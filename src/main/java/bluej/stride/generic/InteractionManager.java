@@ -24,7 +24,6 @@ package bluej.stride.generic;
 import bluej.editor.stride.*;
 import bluej.parser.AssistContent;
 import bluej.stride.framedjava.ast.JavaFragment;
-import bluej.stride.framedjava.ast.SlotFragment;
 import bluej.stride.framedjava.ast.links.PossibleLink;
 import bluej.stride.framedjava.elements.CodeElement;
 import bluej.stride.framedjava.frames.StrideCategory;

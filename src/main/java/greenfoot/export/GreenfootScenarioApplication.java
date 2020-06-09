@@ -29,32 +29,26 @@ import javafx.stage.Stage;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class GreenfootScenarioApplication extends Application
-{
+public class GreenfootScenarioApplication extends Application {
     @Override
     @OnThread(Tag.FXPlatform)
-    public void start(Stage primaryStage) throws Exception
-    {
+    public void start(Stage primaryStage) throws Exception {
         Platform.setImplicitExit(true);
         GreenfootScenarioViewer greenfootScenarioViewer = new GreenfootScenarioViewer();
         Scene scene = new Scene(greenfootScenarioViewer);
         scene.getStylesheets().add("greenfoot.css");
-        primaryStage.setScene(scene);        
+        primaryStage.setScene(scene);
         primaryStage.show();
         primaryStage.setOnHiding(e -> {
             Simulation.getInstance().abort();
-            
+
             // Fail safe: if we haven't exited after a second, force exit:
-            Thread exiter = new Thread()
-            {
-                public void run()
-                {
-                    try
-                    {
+            Thread exiter = new Thread() {
+                public void run() {
+                    try {
                         Thread.sleep(1000);
-                    }
-                    catch (InterruptedException ex)
-                    {
+                    } catch (InterruptedException ex) {
+                        System.err.println(ex.getMessage());
                     }
                     System.exit(1);
                 }

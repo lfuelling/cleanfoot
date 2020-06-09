@@ -26,19 +26,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "Use library class" command. Allow the user to instantiate an object
  * from the standard library onto the object bench.
- * 
+ *
  * @author Davin McCall
  * @version $Id: UseLibraryAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-public class UseLibraryAction extends PkgMgrAction
-{
-    public UseLibraryAction(PkgMgrFrame pmf)
-    {
+public class UseLibraryAction extends PkgMgrAction {
+    public UseLibraryAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.callLibrary");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.callLibraryClass();
     }

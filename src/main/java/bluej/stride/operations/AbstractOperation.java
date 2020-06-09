@@ -21,32 +21,30 @@
  */
 package bluej.stride.operations;
 
-import java.util.List;
-
+import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-import bluej.stride.generic.InteractionManager;
 import javafx.scene.control.MenuItem;
 
-public abstract class AbstractOperation
-{
+import java.util.List;
+
+public abstract class AbstractOperation {
     /**
      * If you select multiple frames, and right click, each will have
      * a set of operations that can be performed.  This enum determines how the different
      * sets should be combined:
-     * 
-     *   - ALL means that all sets must feature this item before it is offered
-     *     (e.g. for copying)
-     *   - ANY means that only one operation need have this available
-     *     (e.g. disabling, where you want to allow disabling even if some frames are already disabled) 
-     *   - ONE means that it only appears in single frame selections
-     *     (e.g. frame transformations)
+     * <p>
+     * - ALL means that all sets must feature this item before it is offered
+     * (e.g. for copying)
+     * - ANY means that only one operation need have this available
+     * (e.g. disabling, where you want to allow disabling even if some frames are already disabled)
+     * - ONE means that it only appears in single frame selections
+     * (e.g. frame transformations)
      */
-    public enum Combine
-    {
+    public enum Combine {
         ANY, ALL, ONE
     }
 
@@ -54,58 +52,48 @@ public abstract class AbstractOperation
     protected final Combine combine;
     private boolean wideCustomItem = false;
     protected InteractionManager editor;
-    
-    public AbstractOperation(InteractionManager editor, String identifier, Combine combine)
-    {
+
+    public AbstractOperation(InteractionManager editor, String identifier, Combine combine) {
         this.identifier = identifier;
         this.combine = combine;
         this.editor = editor;
     }
 
-    public String getIdentifier()
-    {
+    public String getIdentifier() {
         return identifier;
     }
 
-    public Combine combine()
-    {
+    public Combine combine() {
         return combine;
     }
 
-    public static class ItemLabel
-    {
+    public static class ItemLabel {
         private final ObservableValue<String> label;
         private final MenuItemOrder order;
 
-        public ItemLabel(ObservableValue<String> label, MenuItemOrder order)
-        {
+        public ItemLabel(ObservableValue<String> label, MenuItemOrder order) {
             this.label = label;
             this.order = order;
         }
 
         @Override
-        public boolean equals(Object obj)
-        {
-            if (obj instanceof ItemLabel)
-            {
+        public boolean equals(Object obj) {
+            if (obj instanceof ItemLabel) {
                 return label.getValue().equals(((ItemLabel) obj).label.getValue());
             }
             return false;
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return label.getValue().hashCode();
         }
 
-        public ObservableValue<String> getLabel()
-        {
+        public ObservableValue<String> getLabel() {
             return label;
         }
 
-        public MenuItemOrder getOrder()
-        {
+        public MenuItemOrder getOrder() {
             return order;
         }
     }
@@ -116,30 +104,26 @@ public abstract class AbstractOperation
      * .. and so on, but you surely don't want more than two levels!
      */
     public abstract List<ItemLabel> getLabels();
-    
+
     // Helper function:
-    protected ItemLabel l(String s, MenuItemOrder order)
-    {
-        return new ItemLabel(new ReadOnlyStringWrapper(s){
+    protected ItemLabel l(String s, MenuItemOrder order) {
+        return new ItemLabel(new ReadOnlyStringWrapper(s) {
             @Override
-            public boolean equals(Object obj)
-            {
-                if (!(obj instanceof ObservableValue<?>)){
+            public boolean equals(Object obj) {
+                if (!(obj instanceof ObservableValue<?>)) {
                     return false;
                 }
                 return getValue().equals(((ObservableValue) obj).getValue());
             }
-            
+
             @Override
-            public int hashCode()
-            {
+            public int hashCode() {
                 return getValue().hashCode();
             }
         }, order);
     }
 
-    protected CustomMenuItem initializeCustomItem()
-    {
+    protected CustomMenuItem initializeCustomItem() {
         Label d = new Label();
         d.textProperty().bind(getLabels().get(getLabels().size() - 1).label);
         if (!wideCustomItem)
@@ -152,13 +136,11 @@ public abstract class AbstractOperation
         return item;
     }
 
-    public void setWideCustomItem(boolean wide)
-    {
+    public void setWideCustomItem(boolean wide) {
         wideCustomItem = wide;
     }
 
-    protected MenuItem initializeNormalItem()
-    {
+    protected MenuItem initializeNormalItem() {
         MenuItem item = new MenuItem();
         item.textProperty().bind(getLabels().get(getLabels().size() - 1).label);
         return item;

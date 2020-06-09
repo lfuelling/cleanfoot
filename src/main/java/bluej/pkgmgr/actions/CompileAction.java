@@ -29,26 +29,22 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * "Compile" command. Compiles all class files in the project which need to
  * be compiled.
- * 
+ *
  * @author Davin McCall
  */
-final public class CompileAction extends PkgMgrAction
-{
-    public CompileAction(PkgMgrFrame pmf)
-    {
+final public class CompileAction extends PkgMgrAction {
+    public CompileAction(PkgMgrFrame pmf) {
         super(pmf, "menu.tools.compile");
         shortDescription = Config.getString("tooltip.compile");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
-        
-        if (! pmf.getPackage().isDebuggerIdle()) {
+
+        if (!pmf.getPackage().isDebuggerIdle()) {
             // The debugger is NOT idle, show a message about it.
             pmf.getPackage().showMessage("compile-while-executing");
-        }
-        else {
+        } else {
             pmf.getPackage().compile(CompileReason.USER, CompileType.EXPLICIT_USER_COMPILE);
         }
     }

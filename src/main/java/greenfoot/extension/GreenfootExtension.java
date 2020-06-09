@@ -21,49 +21,42 @@
  */
 package greenfoot.extension;
 
-import bluej.Boot;
-import bluej.extensions.event.CompileEvent;
-import bluej.extensions.event.CompileListener;
-import greenfoot.guifx.GreenfootGuiHandler;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import bluej.Config;
 import bluej.Main;
 import bluej.extensions.BlueJ;
 import bluej.extensions.Extension;
 import bluej.extensions.event.ApplicationEvent;
 import bluej.extensions.event.ApplicationListener;
-import javafx.application.Platform;
+import bluej.extensions.event.CompileEvent;
+import bluej.extensions.event.CompileListener;
+import greenfoot.guifx.GreenfootGuiHandler;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * This is the starting point of Greenfoot as a BlueJ Extension.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.SwingIsFX)
-public class GreenfootExtension extends Extension implements ApplicationListener
-{
+public class GreenfootExtension extends Extension implements ApplicationListener {
     private BlueJ theBlueJ;
 
     /**
      * When this method is called, the extension may start its work.
      */
-    public void startup(BlueJ bluej)
-    {
+    public void startup(BlueJ bluej) {
         theBlueJ = bluej;
         Main.setGuiHandler(new GreenfootGuiHandler());
 
         // We can do this at any point, because although the submission failure may have already
         // happened, the event is re-issued to new listeners.
-        bluej.addApplicationListener(new ApplicationListener()
-        {
+        bluej.addApplicationListener(new ApplicationListener() {
             @Override
-            public void blueJReady(ApplicationEvent event)
-            {
+            public void blueJReady(ApplicationEvent event) {
 
             }
         });
@@ -71,24 +64,27 @@ public class GreenfootExtension extends Extension implements ApplicationListener
         bluej.addCompileListener(new CompileListener() {
 
             @Override
-            public void compileWarning(CompileEvent event) { }
+            public void compileWarning(CompileEvent event) {
+            }
 
             @Override
-            public void compileSucceeded(CompileEvent event)
-            {
+            public void compileSucceeded(CompileEvent event) {
                 // Do a Garbage Collection to finalize any garbage JdiObjects, thereby
                 // allowing objects on the remote VM to be garbage collected.
                 System.gc();
             }
 
             @Override
-            public void compileStarted(CompileEvent event) { }
+            public void compileStarted(CompileEvent event) {
+            }
 
             @Override
-            public void compileFailed(CompileEvent event) { }
+            public void compileFailed(CompileEvent event) {
+            }
 
             @Override
-            public void compileError(CompileEvent event) { }
+            public void compileError(CompileEvent event) {
+            }
         });
 
         theBlueJ.addApplicationListener(this);
@@ -98,30 +94,26 @@ public class GreenfootExtension extends Extension implements ApplicationListener
      * This method must decide if this Extension is compatible with the current
      * release of the BlueJ Extensions API
      */
-    public boolean isCompatible()
-    {
+    public boolean isCompatible() {
         return Config.isGreenfoot();
     }
 
     /**
      * Returns the version number of this extension
      */
-    public String getVersion()
-    {
+    public String getVersion() {
         return ("2003.03");
     }
 
     /**
      * Returns the user-visible name of this extension
      */
-    public String getName()
-    {
+    public String getName() {
         return ("greenfoot Extension");
     }
 
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return ("greenfoot extension");
     }
 
@@ -130,27 +122,23 @@ public class GreenfootExtension extends Extension implements ApplicationListener
      * is making sure that the link will still be alive in three years...
      */
     @Override
-    public URL getURL()
-    {
+    public URL getURL() {
         try {
             return new URL("http://www.greenfoot.org");
-        }
-        catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             return null;
         }
     }
-    
+
     // ------------- ApplicationListener interface ------------
-    
+
     @Override
-    public void blueJReady(ApplicationEvent event)
-    {
+    public void blueJReady(ApplicationEvent event) {
 
     }
 
     @Override
-    public void dataSubmissionFailed(ApplicationEvent event)
-    {
+    public void dataSubmissionFailed(ApplicationEvent event) {
 
     }
 }

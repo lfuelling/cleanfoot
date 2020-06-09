@@ -21,42 +21,36 @@
  */
 package bluej.utility.javafx.binding;
 
+import javafx.collections.ObservableList;
+
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import javafx.collections.ObservableList;
 
 /**
  * Binds a destination list to the concatenation of some observable-list accessor
  * on items in an observable list.
- * 
  */
-public class ConcatMapListBinding<DEST, SRC> extends DeepListBinding<DEST>
-{
+public class ConcatMapListBinding<DEST, SRC> extends DeepListBinding<DEST> {
     private final ObservableList<SRC> src;
     private final Function<SRC, ObservableList<? extends DEST>> via;
 
-    public static <DEST, SRC> void bind(ObservableList<DEST> dest, ObservableList<SRC> src, Function<SRC, ObservableList<? extends DEST>> via)
-    {
+    public static <DEST, SRC> void bind(ObservableList<DEST> dest, ObservableList<SRC> src, Function<SRC, ObservableList<? extends DEST>> via) {
         new ConcatMapListBinding<>(dest, src, via).startListening();
     }
-    
-    private ConcatMapListBinding(ObservableList<DEST> dest, ObservableList<SRC> src, Function<SRC, ObservableList<? extends DEST>> via)
-    {
+
+    private ConcatMapListBinding(ObservableList<DEST> dest, ObservableList<SRC> src, Function<SRC, ObservableList<? extends DEST>> via) {
         super(dest);
         this.src = src;
         this.via = via;
     }
 
     @Override
-    protected Stream<ObservableList<?>> getListenTargets()
-    {
-        return Stream.concat(Stream.of((ObservableList<?>)src), src.stream().map(via));
+    protected Stream<ObservableList<?>> getListenTargets() {
+        return Stream.concat(Stream.of((ObservableList<?>) src), src.stream().map(via));
     }
 
     @Override
-    protected Stream<DEST> calculateValues()
-    {
+    protected Stream<DEST> calculateValues() {
         return src.stream().map(via).flatMap(ObservableList::stream);
     }
 

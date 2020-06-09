@@ -21,21 +21,19 @@
  */
 package bluej.parser;
 
-import java.util.List;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.List;
 
-public class FieldCompletion extends AssistContent
-{
+
+public class FieldCompletion extends AssistContent {
     private final String fieldType;
     private final String fieldName;
     private final int modifiers;
     private final String declaringClass;
-    
-    public FieldCompletion(String fieldType, String fieldName, int modifiers, String declaringClass)
-    {
+
+    public FieldCompletion(String fieldType, String fieldName, int modifiers, String declaringClass) {
         this.fieldType = fieldType;
         this.fieldName = fieldName;
         this.modifiers = modifiers;
@@ -44,46 +42,39 @@ public class FieldCompletion extends AssistContent
 
     @Override
     @OnThread(Tag.Any)
-    public String getName()
-    {
+    public String getName() {
         return fieldName;
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return fieldType;
     }
 
     @Override
-    public List<ParamInfo> getParams()
-    {
+    public List<ParamInfo> getParams() {
         // Can't have parameters, so we return null:
         return null;
     }
 
     @Override
-    public String getDeclaringClass()
-    {
+    public String getDeclaringClass() {
         return declaringClass;
     }
 
     @Override
-    public CompletionKind getKind()
-    {
+    public CompletionKind getKind() {
         return CompletionKind.FIELD;
     }
 
     @Override
-    public String getJavadoc()
-    {
+    public String getJavadoc() {
         // TODO
         return "";
     }
 
     @Override
-    public Access getAccessPermission()
-    {
+    public Access getAccessPermission() {
         return fromModifiers(modifiers);
     }
 }

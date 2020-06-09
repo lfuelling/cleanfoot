@@ -27,19 +27,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * Standard API help. Attempt to show the API help in a web browser. The
  * URL is taken from bluej.defs configuration file.
- * 
+ *
  * @author Davin McCall
  * @version $Id: StandardAPIHelpAction.java 16081 2016-06-25 09:42:13Z nccb $
  */
-final public class StandardAPIHelpAction extends PkgMgrAction
-{
-    public StandardAPIHelpAction(PkgMgrFrame pmf)
-    {
+final public class StandardAPIHelpAction extends PkgMgrAction {
+    public StandardAPIHelpAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.standardApi");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.showWebPage(Config.getPropString("bluej.url.javaStdLib"));
     }

@@ -23,38 +23,33 @@ package bluej.groupwork.ui;
 
 import bluej.groupwork.TeamStatusInfo;
 import bluej.pkgmgr.Project;
-
 import javafx.scene.control.ListCell;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * Class to display files to be committed in a list for the CommitCommentsFrame
- * 
+ *
  * @author Amjad Altadmri
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class TeamStatusInfoCell extends ListCell<TeamStatusInfo>
-{
+public class TeamStatusInfoCell extends ListCell<TeamStatusInfo> {
     private final Project project;
 
-    public TeamStatusInfoCell(Project proj)
-    {
+    public TeamStatusInfoCell(Project proj) {
         super();
         project = proj;
     }
 
     @Override
-    public void updateItem(TeamStatusInfo info, boolean empty)
-    {
+    public void updateItem(TeamStatusInfo info, boolean empty) {
         super.updateItem(info, empty);
         if (empty || info == null) {
             setText(null);
         } else {
 
             String topText;
-            if (project.getTeamSettingsController().isDVCS()){
+            if (project.getTeamSettingsController().isDVCS()) {
                 topText = ResourceDescriptor.getDCVSResource(project, info, true, false);
             } else {
                 topText = ResourceDescriptor.getResource(project, info, true);

@@ -25,38 +25,33 @@ import bluej.debugger.gentype.Reflective;
 
 /**
  * An entity resolver which resolves classes using a ClassLoader.
- * 
+ *
  * @author Davin McCall
  */
-public class ClassLoaderResolver implements EntityResolver
-{
+public class ClassLoaderResolver implements EntityResolver {
     private final ClassLoader classLoader;
-    
-    public ClassLoaderResolver(ClassLoader classLoader)
-    {
+
+    public ClassLoaderResolver(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
-    
-    public TypeEntity resolveQualifiedClass(String name)
-    {
+
+    public TypeEntity resolveQualifiedClass(String name) {
         try {
             // Try as a fully-qualified name 
             Class<?> cl = classLoader.loadClass(name);
             return new TypeEntity(cl);
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
-        
+
         return null;
     }
-    
-    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource)
-    {
+
+    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource) {
         // Have to assume it's a package
         return new PackageEntity(name, this);
     }
-    
-    public JavaEntity getValueEntity(String name, Reflective querySource)
-    {
+
+    public JavaEntity getValueEntity(String name, Reflective querySource) {
         return resolvePackageOrClass(name, querySource);
     }
 }

@@ -31,25 +31,23 @@ import threadchecker.Tag;
 
 /**
  * Class to determine team resource descriptions for use in dialogs
- * 
+ *
  * @author Bruce Quig
  */
 @OnThread(Tag.FXPlatform)
-public class ResourceDescriptor
-{
+public class ResourceDescriptor {
     /**
-     *  Builds and returns a team resource description for a file.
+     * Builds and returns a team resource description for a file.
      *
-     * @param project   The project that includes the file.
-     * @param info      Team status information for the file.
-     * @param annotate  Should annotation be added to the description.
-     * @return          A description for the file's team status.
+     * @param project  The project that includes the file.
+     * @param info     Team status information for the file.
+     * @param annotate Should annotation be added to the description.
+     * @return A description for the file's team status.
      */
-    public static String getResource(Project project, TeamStatusInfo info, boolean annotate)
-    {
+    public static String getResource(Project project, TeamStatusInfo info, boolean annotate) {
         boolean isPkgFile = BlueJPackageFile.isPackageFileName(info.getFile().getName());
         String status = getStatusName(project, info, isPkgFile);
-        
+
         if (annotate) {
             Status infoStatus = info.getStatus();
             switch (infoStatus) {
@@ -87,21 +85,17 @@ public class ResourceDescriptor
     }
 
     /**
-     *  Builds and returns a team resource description for a file's update status.
+     * Builds and returns a team resource description for a file's update status.
      *
-     * @param project       The project that includes the file.
-     * @param updateStatus  Update status information for the file.
-     * @param annotate      Should annotation be added to the description.
-     * @return              A description for the file's team status.
+     * @param project      The project that includes the file.
+     * @param updateStatus Update status information for the file.
+     * @param annotate     Should annotation be added to the description.
+     * @return A description for the file's team status.
      */
-    public static String getResource(Project project, UpdateStatus updateStatus, boolean annotate)
-    {
-        if (updateStatus.infoStatus != null)
-        {
+    public static String getResource(Project project, UpdateStatus updateStatus, boolean annotate) {
+        if (updateStatus.infoStatus != null) {
             return getResource(project, updateStatus.infoStatus, annotate);
-        }
-        else
-        {
+        } else {
             // This is the case for eg "No files to update" message
             return updateStatus.stringStatus;
         }
@@ -115,13 +109,12 @@ public class ResourceDescriptor
      * @param annotate Should annotation be added to the description.
      * @param remote   Which description is needed, the remote one (<code>true</code>) or the
      *                 local one (<code>false</code>).
-     * @return         A description for the file's team status.
+     * @return A description for the file's team status.
      */
-    public static String getDCVSResource(Project project, TeamStatusInfo info, boolean annotate, boolean remote)
-    {
+    public static String getDCVSResource(Project project, TeamStatusInfo info, boolean annotate, boolean remote) {
         boolean isPkgFile = BlueJPackageFile.isPackageFileName(info.getFile().getName());
         String status = getStatusName(project, info, isPkgFile);
-        
+
         if (annotate) {
             Status infoStatus = info.getStatus(!remote);
             switch (infoStatus) {
@@ -149,53 +142,44 @@ public class ResourceDescriptor
     }
 
     /**
-     *  Builds and returns a resource description for a file in a distributed version control system.
+     * Builds and returns a resource description for a file in a distributed version control system.
      *
-     * @param project       The project that includes the file.
-     * @param updateStatus  Update status information for the file.
-     * @param annotate      Should annotation be added to the description.
-     * @param remote        Which description is needed, the remote one (<code>true</code>) or the local one (<code>false</code>).
-     * @return              A description for the file's team status.
+     * @param project      The project that includes the file.
+     * @param updateStatus Update status information for the file.
+     * @param annotate     Should annotation be added to the description.
+     * @param remote       Which description is needed, the remote one (<code>true</code>) or the local one (<code>false</code>).
+     * @return A description for the file's team status.
      */
-    public static String getDCVSResource(Project project, UpdateStatus updateStatus, boolean annotate, boolean remote)
-    {
-        if (updateStatus.infoStatus != null)
-        {
+    public static String getDCVSResource(Project project, UpdateStatus updateStatus, boolean annotate, boolean remote) {
+        if (updateStatus.infoStatus != null) {
             return getDCVSResource(project, updateStatus.infoStatus, annotate, remote);
-        }
-        else
-        {
+        } else {
             // This is the case for eg "No files to update" message
             return updateStatus.stringStatus;
         }
     }
-    
+
     /**
      * Get the display form of class/file name from a team status.
-     *  
-     * @param project  The project which the file belongs to
-     * @param info     The team status info for the file
-     * @param isPkgFile  Whether the file is a package file (project.bluej)
+     *
+     * @param project   The project which the file belongs to
+     * @param info      The team status info for the file
+     * @param isPkgFile Whether the file is a package file (project.bluej)
      */
-    private static String getStatusName(Project project, TeamStatusInfo info, boolean isPkgFile)
-    {
+    private static String getStatusName(Project project, TeamStatusInfo info, boolean isPkgFile) {
         String status;
         String packageName = project.getPackageForFile(info.getFile());
         packageName = packageName == null ? "" : packageName;
-        if (! packageName.isEmpty())
-        {
+        if (!packageName.isEmpty()) {
             packageName = "[" + packageName + "] ";
         }
-        
-        if (isPkgFile)
-        {
+
+        if (isPkgFile) {
             status = packageName + Config.getString("team.commit.layout");
-        }
-        else
-        {
+        } else {
             status = packageName + info.getFile().getName();
         }
-        
+
         return status;
     }
 }

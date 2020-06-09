@@ -24,49 +24,42 @@ package bluej.groupwork;
 /**
  * Represents a single element of history information. This includes:
  * Filename, revision, date, user, comment
- * 
+ *
  * @author Davin McCall
  * @version $Id: HistoryInfo.java 6215 2009-03-30 13:28:25Z polle $
  */
-public class HistoryInfo
-{
-    private final String [] files;
+public class HistoryInfo {
+    private final String[] files;
     private final String revision;
     private final String date;
     private final String user;
     private final String comment;
-    
-    public HistoryInfo(String [] files, String revision, String date, String user, String comment)
-    {
+
+    public HistoryInfo(String[] files, String revision, String date, String user, String comment) {
         this.files = files;
         this.revision = revision;
         this.date = date;
         this.user = user;
         this.comment = comment;
     }
-    
-    public String [] getFiles()
-    {
+
+    public String[] getFiles() {
         return files;
     }
-    
-    public String getRevision()
-    {
+
+    public String getRevision() {
         return revision;
     }
-    
-    public String getDate()
-    {
+
+    public String getDate() {
         return date;
     }
-    
-    public String getUser()
-    {
+
+    public String getUser() {
         return user;
     }
-    
-    public String getComment()
-    {
+
+    public String getComment() {
         return comment;
     }
 }

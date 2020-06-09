@@ -21,8 +21,6 @@
  */
 package bluej.extensions.event;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.JavaPrimitiveType;
 import bluej.debugger.gentype.JavaType;
@@ -31,10 +29,11 @@ import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.extensions.BPackage;
 import bluej.extensions.ExtensionBridge;
 import bluej.pkgmgr.PkgMgrFrame;
-
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 
 /**
@@ -48,10 +47,9 @@ import com.sun.jdi.ReferenceType;
  * @author Damiano Bolla, University of Kent at Canterbury, 2003,2004
  */
 @OnThread(Tag.Any)
-public class InvocationEvent implements ExtensionEvent
-{
+public class InvocationEvent implements ExtensionEvent {
     /**
-     *  This event is returned in case of unknown mapping
+     * This event is returned in case of unknown mapping
      */
     public final static int UNKNOWN_EXIT = 0;
     /**
@@ -86,10 +84,9 @@ public class InvocationEvent implements ExtensionEvent
     /**
      * Constructor for the event.
      *
-     * @param  exevent  Description of the Parameter
+     * @param exevent Description of the Parameter
      */
-    public InvocationEvent(ExecutionEvent exevent)
-    {
+    public InvocationEvent(ExecutionEvent exevent) {
         invocationStatus = UNKNOWN_EXIT;
         String resultType = exevent.getResult();
 
@@ -116,10 +113,9 @@ public class InvocationEvent implements ExtensionEvent
     /**
      * Returns the invocation status. One of the values listed above.
      *
-     * @return    The invocationStatus value
+     * @return The invocationStatus value
      */
-    public int getInvocationStatus()
-    {
+    public int getInvocationStatus() {
         return invocationStatus;
     }
 
@@ -128,10 +124,9 @@ public class InvocationEvent implements ExtensionEvent
      * Returns the package in which this invocation took place.
      * Further information about the context of the event can be retrieved via the package object.
      *
-     * @return    The package value
+     * @return The package value
      */
-    public BPackage getPackage()
-    {
+    public BPackage getPackage() {
         return bluej_pkg.getBPackage();
     }
 
@@ -141,10 +136,9 @@ public class InvocationEvent implements ExtensionEvent
      * If you need further information about this class you can obtain a
      * BClass from <code>BPackage.getBClass()</code> using this name as a reference.
      *
-     * @return    The className value
+     * @return The className value
      */
-    public String getClassName()
-    {
+    public String getClassName() {
         return className;
     }
 
@@ -153,15 +147,14 @@ public class InvocationEvent implements ExtensionEvent
      * Returns the instance name of the invoked object on the object bench.
      * If you need further information about this object you can obtain a BObject using
      * <code>BPackage.getObject()</code> using this name as a reference.
-     *
+     * <p>
      * For a static method invocation, this method will return <code>null</code>.
      * For a constructor call it will return the new instance name of the object on the object bench.
      * For a method call it will return the name of the object on which the operation was invoked.
      *
-     * @return    The objectName value
+     * @return The objectName value
      */
-    public String getObjectName()
-    {
+    public String getObjectName() {
         return objectName;
     }
 
@@ -170,27 +163,25 @@ public class InvocationEvent implements ExtensionEvent
      * Returns the method name being called.
      * Returns <code>null</code> if this is an invocation of a constructor.
      *
-     * @return    The methodName value
+     * @return The methodName value
      */
-    public String getMethodName()
-    {
+    public String getMethodName() {
         return methodName;
     }
 
 
     /**
-     * Returns the signature of the invoked method or constructor. 
-     *
-     * This is an array of Class objects representing the static types of 
-     * the parameters to the method or constructor, in order. In the case of 
-     * parameterised types, only the base type (e.g. List, not 
+     * Returns the signature of the invoked method or constructor.
+     * <p>
+     * This is an array of Class objects representing the static types of
+     * the parameters to the method or constructor, in order. In the case of
+     * parameterised types, only the base type (e.g. List, not
      * List<String>) is returned.
      *
-     * @return    An array of Classes corresponding to the static types of the method's parameters.
+     * @return An array of Classes corresponding to the static types of the method's parameters.
      */
     @OnThread(Tag.FXPlatform)
-    public Class<?>[] getSignature()
-    {
+    public Class<?>[] getSignature() {
         if (signature == null) {
             return new Class[0];
         }
@@ -200,32 +191,24 @@ public class InvocationEvent implements ExtensionEvent
             JavaType sig = signature[index];
             if (sig.isPrimitive()) {
                 // Map the primitive bluej types to java types
-                if(sig == JavaPrimitiveType.getBoolean()) {
+                if (sig == JavaPrimitiveType.getBoolean()) {
                     risul[index] = boolean.class;
-                } 
-                else if(sig == JavaPrimitiveType.getByte()) {
+                } else if (sig == JavaPrimitiveType.getByte()) {
                     risul[index] = byte.class;
-                }  
-                else if(sig == JavaPrimitiveType.getChar()) {
+                } else if (sig == JavaPrimitiveType.getChar()) {
                     risul[index] = char.class;
-                }  
-                else if(sig == JavaPrimitiveType.getDouble()) {
+                } else if (sig == JavaPrimitiveType.getDouble()) {
                     risul[index] = double.class;
-                }  
-                else if(sig == JavaPrimitiveType.getFloat()) {
+                } else if (sig == JavaPrimitiveType.getFloat()) {
                     risul[index] = float.class;
-                }  
-                else if(sig == JavaPrimitiveType.getInt()) {
+                } else if (sig == JavaPrimitiveType.getInt()) {
                     risul[index] = int.class;
-                }  
-                else if(sig == JavaPrimitiveType.getLong()) {
+                } else if (sig == JavaPrimitiveType.getLong()) {
                     risul[index] = long.class;
-                }  
-                else if(sig == JavaPrimitiveType.getShort()) {
+                } else if (sig == JavaPrimitiveType.getShort()) {
                     risul[index] = short.class;
-                }  
-            }
-            else {
+                }
+            } else {
                 // It's a non-primitive class. Until we abandon Java 1.4
                 // support, we can't use java.lang.reflect.Type, and we
                 // don't want to reveal the JavaType hierarchy, so we use 
@@ -244,10 +227,9 @@ public class InvocationEvent implements ExtensionEvent
      * If a parameter really was a String, this will be returned either as the
      * name of the string instance, or as a literal string enclosed in double quotes.
      *
-     * @return    The values of the parameters
+     * @return The values of the parameters
      */
-    public String[] getParameters()
-    {
+    public String[] getParameters() {
         if (parameters == null) {
             return new String[0];
         }
@@ -259,13 +241,12 @@ public class InvocationEvent implements ExtensionEvent
      * Returns the newly created object (if any).
      * If the object is one that can be put on the object bench it will be an instance of BObject.
      *
-     * @return    an Object of various types or <code>null</code> if the result type is <code>void</code>.
+     * @return an Object of various types or <code>null</code> if the result type is <code>void</code>.
      */
 
     // TODO: There ought to be a way of retrieving the declared return type of the invoked method.
     @OnThread(Tag.SwingIsFX)
-    public Object getResult()
-    {
+    public Object getResult() {
         if (resultObj == null) {
             return null;
         }
@@ -285,11 +266,10 @@ public class InvocationEvent implements ExtensionEvent
     /**
      * Returns of a result from a method call
      *
-     * @return    The methodResult value
+     * @return The methodResult value
      */
     @OnThread(Tag.SwingIsFX)
-    private Object getMethodResult()
-    {
+    private Object getMethodResult() {
         ObjectReference objRef = resultObj.getObjectReference();
         ReferenceType type = objRef.referenceType();
 
@@ -308,11 +288,10 @@ public class InvocationEvent implements ExtensionEvent
     /**
      * Returns a meaningful description of this Event.
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
     @OnThread(value = Tag.Swing, ignoreParent = true)
-    public String toString()
-    {
+    public String toString() {
         StringBuffer aRisul = new StringBuffer(500);
 
         aRisul.append("ResultEvent:");

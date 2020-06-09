@@ -31,10 +31,8 @@ import java.util.EventObject;
  * Represents an event occurring in the BlueJ debugger implementation.
  */
 @OnThread(Tag.Any)
-public class DebuggerEvent extends EventObject
-{
-    public interface BreakpointProperties
-    {
+public class DebuggerEvent extends EventObject {
+    public interface BreakpointProperties {
         @OnThread(Tag.Any) Object get(Object key);
     }
 
@@ -42,10 +40,10 @@ public class DebuggerEvent extends EventObject
      * The readiness state of the debugger changed.
      */
     public final static int DEBUGGER_STATECHANGED = 1;
-    /** 
+    /**
      * A thread halted, due to a step event, or because it was programmatically halted
      * via the DebuggerThread interface.
-     * 
+     * <p>
      * We use the _UNKNOWN version when the exact cause is not known, and the more
      * specific _STEP_OVER or STEP_INTO when we know it is from a step event
      */
@@ -67,47 +65,40 @@ public class DebuggerEvent extends EventObject
     private int oldState, newState;
     private BreakpointProperties props;
 
-    public DebuggerEvent(Debugger source, int id, DebuggerThread thr, BreakpointProperties props)
-    {
+    public DebuggerEvent(Debugger source, int id, DebuggerThread thr, BreakpointProperties props) {
         super(source);
         this.id = id;
         this.thr = thr;
         this.props = props;
     }
 
-    public DebuggerEvent(Object source, int id, int oldState, int newState)
-    {
+    public DebuggerEvent(Object source, int id, int oldState, int newState) {
         super(source);
         this.id = id;
         this.oldState = oldState;
         this.newState = newState;
     }
 
-    public int getID()
-    {
+    public int getID() {
         return id;
     }
-    
-    public boolean isHalt()
-    {
+
+    public boolean isHalt() {
         return id == THREAD_BREAKPOINT || id == THREAD_HALT_STEP_INTO || id == THREAD_HALT_STEP_OVER || id == THREAD_HALT_UNKNOWN;
     }
 
     /**
      * Get the thread involved in the event.  This is null for event DebuggerEvent.DEBUGGER_STATECHANGED
      */
-    public DebuggerThread getThread()
-    {
+    public DebuggerThread getThread() {
         return thr;
     }
 
-    public int getOldState()
-    {
+    public int getOldState() {
         return oldState;
     }
 
-    public int getNewState()
-    {
+    public int getNewState() {
         return newState;
     }
 
@@ -115,16 +106,14 @@ public class DebuggerEvent extends EventObject
      * Get the properties associated with the breakpoint that was reached.
      * May return null.
      */
-    public DebuggerEvent.BreakpointProperties getBreakpointProperties()
-    {
+    public DebuggerEvent.BreakpointProperties getBreakpointProperties() {
         return props;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return super.toString() + "[id=" + id + ",thr=" + thr + "]";
     }
-    
-    
+
+
 }

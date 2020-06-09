@@ -28,19 +28,16 @@ import javafx.scene.control.ScrollPane;
 /**
  * An observable binding to the height of a ScrollPane's viewport height.
  */
-public class ViewportHeightBinding extends DoubleBinding
-{
+public class ViewportHeightBinding extends DoubleBinding {
     private final ScrollPane scroll;
 
-    public ViewportHeightBinding(ScrollPane scroll)
-    {
+    public ViewportHeightBinding(ScrollPane scroll) {
         this.scroll = scroll;
         bind(scroll.viewportBoundsProperty());
     }
 
     @Override
-    protected double computeValue()
-    {
+    protected double computeValue() {
         Bounds viewBound = scroll.getViewportBounds();
         return viewBound == null ? 0.0 : viewBound.getHeight();
     }

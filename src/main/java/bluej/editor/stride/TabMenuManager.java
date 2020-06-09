@@ -21,27 +21,26 @@
  */
 package bluej.editor.stride;
 
-import java.util.ArrayList;
-import java.util.List;
+import bluej.Config;
+import bluej.compiler.CompileReason;
+import bluej.compiler.CompileType;
+import bluej.utility.javafx.JavaFXUtil;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-
-import bluej.compiler.CompileReason;
-import bluej.compiler.CompileType;
-import bluej.Config;
-import bluej.utility.javafx.JavaFXUtil;
 import threadchecker.OnThread;
 import threadchecker.Tag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by neil on 26/11/15.
  */
-public abstract class TabMenuManager
-{
+public abstract class TabMenuManager {
     protected final FXTab tab;
     private final MenuItem contextMoveNew;
     private final Menu contextMoveMenu;
@@ -49,8 +48,7 @@ public abstract class TabMenuManager
     private final MenuItem mainMoveNew;
 
     @OnThread(Tag.FXPlatform)
-    public TabMenuManager(FXTab tab)
-    {
+    public TabMenuManager(FXTab tab) {
         this.tab = tab;
         contextMoveMenu = JavaFXUtil.makeMenu(Config.getString("frame.classmenu.move"));
         contextMoveNew = JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.move.new"), () -> tab.getParent().moveToNewLater(tab), null);
@@ -69,21 +67,20 @@ public abstract class TabMenuManager
 
             if (tab instanceof FrameEditorTab)
                 tab.getContextMenu().getItems().add(JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.compile"),
-                        () ->  ((FrameEditorTab)tab).getFrameEditor().getWatcher().scheduleCompilation(true, CompileReason.USER, CompileType.EXPLICIT_USER_COMPILE)
+                        () -> ((FrameEditorTab) tab).getFrameEditor().getWatcher().scheduleCompilation(true, CompileReason.USER, CompileType.EXPLICIT_USER_COMPILE)
                         , null
                 ));
 
             if (tab instanceof MoeFXTab)
                 tab.getContextMenu().getItems().add(JavaFXUtil.makeMenuItem(Config.getString("frame.classmenu.compile"),
-                        () ->  ((MoeFXTab)tab).getMoeEditor().getWatcher().scheduleCompilation(true, CompileReason.USER, CompileType.EXPLICIT_USER_COMPILE)
+                        () -> ((MoeFXTab) tab).getMoeEditor().getWatcher().scheduleCompilation(true, CompileReason.USER, CompileType.EXPLICIT_USER_COMPILE)
                         , null
                 ));
         });
     }
 
     @OnThread(Tag.FXPlatform)
-    protected void updateMoveMenus()
-    {
+    protected void updateMoveMenus() {
         // Have to do everything double because the menus don't share:
         ArrayList<MenuItem> classMoveItems = new ArrayList<>();
         ArrayList<MenuItem> contextMoveItems = new ArrayList<>();
@@ -92,8 +89,7 @@ public abstract class TabMenuManager
         mainMoveNew.setDisable(tab.getParent().hasOneTab());
         contextMoveNew.setDisable(tab.getParent().hasOneTab());
         List<FXTabbedEditor> allWindows = tab.getParent().getProject().getAllFXTabbedEditorWindows();
-        if (allWindows.size() > 1)
-        {
+        if (allWindows.size() > 1) {
             classMoveItems.add(new SeparatorMenuItem());
             contextMoveItems.add(new SeparatorMenuItem());
             allWindows.stream().filter(w -> w != tab.getParent()).forEach(w -> {
@@ -103,12 +99,10 @@ public abstract class TabMenuManager
             });
         }
 
-        if (mainMoveMenu != null)
-        {
+        if (mainMoveMenu != null) {
             mainMoveMenu.getItems().setAll(classMoveItems);
         }
-        if (contextMoveMenu != null)
-        {
+        if (contextMoveMenu != null) {
             contextMoveMenu.getItems().setAll(contextMoveItems);
         }
     }

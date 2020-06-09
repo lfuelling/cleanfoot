@@ -25,13 +25,13 @@ import bluej.Config;
 
 /**
  * Event from publishing a scenario.
- * 
+ *
  * @author Poul Henriksen
- * 
  */
-public class PublishEvent
-{
-    /** The publish returned an error */
+public class PublishEvent {
+    /**
+     * The publish returned an error
+     */
     public final static int ERROR = 0;
 
     /**
@@ -45,7 +45,7 @@ public class PublishEvent
      * much.
      */
     public final static int PROGRESS = 2;
-    
+
     private String msg;
     private int bytes;
 
@@ -53,42 +53,36 @@ public class PublishEvent
 
     /**
      * Construct a PublishEvent for an "upload complete" event.
+     *
      * @param type The event type.
      */
-    public PublishEvent(int type)
-    {
+    public PublishEvent(int type) {
         this.type = type;
     }
-    
-    public PublishEvent(String msg, int type)
-    {
+
+    public PublishEvent(String msg, int type) {
         this.msg = msg;
         this.type = type;
     }
 
-    public PublishEvent(int progress, int type)
-    {
+    public PublishEvent(int progress, int type) {
         this.type = type;
         this.bytes = progress;
     }
-    
-    public String getMessage()
-    {
+
+    public String getMessage() {
         return msg;
     }
-    
-    public int getBytes()
-    {
+
+    public int getBytes() {
         return bytes;
     }
 
-    public int getType()
-    {
+    public int getType() {
         return type;
     }
 
-    public String toString()
-    {
+    public String toString() {
         String s = super.toString() + " [";
         if (type == ERROR)
             s += Config.getString("publish.event.error");

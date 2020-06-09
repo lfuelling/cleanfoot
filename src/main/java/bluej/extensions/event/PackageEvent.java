@@ -21,7 +21,7 @@
  */
 package bluej.extensions.event;
 
-import bluej.extensions.*;
+import bluej.extensions.BPackage;
 import bluej.pkgmgr.Package;
 
 /**
@@ -30,8 +30,7 @@ import bluej.pkgmgr.Package;
  * @author Clive Miller, University of Kent at Canterbury, 2002
  * @author Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class PackageEvent implements ExtensionEvent
-{
+public class PackageEvent implements ExtensionEvent {
     /**
      * This event occurs when a package has just been opened.
      */
@@ -39,7 +38,7 @@ public class PackageEvent implements ExtensionEvent
 
     /**
      * This event occurs when a package is just about to be closed.
-     */ 
+     */
     public static final int PACKAGE_CLOSING = 2;
 
     private final int eventId;
@@ -48,8 +47,7 @@ public class PackageEvent implements ExtensionEvent
     /**
      * Constructor for the PackageEvent.
      */
-    public PackageEvent (int eventId, Package pkg)
-    {
+    public PackageEvent(int eventId, Package pkg) {
         this.eventId = eventId;
         thisPackage = pkg;
     }
@@ -57,16 +55,14 @@ public class PackageEvent implements ExtensionEvent
     /**
      * Returns the eventId of this event.
      */
-    public int getEvent ()
-    {
+    public int getEvent() {
         return eventId;
     }
 
     /**
      * Returns the package associated with this event.
      */
-    public BPackage getPackage ()
-    {
+    public BPackage getPackage() {
         return thisPackage.getBPackage();
     }
 
@@ -74,17 +70,16 @@ public class PackageEvent implements ExtensionEvent
      * Returns a meaningful description of this event.
      */
     @Override
-    public String toString()
-    {
-        StringBuffer aRisul = new StringBuffer (500);
+    public String toString() {
+        StringBuffer aRisul = new StringBuffer(500);
 
         aRisul.append("PackageEvent:");
 
-        if ( eventId == PACKAGE_OPENED ) aRisul.append(" PACKAGE_OPENED");
-        if ( eventId == PACKAGE_CLOSING ) aRisul.append(" PACKAGE_CLOSING");
+        if (eventId == PACKAGE_OPENED) aRisul.append(" PACKAGE_OPENED");
+        if (eventId == PACKAGE_CLOSING) aRisul.append(" PACKAGE_CLOSING");
 
-        aRisul.append(" packageName="+thisPackage.getQualifiedName());
+        aRisul.append(" packageName=" + thisPackage.getQualifiedName());
 
-        return aRisul.toString();      
+        return aRisul.toString();
     }
 }

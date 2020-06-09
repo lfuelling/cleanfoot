@@ -21,9 +21,8 @@
  */
 package bluej.utility.javafx;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import bluej.Config;
+import bluej.stride.generic.InteractionManager;
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -46,18 +45,17 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import bluej.Config;
-import bluej.stride.generic.InteractionManager;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is a class to make sure a TextArea always resizes to fit its content.
- *
+ * <p>
  * In JavaFX, a TextArea always has a ScrollPane surrounding its content; this class
  * tries to make it as if the ScrollPane doesn't exist, and the TextArea is always
  * just the right size to fit its content.
  */
-public class ScrollFreeTextArea
-{
+public class ScrollFreeTextArea {
     // We can share this because we always operate on it in a single
     // uninterrupted procedure on the FX thread:
     private static final Scene scene = new Scene(new VBox(), 4000, 4000);
@@ -71,8 +69,8 @@ public class ScrollFreeTextArea
     private boolean initialised = false;
     private double blankHeight;
     private double suggestedOneLineHeight;
-    public ScrollFreeTextArea(InteractionManager editor)
-    {
+
+    public ScrollFreeTextArea(InteractionManager editor) {
         this.textArea = new TextArea();
         // We hold a reference to an off-screen TextArea with identical content and width, which we
         // use to determine the ideal height of our TextArea.  We bind to offScreen's height
@@ -82,13 +80,10 @@ public class ScrollFreeTextArea
 
         // We can't snapshot textArea until it is in a Scene, so we wait until its Scene is set:
         //JavaFXUtil.addSelfRemovingListener(textArea.sceneProperty(), s -> { JavaFXUtil.addSelfRemovingListener(textArea.skinProperty(), sk -> {
-        ChangeListener<Object> listener = new ChangeListener<Object>()
-        {
+        ChangeListener<Object> listener = new ChangeListener<Object>() {
             @Override
-            public void changed(ObservableValue<?> observable, Object oldValue, Object newValue)
-            {
-                if (textArea.getScene() != null && textArea.getSkin() != null && !initialised)
-                {
+            public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+                if (textArea.getScene() != null && textArea.getSkin() != null && !initialised) {
                     initialised = true;
                     textArea.sceneProperty().removeListener(this);
                     textArea.skinProperty().removeListener(this);
@@ -109,14 +104,12 @@ public class ScrollFreeTextArea
 
                     // Bind our contentHeight property to be the height calculated via the offScreen
                     // TextArea:
-                    contentHeight.bind(new DoubleBinding()
-                    {
+                    contentHeight.bind(new DoubleBinding() {
                         private boolean accessedInternals = false;
                         private Region content;
 
                         @Override
-                        protected double computeValue()
-                        {
+                        protected double computeValue() {
                             // We have to add offScreen to a Scene, both to set the stylesheets correctly, and because
                             // snapshot doesn't work correctly unless an object is in a Scene
                             scene.setRoot(new Pane(offScreen));
@@ -127,8 +120,7 @@ public class ScrollFreeTextArea
                             scene.getRoot().layout();
 
                             // Only need to do this part once:
-                            if (!accessedInternals)
-                            {
+                            if (!accessedInternals) {
                                 ((ScrollPane) offScreen.lookup(".scroll-pane")).setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
                                 ((ScrollPane) offScreen.lookup(".scroll-pane")).setFitToWidth(true);
                                 content = (Region) offScreen.lookup(".content");
@@ -179,7 +171,7 @@ public class ScrollFreeTextArea
         offScreen.setMinHeight(0);
         offScreen.styleProperty().bind(editor.getFontCSS());
         JavaFXUtil.addChangeListener(editor.getFontCSS(), this::recalculateOneTwoLineHeights);
-        
+
         // Given the way we are currently doing the sizes, that we bind the preferred height,
         // we run into a problem that the width may change during a layout pass, but the
         // preferred height binding is not recalculated.  To do this we must request another
@@ -192,8 +184,7 @@ public class ScrollFreeTextArea
         });
     }
 
-    private void recalculateOneTwoLineHeights(String fontSize)
-    {
+    private void recalculateOneTwoLineHeights(String fontSize) {
         // TODO should cache this
         blankHeight = calculateHeight(fontSize, "X");
         double twoLine = calculateHeight(fontSize, "X\nX");
@@ -201,11 +192,9 @@ public class ScrollFreeTextArea
         double extraLine = threeLine - twoLine;
         suggestedOneLineHeight = twoLine - extraLine + 2 /* fudge factor */;
     }
-    
-    private double calculateHeight(String fontCSS, String text)
-    {
-        if (calculationAid == null || calculationAidScene == null)
-        {
+
+    private double calculateHeight(String fontCSS, String text) {
+        if (calculationAid == null || calculationAidScene == null) {
             calculationAid = new TextArea();
             calculationAid.setWrapText(true);
             calculationAid.setPrefRowCount(0);
@@ -213,14 +202,12 @@ public class ScrollFreeTextArea
             calculationAidScene = new Scene(new Pane(calculationAid), 4000, 4000);
             Config.addEditorStylesheets(calculationAidScene);
         }
-        if (!fontCSS.equals(calculationAidFontCSS))
-        {
+        if (!fontCSS.equals(calculationAidFontCSS)) {
             calculationAid.setStyle(fontCSS);
             calculationAidFontCSS = fontCSS;
             calculationAid.applyCss();
         }
-        if (!calculationAid.getStyleClass().equals(calculationAidStyleClass))
-        {
+        if (!calculationAid.getStyleClass().equals(calculationAidStyleClass)) {
             calculationAid.getStyleClass().setAll(textArea.getStyleClass());
             // Must take our own copy to avoid keeping reference to old node:
             calculationAidStyleClass = new ArrayList<>(textArea.getStyleClass());
@@ -235,140 +222,114 @@ public class ScrollFreeTextArea
         return r;
     }
 
-    public void setPromptText(String s)
-    {
+    public void setPromptText(String s) {
         textArea.setPromptText(s);
     }
 
-    public String getText()
-    {
+    public String getText() {
         return textArea.getText();
     }
 
-    public void setText(String value)
-    {
+    public void setText(String value) {
         textArea.setText(value);
     }
 
-    public StringProperty textProperty()
-    {
+    public StringProperty textProperty() {
         return textArea.textProperty();
     }
 
-    public StringProperty promptTextProperty()
-    {
+    public StringProperty promptTextProperty() {
         return textArea.promptTextProperty();
     }
 
-    public ReadOnlyIntegerProperty caretPositionProperty()
-    {
+    public ReadOnlyIntegerProperty caretPositionProperty() {
         return textArea.caretPositionProperty();
     }
 
-    public void positionCaret(int pos)
-    {
+    public void positionCaret(int pos) {
         textArea.positionCaret(pos);
     }
 
-    public int getLength()
-    {
+    public int getLength() {
         return textArea.getLength();
     }
 
-    public int getCaretPosition()
-    {
+    public int getCaretPosition() {
         return textArea.getCaretPosition();
     }
 
-    public void selectAll()
-    {
+    public void selectAll() {
         textArea.selectAll();
     }
 
-    public boolean isDisable()
-    {
+    public boolean isDisable() {
         return textArea.isDisable();
     }
 
-    public void setDisable(boolean value)
-    {
+    public void setDisable(boolean value) {
         textArea.setDisable(value);
     }
 
-    public boolean isFocused()
-    {
+    public boolean isFocused() {
         return textArea.isFocused();
     }
 
-    public ObservableBooleanValue focusedProperty()
-    {
+    public ObservableBooleanValue focusedProperty() {
         return textArea.focusedProperty();
     }
 
-    protected void setFocusTraversable(boolean on)
-    {
+    protected void setFocusTraversable(boolean on) {
         textArea.setFocusTraversable(on);
     }
 
-    protected void addTextStyleClasses(String... styleClasses)
-    {
+    protected void addTextStyleClasses(String... styleClasses) {
         JavaFXUtil.addStyleClass(textArea, styleClasses);
     }
 
-    public Node getNode()
-    {
+    public Node getNode() {
         return textArea;
     }
 
-    public ReadOnlyDoubleProperty heightProperty()
-    {
+    public ReadOnlyDoubleProperty heightProperty() {
         return textArea.heightProperty();
     }
 
-    public void setPseudoclass(String name, boolean on)
-    {
+    public void setPseudoclass(String name, boolean on) {
         JavaFXUtil.setPseudoclass(name, on, textArea);
     }
 
-    public <T extends Event> void addEventFilter(EventType<T> eventType, EventHandler<? super T> eventFilter)
-    {
+    public <T extends Event> void addEventFilter(EventType<T> eventType, EventHandler<? super T> eventFilter) {
         textArea.addEventFilter(eventType, eventFilter);
     }
 
-    public void requestFocus()
-    {
+    public void requestFocus() {
         textArea.requestFocus();
     }
 
-    public void bindPrefMaxWidth(DoubleBinding amount)
-    {
+    public void bindPrefMaxWidth(DoubleBinding amount) {
         textArea.maxWidthProperty().bind(amount);
         textArea.prefWidthProperty().bind(textArea.maxWidthProperty());
     }
 
-    public void insertAtCaret(String s)
-    {
+    public void insertAtCaret(String s) {
         textArea.insertText(textArea.getCaretPosition(), s);
     }
 
-    public void shrinkToNothingUsing(SharedTransition animate)
-    {
+    public void shrinkToNothingUsing(SharedTransition animate) {
         scale.unbind();
         scale.bind(animate.getOppositeProgress());
         animate.addOnStopped(scale::unbind);
         animate.addOnStopped(() -> textArea.setVisible(false));
     }
 
-    public void growFromNothingUsing(SharedTransition animate)
-    {
+    public void growFromNothingUsing(SharedTransition animate) {
         textArea.setVisible(true);
         scale.unbind();
         scale.bind(animate.getProgress());
         animate.addOnStopped(scale::unbind);
     }
-    
-    public Bounds getSceneBounds()
-    {
+
+    public Bounds getSceneBounds() {
         return textArea.localToScene(textArea.getBoundsInLocal());
     }
 

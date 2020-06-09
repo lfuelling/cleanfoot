@@ -21,16 +21,15 @@
  */
 package bluej.stride.framedjava.convert;
 
-import java.util.List;
-
 import bluej.parser.lexer.LocatableToken;
 import bluej.stride.framedjava.elements.CodeElement;
+
+import java.util.List;
 
 /**
  * An interface for building up a type definition (e.g. class or interface declaration)
  */
-interface TypeDefHandler
-{
+interface TypeDefHandler {
     // Called when the type definition has begun
     void typeDefBegun(LocatableToken start);
 

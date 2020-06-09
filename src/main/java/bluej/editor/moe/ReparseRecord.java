@@ -25,9 +25,8 @@ import bluej.parser.nodes.RBTreeNode;
 
 /**
  * Represents a queued reparse operation on a MoeSyntaxDocument.
- * 
+ *
  * @author Davin McCall
  */
-public class ReparseRecord extends RBTreeNode<ReparseRecord>
-{
+public class ReparseRecord extends RBTreeNode<ReparseRecord> {
 }

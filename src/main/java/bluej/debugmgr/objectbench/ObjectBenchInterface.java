@@ -28,39 +28,39 @@ import threadchecker.Tag;
 
 /**
  * An interface for listening for object selection events.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(Tag.FXPlatform)
-public interface ObjectBenchInterface
-{
+public interface ObjectBenchInterface {
     /**
      * Add a listener for events on this object bench.
-     * @param l  The listener to add
+     *
+     * @param l The listener to add
      */
     void addObjectBenchListener(ObjectBenchListener l);
-    
+
     /**
      * Remove a listener so that it no longer receives events.
-     * @param l  The listener to remove
+     *
+     * @param l The listener to remove
      */
     void removeObjectBenchListener(ObjectBenchListener l);
-    
+
     /**
      * Check whether the bench contains an object with name 'name'.
      *
-     * @param name  The name to check for.
+     * @param name The name to check for.
      */
     boolean hasObject(String name);
-    
+
     /**
      * Add an object to the bench with the specified name and type.
-     * 
-     * @param object  The object to add to the bench.
-     * @param type    The type of the object.
-     * @param name    The desired name of the object as it should appear on the bench.
-     * 
-     * @return  The name actually used (may not match desired name in case of clash).
+     *
+     * @param object The object to add to the bench.
+     * @param type   The type of the object.
+     * @param name   The desired name of the object as it should appear on the bench.
+     * @return The name actually used (may not match desired name in case of clash).
      */
     String addObject(DebuggerObject object, GenTypeClass type, String name);
 }

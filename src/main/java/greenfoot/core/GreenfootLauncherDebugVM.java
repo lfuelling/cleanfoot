@@ -22,7 +22,8 @@
 package greenfoot.core;
 
 import bluej.BlueJPropStringSource;
-import bluej.extensions.SourceType;
+import bluej.Config;
+import bluej.utility.Debug;
 import greenfoot.platforms.ide.GreenfootUtilDelegateIDE;
 import greenfoot.util.GreenfootUtil;
 
@@ -30,90 +31,75 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
-import java.rmi.RemoteException;
 import java.util.Properties;
-
-import bluej.Config;
-import bluej.utility.Debug;
 
 /**
  * An object of GreenfootLauncherDebugVM is the first object that is created in the
  * Debug-VM. The launcher object is created from the BlueJ-VM in the Debug-VM.
  * When a new object of the launcher is created, the constructor looks up the
  * BlueJService in the RMI registry and starts the initialisation of Greenfoot.
- * 
+ *
  * @author Poul Henriksen
  */
-public class GreenfootLauncherDebugVM
-{
+public class GreenfootLauncherDebugVM {
     private static GreenfootLauncherDebugVM instance;
-    
+
     @SuppressWarnings("unused")
     private Object transportField;
-    
+
     /**
      * Constructor for the Greenfoot Launcher. This connects to the RMI service on the
      * primary VM, and starts the Greenfoot UI.
-     * 
+     *
      * @param prjDir         The project directory
-     * @param rmiServiceName  The name of the RMI service to connect to
+     * @param rmiServiceName The name of the RMI service to connect to
      */
-    public GreenfootLauncherDebugVM(String prjDir, String libDirPath, String userPrefDirPath, String propsFilePath, String shmFilePath, String shmFileSize)
-    {
+    public GreenfootLauncherDebugVM(String prjDir, String libDirPath, String userPrefDirPath, String propsFilePath, String shmFilePath, String shmFileSize) {
         instance = this;
-        
+
         // This constructor is called on BlueJ's "server" thread, so we do the rest in
         // another thread to avoid holding the server thread lock:
         new Thread() {
-            public void run() {     
+            public void run() {
                 Properties properties = new Properties();
-                try
-                {
+                try {
                     properties.load(new FileInputStream(new File(propsFilePath)));
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     // We can survive without the properties...
                 }
-                    
+
                 Config.initializeVMside(new File(libDirPath), new File(userPrefDirPath),
-                        new BlueJPropStringSource()
-                        {
+                        new BlueJPropStringSource() {
                             @Override
-                            public String getBlueJPropertyString(String property, String def)
-                            {
+                            public String getBlueJPropertyString(String property, String def) {
                                 return properties.getProperty(property, def);
                             }
 
                             @Override
-                            public String getLabel(String key)
-                            {
+                            public String getLabel(String key) {
                                 return properties.getProperty(key, key);
                             }
                         });
                 Debug.setDebugStream(new PrintWriter(System.err));
-                
+
                 GreenfootUtil.initialise(GreenfootUtilDelegateIDE.getInstance());
                 GreenfootMain.initialize(prjDir, shmFilePath, Integer.parseInt(shmFileSize));
             }
         }.start();
     }
-    
+
     /**
      * Get the GreenfootLauncherDebugVM instance.
      */
-    public static GreenfootLauncherDebugVM getInstance()
-    {
+    public static GreenfootLauncherDebugVM getInstance() {
         return instance;
     }
-    
+
     /**
      * Set the transport field to some object. It is then possible to obtain a remote
      * reference to the object, via RProject.getRemoteObject().
      */
-    public void setTransportField(Object transportField)
-    {
+    public void setTransportField(Object transportField) {
         this.transportField = transportField;
     }
 }

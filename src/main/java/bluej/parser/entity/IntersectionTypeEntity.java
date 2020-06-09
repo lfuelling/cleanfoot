@@ -20,9 +20,6 @@
  */
 package bluej.parser.entity;
 
-import java.util.Iterator;
-import java.util.List;
-
 import bluej.debugger.gentype.GenTypeSolid;
 import bluej.debugger.gentype.IntersectionType;
 import bluej.debugger.gentype.JavaType;
@@ -30,23 +27,24 @@ import bluej.debugger.gentype.Reflective;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * An entity representing intersection types (such as the bounds for type parameters).
- * 
+ *
  * @author Davin McCall
  */
-public class IntersectionTypeEntity extends JavaEntity
-{
+public class IntersectionTypeEntity extends JavaEntity {
     private final List<JavaEntity> types;
-    
+
     /**
      * Get an entity representing an intersection of the given types. If there are no types,
      * this yields a "java.lang.Object" entity. If there is only one type, this returns that
      * type.
      */
     @OnThread(Tag.FXPlatform)
-    public static JavaEntity getIntersectionEntity(List<JavaEntity> types, EntityResolver resolver)
-    {
+    public static JavaEntity getIntersectionEntity(List<JavaEntity> types, EntityResolver resolver) {
         if (types.size() == 0) {
             return resolver.resolveQualifiedClass("java.lang.Object");
         }
@@ -55,34 +53,30 @@ public class IntersectionTypeEntity extends JavaEntity
         }
         return new IntersectionTypeEntity(types);
     }
-    
-    private IntersectionTypeEntity(List<JavaEntity> types)
-    {
+
+    private IntersectionTypeEntity(List<JavaEntity> types) {
         this.types = types;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         Iterator<JavaEntity> i = types.iterator();
         String name = i.next().getName();
-        for ( ; i.hasNext(); ) {
+        for (; i.hasNext(); ) {
             name += "&" + i.next().getName();
         }
         return name;
     }
-    
+
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         return null;
     }
-    
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public JavaType getType()
-    {
-        GenTypeSolid [] components = new GenTypeSolid[types.size()];
+    public JavaType getType() {
+        GenTypeSolid[] components = new GenTypeSolid[types.size()];
         int index = 0;
         for (JavaEntity type : types) {
             TypeEntity tent = type.resolveAsType();
@@ -95,24 +89,22 @@ public class IntersectionTypeEntity extends JavaEntity
                 return null;
             }
         }
-        
+
         return IntersectionType.getIntersection(components);
     }
-    
+
     @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
-    
+
     @Override
-    public TypeEntity resolveAsType()
-    {
+    public TypeEntity resolveAsType() {
         JavaType type = getType();
         if (type == null) {
             return null;
         }
         return new TypeEntity(type);
     }
-    
+
 }

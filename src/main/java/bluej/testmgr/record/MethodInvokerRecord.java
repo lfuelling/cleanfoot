@@ -21,54 +21,55 @@
  */
 package bluej.testmgr.record;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugger.DebuggerObject;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugmgr.objectbench.ObjectBench;
 import bluej.debugmgr.objectbench.ObjectWrapper;
 import bluej.pkgmgr.PkgMgrFrame;
 import bluej.utility.JavaNames;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
- * Records a single user interaction with the 
+ * Records a single user interaction with the
  * method call mechanisms of BlueJ.
- * 
+ * <p>
  * This record is for method calls that return a result.
  *
- * @author  Andrew Patterson
+ * @author Andrew Patterson
  */
-public class MethodInvokerRecord extends VoidMethodInvokerRecord
-{
+public class MethodInvokerRecord extends VoidMethodInvokerRecord {
     private final JavaType returnType;
     private String benchType;
     protected String benchName;
-    
-    /** How many times has this record been used. */
+
+    /**
+     * How many times has this record been used.
+     */
     private int usageCount;
-    
-    /** Has the method call been initialised? */
+
+    /**
+     * Has the method call been initialised?
+     */
     private boolean methodCallInited = false;
-    
+
     /**
      * Records a method call that returns a result to the user.
-     * 
-     * @param returnType  the Class of the return type of the method
-     * @param command     the method statement to execute
+     *
+     * @param returnType the Class of the return type of the method
+     * @param command    the method statement to execute
      */
     @OnThread(Tag.FXPlatform)
-    public MethodInvokerRecord(JavaType returnType, String command, String [] argumentValues)
-    {
+    public MethodInvokerRecord(JavaType returnType, String command, String[] argumentValues) {
         super(command, argumentValues);
-    
+
         this.returnType = returnType;
         this.benchType = returnType.toString(false);
         this.benchName = null;
     }
-    
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
     }
 
@@ -76,13 +77,12 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
      * Give this method invoker record a name on the object
      * bench (the user has done a "Get" on the result). The type
      * is the type that the object is on the actual bench.
-     * 
+     *
      * @param name
      * @param type
      */
     @Override
-    public void setBenchName(String name, String type)
-    {
+    public void setBenchName(String name, String type) {
         benchName = name;
         benchType = type;
     }
@@ -90,13 +90,12 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return a String representing the object declaration
-     *         src or null if there is none.
+     * src or null if there is none.
      */
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
+    public String toFixtureDeclaration(String firstIndent) {
         // if it hasn't been assigned a name there is nothing to do for
         // fixture declaration
         if (benchName == null) {
@@ -113,18 +112,17 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
 
         return sb.toString();
     }
-    
+
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String reprenting the object initialisation
-     *         src or null if there is none. 
+     * src or null if there is none.
      */
     @Override
     @OnThread(Tag.FXPlatform)
-    public String toFixtureSetup(String secondIndent)
-    {
+    public String toFixtureSetup(String secondIndent) {
         if (benchName == null) {
             return secondIndent + command + statementEnd;
         }
@@ -141,8 +139,7 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
      * @see bluej.testmgr.record.VoidMethodInvokerRecord#toTestMethod(bluej.pkgmgr.PkgMgrFrame)
      */
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         StringBuffer sb = new StringBuffer();
         sb.append(toTestMethodInit(pmf, secondIndent));
 
@@ -151,8 +148,7 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
         // with no uses of the result, just invoke the method.
         if (getUsageCount() == 0) {
             sb.append(secondIndent + resultRef + statementEnd);
-        }
-        else {
+        } else {
             // here are all the assertions
             for (int i = 0; i < getAssertionCount(); i++) {
                 sb.append(secondIndent);
@@ -170,8 +166,7 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
      * placed on the bench by using "Get".
      */
     @OnThread(Tag.FXPlatform)
-    private String toTestMethodInit(PkgMgrFrame pkgMgrFrame, String secondIndent)
-    {
+    private String toTestMethodInit(PkgMgrFrame pkgMgrFrame, String secondIndent) {
         // If we have already prepared the method call, we return the name that
         // references it.
         if (methodCallInited) {
@@ -187,16 +182,14 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
                 DebuggerObject result = getResultObject();
                 ObjectBench bench = pkgMgrFrame.getObjectBench();
                 ObjectWrapper wrapper = ObjectWrapper.getWrapper(pkgMgrFrame, bench, result, result.getGenType(),
-                "result");
+                        "result");
                 bench.addObject(wrapper); // might change name
-                benchName = wrapper.getName();            
-            }
-            else {
+                benchName = wrapper.getName();
+            } else {
                 // Nothing to prepare
                 return "";
             }
-        }
-        else {
+        } else {
             // We used "Get" on the result, so increase usage count.
             incUsageCount();
         }
@@ -210,12 +203,11 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
      * This will return a string containing a reference to the method result.
      * Either as the command itself, or the name of a local variable containing
      * the result.
-     * 
+     *
      * @return Reference to the method result
      */
     @Override
-    public String toExpression()
-    {
+    public String toExpression() {
         assert (methodCallInited);
 
         // Method result has not been put on the bench by using "Get".
@@ -228,18 +220,16 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
     /**
      * @return A string representing the type name of an object
      */
-    private String benchDeclaration()
-    {
+    private String benchDeclaration() {
         return JavaNames.typeName(benchType) + " ";
     }
 
     /**
      * @return A string representing the assignment statement
-     *         with an optional typecast to get the type correct
+     * with an optional typecast to get the type correct
      */
     @OnThread(Tag.FXPlatform)
-    protected String benchAssignmentTypecast()
-    {
+    protected String benchAssignmentTypecast() {
         StringBuffer sb = new StringBuffer();
 
         sb.append(benchName);
@@ -258,18 +248,16 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
     }
 
     @Override
-    public void addAssertion(String assertion)
-    {
+    public void addAssertion(String assertion) {
         super.addAssertion(assertion);
-        usageCount++;        
+        usageCount++;
     }
 
     /**
      * Call when using this invoker record as a parent for another invoker
      * record. Increases usage count.
      */
-    public void incUsageCount()
-    {
+    public void incUsageCount() {
         usageCount++;
     }
 
@@ -277,8 +265,7 @@ public class MethodInvokerRecord extends VoidMethodInvokerRecord
      * Get the number of times the result of this record is used (by another record,
      * or by an assertion).
      */
-    private int getUsageCount()
-    {
+    private int getUsageCount() {
         return usageCount;
-    }    
+    }
 }

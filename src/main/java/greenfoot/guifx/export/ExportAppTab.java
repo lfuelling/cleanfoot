@@ -21,18 +21,11 @@
  */
 package greenfoot.guifx.export;
 
-import static greenfoot.export.Exporter.ExportFunction;
-
 import bluej.Boot;
 import bluej.Config;
 import bluej.utility.Utility;
 import greenfoot.export.mygame.ExportInfo;
 import greenfoot.export.mygame.ScenarioInfo;
-
-import java.io.File;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -40,54 +33,53 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Window;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import java.io.File;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static greenfoot.export.Exporter.ExportFunction;
 
 /**
  * Export dialog's tab for exporting to a standalone application.
- * 
+ *
  * @author Michael Kolling
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class ExportAppTab extends ExportLocalTab
-{
+public class ExportAppTab extends ExportLocalTab {
     /**
      * Creates a new instance of ExportAppTab
      *
-     * @param parent            The window which will host this tab.
-     * @param scenarioInfo      The scenario info needed for different export functions.
-     * @param scenarioName      The name of the scenario to be shared.
-     * @param defaultExportDir  The default directory to select from.
+     * @param parent           The window which will host this tab.
+     * @param scenarioInfo     The scenario info needed for different export functions.
+     * @param scenarioName     The name of the scenario to be shared.
+     * @param defaultExportDir The default directory to select from.
      */
-    public ExportAppTab(Window parent, ScenarioInfo scenarioInfo, String scenarioName, File defaultExportDir)
-    {
+    public ExportAppTab(Window parent, ScenarioInfo scenarioInfo, String scenarioName, File defaultExportDir) {
         super(parent, scenarioInfo, scenarioName, defaultExportDir, "app", ".jar");
     }
 
     @Override
-    public ExportFunction getFunction()
-    {
+    public ExportFunction getFunction() {
         return ExportFunction.APP;
     }
 
     @Override
-    protected void buildContentPane(final File targetFile)
-    {
+    protected void buildContentPane(final File targetFile) {
         super.buildContentPane(targetFile);
 
         String sep = Config.isWinOS() ? ";" : ":";
         String javaAndClasspathBefore = "\"" + Config.getJDKExecutablePath(null, "java") + "\" -cp \"" +
-            Utility.urlsToFiles(Boot.getInstance().getJavaFXClassPath()).stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(sep)) + sep;
+                Utility.urlsToFiles(Boot.getInstance().getJavaFXClassPath()).stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(sep)) + sep;
         String javaAndClasspathAfter = "\" --module-path \"" + Boot.getInstance().getJavaFXLibDir() + "\" --add-modules=ALL-MODULE-PATH greenfoot.export.GreenfootScenarioApplication";
 
         Hyperlink moreInfo = new Hyperlink(Config.getString("export.app.more"));
@@ -106,18 +98,17 @@ public class ExportAppTab extends ExportLocalTab
         BorderPane.setAlignment(copyButton, Pos.CENTER);
         BorderPane.setMargin(copyButton, new Insets(0, 0, 0, 10));
         BorderPane borderPane = new BorderPane(commandLineBox, commandLineExplanation, copyButton, moreInfo, null);
-        
-        ((Pane)getContent()).getChildren().addAll(borderPane, lockScenario, hideControls);
+
+        ((Pane) getContent()).getChildren().addAll(borderPane, lockScenario, hideControls);
     }
 
     @Override
-    protected ExportInfo getExportInfo()
-    {
+    protected ExportInfo getExportInfo() {
         ExportInfo info = super.getExportInfo();
         info.setLocked(isLockScenario());
         info.setHideControls(isHideControls());
         return info;
     }
-    
-    
+
+
 }

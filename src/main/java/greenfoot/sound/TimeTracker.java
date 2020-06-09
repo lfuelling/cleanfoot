@@ -24,24 +24,21 @@ package greenfoot.sound;
 /**
  * A controllable timer, keeps track of time since a mark.
  */
-public class TimeTracker 
-{
+public class TimeTracker {
     private long startTime;
     private boolean tracking;
     private long timeElapsed;
-    
-    public void start() 
-    {
-        if(tracking) {
+
+    public void start() {
+        if (tracking) {
             return;
         }
-        startTime = System.currentTimeMillis();    
+        startTime = System.currentTimeMillis();
         tracking = true;
     }
-    
-    public void pause()
-    {
-        if(!tracking) {
+
+    public void pause() {
+        if (!tracking) {
             return;
         }
         long timeSincestart = getTimeSinceStart();
@@ -52,38 +49,33 @@ public class TimeTracker
     /**
      * Reset time to 0 and stop the timer.
      */
-    public void reset()
-    {
+    public void reset() {
         startTime = 0;
         tracking = false;
         timeElapsed = 0;
     }
-    
-    private long getTimeSinceStart()
-    {
-        if(tracking) {
+
+    private long getTimeSinceStart() {
+        if (tracking) {
             return System.currentTimeMillis() - startTime;
-        }
-        else {
+        } else {
             return 0;
         }
     }
-    
+
     /**
      * Get the time tracked, in milliseconds, since the mark.
      */
-    public long getTimeTracked()
-    {
+    public long getTimeTracked() {
         return timeElapsed + getTimeSinceStart();
     }
-    
+
     /**
      * Reset the time tracked to the given time. The time tracked continues
      * to count up if the TimeTracker is started.
      */
-    public void setTimeTracked(long newTime) 
-    {
-        if(tracking) {
+    public void setTimeTracked(long newTime) {
+        if (tracking) {
             startTime = System.currentTimeMillis() - newTime;
             timeElapsed = 0;
         } else {

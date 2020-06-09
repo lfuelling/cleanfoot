@@ -28,27 +28,23 @@ import bluej.stride.generic.Frame;
 import bluej.stride.generic.FrameCursor;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.slots.EditableSlot.MenuItemOrder;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class PasteFrameOperation extends FrameOperation
-{
-    public PasteFrameOperation(InteractionManager editor)
-    {
+public class PasteFrameOperation extends FrameOperation {
+    public PasteFrameOperation(InteractionManager editor) {
         super(editor, "PASTE", Combine.ALL, new KeyCodeCombination(KeyCode.V, KeyCombination.SHORTCUT_DOWN));
     }
 
     @Override
     @OnThread(Tag.FXPlatform)
-    protected void execute(List<Frame> frames)
-    {
+    protected void execute(List<Frame> frames) {
         List<CodeElement> elements = GreenfootFrameUtil.getClipboardElements(editor.getFocusedCursor().getParentCanvas().getContext());
         if (elements != null && elements.size() > 0) {
             if (frames.size() > 0) {
@@ -63,11 +59,9 @@ public class PasteFrameOperation extends FrameOperation
 
             elements.forEach(codeElement -> {
                 final Frame frame = codeElement.createFrame(editor);
-                if (editor.getFocusedCursor().check().canPlace(frame.getClass()))
-                {
+                if (editor.getFocusedCursor().check().canPlace(frame.getClass())) {
                     editor.getFocusedCursor().insertBlockAfter(frame);
-                    if (shouldDisable)
-                    {
+                    if (shouldDisable) {
                         frame.setFrameEnabled(false);
                     }
                     frame.getCursorAfter().requestFocus();
@@ -77,8 +71,7 @@ public class PasteFrameOperation extends FrameOperation
     }
 
     @Override
-    public List<ItemLabel> getLabels()
-    {
+    public List<ItemLabel> getLabels() {
         return Arrays.asList(l(Config.getString("frame.operation.paste"), MenuItemOrder.PASTE));
     }
 }

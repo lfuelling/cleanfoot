@@ -23,22 +23,14 @@ package bluej.utility;
 
 import bluej.Config;
 import bluej.utility.javafx.JavaFXUtil;
-
 import javafx.collections.FXCollections;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
-
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -50,19 +42,17 @@ import java.util.List;
  * select a directory to open.
  */
 @OnThread(Tag.FXPlatform)// package-visible
-class NotAProjectDialog
-{
+class NotAProjectDialog {
     private static final ButtonType OPEN_BUTTON = ButtonType.NEXT;
     private final ListView<File> subDirList;
 
-    private enum Choice { CANCEL, CHOOSE_AGAIN, SELECTED_FILE }
-    private static class ChoiceAndFile
-    {
+    private enum Choice {CANCEL, CHOOSE_AGAIN, SELECTED_FILE}
+
+    private static class ChoiceAndFile {
         private final Choice choice;
         private final File file; // Only valid if choice == SELECTED_FILE
 
-        public ChoiceAndFile(Choice choice, File file)
-        {
+        public ChoiceAndFile(Choice choice, File file) {
             this.choice = choice;
             this.file = file;
         }
@@ -71,8 +61,7 @@ class NotAProjectDialog
     private final Dialog<ChoiceAndFile> dialog;
     private ChoiceAndFile selected;
 
-    public NotAProjectDialog(Window parent, File original, List<File> possibilities)
-    {
+    public NotAProjectDialog(Window parent, File original, List<File> possibilities) {
         this.dialog = new Dialog<>();
         dialog.initOwner(parent);
         dialog.initModality(Modality.WINDOW_MODAL);
@@ -83,8 +72,7 @@ class NotAProjectDialog
         VBox content = new VBox(new Label(Config.getString(labelRoot + ".message") + "\n    " + original.getAbsolutePath()));
         JavaFXUtil.addStyleClass(content, "not-a-project");
         content.setFillWidth(true);
-        if (possibilities != null && !possibilities.isEmpty())
-        {
+        if (possibilities != null && !possibilities.isEmpty()) {
             dialog.getDialogPane().getButtonTypes().add(OPEN_BUTTON);
             Button openButton = (Button) dialog.getDialogPane().lookupButton(OPEN_BUTTON);
             openButton.setText(Config.getString(labelRoot + ".subDirButton"));
@@ -93,23 +81,19 @@ class NotAProjectDialog
             subDirList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             subDirList.setEditable(false);
             subDirList.setCellFactory(v -> {
-                ListCell<File> cell = new TextFieldListCell<>(new StringConverter<File>()
-                {
+                ListCell<File> cell = new TextFieldListCell<>(new StringConverter<File>() {
                     @Override
-                    public String toString(File object)
-                    {
+                    public String toString(File object) {
                         return object.getAbsolutePath();
                     }
 
                     @Override
-                    public File fromString(String string)
-                    {
+                    public File fromString(String string) {
                         throw new UnsupportedOperationException();
                     }
                 });
                 cell.setOnMouseClicked(e -> {
-                    if (e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY)
-                    {
+                    if (e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY) {
                         subDirList.getSelectionModel().select(cell.getItem());
                         openButton.fire();
                     }
@@ -123,16 +107,15 @@ class NotAProjectDialog
             openButton.disableProperty().bind(subDirList.getSelectionModel().selectedItemProperty().isNull());
             JavaFXUtil.addStyleClass(subDirList, "subDirs");
             content.getChildren().add(subDirList);
-        }
-        else
+        } else
             subDirList = null;
-        ((Button)dialog.getDialogPane().lookupButton(ButtonType.OK)).setText(Config.getString(labelRoot + ".button"));
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText(Config.getString(labelRoot + ".button"));
         dialog.getDialogPane().setContent(content);
 
         dialog.setResultConverter(button -> {
             if (button == ButtonType.OK)
                 return new ChoiceAndFile(Choice.CHOOSE_AGAIN, null);
-            //else if (button == ButtonType.NO)
+                //else if (button == ButtonType.NO)
                 //return new ChoiceAndFile(Choice.IMPORT, original);
             else if (button == OPEN_BUTTON)
                 return new ChoiceAndFile(Choice.SELECTED_FILE, subDirList.getSelectionModel().getSelectedItem());
@@ -143,23 +126,19 @@ class NotAProjectDialog
         });
     }
 
-    public void showAndWait()
-    {
+    public void showAndWait() {
         this.selected = dialog.showAndWait().orElse(new ChoiceAndFile(Choice.CANCEL, null));
     }
 
-    public boolean isCancel()
-    {
+    public boolean isCancel() {
         return selected.choice == Choice.CANCEL;
     }
 
-    public boolean isChooseAgain()
-    {
+    public boolean isChooseAgain() {
         return selected.choice == Choice.CHOOSE_AGAIN;
     }
 
-    public File getSelectedDir()
-    {
+    public File getSelectedDir() {
         return selected.file;
     }
 }

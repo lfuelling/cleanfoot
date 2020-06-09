@@ -40,40 +40,36 @@ import java.util.Arrays;
  * available are determined by scanning a directory for subdirectories.
  * Selecting a category will make a corresponding ImageLibList show
  * the contents of that category.
- * 
+ *
  * @author davmac
  */
 @OnThread(Tag.FXPlatform)
-public class ImageCategorySelector extends ListView<File>
-{
+public class ImageCategorySelector extends ListView<File> {
     private ImageLibList imageLibList;
-    
+
     /**
      * Construct an ImageCategorySelector to show categories from the
      * given directory.
-     * 
-     * @param categoriesRoot  The directory containing the categories
-     *                     (subdirectories)
+     *
+     * @param categoriesRoot The directory containing the categories
+     *                       (subdirectories)
      */
-    public ImageCategorySelector(File categoriesRoot)
-    {
+    public ImageCategorySelector(File categoriesRoot) {
         setOrientation(Orientation.VERTICAL);
         getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         setCellFactory(param -> new ImageCell());
 
         // Show directories only
         File[] categoriesFolders = categoriesRoot.listFiles(File::isDirectory);
-        if (categoriesFolders == null)
-        {
+        if (categoriesFolders == null) {
             return;
         }
-        
+
         Arrays.sort(categoriesFolders);
         setItems(FXCollections.observableArrayList(categoriesFolders));
 
         JavaFXUtil.addChangeListenerPlatform(getSelectionModel().selectedItemProperty(), selected -> {
-            if (imageLibList != null && selected != null)
-            {
+            if (imageLibList != null && selected != null) {
                 imageLibList.setDirectory(selected);
             }
         });
@@ -83,33 +79,27 @@ public class ImageCategorySelector extends ListView<File>
      * Set the ImageLibList to be associated with this category selector.
      * When a category is selected, the associated ImageLibList will be
      * made to show images from the category.
-     * 
-     * @param imageLibList  The ImageLibList to associate with this category
-     *                      selector
+     *
+     * @param imageLibList The ImageLibList to associate with this category
+     *                     selector
      */
-    public void setImageLibList(ImageLibList imageLibList)
-    {
+    public void setImageLibList(ImageLibList imageLibList) {
         this.imageLibList = imageLibList;
     }
-    
+
     @OnThread(Tag.FXPlatform)
-    private static class ImageCell extends ListCell<File>
-    {
+    private static class ImageCell extends ListCell<File> {
         private static final String iconFile = "openRight.png";
         private static final Image openRightIcon = new Image(ImageCategorySelector.class.getClassLoader().getResource(iconFile).toString());
 
         @Override
         @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-        public void updateItem(File file, boolean empty)
-        {
+        public void updateItem(File file, boolean empty) {
             super.updateItem(file, empty);
-            if (empty || file == null)
-            {
+            if (empty || file == null) {
                 setText(null);
                 setGraphic(null);
-            }
-            else
-            {
+            } else {
                 setText(file.getName());
                 setGraphic(new ImageView(openRightIcon));
             }

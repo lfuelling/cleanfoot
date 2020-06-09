@@ -26,35 +26,32 @@ import java.util.*;
 
 /**
  * Represents an intersection type, eg. I1&I2&I3 as specified in the Java Language
- * Specification. 
- * 
+ * Specification.
+ *
  * @author Davin McCall
  */
-public class IntersectionType extends GenTypeSolid
-{
-    private final GenTypeSolid [] intersectTypes;
-    
-    private IntersectionType(GenTypeSolid [] types)
-    {
+public class IntersectionType extends GenTypeSolid {
+    private final GenTypeSolid[] intersectTypes;
+
+    private IntersectionType(GenTypeSolid[] types) {
         if (types.length == 0) {
             throw new IllegalArgumentException();
         }
-        
+
         intersectTypes = types;
     }
-    
+
     /**
      * Factory method. Avoids creation of an intersection to hold only one type.
-     * 
-     * @param types   The types to create an intersection of
-     * @return        The intersection of the given types
+     *
+     * @param types The types to create an intersection of
+     * @return The intersection of the given types
      */
-    public static GenTypeSolid getIntersection(GenTypeSolid [] types)
-    {
+    public static GenTypeSolid getIntersection(GenTypeSolid[] types) {
         // A quick optimization for a common case.
         if (types.length == 1)
             return types[0];
-        
+
         // Get the real list of types, in case some of the intersecting types
         // are already intersections:
         List<GenTypeSolid> allTypes = new ArrayList<GenTypeSolid>(types.length);
@@ -63,82 +60,80 @@ public class IntersectionType extends GenTypeSolid
                 allTypes.add(itype);
             }
         }
-        
+
         // Remove cruft. If there are two classes (as opposed to interfaces),
         // combine them.
-        
+
         ArrayList<GenTypeSolid> nonclasstypes = new ArrayList<GenTypeSolid>();
         GenTypeClass classtype = null;
-        
+
         for (int i = 0; i < types.length; i++) {
             GenTypeClass tclass = types[i].asClass();
-            if (tclass != null && ! tclass.isInterface()) {
+            if (tclass != null && !tclass.isInterface()) {
                 if (classtype == null)
                     classtype = tclass;
                 else {
                     classtype = combineClasses(tclass, classtype);
                 }
-            }
-            else {
+            } else {
                 nonclasstypes.add(types[i]);
             }
         }
-        
+
         // If there is a class, insert it at the head of the list.
         if (classtype != null)
             nonclasstypes.listIterator().add(classtype);
-        
+
         // If there's only type left, return it.
         if (nonclasstypes.size() == 1)
             return nonclasstypes.get(0);
-        
+
         return new IntersectionType(nonclasstypes.toArray(new GenTypeSolid[nonclasstypes.size()]));
     }
-    
+
     /**
      * Convenience method to get the intersection of two types.
-     * @param a  The first type
-     * @param b  The second type
-     * @return  The intersection of the two types
+     *
+     * @param a The first type
+     * @param b The second type
+     * @return The intersection of the two types
      */
-    public static GenTypeSolid getIntersection(GenTypeSolid a, GenTypeSolid b)
-    {
-        return getIntersection(new GenTypeSolid [] {a, b});
+    public static GenTypeSolid getIntersection(GenTypeSolid a, GenTypeSolid b) {
+        return getIntersection(new GenTypeSolid[]{a, b});
     }
-    
+
     /**
      * Combine two classes, to yield one class which is the intersection of both.
-     * @param a  The first class
-     * @param b  The second class
+     *
+     * @param a The first class
+     * @param b The second class
      * @return The intersection (as a single class)
      */
-    public static GenTypeClass combineClasses(GenTypeClass a, GenTypeClass b)
-    {
+    public static GenTypeClass combineClasses(GenTypeClass a, GenTypeClass b) {
         // One class must be derived from the other
         //GenTypeParameterizable gtp = classtype.precisify(tclass);
         GenTypeClass aE = a.getErasedType();
         GenTypeClass bE = b.getErasedType();
-        if (! aE.equals(bE)) {
+        if (!aE.equals(bE)) {
             if (aE.isAssignableFrom(bE)) {
                 a = a.mapToDerived(bE.reflective);
-            }
-            else {
+            } else {
                 b = b.mapToDerived(aE.reflective);
             }
         }
-        
+
         if (a.isRaw())
             return b;
-        
+
         if (b.isRaw())
             return a;
-        
+
         // Handle outer class recursively
         GenTypeClass outer = null;
         if (a.outer != null) {
             outer = combineClasses(a.outer, b.outer);
         }
-        
+
         // Precisify type arguments
         List<GenTypeParameter> newParams = null;
         if (a.params != null) {
@@ -151,88 +146,76 @@ public class IntersectionType extends GenTypeSolid
                 newParams.add(tpa.precisify(tpb));
             }
         }
-        
+
         return new GenTypeClass(a.reflective, newParams, outer);
     }
-    
-    public String toString(NameTransform nt)
-    {
+
+    public String toString(NameTransform nt) {
         // This must return a valid java type. We can throw away all but one of
         // the intersection types, and it will be ok. So let's not use
         // java.lang.Object if we have any other choice.
-        
+
         String xx = intersectTypes[0].toString();
         if (intersectTypes.length > 1 && xx.equals("java.lang.Object")) {
             return intersectTypes[1].toString(nt);
-        }
-        else {
+        } else {
             return intersectTypes[0].toString(nt);
         }
     }
-    
-    public String toTypeArgString(NameTransform nt)
-    {
+
+    public String toTypeArgString(NameTransform nt) {
         // As a type argument, we can only go to a wildcard
-        
+
         return "? extends " + toString(nt);
     }
 
-    public boolean isInterface()
-    {
+    public boolean isInterface() {
         return false;
     }
 
-    public GenTypeSolid[] getLowerBounds()
-    {
-        return new GenTypeSolid[] {this};
+    public GenTypeSolid[] getLowerBounds() {
+        return new GenTypeSolid[]{this};
     }
-        
-    public GenTypeSolid mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams)
-    {
-        GenTypeSolid [] newIsect = new GenTypeSolid[intersectTypes.length];
+
+    public GenTypeSolid mapTparsToTypes(Map<String, ? extends GenTypeParameter> tparams) {
+        GenTypeSolid[] newIsect = new GenTypeSolid[intersectTypes.length];
         for (int i = 0; i < intersectTypes.length; i++) {
             newIsect[i] = (GenTypeSolid) intersectTypes[i].mapTparsToTypes(tparams);
         }
         return new IntersectionType(newIsect);
     }
 
-    public boolean equals(JavaType other)
-    {
+    public boolean equals(JavaType other) {
         if (other == null)
             return false;
-        
+
         if (other instanceof JavaType) {
             JavaType otherJT = other;
             return isAssignableFrom(otherJT) && otherJT.isAssignableFrom(this);
         }
-        
+
         return false;
     }
 
-    public void getParamsFromTemplate(Map<String,GenTypeParameter> map, GenTypeParameter template)
-    {
+    public void getParamsFromTemplate(Map<String, GenTypeParameter> map, GenTypeParameter template) {
         // This won't be needed
         return;
     }
 
-    public GenTypeParameter precisify(GenTypeParameter other)
-    {
+    public GenTypeParameter precisify(GenTypeParameter other) {
         // This won't be needed, I think
         throw new UnsupportedOperationException();
     }
 
-    public String arrayComponentName()
-    {
+    public String arrayComponentName() {
         return getErasedType().arrayComponentName();
     }
 
-    public JavaType getErasedType()
-    {
+    public JavaType getErasedType() {
         return intersectTypes[0].getErasedType();
     }
 
-    public boolean isAssignableFrom(JavaType t)
-    {
+    public boolean isAssignableFrom(JavaType t) {
         for (int i = 0; i < intersectTypes.length; i++) {
             if (intersectTypes[i].isAssignableFrom(t))
                 return true;
@@ -240,43 +223,38 @@ public class IntersectionType extends GenTypeSolid
         return false;
     }
 
-    public boolean isAssignableFromRaw(JavaType t)
-    {
+    public boolean isAssignableFromRaw(JavaType t) {
         for (int i = 0; i < intersectTypes.length; i++) {
             if (intersectTypes[i].isAssignableFromRaw(t))
                 return true;
         }
         return false;
     }
-    
-    public void erasedSuperTypes(Set<Reflective> s)
-    {
+
+    public void erasedSuperTypes(Set<Reflective> s) {
         for (int i = 0; i < intersectTypes.length; i++) {
             intersectTypes[i].erasedSuperTypes(s);
         }
     }
-    
-    public GenTypeClass [] getReferenceSupertypes()
-    {
+
+    public GenTypeClass[] getReferenceSupertypes() {
         ArrayList<GenTypeClass> rsupTypes = new ArrayList<GenTypeClass>();
         for (int i = 0; i < intersectTypes.length; i++) {
-            GenTypeClass [] isTypes = intersectTypes[i].getReferenceSupertypes();
+            GenTypeClass[] isTypes = intersectTypes[i].getReferenceSupertypes();
             for (int j = 0; j < isTypes.length; j++) {
                 rsupTypes.add(isTypes[j]);
             }
         }
         return rsupTypes.toArray(new GenTypeClass[rsupTypes.size()]);
     }
-    
+
     @Override
-    public GenTypeArray getArray()
-    {
+    public GenTypeArray getArray() {
         return new GenTypeArray(this);
     }
-    
+
     @Override
-    public GenTypeSolid[] getIntersectionTypes()
-    {
+    public GenTypeSolid[] getIntersectionTypes() {
         return intersectTypes;
     }
 }

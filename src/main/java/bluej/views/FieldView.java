@@ -24,25 +24,23 @@ package bluej.views;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 
 /**
- ** @version $Id: FieldView.java 15114 2015-12-02 22:08:41Z mik $
- ** @author Michael Cahill
- **
- ** A representation of a Java field in BlueJ
+ * * @version $Id: FieldView.java 15114 2015-12-02 22:08:41Z mik $
+ * * @author Michael Cahill
+ * *
+ * * A representation of a Java field in BlueJ
  **/
-public final class FieldView extends MemberView
-{
+public final class FieldView extends MemberView {
     @OnThread(Tag.Any)
     private final Field field;
     private View type;
 
     /**
-     ** Constructor.
+     * * Constructor.
      **/
-    public FieldView(View view, Field field)
-    {
+    public FieldView(View view, Field field) {
         super(view);
 
         this.field = field;
@@ -50,50 +48,44 @@ public final class FieldView extends MemberView
 
     /**
      * Returns the Field being manipulated by this View.
-     * 
+     *
      * @return the Field that this view represent.
      */
-    public Field getField ()
-    {
+    public Field getField() {
         return field;
     }
-      
+
     /**
-     ** Returns the name of this method as a String
+     * * Returns the name of this method as a String
      **/
-    public String getName()
-    {
+    public String getName() {
         return field.getName();
     }
 
     /**
-     ** Returns a Class object that represents the type of the field represented
-     **  by this object.
+     * * Returns a Class object that represents the type of the field represented
+     * *  by this object.
      **/
-    public View getType()
-    {
-        if(type == null)
+    public View getType() {
+        if (type == null)
             type = View.getView(field.getType());
 
         return type;
     }
 
     /**
-     ** Returns a string describing this Method.
+     * * Returns a string describing this Method.
      **/
-    public String toString()
-    {
+    public String toString() {
         return field.toString();
     }
 
     @OnThread(Tag.Any)
-    public int getModifiers()
-    {
+    public int getModifiers() {
         return field.getModifiers();
     }
 
-    public String getShortDesc()
-    {
+    public String getShortDesc() {
         StringBuffer sb = new StringBuffer();
         sb.append(View.getTypeName(field.getType()));
         sb.append(" ");
@@ -101,16 +93,14 @@ public final class FieldView extends MemberView
         return sb.toString();
     }
 
-    public String getLongDesc()
-    {
-        return getShortDesc();        
+    public String getLongDesc() {
+        return getShortDesc();
     }
-    
+
     /**
-     ** Returns a string describing this Field in a human-readable format
+     * * Returns a string describing this Field in a human-readable format
      **/
-    public String getSignature()
-    {
+    public String getSignature() {
         StringBuffer sb = new StringBuffer();
         //sb.append(View.getTypeName(field.getType()));
         //sb.append(" ");

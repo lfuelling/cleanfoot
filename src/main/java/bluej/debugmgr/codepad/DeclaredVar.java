@@ -21,70 +21,63 @@
  */
 package bluej.debugmgr.codepad;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugger.gentype.JavaType;
 import bluej.debugmgr.NamedValue;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * A class to represent a variable declared by a statement. This contains
  * the variable name and type, and whether or not it was initialized.
  */
 @OnThread(value = Tag.Any, ignoreParent = true)
-public class DeclaredVar implements NamedValue
-{
+public class DeclaredVar implements NamedValue {
     private boolean isVarInit = false;
     private final JavaType declVarType;
     private final String varName;
     private boolean isFinal = false;
-    
-    public DeclaredVar(boolean isVarInit, boolean isFinal, JavaType varType, String varName)
-    {
+
+    public DeclaredVar(boolean isVarInit, boolean isFinal, JavaType varType, String varName) {
         this.isVarInit = isVarInit;
         this.declVarType = varType;
         this.varName = varName;
         this.isFinal = isFinal;
     }
-    
+
     /**
      * Check whether the variable declaration included an initialization.
      */
     @Override
-    public boolean isInitialized()
-    {
+    public boolean isInitialized() {
         return isVarInit;
     }
-    
+
     /**
      * Get the type of variable which was declared by the recently parsed
-     * statement. 
+     * statement.
      */
-    public JavaType getDeclaredType()
-    {
+    public JavaType getDeclaredType() {
         return declVarType;
     }
-    
+
     @Override
-    public JavaType getGenType()
-    {
+    public JavaType getGenType() {
         return declVarType;
     }
-    
+
     /**
      * Get the name of the declared variable.
      */
     @Override
-    public String getName()
-    {
+    public String getName() {
         return varName;
     }
-    
+
     /**
      * Check whether the variable was declared "final".
      */
     @Override
-    public boolean isFinal()
-    {
+    public boolean isFinal() {
         return isFinal;
     }
 }

@@ -26,37 +26,31 @@
 package bluej.stride.framedjava.frames;
 
 
-import java.util.List;
-
-import javafx.beans.property.SimpleIntegerProperty;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.ast.FilledExpressionSlotFragment;
-import bluej.stride.framedjava.ast.HighlightedBreakpoint;
-import bluej.stride.framedjava.canvases.JavaCanvas;
 import bluej.stride.framedjava.elements.ThrowElement;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.FilledExpressionSlot;
 import bluej.stride.generic.FrameFactory;
 import bluej.stride.generic.InteractionManager;
 import bluej.stride.generic.SingleLineFrame;
-import bluej.stride.operations.FrameOperation;
+import javafx.beans.property.SimpleIntegerProperty;
 
 /**
  * A Throw statement
  */
 public class ThrowFrame extends SingleLineFrame
-  implements CodeFrame<ThrowElement>, DebuggableFrame
-{
+        implements CodeFrame<ThrowElement>, DebuggableFrame {
     private final ExpressionSlot<FilledExpressionSlotFragment> param1;
     private ThrowElement element;
     private final SimpleIntegerProperty codeVersion;
-    
+
     /**
      * Default constructor.
-     * @param editor 
+     *
+     * @param editor
      */
-    private ThrowFrame(InteractionManager editor)
-    {
+    private ThrowFrame(InteractionManager editor) {
         super(editor, "throw", "throw-");
         this.codeVersion = new SimpleIntegerProperty(0);
         //Parameters
@@ -64,39 +58,33 @@ public class ThrowFrame extends SingleLineFrame
         param1.setSimplePromptText("expression");
         setHeaderRow(param1, previewSemi);
     }
-    
-    public ThrowFrame(InteractionManager editor, ExpressionSlotFragment val, boolean enabled)
-    {
+
+    public ThrowFrame(InteractionManager editor, ExpressionSlotFragment val, boolean enabled) {
         this(editor);
         param1.setText(val);
         frameEnabledProperty.set(enabled);
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         element = new ThrowElement(this, param1.getSlotElement(), frameEnabledProperty.get());
         codeVersion.set(codeVersion.get() + 1);
     }
-    
+
     @Override
-    public ThrowElement getCode()
-    {
+    public ThrowElement getCode() {
         return element;
     }
-    
-    public static FrameFactory<ThrowFrame> getFactory()
-    {
+
+    public static FrameFactory<ThrowFrame> getFactory() {
         return new FrameFactory<ThrowFrame>() {
             @Override
-            public ThrowFrame createBlock(InteractionManager editor)
-            {
+            public ThrowFrame createBlock(InteractionManager editor) {
                 return new ThrowFrame(editor);
             }
-                        
-            @Override 
-            public Class<ThrowFrame> getBlockClass()
-            {
+
+            @Override
+            public Class<ThrowFrame> getBlockClass() {
                 return ThrowFrame.class;
             }
         };

@@ -21,34 +21,28 @@
  */
 package bluej.debugger.jdi;
 
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CompletableFuture;
-
 import bluej.BlueJEvent;
 import bluej.BlueJEventListener;
+import bluej.Config;
+import bluej.classmgr.BPClassLoader;
 import bluej.debugger.*;
+import bluej.debugmgr.Invoker;
 import bluej.pkgmgr.Project;
+import bluej.utility.Debug;
+import bluej.utility.JavaNames;
 import bluej.utility.javafx.FXPlatformSupplier;
 import com.sun.jdi.*;
 import threadchecker.OnThread;
 import threadchecker.Tag;
-import bluej.Config;
-import bluej.classmgr.BPClassLoader;
-import bluej.debugmgr.Invoker;
-import bluej.utility.Debug;
-import bluej.utility.JavaNames;
+
+import java.io.File;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A class implementing the execution and debugging primitives needed by BlueJ.
- * 
+ *
  * <p>This class is tightly coupled with the classes VMReference and
  * VMEventHandler. JdiDebugger is the half of the debugger that is persistent
  * across debugger sessions. VMReference and VMEventHandler will be constructed
@@ -56,17 +50,16 @@ import bluej.utility.JavaNames;
  * of making the remote VM do things. VMEventHandler starts a new thread that
  * listens for remote VM events and calls back into VMReference on reciept of
  * these events.
- * 
+ *
  * <p>Most of the actual access to the virtual machine occurs through the
  * MachineLoader thread. When the vm is restarted by user request, a new loader
  * thread is created immediately so that any method calls/etc will execute on
  * the new machine (after waiting until it has loaded).
- * 
+ *
  * @author Michael Kolling
  * @author Andrew Patterson
  */
-public class JdiDebugger extends Debugger
-{
+public class JdiDebugger extends Debugger {
     private static final int loaderPriority = Thread.NORM_PRIORITY - 2;
 
     // If false, specifies that a new VM should be started when the old one dies
@@ -88,8 +81,10 @@ public class JdiDebugger extends Debugger
     // the thread that we spawn to load the current remote VM
     @OnThread(Tag.Any)
     private MachineLoaderThread machineLoader;
-    
-    /** An object to provide a lock for server thread execution */
+
+    /**
+     * An object to provide a lock for server thread execution
+     */
     @OnThread(Tag.Any)
     private final Object serverThreadLock = new Object();
 
@@ -114,7 +109,7 @@ public class JdiDebugger extends Debugger
     // object bench. We endeavour to not reuse them.
     @OnThread(value = Tag.Any, requireSynchronized = true)
     private final Set<String> usedNames;
-    
+
     /**
      * Current machine state. This is changed only by the VM event queue (see VMEventHandler),
      * but write access is also protected by the listener list mutex. This makes it possible to
@@ -123,31 +118,30 @@ public class JdiDebugger extends Debugger
      */
     @OnThread(Tag.Any)
     private int machineState = NOTREADY;
-    
+
     // classpath to be used for the remote VM
     private BPClassLoader lastProjectClassLoader;
-    
+
     // most recent exception description
     private ExceptionDescription lastException;
-    
-    /** User libraries to be added to VM classpath */
+
+    /**
+     * User libraries to be added to VM classpath
+     */
     private URL[] libraries = {};
     private RunOnThread runOnThread = RunOnThread.DEFAULT;
 
     /**
      * Construct an instance of the debugger.
-     * 
+     *
      * <p>This constructor should not be used by the main part of BlueJ. Access
      * should be through Debugger.getDebuggerImpl().
-     * 
-     * @param startingDirectory
-     *            a File representing the directory we should launch the debug
-     *            VM in.
-     * @param terminal
-     *            a Terminal where we can do input/output.
+     *
+     * @param startingDirectory a File representing the directory we should launch the debug
+     *                          VM in.
+     * @param terminal          a Terminal where we can do input/output.
      */
-    public JdiDebugger(File startingDirectory, DebuggerTerminal terminal, DebuggerThreadListener debuggerThreadListener)
-    {
+    public JdiDebugger(File startingDirectory, DebuggerTerminal terminal, DebuggerThreadListener debuggerThreadListener) {
         this.startingDirectory = startingDirectory;
         this.terminal = terminal;
         this.threadListener = debuggerThreadListener;
@@ -157,18 +151,16 @@ public class JdiDebugger extends Debugger
     }
 
     @Override
-    public void setUserLibraries(URL[] libraries)
-    {
+    public void setUserLibraries(URL[] libraries) {
         this.libraries = libraries;
     }
-    
+
     /**
      * Start debugging.
      */
     @Override
     @OnThread(Tag.Any)
-    public synchronized void launch()
-    {
+    public synchronized void launch() {
         // This could be either an initial launch (selfRestart == false) or
         // a restart (selfRestart == true and machineLoader != null). In the
         // latter case, there's no need to create a new machine loader, as
@@ -204,8 +196,7 @@ public class JdiDebugger extends Debugger
      * Close this VM, possibly restart it.
      */
     @Override
-    public synchronized void close(boolean restart)
-    {
+    public synchronized void close(boolean restart) {
         // There are essentially three states the remote process could be in:
         // started, stopping, or launching. It will not already be stopped
         // as this only occurs when the project is closed.
@@ -257,12 +248,10 @@ public class JdiDebugger extends Debugger
 
     /**
      * Add a listener for DebuggerEvents
-     * 
-     * @param l
-     *            the DebuggerListener to add
+     *
+     * @param l the DebuggerListener to add
      */
-    public int addDebuggerListener(DebuggerListener l)
-    {
+    public int addDebuggerListener(DebuggerListener l) {
         synchronized (listenerList) {
             listenerList.add(l);
             return machineState;
@@ -271,24 +260,21 @@ public class JdiDebugger extends Debugger
 
     /**
      * Remove a listener for DebuggerEvents.
-     * 
-     * @param l
-     *            the DebuggerListener to remove
+     *
+     * @param l the DebuggerListener to remove
      */
     @OnThread(Tag.Any)
-    public void removeDebuggerListener(DebuggerListener l)
-    {
+    public void removeDebuggerListener(DebuggerListener l) {
         synchronized (listenerList) {
             listenerList.remove(l);
         }
     }
-    
+
     /**
      * Get a copy of the listener list.
      */
     @OnThread(Tag.Any)
-    private DebuggerListener [] getListeners()
-    {
+    private DebuggerListener[] getListeners() {
         synchronized (listenerList) {
             return listenerList.toArray(new DebuggerListener[listenerList.size()]);
         }
@@ -296,13 +282,11 @@ public class JdiDebugger extends Debugger
 
     /**
      * Guess a suitable name for an object about to be put on the object bench.
-     * 
-     * @param className
-     *            the fully qualified name of the class of object
+     *
+     * @param className the fully qualified name of the class of object
      * @return a String suitable as a name for an object on the object bench.
      */
-    public String guessNewName(String className)
-    {
+    public String guessNewName(String className) {
         // className can have array brackets at the end which is not suitable
         // for an identifier. We'll strip them out
         className = className.replace('[', ' ').replace(']', ' ').trim();
@@ -316,54 +300,48 @@ public class JdiDebugger extends Debugger
 
         int num = 1;
 
-        synchronized(this) {
+        synchronized (this) {
             while (usedNames.contains(newName + num))
                 num++;
         }
 
         return newName + num;
     }
-    
-    
-    public String guessNewName(DebuggerObject obj)       
-    {
+
+
+    public String guessNewName(DebuggerObject obj) {
         String name = null;
         DebuggerClass cls = obj.getClassRef();
-        
-        if(cls.isEnum()) {
+
+        if (cls.isEnum()) {
             Value val = obj.getObjectReference();
             name = JdiUtils.getJdiUtils().getValueString(val);
         }
-        
-        if(name == null) {
+
+        if (name == null) {
             name = cls.getName();
         }
-        
+
         return guessNewName(name);
     }
-   
+
     /**
      * Create a class loader in the debugger.
+     *
      * @param bpClassLoader the class loader that should be used to load the user classes in the remote VM.
      */
-    public void newClassLoader(BPClassLoader bpClassLoader)
-    {
+    public void newClassLoader(BPClassLoader bpClassLoader) {
         VMReference vmr = null;
-        synchronized (JdiDebugger.this)
-        {
+        synchronized (JdiDebugger.this) {
             // lastProjectClassLoader is used if there is a VM restart
-            if (bpClassLoader != null)
-            {
+            if (bpClassLoader != null) {
                 lastProjectClassLoader = bpClassLoader;
-            }
-            else
-            {
+            } else {
                 return;
             }
 
             vmr = getVMNoWait();
-            if (vmr != null)
-            {
+            if (vmr != null) {
                 usedNames.clear();
             }
         }
@@ -371,15 +349,11 @@ public class JdiDebugger extends Debugger
         // for the worker thread to finish (which newClassLoader does) while holding the JdiDebugger
         // monitor: the worker may be busy and hit a breakpoint, which requires the JdiDebugger monitor
         // to handler before the worker thread can finish.
-        if (vmr != null)
-        {
-            try
-            {
+        if (vmr != null) {
+            try {
                 vmr.clearAllBreakpoints();
                 vmr.newClassLoader(bpClassLoader.getURLs());
-            }
-            catch (VMDisconnectedException vmde)
-            {
+            } catch (VMDisconnectedException vmde) {
             }
         }
     }
@@ -388,24 +362,21 @@ public class JdiDebugger extends Debugger
      * Remove all breakpoints in the given class.
      */
     @OnThread(Tag.Any)
-    public void removeBreakpointsForClass(String className)
-    {
+    public void removeBreakpointsForClass(String className) {
         VMReference vmr = getVMNoWait();
         if (vmr != null) {
             vmr.clearBreakpointsForClass(className);
         }
     }
-    
+
     /**
      * Add a debugger object into the project scope.
-     * 
-     * @param newInstanceName
-     *            the name of the object dob the object itself
+     *
+     * @param newInstanceName the name of the object dob the object itself
      * @return true if the object could be added with this name, false if there
-     *         was a name clash.
+     * was a name clash.
      */
-    public boolean addObject(String scopeId, String newInstanceName, DebuggerObject dob)
-    {
+    public boolean addObject(String scopeId, String newInstanceName, DebuggerObject dob) {
         VMReference vmr = getVMNoWait();
         if (vmr != null) {
             vmr.addObject(scopeId, newInstanceName, dob.getObjectReference());
@@ -419,8 +390,7 @@ public class JdiDebugger extends Debugger
     /**
      * Remove an object from a package scope (when removed from object bench).
      */
-    public void removeObject(String scopeId, String instanceName)
-    {
+    public void removeObject(String scopeId, String instanceName) {
         VMReference vmr = getVMNoWait();
         if (vmr != null) {
             vmr.removeObject(scopeId, instanceName);
@@ -429,11 +399,10 @@ public class JdiDebugger extends Debugger
 
     /**
      * Return the debugger objects that exist in the debugger.
-     * 
+     *
      * @return a Map of (String name, DebuggerObject obj) entries
      */
-    public Map<String, DebuggerObject> getObjects()
-    {
+    public Map<String, DebuggerObject> getObjects() {
         throw new IllegalStateException("not implemented");
         // the returned array consists of double the number of objects
         // they alternate, name, object, name, object
@@ -444,21 +413,19 @@ public class JdiDebugger extends Debugger
         // arrayRef[3] = a field value 1 (ObjectReference)
         //
     }
-    
+
     /**
      * Return the machine status; one of the "machine state" constants:
      * NOTREADY, IDLE, RUNNING, or SUSPENDED.
      */
-    public int getStatus()
-    {
+    public int getStatus() {
         return machineState;
     }
-    
+
     /*
      * @see bluej.debugger.Debugger#getMirror(java.lang.String)
      */
-    public DebuggerObject getMirror(String value)
-    {
+    public DebuggerObject getMirror(String value) {
         VMReference vmr = getVM();
         if (vmr != null) {
             try {
@@ -466,24 +433,20 @@ public class JdiDebugger extends Debugger
                 // When passed directly to getDebuggerObject, I've seen this collected
                 // before the point where we disable collection, so we do it in a loop here
                 // until we manage to disable collection before the item is collected:
-                do
-                {
+                do {
                     stringReference = vmr.getMirror(value);
-                    try
-                    {
+                    try {
                         stringReference.disableCollection();
-                    }
-                    catch (ObjectCollectedException e)
-                    {
+                    } catch (ObjectCollectedException e) {
                         // Try again...
                     }
                 }
                 while (stringReference.isCollected());
 
                 return JdiObject.getDebuggerObject(stringReference);
+            } catch (VMDisconnectedException vde) {
+            } catch (VMOutOfMemoryException vmoome) {
             }
-            catch (VMDisconnectedException vde) { }
-            catch (VMOutOfMemoryException vmoome) { }
         }
         return null;
     }
@@ -491,8 +454,7 @@ public class JdiDebugger extends Debugger
     /**
      * Return the text of the last exception.
      */
-    public ExceptionDescription getException()
-    {
+    public ExceptionDescription getException() {
         return lastException;
     }
 
@@ -502,15 +464,13 @@ public class JdiDebugger extends Debugger
 
     /**
      * Run the setUp() method of a test class and return the created objects.
-     * 
-     * @param className
-     *            the fully qualified name of the class
+     *
+     * @param className the fully qualified name of the class
      * @return a Map of (String name, DebuggerObject obj) entries
-     *         null if an error occurs (such as VM termination)
+     * null if an error occurs (such as VM termination)
      */
     @OnThread(Tag.Any)
-    public FXPlatformSupplier<Map<String, DebuggerObject>> runTestSetUp(String className)
-    {
+    public FXPlatformSupplier<Map<String, DebuggerObject>> runTestSetUp(String className) {
         ArrayReference arrayRef = null;
         VMReference vmr = getVM();
         try {
@@ -518,7 +478,7 @@ public class JdiDebugger extends Debugger
                 if (vmr != null) {
                     arrayRef = (ArrayReference) vmr.invokeTestSetup(className);
                 }
-                
+
                 // the returned array consists of double the number of fields created by
                 // running test setup plus one extra slot
                 // they alternate, fieldname, fieldvalue, fieldname, fieldvalue
@@ -531,9 +491,8 @@ public class JdiDebugger extends Debugger
                 // test object. This is used to extract (potentially generic) fields.
                 // we could return a Map from RUN_TEST_SETUP but then we'd have to use
                 // JDI reflection to make method calls on Map in order to extract the values
-                
-                if (arrayRef != null)
-                {
+
+                if (arrayRef != null) {
                     ArrayReference arrayRefFinal = arrayRef;
                     // The test case object
                     ObjectReference testObject = (ObjectReference) arrayRef.getValue(arrayRef.length() - 1);
@@ -546,12 +505,10 @@ public class JdiDebugger extends Debugger
 
                         // last slot in array is test case object so it does not get touched here
                         // our iteration boundary is therefore one less than array length
-                        for (int i = 0; i < arrayRefFinal.length() - 1; i += 2)
-                        {
+                        for (int i = 0; i < arrayRefFinal.length() - 1; i += 2) {
                             String fieldName = ((StringReference) arrayRefFinal.getValue(i)).value();
                             Field testField = testObject.referenceType().fieldByName(fieldName);
-                            if (!testField.typeName().matches("int|double|float|short|boolean|byte|long|char|"))
-                            {
+                            if (!testField.typeName().matches("int|double|float|short|boolean|byte|long|char|")) {
                                 returnMap.put(fieldName, JdiObject
                                         .getDebuggerObject((ObjectReference) arrayRefFinal.getValue(i + 1),
                                                 testField, jdiTestObject));
@@ -561,16 +518,13 @@ public class JdiDebugger extends Debugger
                         // obj)
                         return returnMap;
                     };
-                }
-                else
+                } else
                     return () -> Collections.emptyMap();
             }
-        }
-        catch (InvocationException e) {
+        } catch (InvocationException e) {
             // what to do here??
             return () -> null;
-        }
-        catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedException e) {
             return () -> null;
         }
 
@@ -578,54 +532,43 @@ public class JdiDebugger extends Debugger
 
     /**
      * Run a single test method or all test methods in a test class and return the result.
-     * 
-     * @param className
-     *            the fully qualified name of the class
-     * @param methodName
-     *            the name of the method, it can be null if the test runs on all test methods
+     *
+     * @param className  the fully qualified name of the class
+     * @param methodName the name of the method, it can be null if the test runs on all test methods
      * @return a TestResultsWithRunTime object that wraps the test results and test's runtime
      */
     @Override
     @OnThread(Tag.Any)
-    public TestResultsWithRunTime runTestMethod(String className, String methodName) 
-    {
+    public TestResultsWithRunTime runTestMethod(String className, String methodName) {
         ArrayReference arrayRef = null;
         List<DebuggerTestResult> results = new ArrayList<>();
         TestResultsWithRunTime testResultsWithRunTime = new TestResultsWithRunTime();
-        try
-        {
+        try {
             VMReference vmr = getVM();
-            synchronized (serverThreadLock)
-            {
-                if (vmr != null)
-                {
+            synchronized (serverThreadLock) {
+                if (vmr != null) {
                     arrayRef = (ArrayReference) vmr.invokeRunTest(className, methodName);
                 }
-                
-                if (arrayRef == null || arrayRef.length() == 0)
-                {
+
+                if (arrayRef == null || arrayRef.length() == 0) {
                     results.add(new JdiTestResultError(className, methodName, "VM returned unknown result",
                             "", null, 0));
                     testResultsWithRunTime.setResults(results);
                     testResultsWithRunTime.setTotalRunTime(0);
                     return testResultsWithRunTime;
                 }
-                
+
                 int runTimeMs = Integer.parseInt(((StringReference) arrayRef.getValue(0)).value());
                 int i = 1;
-                while (i < arrayRef.length())
-                {
-                    
+                while (i < arrayRef.length()) {
+
                     String actualMethodName = ((StringReference) arrayRef.getValue(i)).value();
                     String failureType = ((StringReference) arrayRef.getValue(i + 7)).value();
-                    
-                    if (failureType.equals("success"))
-                    {
+
+                    if (failureType.equals("success")) {
                         results.add(new JdiTestResult(className, actualMethodName, 0));
-                        
-                    }
-                    else
-                    {
+
+                    } else {
                         String exMsg = ((StringReference) arrayRef.getValue(i)).value();
                         String traceMsg = ((StringReference) arrayRef.getValue(i + 2)).value();
                         String failureClass = ((StringReference) arrayRef.getValue(i + 3)).value();
@@ -635,13 +578,10 @@ public class JdiDebugger extends Debugger
                         SourceLocation failPoint = new SourceLocation(failureClass, failureSource,
                                 failureMethod, lineNo);
 
-                        if (failureType.equals("failure"))
-                        {
+                        if (failureType.equals("failure")) {
                             results.add(new JdiTestResultFailure(className, actualMethodName, exMsg, traceMsg,
                                     failPoint, 0));
-                        }
-                        else
-                        {
+                        } else {
                             results.add(new JdiTestResultError(className, actualMethodName, exMsg, traceMsg,
                                     failPoint, 0));
                         }
@@ -653,18 +593,14 @@ public class JdiDebugger extends Debugger
                 testResultsWithRunTime.setResults(results);
                 return testResultsWithRunTime;
             }
-        }
-        catch (InvocationException ie) 
-        {
+        } catch (InvocationException ie) {
             // what to do here??
             results.add(new JdiTestResultError(className, methodName, "Internal invocation error",
-                   "", null, 0));
+                    "", null, 0));
             testResultsWithRunTime.setResults(results);
             testResultsWithRunTime.setTotalRunTime(0);
             return testResultsWithRunTime;
-        } 
-        catch (VMDisconnectedException vmde)
-        {
+        } catch (VMDisconnectedException vmde) {
             results.add(new JdiTestResultError(className, null, "VM restarted", "",
                     null, 0));
             testResultsWithRunTime.setResults(results);
@@ -672,68 +608,58 @@ public class JdiDebugger extends Debugger
             return testResultsWithRunTime;
         }
     }
-    
+
     /**
      * Dispose all top level windows in the remote machine.
      */
     @Override
     @OnThread(Tag.Any)
-    public void disposeWindows()
-    {
+    public void disposeWindows() {
         VMReference vmr = getVMNoWait();
 
         try {
             synchronized (serverThreadLock) {
-            if (vmr != null)
-                vmr.disposeWindows();
+                if (vmr != null)
+                    vmr.disposeWindows();
             }
+        } catch (VMDisconnectedException e) {
         }
-        catch (VMDisconnectedException e) {}
     }
 
     /**
      * "Start" a class (i.e. invoke its main method)
-     * 
-     * @param classname
-     *            the class to start
+     *
+     * @param classname the class to start
      */
     @Override
     @OnThread(Tag.Any)
     public DebuggerResult runClassMain(String className)
-        throws ClassNotFoundException
-    {
+            throws ClassNotFoundException {
         VMReference vmr = getVM();
         synchronized (serverThreadLock) {
             if (vmr != null) {
                 return vmr.runShellClass(className);
-            }
-            else {
+            } else {
                 return new DebuggerResult(Debugger.TERMINATED);
             }
         }
     }
 
     @Override
-    public CompletableFuture<FXPlatformSupplier<DebuggerResult>> launchFXApp(String className)
-    {
+    public CompletableFuture<FXPlatformSupplier<DebuggerResult>> launchFXApp(String className) {
         CompletableFuture<FXPlatformSupplier<DebuggerResult>> result = new CompletableFuture<>();
         // Can't use lambda as need self-reference:
-        BlueJEventListener listener = new BlueJEventListener()
-        {
+        BlueJEventListener listener = new BlueJEventListener() {
             @Override
-            public void blueJEvent(int eventId, Object arg, Project prj)
-            {
-                if (eventId == BlueJEvent.CREATE_VM_DONE)
-                {
+            public void blueJEvent(int eventId, Object arg, Project prj) {
+                if (eventId == BlueJEvent.CREATE_VM_DONE) {
                     BlueJEvent.removeListener(this);
                     VMReference vmr = getVM();
                     if (vmr != null) {
                         synchronized (serverThreadLock) {
                             result.complete(vmr.launchFXApp(className));
                         }
-                    }
-                    else
-                    {
+                    } else {
                         result.complete(() -> new DebuggerResult(Debugger.TERMINATED));
                     }
                 }
@@ -745,76 +671,70 @@ public class JdiDebugger extends Debugger
         // Once it is ready, the listener above will run
         return result;
     }
-    
+
     /**
      * Construct a class instance using the default constructor.
      */
     @Override
     @OnThread(Tag.Any)
-    public DebuggerResult instantiateClass(String className)
-    {
+    public DebuggerResult instantiateClass(String className) {
         VMReference vmr = getVM();
         if (vmr != null) {
             synchronized (serverThreadLock) {
                 return vmr.instantiateClass(className);
             }
-        }
-        else {
+        } else {
             return new DebuggerResult(Debugger.TERMINATED);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see bluej.debugger.Debugger#instantiateClass(java.lang.String, java.lang.String[], bluej.debugger.DebuggerObject[])
      */
     @Override
     @OnThread(Tag.Any)
-    public DebuggerResult instantiateClass(String className, String[] paramTypes, DebuggerObject[] args)
-    {
+    public DebuggerResult instantiateClass(String className, String[] paramTypes, DebuggerObject[] args) {
         // If there are no arguments, use the default constructor
         if (paramTypes == null || args == null || paramTypes.length == 0 || args.length == 0) {
             return instantiateClass(className);
         }
-        
+
         VMReference vmr = getVM();
         if (vmr != null) {
             // Convert the args array from DebuggerObject[] to ObjectReference[]
-            ObjectReference [] orArgs = new ObjectReference[args.length];
+            ObjectReference[] orArgs = new ObjectReference[args.length];
             for (int i = 0; i < args.length; i++) {
                 JdiObject jdiObject = (JdiObject) args[i];
-                orArgs[i] = jdiObject.getObjectReference(); 
+                orArgs[i] = jdiObject.getObjectReference();
             }
-            
+
             synchronized (serverThreadLock) {
                 return vmr.instantiateClass(className, paramTypes, orArgs);
             }
-        }
-        else {
+        } else {
             return new DebuggerResult(Debugger.TERMINATED);
         }
     }
-    
+
     /*
      * @see bluej.debugger.Debugger#getClass(java.lang.String, boolean)
      */
     @Override
     @OnThread(Tag.Any)
     public FXPlatformSupplier<DebuggerClass> getClass(String className, boolean initialize)
-        throws ClassNotFoundException
-    {
+            throws ClassNotFoundException {
         VMReference vmr = getVM();
         if (vmr == null) {
             throw new ClassNotFoundException("Virtual machine terminated.");
         }
-            
+
         ReferenceType classMirror;
         synchronized (serverThreadLock) {
             // machineState can only be changed *to* RUNNING while the serverThreadLock is held, so
             // this check is safe:
             if (initialize && machineState != Debugger.RUNNING) {
                 classMirror = vmr.loadInitClass(className);
-            }
-            else {
+            } else {
                 classMirror = vmr.loadClass(className);
             }
         }
@@ -823,56 +743,53 @@ public class JdiDebugger extends Debugger
     }
 
     // ----- end server thread methods -----
-    
+
     /**
      * notify all listeners that have registered interest for
      * notification on this event type.
      */
     @OnThread(Tag.VMEventHandler)
-    private void fireTargetEvent(DebuggerEvent ce, boolean skipUpdate)
-    {
+    private void fireTargetEvent(DebuggerEvent ce, boolean skipUpdate) {
         // Guaranteed to return a non-null array
         DebuggerListener[] listeners = getListeners();
         // Process the listeners last to first, notifying
         // those that are interested in this event
-        for (int i = listeners.length - 1; i >= 0; i --) {
+        for (int i = listeners.length - 1; i >= 0; i--) {
             listeners[i].processDebuggerEvent(ce, skipUpdate);
         }
     }
 
     @OnThread(Tag.VMEventHandler)
-    void raiseStateChangeEvent(int newState)
-    {
+    void raiseStateChangeEvent(int newState) {
         // It might look this method should be synchronized, but it shouldn't,
         // because state change is effectively serialized by VMEventHandler (except
         // in some cases where it is known that no VM is running).
-        
+
         if (newState != machineState) {
-            
+
             // Going from SUSPENDED to any other state must ass through RUNNING
             if (machineState == SUSPENDED && newState != RUNNING) {
                 doStateChange(SUSPENDED, RUNNING);
             }
-            
+
             // If going from RUNNING state to NOTREADY state, first pass
             // through IDLE state
             if (machineState == RUNNING && newState == NOTREADY) {
                 doStateChange(RUNNING, IDLE);
             }
-            
+
             doStateChange(machineState, newState);
         }
     }
 
     @OnThread(Tag.VMEventHandler)
-    private void doStateChange(int oldState, int newState)
-    {
+    private void doStateChange(int oldState, int newState) {
         DebuggerListener[] ll;
         synchronized (listenerList) {
             ll = listenerList.toArray(new DebuggerListener[listenerList.size()]);
             machineState = newState;
         }
-        
+
         for (DebuggerListener l : ll) {
             l.processDebuggerEvent(new DebuggerEvent(this, DebuggerEvent.DEBUGGER_STATECHANGED,
                     oldState, newState), false);
@@ -883,18 +800,13 @@ public class JdiDebugger extends Debugger
 
     /**
      * Set/clear a breakpoint at a specified line in a class.
-     * 
-     * @param className
-     *            The class in which to set/clear the breakpoint.
-     * @param line
-     *            The line number of the breakpoint.
-     * @param set
-     *            True to set, false to clear a breakpoint.
-     * 
+     *
+     * @param className The class in which to set/clear the breakpoint.
+     * @param line      The line number of the breakpoint.
+     * @param set       True to set, false to clear a breakpoint.
      * @return null if there was no problem, or an error string
      */
-    public String toggleBreakpoint(String className, int line, boolean set, Map<String, String> properties)
-    {
+    public String toggleBreakpoint(String className, int line, boolean set, Map<String, String> properties) {
         // Debug.message("[toggleBreakpoint]: " + className + " line " + line);
 
         VMReference vmr = getVM();
@@ -902,71 +814,60 @@ public class JdiDebugger extends Debugger
             if (vmr != null) {
                 if (set) {
                     return vmr.setBreakpoint(className, line, properties);
-                }
-                else {
+                } else {
                     return vmr.clearBreakpoint(className, line);
                 }
-            }
-            else {
+            } else {
                 return "VM terminated.";
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Debug.reportError("breakpoint error: " + e);
             e.printStackTrace(System.out);
             return Config.getString("debugger.jdiDebugger.internalErrorMsg");
         }
     }
-    
+
     /*
      * @see bluej.debugger.Debugger#toggleBreakpoint(java.lang.String, java.lang.String, boolean, java.util.Map)
      */
     @OnThread(Tag.Any)
-    public String toggleBreakpoint(String className, String method, boolean set, Map<String, String> properties)
-    {
+    public String toggleBreakpoint(String className, String method, boolean set, Map<String, String> properties) {
         VMReference vmr = getVM();
         try {
             if (vmr != null) {
                 if (set) {
                     return vmr.setBreakpoint(className, method, properties);
-                }
-                else {
+                } else {
                     return vmr.clearBreakpoint(className, method);
                 }
-            }
-            else {
+            } else {
                 return "VM terminated.";
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Debug.reportError("breakpoint error: " + e);
             e.printStackTrace(System.out);
             return Config.getString("debugger.jdiDebugger.internalErrorMsg");
         }
     }
-    
+
     /*
      * @see bluej.debugger.Debugger#toggleBreakpoint(bluej.debugger.DebuggerClass, java.lang.String, boolean, java.util.Map)
      */
     @OnThread(Tag.Any)
-    public String toggleBreakpoint(DebuggerClass debuggerClass, String method, boolean set, Map<String, String> properties)
-    {
+    public String toggleBreakpoint(DebuggerClass debuggerClass, String method, boolean set, Map<String, String> properties) {
         VMReference vmr = getVM();
         try {
             if (vmr != null) {
                 JdiClass jdiClass = (JdiClass) debuggerClass;
                 if (set) {
                     return vmr.setBreakpoint(jdiClass.remoteClass, method, properties);
-                }
-                else {
+                } else {
                     return vmr.clearBreakpoint(jdiClass.remoteClass, method);
                 }
-            }
-            else {
+            } else {
                 return "VM terminated.";
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Debug.reportError("breakpoint error: " + e);
             e.printStackTrace(System.out);
             return Config.getString("debugger.jdiDebugger.internalErrorMsg");
@@ -977,13 +878,12 @@ public class JdiDebugger extends Debugger
     /**
      * Called by VMReference when a breakpoint/step is encountered in the
      * debugger VM.
-     * 
-     * @param tr   the thread in which code hit the breakpoint/step
-     * @param bp   true for a breakpoint, false for a step
+     *
+     * @param tr the thread in which code hit the breakpoint/step
+     * @param bp true for a breakpoint, false for a step
      */
     @OnThread(Tag.VMEventHandler)
-    public void breakpoint(final ThreadReference tr, final int debuggerEventType, boolean skipUpdate, DebuggerEvent.BreakpointProperties props)
-    {
+    public void breakpoint(final ThreadReference tr, final int debuggerEventType, boolean skipUpdate, DebuggerEvent.BreakpointProperties props) {
         final JdiThread breakThread = allThreads.find(tr);
         if (false == skipUpdate) {
             threadListener.threadStateChanged(breakThread, true);
@@ -991,26 +891,25 @@ public class JdiDebugger extends Debugger
 
         fireTargetEvent(new DebuggerEvent(this, debuggerEventType, breakThread, props), skipUpdate);
     }
-    
+
     /**
      * Screen a breakpoint/step event through interested listeners.
-     * 
-     * @param thread  The thread which hit the breakpoint/step event.
-     * @param breakpoint  True if this is a breakpoint; false if a step. Note that both can occur
-     *                    simultaneously, in which case both are screened individually.
-     * @param props   The breakpoint properties (if any).
-     * @return   true if the event is screened, that is, the GUI should not be updated because the
-     *                result of the event is temporary.
+     *
+     * @param thread     The thread which hit the breakpoint/step event.
+     * @param breakpoint True if this is a breakpoint; false if a step. Note that both can occur
+     *                   simultaneously, in which case both are screened individually.
+     * @param props      The breakpoint properties (if any).
+     * @return true if the event is screened, that is, the GUI should not be updated because the
+     * result of the event is temporary.
      */
     @OnThread(Tag.VMEventHandler)
     public boolean screenBreakpoint(ThreadReference thread, int debuggerEventType,
-            DebuggerEvent.BreakpointProperties props)
-    {
+                                    DebuggerEvent.BreakpointProperties props) {
         JdiThread breakThread = allThreads.find(thread);
         breakThread.stopped();
-        
+
         DebuggerEvent event = new DebuggerEvent(this, debuggerEventType, breakThread, props);
-        
+
         boolean done = false;
         // Guaranteed to return a non-null array
         DebuggerListener[] listeners = getListeners();
@@ -1029,12 +928,11 @@ public class JdiDebugger extends Debugger
      * follows a machine 'exit' event.
      */
     @OnThread(Tag.VMEventHandler)
-    synchronized void vmDisconnect()
-    {
+    synchronized void vmDisconnect() {
         if (autoRestart) {
-            
+
             allThreads.clear();
-            
+
             // It's possible to receive vmDisconnect before we're even aware that
             // we're running. We can ignore it in that case. Synchronization insures
             // that valid disconnect events are never lost.
@@ -1048,14 +946,14 @@ public class JdiDebugger extends Debugger
                     machineLoader = new MachineLoaderThread();
                 }
                 selfRestart = true;
-                
+
                 vmRef.closeIO();
                 vmRef = null;
-                
+
                 raiseStateChangeEvent(Debugger.NOTREADY);
 
                 launch();
-                
+
                 usedNames.clear();
                 threadListener.clearThreads();
             }
@@ -1064,13 +962,12 @@ public class JdiDebugger extends Debugger
 
     /**
      * Called by VMReference when a thread is started in the debugger VM.
-     * 
+     * <p>
      * Use this event to keep our thread tree model up to date. Currently we
      * ignore the thread group and construct all threads at the same level.
      */
     @OnThread(Tag.VMEventHandler)
-    void threadStart(final ThreadReference tr)
-    {
+    void threadStart(final ThreadReference tr) {
         final JdiThread newThread = new JdiThread(this, tr);
         allThreads.add(newThread);
         threadListener.addThread(newThread);
@@ -1078,12 +975,11 @@ public class JdiDebugger extends Debugger
 
     /**
      * Called by VMReference when a thread dies in the debugger VM.
-     * 
+     * <p>
      * Use this event to keep our thread tree model up to date.
      */
     @OnThread(Tag.VMEventHandler)
-    void threadDeath(final ThreadReference tr)
-    {
+    void threadDeath(final ThreadReference tr) {
         JdiThread jdiThread = allThreads.removeThread(tr);
         if (jdiThread != null)
             threadListener.removeThread(jdiThread);
@@ -1094,29 +990,26 @@ public class JdiDebugger extends Debugger
     /**
      * Get the VM, waiting for it to finish loading first (if necessary). In
      * rare cases, when the project has been closed, this may return null.
-     * 
+     *
      * @return the VM reference.
      */
     @OnThread(Tag.Any)
-    private VMReference getVM()
-    {
+    private VMReference getVM() {
         MachineLoaderThread mlt = machineLoader;
         if (mlt == null) {
             return null;
-        }
-        else {
+        } else {
             return mlt.getVM();
         }
     }
-    
+
     /**
      * Get the VM if available, but don't wait for it (to finish loading).
-     * 
-     * @return  The VMReference or null if it's not available.
+     *
+     * @return The VMReference or null if it's not available.
      */
     @OnThread(Tag.Any)
-    private VMReference getVMNoWait()
-    {
+    private VMReference getVMNoWait() {
         // Store a single value of machineLoader in a local variable to avoid
         // synchronization issues.
         MachineLoaderThread mlt = machineLoader;
@@ -1129,58 +1022,53 @@ public class JdiDebugger extends Debugger
     /**
      * A thread which loads a new instance of the debugger.
      */
-    class MachineLoaderThread extends Thread
-    {
-        @OnThread(Tag.Any)
-        MachineLoaderThread()
-        {}
+    class MachineLoaderThread extends Thread {
+        @OnThread(Tag.Any) MachineLoaderThread() {
+        }
 
         @OnThread(value = Tag.Worker, ignoreParent = true)
-        public void run()
-        {
+        public void run() {
             try {
                 VMReference newVM = new VMReference(JdiDebugger.this, terminal, startingDirectory, libraries);
 
                 BPClassLoader lastLoader;
-                synchronized(JdiDebugger.this) {
-                    if (! autoRestart) {
+                synchronized (JdiDebugger.this) {
+                    if (!autoRestart) {
                         newVM.close();
                         JdiDebugger.this.notifyAll();
                         return;
                     }
                     lastLoader = lastProjectClassLoader;
                 }
-                
+
                 // Do this outside of the synchronized blocks, mainly to avoid holding
                 // the monitor unnecessarily:
                 newVM.newClassLoader(lastLoader.getURLs());
                 newVM.setRunOnThread(JdiDebugger.this.runOnThread);
 
-                synchronized(JdiDebugger.this) {
+                synchronized (JdiDebugger.this) {
                     vmRef = newVM;
                 }
-            }
-            catch (JdiVmCreationException e) {
+            } catch (JdiVmCreationException e) {
                 launchFailed();
             }
 
             // wake any internal getVM() calls that
             // are waiting for us to finish
-            synchronized(JdiDebugger.this) {
+            synchronized (JdiDebugger.this) {
                 JdiDebugger.this.notifyAll();
             }
         }
 
         @OnThread(Tag.Any)
-        @SuppressWarnings("threadchecker") // In case of failure, we have to run from this thread as VMEventHandler hasn't run.
-        private void launchFailed()
-        {
+        @SuppressWarnings("threadchecker")
+        // In case of failure, we have to run from this thread as VMEventHandler hasn't run.
+        private void launchFailed() {
             raiseStateChangeEvent(Debugger.LAUNCH_FAILED);
         }
 
         @OnThread(Tag.Any)
-        private VMReference getVM()
-        {
+        private VMReference getVM() {
             synchronized (JdiDebugger.this) {
                 // We can't just rely on synchronization, since it's possible that
                 // getVM() may creep in before run() begins execution. That's why
@@ -1188,21 +1076,20 @@ public class JdiDebugger extends Debugger
                 while (vmRef == null && autoRestart) {
                     try {
                         JdiDebugger.this.wait();
+                    } catch (InterruptedException e) {
                     }
-                    catch (InterruptedException e) {}
                 }
-                    
+
                 return vmRef;
             }
         }
-        
+
         /**
          * Get the VM reference, without waiting for it to start. If no VM has started,
          * this returns null.
          */
         @OnThread(Tag.Any)
-        private VMReference getVMNoWait()
-        {
+        private VMReference getVMNoWait() {
             synchronized (JdiDebugger.this) {
                 return vmRef;
             }
@@ -1213,28 +1100,25 @@ public class JdiDebugger extends Debugger
      * Emit an event (to listeners) due to a thread being halted.
      */
     @OnThread(Tag.Any)
-    void emitThreadHaltEvent(JdiThread thread)
-    {
+    void emitThreadHaltEvent(JdiThread thread) {
         vmRef.emitThreadEvent(thread, true);
     }
-    
+
     /**
      * Emit an event (to listeners) due to a thread being resumed.
      */
     @OnThread(Tag.Any)
-    void emitThreadResumedEvent(JdiThread thread)
-    {
+    void emitThreadResumedEvent(JdiThread thread) {
         vmRef.emitThreadEvent(thread, false);
     }
-    
+
     /**
      * A thread has become halted; inform listeners.
      */
     @OnThread(Tag.VMEventHandler)
-    void threadHalted(final JdiThread thread)
-    {
+    void threadHalted(final JdiThread thread) {
         DebuggerEvent event = new DebuggerEvent(this, DebuggerEvent.THREAD_HALT_UNKNOWN, thread, null);
-        
+
         boolean skipUpdate = false;
         // Guaranteed to return a non-null array
         DebuggerListener[] listeners = getListeners();
@@ -1243,35 +1127,34 @@ public class JdiDebugger extends Debugger
         for (int i = listeners.length - 1; i >= 0; i--) {
             skipUpdate |= listeners[i].examineDebuggerEvent(event);
         }
-        
-        if (! skipUpdate) {
+
+        if (!skipUpdate) {
             threadListener.threadStateChanged(thread, false);
         }
-        
+
         fireTargetEvent(event, skipUpdate);
     }
-    
+
     /**
      * A thread has been resumed; inform listeners.
      */
     @OnThread(Tag.VMEventHandler)
-    void threadResumed(final JdiThread thread)
-    {
+    void threadResumed(final JdiThread thread) {
         DebuggerEvent event = new DebuggerEvent(this, DebuggerEvent.THREAD_CONTINUE, thread, null);
-        
+
         boolean skipUpdate = false;
         // Guaranteed to return a non-null array
-        DebuggerListener [] listeners = getListeners();
+        DebuggerListener[] listeners = getListeners();
         // Process the listeners last to first, notifying
         // those that are interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             skipUpdate |= listeners[i].examineDebuggerEvent(event);
         }
 
-        if (! skipUpdate) {
+        if (!skipUpdate) {
             threadListener.threadStateChanged(thread, false);
         }
-        
+
         fireTargetEvent(event, skipUpdate);
     }
 
@@ -1279,33 +1162,26 @@ public class JdiDebugger extends Debugger
      * Finds the JDI thread corresponding to the given thread reference.
      */
     @OnThread(Tag.VMEventHandler)
-    public JdiThread findThread(ThreadReference thread)
-    {
+    public JdiThread findThread(ThreadReference thread) {
         return allThreads.find(thread);
     }
 
     @Override
-    public synchronized void setRunOnThread(RunOnThread runOnThread)
-    {
+    public synchronized void setRunOnThread(RunOnThread runOnThread) {
         this.runOnThread = runOnThread;
         // This method may be run before the VM launch, so check if VM is running before attempting to access it:
-        if (vmRef != null)
-        {
+        if (vmRef != null) {
             getVM().setRunOnThread(runOnThread);
         }
     }
 
     @OnThread(Tag.Any)
     @Override
-    public void runOnEventHandler(EventHandlerRunnable runnable)
-    {
+    public void runOnEventHandler(EventHandlerRunnable runnable) {
         VMReference vmReference = getVMNoWait();
-        if (vmReference != null)
-        {
+        if (vmReference != null) {
             vmReference.runOnEventHandler(runnable);
-        }
-        else
-        {
+        } else {
             Debug.printCallStack("Could not run EventHandlerRunnable as VM not initialised");
         }
     }

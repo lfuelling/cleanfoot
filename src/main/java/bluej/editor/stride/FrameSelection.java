@@ -21,37 +21,19 @@
  */
 package bluej.editor.stride;
 
-import bluej.stride.generic.ExtensionDescription;
+import bluej.stride.generic.*;
 import bluej.stride.generic.ExtensionDescription.ExtensionSource;
-import bluej.stride.generic.Frame;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.InteractionManager;
 import bluej.stride.operations.AbstractOperation;
 import bluej.stride.operations.AbstractOperation.ItemLabel;
 import bluej.stride.operations.FrameOperation;
 import bluej.stride.slots.EditableSlot.MenuItems;
 import bluej.stride.slots.EditableSlot.SortedMenuItem;
 import bluej.stride.slots.EditableSlot.TopLevelMenu;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXPlatformRunnable;
 import bluej.utility.javafx.FXRunnable;
 import bluej.utility.javafx.JavaFXUtil;
 import bluej.utility.javafx.MultiListener;
-import bluej.utility.Utility;
-import threadchecker.OnThread;
-import threadchecker.Tag;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -65,6 +47,13 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
+import threadchecker.OnThread;
+import threadchecker.Tag;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A class for keeping track of the current frame selection.  A frame selection is
@@ -72,8 +61,7 @@ import javafx.scene.shape.FillRule;
  * by a rectangle around the frames.
  */
 @OnThread(Tag.FXPlatform)
-public class FrameSelection
-{
+public class FrameSelection {
     @OnThread(Tag.FXPlatform)
     private final ObservableList<Frame> selection = FXCollections.observableList(new ArrayList<>());
     private final Canvas selectionHighlight = new Canvas();
@@ -82,8 +70,7 @@ public class FrameSelection
     private boolean pullUpPreview;
 
     @OnThread(Tag.FX)
-    public FrameSelection(InteractionManager editor)
-    {
+    public FrameSelection(InteractionManager editor) {
         this.editor = editor;
         selectionHighlight.setMouseTransparent(true);
         deletePreview = false;
@@ -110,11 +97,9 @@ public class FrameSelection
      * Recalculates position of selection rectangle (or removes it if selection has become empty)
      */
     @OnThread(Tag.FXPlatform)
-    private void redraw()
-    {
+    private void redraw() {
         editor.getCodeOverlayPane().removeOverlay(selectionHighlight);
-        if (!selection.isEmpty())
-        {
+        if (!selection.isEmpty()) {
             // Re-add each time as position may have changed:
             editor.getCodeOverlayPane().addOverlay(selectionHighlight, selection.get(0).getNode(), null, null);
             Node topNode = selection.get(0).getNode();
@@ -125,23 +110,19 @@ public class FrameSelection
             GraphicsContext gc = selectionHighlight.getGraphicsContext2D();
             gc.clearRect(0, 0, selectionHighlight.getWidth(), selectionHighlight.getHeight());
 
-            if (deletePreview || pullUpPreview)
-            {
+            if (deletePreview || pullUpPreview) {
                 gc.setFill(new Color(1, 0.4, 0.4, 0.7));
 
-                if (pullUpPreview)
-                {
+                if (pullUpPreview) {
                     // This fill rule means that we can have one path for the outer bounds of the frame,
                     // then several bounds for the inner canvases, and then the frame will be filled, except for
                     // the inner canvases.
                     gc.setFillRule(FillRule.EVEN_ODD);
-                    for (Frame f : selection)
-                    {
+                    for (Frame f : selection) {
                         gc.beginPath();
                         // We first draw a path for the outer frame:
                         roundedRectPath(gc, 0.5, 0.5, selectionHighlight.getWidth() - 1, selectionHighlight.getHeight() - 1, 7);
-                        for (FrameCanvas c : Utility.iterableStream(f.getCanvases()))
-                        {
+                        for (FrameCanvas c : Utility.iterableStream(f.getCanvases())) {
                             Bounds sceneBounds = c.getContentSceneBounds();
                             Bounds b = selectionHighlight.sceneToLocal(sceneBounds);
                             // We then draw paths for each inner canvas:
@@ -151,9 +132,7 @@ public class FrameSelection
                         gc.fill();
                         gc.closePath();
                     }
-                }
-                else
-                {
+                } else {
                     gc.fillRoundRect(0.5, 0.5, selectionHighlight.getWidth() - 1, selectionHighlight.getHeight() - 1, 7, 7);
                 }
             }
@@ -167,8 +146,7 @@ public class FrameSelection
     /**
      * Draws a rounded rectangle path with the given extents and corner radius:
      */
-    private void roundedRectPath(GraphicsContext gc, double minX, double minY, double width, double height, double arc)
-    {
+    private void roundedRectPath(GraphicsContext gc, double minX, double minY, double width, double height, double arc) {
         gc.moveTo(minX + arc, minY);
         // top and top-right:
         gc.lineTo(minX + width - arc, minY);
@@ -186,20 +164,17 @@ public class FrameSelection
     }
 
     @OnThread(Tag.FXPlatform)
-    public void clear()
-    {
+    public void clear() {
         selection.clear();
     }
 
     @OnThread(Tag.FXPlatform)
-    public boolean contains(Frame f)
-    {
+    public boolean contains(Frame f) {
         return selection.contains(f);
     }
 
     @OnThread(Tag.FXPlatform)
-    public List<Frame> getSelected()
-    {
+    public List<Frame> getSelected() {
         return Collections.unmodifiableList(selection);
     }
 
@@ -208,20 +183,15 @@ public class FrameSelection
      * Either add or remove from selection
      */
     @OnThread(Tag.FXPlatform)
-    public void toggleSelectDown(Frame f)
-    {
-        if (f == null)
-        {
+    public void toggleSelectDown(Frame f) {
+        if (f == null) {
             return;
         }
-        
-        if (selection.size() > 0 && selection.get(0) == f)
-        {
+
+        if (selection.size() > 0 && selection.get(0) == f) {
             // We are doing shift-down while at top of selection; remove top item:
             selection.remove(0);
-        }
-        else
-        {
+        } else {
             // We are doing shift-down at end of selection; add to end:
             selection.add(f);
         }
@@ -232,19 +202,15 @@ public class FrameSelection
      * Either add or remove from selection
      */
     @OnThread(Tag.FXPlatform)
-    public void toggleSelectUp(Frame f)
-    {
-        if (f == null)
-        {
+    public void toggleSelectUp(Frame f) {
+        if (f == null) {
             return;
         }
-        
-        if (selection.size() > 0 && selection.get(selection.size() - 1) == f)
-        {
+
+        if (selection.size() > 0 && selection.get(selection.size() - 1) == f) {
             // We are doing shift-up while at bottom of selection; remove last item:
             selection.remove(selection.size() - 1);
-        }
-        else {
+        } else {
             // We are doing shift-up at top of selection; add to beginning:
             selection.add(0, f);
         }
@@ -254,12 +220,10 @@ public class FrameSelection
      * Gets the context menu items which are valid across the whole selection
      */
     @OnThread(Tag.FXPlatform)
-    public MenuItems getMenuItems(boolean contextMenu)
-    {
+    public MenuItems getMenuItems(boolean contextMenu) {
         if (selection.size() == 0) {
             return new MenuItems(FXCollections.observableArrayList());
-        }
-        else if (selection.size() == 1) {
+        } else if (selection.size() == 1) {
             // Everything appears as-is in a selection of size 1:
             return asMenuItems(selection.get(0).getContextOperations(), 0, contextMenu);
         }
@@ -291,13 +255,11 @@ public class FrameSelection
     /**
      * Gets the edit menu items for selected frames
      */
-    public Map<TopLevelMenu, MenuItems> getEditMenuItems(boolean contextMenu)
-    {
+    public Map<TopLevelMenu, MenuItems> getEditMenuItems(boolean contextMenu) {
         return Collections.singletonMap(TopLevelMenu.EDIT, getMenuItems(contextMenu));
     }
 
-    private static MenuItems asMenuItems(List<FrameOperation> originalOps, int depth, boolean contextMenu)
-    {
+    private static MenuItems asMenuItems(List<FrameOperation> originalOps, int depth, boolean contextMenu) {
         // Only keep ones that fit context menu flag:
         List<FrameOperation> ops = originalOps.stream().filter(op -> contextMenu || !op.onlyOnContextMenu()).collect(Collectors.toList());
 
@@ -309,24 +271,22 @@ public class FrameSelection
             subMenu.textProperty().bind(subMenuName.getLabel());
             r.add(subMenuName.getOrder().item(subMenu));
         });
-        
+
         List<FrameOperation> opsAtRightLevel = ops.stream().filter(op -> op.getLabels().size() == depth + 1).collect(Collectors.toList());
 
         Map<FrameOperation, SortedMenuItem> opsAtRightLevelItems = new IdentityHashMap<>();
 
-        for (FrameOperation op : opsAtRightLevel)
-        {
+        for (FrameOperation op : opsAtRightLevel) {
             SortedMenuItem item = op.getMenuItem(contextMenu);
             r.add(item);
             opsAtRightLevelItems.put(op, item);
         }
-        
+
         return new MenuItems(FXCollections.observableArrayList(r)) {
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void onShowing()
-            {
+            public void onShowing() {
                 opsAtRightLevel.forEach(op -> {
                     final SortedMenuItem sortedMenuItem = opsAtRightLevelItems.get(op);
                     final MenuItem item = sortedMenuItem.getItem();
@@ -337,8 +297,7 @@ public class FrameSelection
 
             @Override
             @OnThread(Tag.FXPlatform)
-            public void onHidden()
-            {
+            public void onHidden() {
                 opsAtRightLevel.forEach(op -> {
                     final SortedMenuItem sortedMenuItem = opsAtRightLevelItems.get(op);
                     final MenuItem item = sortedMenuItem.getItem();
@@ -346,12 +305,11 @@ public class FrameSelection
                         op.onMenuHidden((CustomMenuItem) item);
                 });
             }
-            
+
         };
     }
 
-    public ContextMenu getContextMenu()
-    {
+    public ContextMenu getContextMenu() {
         MenuItems ops = getMenuItems(true);
         if (ops.isEmpty()) {
             return null;
@@ -360,8 +318,7 @@ public class FrameSelection
     }
 
     @OnThread(Tag.FXPlatform)
-    public void setDeletePreview(boolean deletePreview)
-    {
+    public void setDeletePreview(boolean deletePreview) {
         //JavaFXUtil.selectStyleClass(deletePreview ? 1 : 0, selectionHighlight, "selection-highlight-normal", "selection-highlight-delete");
         this.deletePreview = deletePreview;
         this.pullUpPreview = false;
@@ -369,35 +326,30 @@ public class FrameSelection
     }
 
     @OnThread(Tag.FXPlatform)
-    public void setPullUpPreview(boolean pullUpPreview)
-    {
+    public void setPullUpPreview(boolean pullUpPreview) {
         this.deletePreview = false;
         this.pullUpPreview = pullUpPreview;
         redraw();
     }
 
     @OnThread(Tag.FXPlatform)
-    public void set(List<Frame> frames)
-    {
+    public void set(List<Frame> frames) {
         selection.clear();
         selection.setAll(frames);
     }
 
     @OnThread(Tag.FXPlatform)
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return selection.isEmpty();
     }
 
     @OnThread(Tag.FX)
-    public void addChangeListener(FXPlatformRunnable listener)
-    {
-        JavaFXUtil.runNowOrLater(() -> selection.addListener((ListChangeListener<Frame>)c -> listener.run()));
+    public void addChangeListener(FXPlatformRunnable listener) {
+        JavaFXUtil.runNowOrLater(() -> selection.addListener((ListChangeListener<Frame>) c -> listener.run()));
     }
 
     @OnThread(Tag.FXPlatform)
-    public FrameCursor getCursorAfter()
-    {
+    public FrameCursor getCursorAfter() {
         if (selection.size() == 0)
             return null;
         else
@@ -405,8 +357,7 @@ public class FrameSelection
     }
 
     @OnThread(Tag.FXPlatform)
-    public FrameCursor getCursorBefore()
-    {
+    public FrameCursor getCursorBefore() {
         if (selection.size() == 0)
             return null;
         else
@@ -414,16 +365,14 @@ public class FrameSelection
     }
 
     @OnThread(Tag.FXPlatform)
-    public boolean executeKey(FrameCursor cursor, final char key)
-    {
+    public boolean executeKey(FrameCursor cursor, final char key) {
         // If there is only on selected frame and it accept the key typed as an extension
         if (selection.size() == 1) {
             for (ExtensionDescription extension : selection.get(0).getAvailableExtensions(null, null)) {
                 if (extension.getShortcutKey() == key &&
                         (extension.validFor(ExtensionSource.AFTER)
-                        || extension.validFor(ExtensionSource.BEFORE)
-                        || extension.validFor(ExtensionSource.SELECTION)))
-                {
+                                || extension.validFor(ExtensionSource.BEFORE)
+                                || extension.validFor(ExtensionSource.SELECTION))) {
                     extension.activate();
                     return true;
                 }
@@ -455,13 +404,11 @@ public class FrameSelection
         return false;
     }
 
-    private Stream<Frame> getCanHaveEnabledState(boolean state)
-    {
+    private Stream<Frame> getCanHaveEnabledState(boolean state) {
         return selection.stream().filter(f -> f.canHaveEnabledState(state));
     }
 
-    private Stream<Frame> getNonIgnored()
-    {
+    private Stream<Frame> getNonIgnored() {
         return selection.stream().filter(f -> f.isEffectiveFrame());
     }
 }

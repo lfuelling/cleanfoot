@@ -21,46 +21,37 @@
  */
 package greenfoot.export.mygame;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.content.FileBody;
 
+import java.io.*;
+
 /**
  * A FormBodyPart which tracks upload progress.
- * 
+ *
  * @author Davin McCall
  */
-public class ProgressTrackingPart extends FormBodyPart
-{
+public class ProgressTrackingPart extends FormBodyPart {
     public ProgressTrackingPart(String partName, File file, MyGameClient listener)
-        throws FileNotFoundException
-    {
+            throws FileNotFoundException {
         super(partName, new ProgressTrackingFileBody(file, listener));
     }
-    
-    private static class ProgressTrackingFileBody extends FileBody
-    {
+
+    private static class ProgressTrackingFileBody extends FileBody {
         private final MyGameClient listener;
-        
-        public ProgressTrackingFileBody(File file, MyGameClient listener)
-        {
+
+        public ProgressTrackingFileBody(File file, MyGameClient listener) {
             super(file);
             this.listener = listener;
         }
-        
+
         @Override
-        public void writeTo(OutputStream output) throws IOException
-        {
+        public void writeTo(OutputStream output) throws IOException {
             if (getContentLength() == 0) {
                 return;
             }
 
-            byte [] buf = new byte[4096];
+            byte[] buf = new byte[4096];
             InputStream istream = getInputStream();
             try {
                 int len = istream.read(buf);
@@ -69,8 +60,7 @@ public class ProgressTrackingPart extends FormBodyPart
                     listener.progress(len);
                     len = istream.read(buf);
                 }
-            }
-            finally {
+            } finally {
                 istream.close();
             }
         }

@@ -32,10 +32,9 @@ package bluej.extensions;
 /*
  * Author: Damiano Bolla, University of Kent at Canterbury, 2003
  */
-public class CompilationNotStartedException extends ExtensionException 
-{
-  CompilationNotStartedException (String reason) {
-      super (reason);
-  }
+public class CompilationNotStartedException extends ExtensionException {
+    CompilationNotStartedException(String reason) {
+        super(reason);
+    }
 
 }

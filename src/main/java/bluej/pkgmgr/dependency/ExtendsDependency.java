@@ -23,7 +23,7 @@ package bluej.pkgmgr.dependency;
 
 import bluej.extensions.BDependency.Type;
 import bluej.pkgmgr.Package;
-import bluej.pkgmgr.target.*;
+import bluej.pkgmgr.target.DependentTarget;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
@@ -35,46 +35,38 @@ import java.util.Properties;
  * @author Michael Kolling
  */
 @OnThread(Tag.FXPlatform)
-public class ExtendsDependency extends Dependency
-{
+public class ExtendsDependency extends Dependency {
     @OnThread(Tag.Any)
-    public ExtendsDependency(Package pkg, DependentTarget from, DependentTarget to)
-    {
+    public ExtendsDependency(Package pkg, DependentTarget from, DependentTarget to) {
         super(pkg, from, to);
     }
 
-    public ExtendsDependency(Package pkg)
-    {
+    public ExtendsDependency(Package pkg) {
         this(pkg, null, null);
     }
 
     @OnThread(Tag.FXPlatform)
-    public void save(Properties props, String prefix)
-    {
+    public void save(Properties props, String prefix) {
         super.save(props, prefix);
         props.put(prefix + ".type", "ExtendsDependency");
     }
-    
-    public void remove()
-    {
+
+    public void remove() {
         pkg.removeArrow(this);
     }
-    
-    public boolean isResizable()
-    {
+
+    public boolean isResizable() {
         return false;
     }
-    
+
     @Override
     @OnThread(Tag.Any)
-    public Type getType()
-    {
+    public Type getType() {
         return Type.EXTENDS;
     }
 
     @Override
-    public boolean isRemovable()
-    {
+    public boolean isRemovable() {
         return true;
     }
 }

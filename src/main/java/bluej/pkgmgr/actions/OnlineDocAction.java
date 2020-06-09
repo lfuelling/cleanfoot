@@ -27,19 +27,16 @@ import bluej.pkgmgr.PkgMgrFrame;
 /**
  * BlueJ tutorial website - attempt to show it in a web browser. The URL
  * is taken from bluej.defs configuration file.
- * 
+ *
  * @author Davin McCall
  */
-final public class OnlineDocAction extends PkgMgrAction
-{
-    
-    public OnlineDocAction(PkgMgrFrame pmf)
-    {
+final public class OnlineDocAction extends PkgMgrAction {
+
+    public OnlineDocAction(PkgMgrFrame pmf) {
         super(pmf, "menu.help.onlinedoc");
     }
-    
-    public void actionPerformed(PkgMgrFrame pmf)
-    {
+
+    public void actionPerformed(PkgMgrFrame pmf) {
         pmf.menuCall();
         pmf.showWebPage(Config.getPropString("bluej.url.onlinedoc"));
     }

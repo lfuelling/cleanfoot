@@ -21,54 +21,45 @@
  */
 package bluej.pkgmgr;
 
-import threadchecker.OnThread;
-import threadchecker.Tag;
 import bluej.debugger.gentype.Reflective;
-import bluej.parser.entity.EntityResolver;
-import bluej.parser.entity.JavaEntity;
-import bluej.parser.entity.PackageEntity;
-import bluej.parser.entity.PackageOrClass;
-import bluej.parser.entity.TypeEntity;
+import bluej.parser.entity.*;
 import bluej.pkgmgr.target.ClassTarget;
 import bluej.pkgmgr.target.Target;
+import threadchecker.OnThread;
+import threadchecker.Tag;
 
 /**
  * Resolve project entities.
- * 
+ *
  * @author Davin McCall
  */
 @OnThread(value = Tag.FXPlatform, ignoreParent = true)
-public class ProjectEntityResolver implements EntityResolver
-{
+public class ProjectEntityResolver implements EntityResolver {
     private final Project project;
-    
+
     /**
      * Construct a ProjectEntityResolver for the given project.
      */
-    public ProjectEntityResolver(Project project)
-    {
+    public ProjectEntityResolver(Project project) {
         this.project = project;
     }
-    
-    public JavaEntity getValueEntity(String name, Reflective querySource)
-    {
+
+    public JavaEntity getValueEntity(String name, Reflective querySource) {
         return resolvePackageOrClass(name, querySource);
     }
 
-    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource)
-    {
+    public PackageOrClass resolvePackageOrClass(String name, Reflective querySource) {
         // Try in java.lang
         Class<?> cl = project.loadClass("java.lang." + name);
         if (cl != null) {
             return new TypeEntity(cl);
         }
-        
+
         // Have to assume it's a package
         return new PackageEntity(name, this);
     }
 
-    public TypeEntity resolveQualifiedClass(String name)
-    {
+    public TypeEntity resolveQualifiedClass(String name) {
         int lastDot = name.lastIndexOf('.');
         String pkgName = lastDot != -1 ? name.substring(0, lastDot) : "";
         String baseName = name.substring(lastDot + 1);
@@ -89,7 +80,7 @@ public class ProjectEntityResolver implements EntityResolver
         if (cl != null) {
             return new TypeEntity(cl);
         }
-        
+
         return null;
     }
 

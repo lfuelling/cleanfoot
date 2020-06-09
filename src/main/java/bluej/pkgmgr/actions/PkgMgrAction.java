@@ -34,15 +34,14 @@ import javafx.scene.input.KeyCombination.Modifier;
 /**
  * This class is intended to act as a base class for actions which require
  * a reference to the PkgMgrFrame object.<p>
- * 
+ * <p>
  * It translates the "name" of the action in the sub-class automatically.
  * It can also set-up an accelerator key.
- * 
+ *
  * @author Davin McCall
  * @author Amjad Altadmri
  */
-public abstract class PkgMgrAction extends FXAbstractAction
-{
+public abstract class PkgMgrAction extends FXAbstractAction {
     // --------- CLASS VARIABLES ----------
 
     protected PkgMgrFrame pmf;
@@ -52,13 +51,11 @@ public abstract class PkgMgrAction extends FXAbstractAction
 
     // --------- INSTANCE METHODS ----------
 
-    public PkgMgrAction(PkgMgrFrame pmf, String s)
-    {
-    	this(pmf, s, false);
+    public PkgMgrAction(PkgMgrFrame pmf, String s) {
+        this(pmf, s, false);
     }
 
-    public PkgMgrAction(PkgMgrFrame pmf, String s, boolean showsDialog)
-    {
+    public PkgMgrAction(PkgMgrFrame pmf, String s, boolean showsDialog) {
         super(Config.getString(s) + (showsDialog ? "..." : ""), Config.getAcceleratorKeyFX(s));
         this.pmf = pmf;
     }
@@ -66,53 +63,50 @@ public abstract class PkgMgrAction extends FXAbstractAction
     /**
      * Constructor for an action with an accelerator key. The default shift
      * modifiers are used.
-     * @param s         the untranslated action "name" (label)
-     * @param keycode       the keycode of the accelerator key (one of
-     *                          KeyEvent.*)
+     *
+     * @param s       the untranslated action "name" (label)
+     * @param keycode the keycode of the accelerator key (one of
+     *                KeyEvent.*)
      */
-    public PkgMgrAction(PkgMgrFrame pmf, String s, KeyCode keycode)
-    {
+    public PkgMgrAction(PkgMgrFrame pmf, String s, KeyCode keycode) {
         super(Config.getString(s), new KeyCodeCombination(keycode, KeyCombination.SHORTCUT_DOWN));
         this.pmf = pmf;
     }
 
     /**
      * Constructor for an action with an accelerator key, not using the default modifiers.
+     *
      * @param s         the untranslated action "name" (menu label)
-     * @param keycode       the keycode of the accelerator key (one of KeyEvent.*)
-     * @param modifiers     the shift modifiers for the accelerator key (Event.*)
+     * @param keycode   the keycode of the accelerator key (one of KeyEvent.*)
+     * @param modifiers the shift modifiers for the accelerator key (Event.*)
      */
-    public PkgMgrAction(PkgMgrFrame pmf, String s, KeyCode keycode, Modifier modifiers)
-    {
+    public PkgMgrAction(PkgMgrFrame pmf, String s, KeyCode keycode, Modifier modifiers) {
         super(Config.getString(s), new KeyCodeCombination(keycode, modifiers));
         this.pmf = pmf;
     }
-    
+
     /**
      * Set the frame to which this action will apply.
-     * @param pmf  The frame to which this action will apply.
+     *
+     * @param pmf The frame to which this action will apply.
      */
-    public void setFrame(PkgMgrFrame pmf)
-    {
-		this.pmf = pmf;
-	}
-        
+    public void setFrame(PkgMgrFrame pmf) {
+        this.pmf = pmf;
+    }
+
     @Override
-	public final void actionPerformed(boolean viaContextMenu)
-    {
+    public final void actionPerformed(boolean viaContextMenu) {
         actionPerformed(pmf);
     }
-        
+
     public abstract void actionPerformed(PkgMgrFrame pmf);
 
     @Override
-    public Button makeButton()
-    {
+    public Button makeButton() {
         // PkgMgrFrame buttons don't take focus:
         Button b = super.makeButton();
         b.setFocusTraversable(false);
-        if (shortDescription != null)
-        {
+        if (shortDescription != null) {
             Tooltip.install(b, new Tooltip(shortDescription));
         }
         return b;

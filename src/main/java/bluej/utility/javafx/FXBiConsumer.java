@@ -28,7 +28,6 @@ import threadchecker.Tag;
  * Equivalent to BiConsumer, but clearer (including to plugin) that it runs on FX thread
  */
 @FunctionalInterface
-public interface FXBiConsumer<T, U>
-{
+public interface FXBiConsumer<T, U> {
     @OnThread(Tag.FX) void accept(T t, U u);
 }

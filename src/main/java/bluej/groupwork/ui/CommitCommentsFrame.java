@@ -21,66 +21,44 @@
  */
 package bluej.groupwork.ui;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-
 import bluej.Config;
-import bluej.groupwork.CommitFilter;
-import bluej.groupwork.Repository;
-import bluej.groupwork.StatusHandle;
-import bluej.groupwork.StatusListener;
-import bluej.groupwork.TeamStatusInfo;
+import bluej.groupwork.*;
 import bluej.groupwork.TeamStatusInfo.Status;
-import bluej.groupwork.TeamUtils;
-import bluej.groupwork.TeamworkCommand;
-import bluej.groupwork.TeamworkCommandResult;
 import bluej.groupwork.actions.CommitAction;
 import bluej.pkgmgr.BlueJPackageFile;
 import bluej.pkgmgr.Project;
 import bluej.utility.DialogManager;
 import bluej.utility.FXWorker;
+import bluej.utility.Utility;
 import bluej.utility.javafx.FXCustomizedDialog;
 import bluej.utility.javafx.JavaFXUtil;
-import bluej.utility.Utility;
-
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * A user interface to add commit comments.
+ *
  * @author Bruce Quig
  * @author Amjad Altadmri
  */
 @OnThread(Tag.FXPlatform)
-public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements CommitAndPushInterface
-{
+public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements CommitAndPushInterface {
     private final Project project;
     private Repository repository;
     private CommitAction commitAction;
@@ -88,15 +66,16 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
 
     private final ObservableList<TeamStatusInfo> commitListModel = FXCollections.observableArrayList();
     private final Set<TeamStatusInfo> changedLayoutFiles = new HashSet<>();
-    /** The packages whose layout should be committed compulsorily */
+    /**
+     * The packages whose layout should be committed compulsorily
+     */
     private final Set<File> packagesToCommmit = new HashSet<>();
 
     private final TextArea commitText = new TextArea("");
     private final CheckBox includeLayout = new CheckBox(Config.getString("team.commit.includelayout"));
     private final ActivityIndicator progressBar = new ActivityIndicator();
 
-    public CommitCommentsFrame(Project project)
-    {
+    public CommitCommentsFrame(Project project) {
         super(null, "team.commit.title", "team-commit-comments");
         this.project = project;
         getDialogPane().setContent(makeMainPane());
@@ -106,8 +85,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
     /**
      *
      */
-    private Pane makeMainPane()
-    {
+    private Pane makeMainPane() {
         ListView<TeamStatusInfo> commitFiles = new ListView<>(commitListModel);
         commitFiles.setPlaceholder(new Label(Config.getString("team.nocommitfiles")));
         commitFiles.setCellFactory(param -> new TeamStatusInfoCell(project));
@@ -151,8 +129,8 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
         VBox mainPane = new VBox();
         JavaFXUtil.addStyleClass(mainPane, "main-pane");
         mainPane.getChildren().addAll(new Label(Config.getString("team.commit.files")), fileScrollPane,
-                                      new Label(Config.getString("team.commit.comment")), commitText,
-                                      commitButtonPane);
+                new Label(Config.getString("team.commit.comment")), commitText,
+                commitButtonPane);
         VBox.setVgrow(fileScrollPane, Priority.ALWAYS);
         VBox.setVgrow(commitText, Priority.ALWAYS);
 
@@ -162,8 +140,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
     /**
      * Prepare the button panel with a Resolve button and a close button
      */
-    private void prepareButtonPane()
-    {
+    private void prepareButtonPane() {
         //close button
         getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
         this.setOnCloseRequest(event -> {
@@ -174,8 +151,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
         });
     }
 
-    public void setVisible(boolean visible)
-    {
+    public void setVisible(boolean visible) {
         if (visible) {
             // we want to set comments and commit action to disabled
             // until we know there is something to commit
@@ -190,8 +166,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
                 try {
                     project.saveAllEditors();
                     project.saveAll();
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     String msg = DialogManager.getMessage("team-error-saving-project");
                     if (msg != null) {
                         msg = Utility.mergeStrings(msg, ioe.getLocalizedMessage());
@@ -205,34 +180,28 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
                 if (!isShowing()) {
                     show();
                 }
-            }
-            else {
+            } else {
                 hide();
             }
-        }
-        else {
+        } else {
             hide();
         }
     }
 
-    public String getComment()
-    {
+    public String getComment() {
         return commitText.getText();
     }
 
-    public void setComment(String newComment)
-    {
+    public void setComment(String newComment) {
         commitText.setText(newComment);
     }
 
-    public void reset()
-    {
+    public void reset() {
         commitListModel.clear();
         setComment("");
     }
 
-    private void removeModifiedLayouts()
-    {
+    private void removeModifiedLayouts() {
         // remove modified layouts from list of files shown for commit
         for (TeamStatusInfo info : changedLayoutFiles) {
             if (!packagesToCommmit.contains(info.getFile().getParentFile())) {
@@ -241,8 +210,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
         }
     }
 
-    private void addModifiedLayouts()
-    {
+    private void addModifiedLayouts() {
         // add diagram layout files to list of files to be committed
         Set<File> displayedLayouts = new HashSet<>();
         for (TeamStatusInfo info : changedLayoutFiles) {
@@ -258,17 +226,15 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
     /**
      * Get a list of the layout files to be committed
      */
-    public Set<File> getChangedLayoutFiles()
-    {
+    public Set<File> getChangedLayoutFiles() {
         return changedLayoutFiles.stream().map(TeamStatusInfo::getFile).collect(Collectors.toSet());
     }
 
     /**
      * Remove a file from the list of changes layout files.
      */
-    private void removeChangedLayoutFile(File file)
-    {
-        for(Iterator<TeamStatusInfo> it = changedLayoutFiles.iterator(); it.hasNext(); ) {
+    private void removeChangedLayoutFile(File file) {
+        for (Iterator<TeamStatusInfo> it = changedLayoutFiles.iterator(); it.hasNext(); ) {
             TeamStatusInfo info = it.next();
             if (info.getFile().equals(file)) {
                 it.remove();
@@ -280,13 +246,11 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
     /**
      * Get a set of the layout files which have changed (with status info).
      */
-    public Set<TeamStatusInfo> getChangedLayoutInfo()
-    {
+    public Set<TeamStatusInfo> getChangedLayoutInfo() {
         return changedLayoutFiles;
     }
 
-    public boolean includeLayout()
-    {
+    public boolean includeLayout() {
         return includeLayout != null && includeLayout.isSelected();
     }
 
@@ -294,8 +258,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
      * Start the activity indicator.
      */
     @OnThread(Tag.FXPlatform)
-    public void startProgress()
-    {
+    public void startProgress() {
         progressBar.setRunning(true);
     }
 
@@ -303,18 +266,15 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
      * Stop the activity indicator. Call from any thread.
      */
     @OnThread(Tag.Any)
-    public void stopProgress()
-    {
+    public void stopProgress() {
         JavaFXUtil.runNowOrLater(() -> progressBar.setRunning(false));
     }
 
-    public Project getProject()
-    {
+    public Project getProject() {
         return project;
     }
 
-    private void setLayoutChanged(boolean hasChanged)
-    {
+    private void setLayoutChanged(boolean hasChanged) {
         includeLayout.setDisable(!hasChanged);
     }
 
@@ -322,15 +282,13 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
      * Inner class to do the actual cvs status check to populate commit dialog
      * to ensure that the UI is not blocked during remote call
      */
-    class CommitWorker extends FXWorker implements StatusListener
-    {
+    class CommitWorker extends FXWorker implements StatusListener {
         List<TeamStatusInfo> response;
         TeamworkCommand command;
         TeamworkCommandResult result;
         private boolean aborted;
 
-        public CommitWorker()
-        {
+        public CommitWorker() {
             super();
             response = new ArrayList<>();
             FileFilter filter = project.getTeamSettingsController().getFileFilter(true, true);
@@ -342,8 +300,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
          */
         @OnThread(Tag.Any)
         @Override
-        public void gotStatus(TeamStatusInfo info)
-        {
+        public void gotStatus(TeamStatusInfo info) {
             response.add(info);
         }
 
@@ -352,28 +309,24 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
          */
         @OnThread(Tag.Worker)
         @Override
-        public void statusComplete(StatusHandle statusHandle)
-        {
+        public void statusComplete(StatusHandle statusHandle) {
             commitAction.setStatusHandle(statusHandle);
         }
 
         @OnThread(Tag.Worker)
         @Override
-        public Object construct()
-        {
+        public Object construct() {
             result = command.getResult();
             return response;
         }
 
-        public void abort()
-        {
+        public void abort() {
             command.cancel();
             aborted = true;
         }
 
         @Override
-        public void finished()
-        {
+        public void finished() {
             stopProgress();
             if (!aborted) {
                 if (result.isError()) {
@@ -413,8 +366,7 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
         }
 
         private void handleConflicts(Set<File> mergeConflicts, Set<File> deleteConflicts,
-                                     Set<File> otherConflicts, Set<File> needsMerge)
-        {
+                                     Set<File> otherConflicts, Set<File> needsMerge) {
             String dlgLabel;
             String filesList;
 
@@ -440,11 +392,11 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
 
         /**
          * Buid a list of files, max out at 10 files.
+         *
          * @param conflicts
          * @return
          */
-        private String buildConflictsList(Set<File> conflicts)
-        {
+        private String buildConflictsList(Set<File> conflicts) {
             String filesList = "";
             Iterator<File> i = conflicts.iterator();
             for (int j = 0; j < 10 && i.hasNext(); j++) {
@@ -464,27 +416,25 @@ public class CommitCommentsFrame extends FXCustomizedDialog<Void> implements Com
          * of those which are to be added (i.e. which aren't in the repository) and
          * which are to be removed.
          *
-         * @param info                  The list of files with status (List of TeamStatusInfo)
-         * @param filesToCommit         The set to store the files to commit in
-         * @param filesToAdd            The set to store the files to be added in
-         * @param filesToRemove         The set to store the files to be removed in
-         * @param mergeConflicts        The set to store files with merge conflicts in.
-         * @param deleteConflicts       The set to store files with conflicts in, which
-         *                                  need to be resolved by first deleting the local file
-         * @param otherConflicts        The set to store files with "locally deleted" conflicts
-         *                                  (locally deleted, remotely modified).
-         * @param needsMerge            The set of files which are updated locally as
-         *                                  well as in the repository (required merging).
+         * @param info                The list of files with status (List of TeamStatusInfo)
+         * @param filesToCommit       The set to store the files to commit in
+         * @param filesToAdd          The set to store the files to be added in
+         * @param filesToRemove       The set to store the files to be removed in
+         * @param mergeConflicts      The set to store files with merge conflicts in.
+         * @param deleteConflicts     The set to store files with conflicts in, which
+         *                            need to be resolved by first deleting the local file
+         * @param otherConflicts      The set to store files with "locally deleted" conflicts
+         *                            (locally deleted, remotely modified).
+         * @param needsMerge          The set of files which are updated locally as
+         *                            well as in the repository (required merging).
          * @param modifiedLayoutFiles
-         *
          */
         private void getCommitFileSets(List<TeamStatusInfo> info, Set<File> filesToCommit, Set<File> filesToAdd,
                                        Set<File> filesToRemove, Set<File> mergeConflicts, Set<File> deleteConflicts,
-                                       Set<File> otherConflicts, Set<File> needsMerge, Set<File> modifiedLayoutFiles)
-        {
+                                       Set<File> otherConflicts, Set<File> needsMerge, Set<File> modifiedLayoutFiles) {
 
             CommitFilter filter = new CommitFilter();
-            Map<File,File> modifiedLayoutDirs = new HashMap<>();
+            Map<File, File> modifiedLayoutDirs = new HashMap<>();
 
             for (TeamStatusInfo statusInfo : info) {
                 File file = statusInfo.getFile();

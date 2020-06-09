@@ -26,24 +26,22 @@ import greenfoot.UserInfo;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-import java.awt.Component;
 import java.net.URL;
 import java.util.List;
 
 /**
  * Interface to classes that contain specialized behaviour for the GreenfootUtil
  * class depending on where and how the greenfoot project is running.
- * 
+ *
  * @author Poul Henriksen
  */
 @OnThread(Tag.Simulation)
-public interface GreenfootUtilDelegate
-{
+public interface GreenfootUtilDelegate {
     /**
      * Get some resource from the project, specified by a relative path.
      */
     @OnThread(Tag.Any) URL getResource(String path);
-    
+
     /**
      * Gets a list of sound files (as plain names, e.g. "foo.wav") that
      * accompany this scenario.  For the IDE version, this scans the filesystem,
@@ -53,7 +51,7 @@ public interface GreenfootUtilDelegate
      * The return value will not be null, but it may have no contents if there
      * was an error (e.g. problem reading the directory/JAR, or no list of sounds in the JAR)
      * and you should not rely on it being accurate (e.g. if files were just added/removed in the sounds directory,
-     * or the JAR has been modified since export). 
+     * or the JAR has been modified since export).
      */
     @OnThread(Tag.Any) Iterable<String> getSoundFiles();
 
@@ -79,7 +77,7 @@ public interface GreenfootUtilDelegate
 
     /**
      * null if problem, empty list if simply no data
-     * 
+     * <p>
      * Returns highest data when sorted by integer index 0
      */
     List<UserInfo> getTopUserInfo(int limit);
@@ -96,7 +94,7 @@ public interface GreenfootUtilDelegate
 
     /**
      * null if problem, empty list if simply no data.
-     * 
+     * <p>
      * Returns data near the current player when sorted by integer index 0
      */
     List<UserInfo> getNearbyUserInfo(int maxAmount);

@@ -23,105 +23,92 @@ package greenfoot.util;
 
 
 /**
- * 
  * Representation of a circle.
- * 
- * @author Poul Henriksen
  *
+ * @author Poul Henriksen
  */
-public class Circle
-{
+public class Circle {
     private int x;
     private int y;
     private int radius;
-    
+
     public Circle(int x, int y, int r) {
-        if(r < 0 ) {
+        if (r < 0) {
             throw new IllegalArgumentException("Radius must be larger than -1. It was: " + r);
         }
         this.setX(x);
         this.setY(y);
         setRadius(r);
     }
-    
+
     public Circle() {
-        
+
     }
 
-    public boolean equals(Object other)
-    {
+    public boolean equals(Object other) {
         if (other instanceof Circle) {
             Circle oCircle = (Circle) other;
             return oCircle.x == x && oCircle.y == y && oCircle.radius == radius;
         }
         return false;
     }
-    
-    public int hashCode()
-    {
+
+    public int hashCode() {
         int result = 17;
         result = 37 * result + x;
         result = 37 * result + y;
         result = 37 * result + radius;
         return result;
     }
-    
-    public double getVolume()
-    {
+
+    public double getVolume() {
         return Math.PI * radius * radius;
     }
 
-    public void setX(int x)
-    {
+    public void setX(int x) {
         this.x = x;
     }
 
-    public int getX()
-    {
+    public int getX() {
         return x;
     }
 
-    public void setY(int y)
-    {
+    public void setY(int y) {
         this.y = y;
     }
 
-    public int getY()
-    {
+    public int getY() {
         return y;
     }
 
-    public void setRadius(int radius)
-    {
+    public void setRadius(int radius) {
         this.radius = radius;
     }
 
-    public int getRadius()
-    {
+    public int getRadius() {
         return radius;
     }
 
     /**
      * Checks if this circles intersects the other circle.
      */
-    public boolean intersects(Circle other)
-    {
+    public boolean intersects(Circle other) {
         int r1 = getRadius();
         int r2 = other.getRadius();
-                    
+
         int dx = getX() - other.getX();
         int dy = getY() - other.getY();
         int dxSq = dx * dx;
         int dySq = dy * dy;
-        
-        int  circleDistSq = (dxSq + dySq);
+
+        int circleDistSq = (dxSq + dySq);
 
         return (r1 + r2) * (r1 + r2) >= circleDistSq;
     }
 
     /**
      * Calculates the circle that bounds this circle and the other.
-     * 
+     *
      * @return An new circle bounding this and other.
      */
  /*   public Circle merge(Circle other)
@@ -166,22 +153,21 @@ public class Circle
         return newCircle;
     }    
     */
+
     /**
      * Calculates the circle that bounds this circle and the other.
-     * 
      */
-    public void merge(Circle one, Circle two)
-    {
+    public void merge(Circle one, Circle two) {
         int dx = one.getX() - two.getX();
         int dy = one.getY() - two.getY();
         int dxSq = dx * dx;
-        int dySq = dy * dy;        
+        int dySq = dy * dy;
         int circleDistSq = (dxSq + dySq);
         int r2 = (one.getRadius() - two.getRadius());
-        
+
         //check if r1 encloses r2
-        if( r2*r2 >= circleDistSq) {
-            if(one.getRadius() < two.getRadius()) {
+        if (r2 * r2 >= circleDistSq) {
+            if (one.getRadius() < two.getRadius()) {
                 setRadius(two.getRadius());
                 setX(two.getX());
                 setY(two.getY());
@@ -191,9 +177,8 @@ public class Circle
                 setX(one.getX());
                 setY(one.getY());
                 //biggest = new Circle(x, y, radius);
-            } 
-        }
-        else {
+            }
+        } else {
             double circleDist = Math.sqrt(circleDistSq);
             double r = (circleDist + one.getRadius() + two.getRadius()) / 2.;
             // Circle newCircle = new Circle(getX(), getY(), (int)
@@ -209,8 +194,8 @@ public class Circle
             }
         }
     }
-    
+
     public String toString() {
-        return "(" + x + "," + y + ") [" + radius +"]" + super.toString();
+        return "(" + x + "," + y + ") [" + radius + "]" + super.toString();
     }
 }

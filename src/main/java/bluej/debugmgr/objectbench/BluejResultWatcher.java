@@ -34,58 +34,52 @@ import bluej.views.MethodView;
  * <p>
  * Over ObjectResultWatcher, this mainly just adds setting of the wait cursor on the PkgMgrFrame
  * associated with the invocation.
- * 
+ *
  * @author Davin McCall
  */
-public abstract class BluejResultWatcher extends ResultWatcherBase
-{
+public abstract class BluejResultWatcher extends ResultWatcherBase {
     private final PkgMgrFrame pmf;
 
     /**
      * Constructor for BluejResultWatcher, for a constructor or static method call.
-     * 
-     * @param className      the name of the class whose member is called
-     * @param pkg    the package in which the invocation occurs
-     * @param pmf    the PkgMgrFrame for the package
-     * @param method  the method/constructor being invoked
+     *
+     * @param className the name of the class whose member is called
+     * @param pkg       the package in which the invocation occurs
+     * @param pmf       the PkgMgrFrame for the package
+     * @param method    the method/constructor being invoked
      */
-    public BluejResultWatcher(Package pkg, PkgMgrFrame pmf, CallableView method)
-    {
+    public BluejResultWatcher(Package pkg, PkgMgrFrame pmf, CallableView method) {
         super(pkg, pmf.getFXWindow(), method);
         this.pmf = pmf;
     }
-    
+
     /**
      * Constructor for BluejResultWatcher, for an instance method call.
-     * 
-     * @param obj    the target object of the invocation
-     * @param objInstanceName   the name of the target instance
-     * @param pkg    the package in which the invocation occurs
-     * @param pmf    the PkgMgrFrame for the package
-     * @param method  the method being invoked
+     *
+     * @param obj             the target object of the invocation
+     * @param objInstanceName the name of the target instance
+     * @param pkg             the package in which the invocation occurs
+     * @param pmf             the PkgMgrFrame for the package
+     * @param method          the method being invoked
      */
-    public BluejResultWatcher(DebuggerObject obj, String objInstanceName, Package pkg, PkgMgrFrame pmf, MethodView method)
-    {
+    public BluejResultWatcher(DebuggerObject obj, String objInstanceName, Package pkg, PkgMgrFrame pmf, MethodView method) {
         super(obj, objInstanceName, pkg, pmf.getFXWindow(), method);
         this.pmf = pmf;
     }
-    
+
     @Override
-    public void beginCompile()
-    {
+    public void beginCompile() {
         pmf.setWaitCursor(true);
     }
 
     @Override
-    public void beginExecution(InvokerRecord ir)
-    {
+    public void beginExecution(InvokerRecord ir) {
         BlueJEvent.raiseEvent(BlueJEvent.METHOD_CALL, ir, pmf.getProject());
         pmf.setWaitCursor(false);
     }
 
     @Override
-    public void putError(String msg, InvokerRecord ir)
-    {
+    public void putError(String msg, InvokerRecord ir) {
         pmf.setWaitCursor(false);
     }
 }

@@ -21,36 +21,32 @@
  */
 package bluej.extmgr;
 
-import javax.swing.JMenuItem;
-
 import bluej.extensions.MenuGenerator;
+
+import javax.swing.*;
 
 /**
  * This interface provides methods for retrieving custom menu entries of an
  * extension and to notify it if a menu is about to show. Implementations of
  * this interface serve as a bridge between BlueJ and the extension mechanism.
- * 
+ *
  * @author Simon Gerlach
  */
-public interface ExtensionMenu
-{
+public interface ExtensionMenu {
     /**
      * Calls the extension to get a menu item.
-     * 
-     * @param menuGenerator
-     *            The {@link MenuGenerator} which creates the menu.
+     *
+     * @param menuGenerator The {@link MenuGenerator} which creates the menu.
      * @return The {@link JMenuItem} the extension provides or <code>null</code>
-     *         if it does not provide a menu entry.
+     * if it does not provide a menu entry.
      */
     JMenuItem getMenuItem(MenuGenerator menuGenerator);
 
     /**
      * Post a notification about a menu going to be displayed.
-     * 
-     * @param menuGenerator
-     *            The {@link MenuGenerator} which creates the menu.
-     * @param onThisItem
-     *            The {@link JMenuItem} which is about to show.
+     *
+     * @param menuGenerator The {@link MenuGenerator} which creates the menu.
+     * @param onThisItem    The {@link JMenuItem} which is about to show.
      */
     void postMenuItem(MenuGenerator menuGenerator, JMenuItem onThisItem);
 }

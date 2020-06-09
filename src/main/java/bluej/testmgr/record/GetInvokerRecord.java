@@ -25,30 +25,38 @@ import bluej.pkgmgr.PkgMgrFrame;
 
 /**
  * Records a "Get" from the inspector window. Not from a result inspector
- * though, since that is handled by the MethodInvocationRecord. 
- * 
+ * though, since that is handled by the MethodInvocationRecord.
+ *
  * @author Poul Henriksen
  */
-public class GetInvokerRecord extends InvokerRecord
-{
-    /** The invoker record for the inspector where the Get button was pressed, that resulted in the creation of this GetInvokerRecord. */
+public class GetInvokerRecord extends InvokerRecord {
+    /**
+     * The invoker record for the inspector where the Get button was pressed, that resulted in the creation of this GetInvokerRecord.
+     */
     private final InvokerRecord parentIr;
-    
-    /** Name of the field to Get */
+
+    /**
+     * Name of the field to Get
+     */
     private final String fieldName;
-    
-    /** Type of the field */
+
+    /**
+     * Type of the field
+     */
     private final String fieldType;
-    
-    /** Name of the object as it appears on the object bench */
+
+    /**
+     * Name of the object as it appears on the object bench
+     */
     private String objName;
-    
-    /** Type of the object */
+
+    /**
+     * Type of the object
+     */
     private String objType;
 
 
-    public GetInvokerRecord(String fieldType, String fieldName, InvokerRecord parentIr)
-    {
+    public GetInvokerRecord(String fieldType, String fieldName, InvokerRecord parentIr) {
         this.parentIr = parentIr;
         this.fieldName = fieldName;
         this.fieldType = fieldType;
@@ -57,68 +65,61 @@ public class GetInvokerRecord extends InvokerRecord
 
     /**
      * Give this method invoker record a name on the object bench.
-     * 
+     *
      * @param name Name of the object a it appears on the object bench.
      * @param type The type that the object is on the actual bench.
      */
     @Override
-    public void setBenchName(String name, String type)
-    {
+    public void setBenchName(String name, String type) {
         objName = name;
         objType = type;
     }
-    
+
     @Override
-    public boolean hasVoidResult()
-    {
+    public boolean hasVoidResult() {
         return false;
     }
 
     /**
      * Construct a declaration for any objects constructed
      * by this invoker record.
-     * 
+     *
      * @return a String representing the object declaration
-     *         src or null if there is none.
-     */    
+     * src or null if there is none.
+     */
     @Override
-    public String toFixtureDeclaration(String firstIndent)
-    {
-        return firstIndent + fieldDeclarationStart + objType + " " + objName + statementEnd;    
+    public String toFixtureDeclaration(String firstIndent) {
+        return firstIndent + fieldDeclarationStart + objType + " " + objName + statementEnd;
     }
 
     /**
      * Construct a portion of an initialisation method for
      * this invoker record.
-     *  
+     *
      * @return a String representing the object initialisation
-     *         src or null if there is none. 
-     */    
+     * src or null if there is none.
+     */
     @Override
-    public String toFixtureSetup(String secondIndent)
-    {
-        return secondIndent + objName + " = " + toExpression() + statementEnd;          
+    public String toFixtureSetup(String secondIndent) {
+        return secondIndent + objName + " = " + toExpression() + statementEnd;
     }
 
     /**
      * Construct a portion of a test method for this
      * invoker record.
-     * 
+     *
      * @return a String representing the test method src
      */
     @Override
-    public String toTestMethod(PkgMgrFrame pmf, String secondIndent)
-    {
+    public String toTestMethod(PkgMgrFrame pmf, String secondIndent) {
         return secondIndent + objType + " " + objName + " = " + toExpression() + statementEnd;
     }
-    
+
     @Override
-    public String toExpression()
-    {
-        if(! objType.equals(fieldType)) {
+    public String toExpression() {
+        if (!objType.equals(fieldType)) {
             return "((" + objType + ") " + parentIr.toExpression() + "." + fieldName + ")";
-        }
-        else {
+        } else {
             return parentIr.toExpression() + "." + fieldName;
         }
     }

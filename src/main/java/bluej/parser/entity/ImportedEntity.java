@@ -21,46 +21,42 @@
  */
 package bluej.parser.entity;
 
+import bluej.debugger.gentype.JavaType;
+import bluej.debugger.gentype.Reflective;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import bluej.debugger.gentype.JavaType;
-import bluej.debugger.gentype.Reflective;
-
 /**
  * Represents an unresolved sequence of names from an import statement, which should
  * when resolved refer to a class or (for wildcard imports) a package.
- * 
+ *
  * @author Davin McCall
  */
-public class ImportedEntity extends JavaEntity
-{
+public class ImportedEntity extends JavaEntity {
     private final EntityResolver resolver;
     private final List<String> names;
     private final Reflective querySource;
-    
+
     /**
      * Create an ImportEntity with the given attributes.
      */
     public ImportedEntity(EntityResolver resolver, List<String> names,
-            Reflective querySource)
-    {
+                          Reflective querySource) {
         this.resolver = resolver;
         this.names = names;
         this.querySource = querySource;
     }
-    
+
     @Override
-    public String getName()
-    {
+    public String getName() {
         return names.stream().collect(Collectors.joining("."));
     }
 
     @Override
-    public JavaEntity getSubentity(String name, Reflective accessSource)
-    {
+    public JavaEntity getSubentity(String name, Reflective accessSource) {
         List<String> newNames = new LinkedList<String>();
         newNames.addAll(names);
         newNames.add(name);
@@ -68,52 +64,47 @@ public class ImportedEntity extends JavaEntity
     }
 
     @Override
-    public JavaType getType()
-    {
-        return null;
-    }
-    
-    @Override
-    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams)
-    {
+    public JavaType getType() {
         return null;
     }
 
     @Override
-    public ValueEntity resolveAsValue()
-    {
+    public JavaEntity setTypeArgs(List<TypeArgumentEntity> tparams) {
         return null;
     }
-    
+
     @Override
-    public TypeEntity resolveAsType()
-    {
+    public ValueEntity resolveAsValue() {
+        return null;
+    }
+
+    @Override
+    public TypeEntity resolveAsType() {
         PackageOrClass poc = resolveAsPackageOrClass();
         if (poc != null) {
             return poc.resolveAsType();
         }
-        
+
         return null;
     }
-    
+
     @Override
-    public PackageOrClass resolveAsPackageOrClass()
-    {
+    public PackageOrClass resolveAsPackageOrClass() {
         Iterator<String> i = names.iterator();
-        if (! i.hasNext()) {
+        if (!i.hasNext()) {
             return null;
         }
-        
+
         String fqName = i.next();
         PackageOrClass poc = new PackageEntity(fqName, resolver);
-        
+
         while (i.hasNext()) {
             poc = poc.getPackageOrClassMember(i.next());
             if (poc == null) {
                 return null;
             }
         }
-        
+
         return poc;
     }
 }

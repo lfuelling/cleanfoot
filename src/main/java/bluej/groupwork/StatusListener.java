@@ -26,16 +26,15 @@ import threadchecker.Tag;
 
 /**
  * Interface for listening for results from a status command.
- * 
+ *
  * @author Davin McCall
  */
-public interface StatusListener
-{
+public interface StatusListener {
     /**
      * Status is available for a file.
      */
     @OnThread(Tag.Worker) void gotStatus(TeamStatusInfo info);
-    
+
     /**
      * The status operation is complete. A status handle is provided
      * to allow commit operations.

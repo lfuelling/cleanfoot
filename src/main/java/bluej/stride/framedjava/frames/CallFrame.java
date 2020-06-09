@@ -26,110 +26,94 @@
 package bluej.stride.framedjava.frames;
 
 
-import javafx.util.Duration;
-
 import bluej.stride.framedjava.ast.CallExpressionSlotFragment;
 import bluej.stride.framedjava.ast.ExpressionSlotFragment;
 import bluej.stride.framedjava.elements.CallElement;
 import bluej.stride.framedjava.slots.CallExpressionSlot;
 import bluej.stride.framedjava.slots.ExpressionSlot;
 import bluej.stride.framedjava.slots.StructuredSlot.SplitInfo;
-import bluej.stride.generic.FrameCanvas;
-import bluej.stride.generic.FrameContentItem;
-import bluej.stride.generic.FrameCursor;
-import bluej.stride.generic.FrameFactory;
-import bluej.stride.generic.InteractionManager;
-import bluej.stride.generic.SingleLineFrame;
+import bluej.stride.generic.*;
 import bluej.stride.slots.HeaderItem;
 import bluej.utility.javafx.JavaFXUtil;
+import javafx.util.Duration;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
 /**
  * A method call, e.g. "do x(param y)"
+ *
  * @author Fraser McKay
  */
 public class CallFrame extends SingleLineFrame
-  implements CodeFrame<CallElement>, DebuggableFrame
-{
+        implements CodeFrame<CallElement>, DebuggableFrame {
     private final ExpressionSlot<CallExpressionSlotFragment> content;
-    
+
     private CallElement element;
-    
+
     /**
      * Default constructor.
-     * @param editor 
+     *
+     * @param editor
      */
-    private CallFrame(InteractionManager editor)
-    {
+    private CallFrame(InteractionManager editor) {
         super(editor, null, "do-");
         content = new CallExpressionSlot(editor, this, this, getHeaderRow(), "do-method-name-", CallExpressionSlot.CALL_HINTS);
         content.setText("()");
         content.setMethodCallPromptText("method-name");
-        
+
         setHeaderRow(content, previewSemi);
 
         content.onTextPropertyChange(s -> checkForTopLevelEquals());
         content.addFocusListener(this);
     }
-    
+
     // For replacement of AssignFrame:
     @OnThread(Tag.FXPlatform)
-    public CallFrame(InteractionManager editor, String beforeCursor, String afterCursor)
-    {
+    public CallFrame(InteractionManager editor, String beforeCursor, String afterCursor) {
         this(editor);
         this.content.setSplitText(beforeCursor, afterCursor);
     }
-    
-    public CallFrame(InteractionManager editor, ExpressionSlotFragment e, boolean enabled)
-    {
+
+    public CallFrame(InteractionManager editor, ExpressionSlotFragment e, boolean enabled) {
         this(editor);
         this.content.setText(e);
         frameEnabledProperty.set(enabled);
     }
 
     @Override
-    public void regenerateCode()
-    {
+    public void regenerateCode() {
         element = new CallElement(this, content.getSlotElement(), frameEnabledProperty.get());
     }
-    
+
     @Override
-    public CallElement getCode()
-    {
+    public CallElement getCode() {
         return element;
-    }  
-    
-    public static FrameFactory<CallFrame> getFactory()
-    {
+    }
+
+    public static FrameFactory<CallFrame> getFactory() {
         return new FrameFactory<CallFrame>() {
             @Override
-            public CallFrame createBlock(InteractionManager editor)
-            {
+            public CallFrame createBlock(InteractionManager editor) {
                 return new CallFrame(editor);
             }
-                        
+
             @Override
-            public Class<CallFrame> getBlockClass()
-            {
+            public Class<CallFrame> getBlockClass() {
                 return CallFrame.class;
             }
         };
     }
 
-    private void checkForTopLevelEquals()
-    {
+    private void checkForTopLevelEquals() {
         // If the user has put a single top-level '=' then we should turn into an assignment frame
         SplitInfo info = content.trySplitOnEquals();
-        if (info != null && getParentCanvas() != null)
-        {
+        if (info != null && getParentCanvas() != null) {
             getParentCanvas().replaceBlock(this, new AssignFrame(getEditor(), info.lhs, info.rhs));
         }
     }
 
     @Override
-    public void setParentCanvas(FrameCanvas parentCanvas)
-    {
+    public void setParentCanvas(FrameCanvas parentCanvas) {
         super.setParentCanvas(parentCanvas);
         // When converting from Java we may have a top-level equals straight away,
         // but we won't have replaced it yet because our parent canvas was null.
@@ -138,12 +122,9 @@ public class CallFrame extends SingleLineFrame
     }
 
     @Override
-    public boolean deleteAtEnd(FrameContentItem row, HeaderItem src)
-    {
-        if (contents.size() > 0 && (src == contents.get(0) || row == contents.get(0)))
-        {
-            if (isAlmostBlank())
-            {
+    public boolean deleteAtEnd(FrameContentItem row, HeaderItem src) {
+        if (contents.size() > 0 && (src == contents.get(0) || row == contents.get(0))) {
+            if (isAlmostBlank()) {
                 deleteOurselves();
                 return true;
             }
@@ -152,16 +133,13 @@ public class CallFrame extends SingleLineFrame
     }
 
     @Override
-    public void checkForEmptySlot()
-    {
-        if (content.isEmpty())
-        {
+    public void checkForEmptySlot() {
+        if (content.isEmpty()) {
             deleteOurselves();
         }
     }
 
-    private void deleteOurselves()
-    {
+    private void deleteOurselves() {
         FrameCanvas parentCanvas = getParentCanvas();
         FrameCursor cursorBefore = getCursorBefore();
         parentCanvas.removeBlock(this);
@@ -170,8 +148,7 @@ public class CallFrame extends SingleLineFrame
 
     @Override
     @OnThread(Tag.FXPlatform)
-    public void insertedWithCtrl()
-    {
+    public void insertedWithCtrl() {
         // Add a delay so that the frame gets displayed first, otherwise
         // the code suggestions can show at the wrong position:
         JavaFXUtil.runAfter(Duration.millis(100), content::showSuggestion);
