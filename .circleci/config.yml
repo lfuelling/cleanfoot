@@ -6,7 +6,7 @@ jobs:
       MAVEN_OPTS: -Xmx2g
 
     docker:
-      - image: lerk/lerk/liberica-11-maven
+      - image: lerk/liberica-11-maven
 
     steps:
       - checkout
