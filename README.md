@@ -16,8 +16,8 @@ To use this library, you need to use the GammelCloud repo:
 ```xml
 <repositories>
     <repository>
-        <id>gammel</id>
-        <url>https://nexus.gammel.cloud/repository/maven-public/</url>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
     </repository>
 </repositories>
 ```
@@ -26,7 +26,7 @@ And the following dependency:
 
 ```xml
 <dependency>
-    <groupId>sh.lrk</groupId>
+    <groupId>com.github.lfuelling</groupId>
     <artifactId>cleanfoot</artifactId>
     <version>3.6.1</version>
 </dependency>
@@ -38,14 +38,14 @@ If you use Gradle, you can reference the repository like this:
 
 ```groovy
 repositories {
-        maven { url 'https://nexus.gammel.cloud/repository/maven-public/' }
+        maven { url 'https://jitpack.io' }
 }
 ```
 
 and the dependency itself like this:
 
 ```groovy
-implementation 'sh.lrk:cleanfoot:3.6.1'
+implementation 'com.github.lfuelling:cleanfoot:3.6.1'
 ```
 
 ### Code
