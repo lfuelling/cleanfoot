@@ -32,7 +32,7 @@ import threadchecker.Tag;
 import javax.annotation.Nullable;
 
 public abstract class GreenfootScenarioApplication extends Application {
-    interface OnBeforeLaunchListener {
+    public interface OnBeforeLaunchListener {
         void onBeforeLaunch();
     }
 
@@ -42,7 +42,7 @@ public abstract class GreenfootScenarioApplication extends Application {
      * @return Either an {@link OnBeforeLaunchListener} or <pre>null</pre>
      */
     @Nullable
-    abstract OnBeforeLaunchListener getOnBeforeLaunchListener();
+    public abstract OnBeforeLaunchListener getOnBeforeLaunchListener();
 
     @Override
     @OnThread(Tag.FXPlatform)
