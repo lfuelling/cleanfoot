@@ -12,10 +12,10 @@ To use this library, you need to use the GammelCloud repo:
 
 ```xml
 <repositories>
-    <repository>
-        <id>gammel</id>
-        <url>https://nexus.gammel.cloud/repository/maven-public/</url>
-    </repository>
+  <repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+  </repository>
 </repositories>
 ```
 
@@ -23,9 +23,9 @@ And the following dependency:
 
 ```xml
 <dependency>
-    <groupId>sh.lrk</groupId>
-    <artifactId>cleanfoot</artifactId>
-    <version>3.5.5</version>
+  <groupId>com.github.lfuelling</groupId>
+  <artifactId>cleanfoot</artifactId>
+  <version>3.5.6</version>
 </dependency>
 ```
 

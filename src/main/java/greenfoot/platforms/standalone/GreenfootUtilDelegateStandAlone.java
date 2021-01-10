@@ -147,7 +147,7 @@ public class GreenfootUtilDelegateStandAlone implements GreenfootUtilDelegate
     @OnThread(Tag.Any)
     public String getGreenfootLogoPath()
     {    
-        return this.getClass().getClassLoader().getResource("greenfoot.png").toString();
+        return this.getClass().getClassLoader().getResource("imagelib/other/greenfoot.png").toString();
     }
 
     /**

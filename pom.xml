@@ -21,23 +21,6 @@
         </repository>
     </repositories>
 
-    <distributionManagement>
-        <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>gammel</id>
-            <name>GammelCloud Releases</name>
-            <url>https://nexus.gammel.cloud/repository/maven-releases/</url>
-            <layout>default</layout>
-        </repository>
-        <snapshotRepository>
-            <uniqueVersion>true</uniqueVersion>
-            <id>gammel</id>
-            <name>GammelCloud Snapshots</name>
-            <url>https://nexus.gammel.cloud/repository/maven-snapshots/</url>
-            <layout>default</layout>
-        </snapshotRepository>
-    </distributionManagement>
-
     <profiles>
         <profile>
             <id>default-profile</id>
