@@ -25,7 +25,7 @@ And the following dependency:
 <dependency>
   <groupId>com.github.lfuelling</groupId>
   <artifactId>cleanfoot</artifactId>
-  <version>3.5.6</version>
+  <version>3.5.7</version>
 </dependency>
 ```
 
@@ -35,19 +35,19 @@ If you use Gradle, you can reference the repository like this:
 
 ```groovy
 repositories {
-        maven { url 'https://nexus.gammel.cloud/repository/maven-public/' }
+        maven { url 'https://jitpack.io' }
 }
 ```
 
 and the dependency itself like this:
 
 ```groovy
-implementation 'sh.lrk:cleanfoot:3.5.5'
+implementation 'com.github.lfuelling:cleanfoot:3.5.7'
 ```
 
 ### Code
 
-After adding it, the library can be used like the regular Greenfoot project is used (ie. no package names have been changed). 
+After adding it, the library can be used like the regular Greenfoot project is used (ie. no package names have been changed). The only thing you need to add is a launcher class that extends `GreenfootScenarioApplication` and has a `main` method to launch the application.
 If you need more information regarding using Greenfoot with Maven/Gradle and its implications, please see [this blog post](https://lerks.blog/making-games-with-greenfoot-without-greenfoot/).
 
 ## Development
