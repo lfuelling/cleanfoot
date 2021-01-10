@@ -16,8 +16,8 @@
 
     <repositories>
         <repository>
-            <id>gammel</id>
-            <url>https://nexus.gammel.cloud/repository/maven-public/</url>
+            <id>tmatesoft-releases</id>
+            <url>https://maven.tmatesoft.com/content/repositories/releases/</url>
         </repository>
     </repositories>
 
@@ -163,7 +163,7 @@
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
-            <version>4.6</version>
+            <version>5.3</version>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
@@ -222,11 +222,6 @@
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
             <version>4.6.32</version>
-        </dependency>
-        <dependency>
-            <groupId>au.com.bytecode.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
