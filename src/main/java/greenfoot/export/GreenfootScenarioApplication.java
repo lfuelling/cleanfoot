@@ -29,33 +29,43 @@ import javafx.stage.Stage;
 import threadchecker.OnThread;
 import threadchecker.Tag;
 
-public class GreenfootScenarioApplication extends Application
-{
+import javax.annotation.Nullable;
+
+public abstract class GreenfootScenarioApplication extends Application {
+    interface OnBeforeLaunchListener {
+        void onBeforeLaunch();
+    }
+
+    /**
+     * This can be used to run code before the application starts, but after the JavaFX stuff is initialized.
+     *
+     * @return Either an {@link OnBeforeLaunchListener} or <pre>null</pre>
+     */
+    @Nullable
+    abstract OnBeforeLaunchListener getOnBeforeLaunchListener();
+
     @Override
     @OnThread(Tag.FXPlatform)
-    public void start(Stage primaryStage) throws Exception
-    {
+    public void start(Stage primaryStage) throws Exception {
         Platform.setImplicitExit(true);
+        OnBeforeLaunchListener beforeLaunchListener = getOnBeforeLaunchListener();
+        if(beforeLaunchListener != null) {
+            beforeLaunchListener.onBeforeLaunch();
+        }
         GreenfootScenarioViewer greenfootScenarioViewer = new GreenfootScenarioViewer();
         Scene scene = new Scene(greenfootScenarioViewer);
         scene.getStylesheets().add("stylesheets/greenfoot.css");
-        primaryStage.setScene(scene);        
+        primaryStage.setScene(scene);
         primaryStage.show();
         primaryStage.setOnHiding(e -> {
             Simulation.getInstance().abort();
-            
+
             // Fail safe: if we haven't exited after a second, force exit:
-            Thread exiter = new Thread()
-            {
-                public void run()
-                {
-                    try
-                    {
+            Thread exiter = new Thread() {
+                public void run() {
+                    try {
                         Thread.sleep(1000);
-                    }
-                    catch (InterruptedException ex)
-                    {
-                    }
+                    } catch (InterruptedException ignored) {}
                     System.exit(1);
                 }
             };
